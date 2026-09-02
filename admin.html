@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glomium Albums — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root { --green:#10AF8B; --green-deep:#0A6E58; --line:rgba(16,175,139,.18); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#FFFFFF; color:#16231F; font-family:'Jost',Helvetica,sans-serif; }
+  input, textarea, button { font-family:inherit; }
+  ::selection { background:var(--green); color:#fff; }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:#FFFFFF">
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px">
+      <div style="width:min(380px,100%); display:flex; flex-direction:column; gap:22px">
+        <div style="text-align:center; display:flex; flex-direction:column; gap:6px">
+          <span style="font-size:22px; font-weight:300; letter-spacing:.02em; color:var(--green)">Glomium Albums</span>
+          <span style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Admin sign in</span>
+        </div>
+        <input type="email" placeholder="you@glomium.in" value="{{ email }}" onChange="{{ onEmailChange }}" style="width:100%; padding:14px 16px; border:1px solid var(--line); border-radius:2px; font-size:15px; color:#16231F; outline:none" style-focus="border-color:var(--green)">
+        <input type="password" placeholder="Password" value="{{ password }}" onChange="{{ onPasswordChange }}" onKeyDown="{{ onPasswordKeyDown }}" style="width:100%; padding:14px 16px; border:1px solid var(--line); border-radius:2px; font-size:15px; color:#16231F; outline:none" style-focus="border-color:var(--green)">
+        <sc-if value="{{ authError }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px; color:#B4433A">{{ authError }}</span>
+        </sc-if>
+        <button onClick="{{ signIn }}" disabled="{{ signingIn }}" style="padding:14px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:13px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ signInLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:20px clamp(20px,5vw,60px); border-bottom:1px solid var(--line)">
+        <span style="font-size:17px; font-weight:300; color:var(--green)">Glomium Albums</span>
+        <button onClick="{{ signOut }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Sign out</button>
+      </div>
+
+      <div style="padding:clamp(20px,5vw,60px); display:flex; flex-direction:column; gap:36px; max-width:1080px; margin:0 auto">
+        <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">New event</span>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
+            <input placeholder="Couple names — e.g. Meghan & Desmond" value="{{ newCouple }}" onChange="{{ onNewCoupleChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+            <input type="date" value="{{ newDate }}" onChange="{{ onNewDateChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+            <input placeholder="Venue (optional)" value="{{ newVenue }}" onChange="{{ onNewVenueChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+            <input placeholder="slug (auto from names)" value="{{ newSlug }}" onChange="{{ onNewSlugChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+          </div>
+          <sc-if value="{{ createError }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#B4433A">{{ createError }}</span></sc-if>
+          <div>
+            <button onClick="{{ createEvent }}" disabled="{{ creating }}" style="padding:12px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ createLabel }}</button>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Events</span>
+          <sc-if value="{{ hasNoEvents }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:14px; color:#7C8985">No events yet — create one above.</span>
+          </sc-if>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px">
+            <sc-for list="{{ eventsVM }}" as="ev" hint-placeholder-count="0">
+              <div style="border:1px solid var(--line); border-radius:4px; overflow:hidden; display:flex; flex-direction:column">
+                <div style="aspect-ratio:4/3; background:#F4F6F5; display:grid; place-items:center; overflow:hidden">
+                  <img ref="{{ ev.setCoverRef }}" alt="{{ ev.couple_names }}" style="width:100%; height:100%; object-fit:cover; display:none">
+                  <sc-if value="{{ ev.noCover }}" hint-placeholder-val="{{ true }}">
+                    <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">No cover yet</span>
+                  </sc-if>
+                </div>
+                <div style="padding:14px 16px; display:flex; flex-direction:column; gap:6px">
+                  <span style="font-size:15px; font-weight:400; color:#16231F">{{ ev.couple_names }}</span>
+                  <span style="font-size:12px; color:#7C8985">{{ ev.dateLabel }}</span>
+                  <span style="font-size:11px; color:var(--green-deep)">/album/{{ ev.slug }}</span>
+                  <div style="display:flex; gap:8px; margin-top:8px">
+                    <button onClick="{{ ev.open }}" style="flex:1; padding:9px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Edit</button>
+                    <button onClick="{{ ev.remove }}" style="padding:9px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEditor }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:20px clamp(20px,5vw,60px); border-bottom:1px solid var(--line); flex-wrap:wrap; gap:12px">
+        <button onClick="{{ backToDashboard }}" style="background:none; border:none; font-size:13px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">← All events</button>
+        <div style="display:flex; gap:10px; align-items:center">
+          <span style="font-size:12px; color:{{ copiedColor }}">{{ copyLabel }}</span>
+          <button onClick="{{ copyPublicLink }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Copy public link</button>
+          <a href="{{ previewUrl }}" target="_blank" style="padding:9px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Preview album</a>
+        </div>
+      </div>
+
+      <div style="padding:clamp(20px,5vw,60px); display:flex; flex-direction:column; gap:44px; max-width:1080px; margin:0 auto">
+
+        <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Details</span>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
+            <input placeholder="Couple names" value="{{ editCouple }}" onChange="{{ onEditCoupleChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            <input type="date" value="{{ editDate }}" onChange="{{ onEditDateChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            <input placeholder="Venue" value="{{ editVenue }}" onChange="{{ onEditVenueChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            <input placeholder="slug" value="{{ editSlug }}" onChange="{{ onEditSlugChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+          </div>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+            <input type="file" accept="image/*" ref="{{ setCoverInputRef }}" onChange="{{ onCoverFileChange }}" style="display:none">
+            <button onClick="{{ triggerCoverPicker }}" style="padding:11px 18px; background:none; border:1px solid var(--line); border-radius:2px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Upload cover photo</button>
+            <button onClick="{{ saveDetails }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save details</button>
+            <span style="font-size:12px; color:var(--green-deep)">{{ detailsStatus }}</span>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Photos ({{ photoCount }})</span>
+            <div>
+              <input type="file" accept="image/*" multiple="{{ true }}" ref="{{ setPhotosInputRef }}" onChange="{{ onPhotosFileChange }}" style="display:none">
+              <button onClick="{{ triggerPhotosPicker }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Upload photos</button>
+            </div>
+          </div>
+          <sc-if value="{{ uploadStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ uploadStatus }}</span></sc-if>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px">
+            <sc-for list="{{ photosVM }}" as="ph" hint-placeholder-count="0">
+              <div style="border:1px solid var(--line); border-radius:3px; overflow:hidden; display:flex; flex-direction:column">
+<img ref="{{ ph.setImgRef }}" alt="" style="width:100%; aspect-ratio:1; object-fit:cover; display:block">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; gap:6px">
+                  <label style="display:flex; align-items:center; gap:6px; font-size:10px; letter-spacing:.06em; color:#5D6864; cursor:pointer">
+                    <input type="checkbox" checked="{{ ph.full_bleed }}" onChange="{{ ph.toggleFull }}">
+                    Full-bleed
+                  </label>
+                  <div style="display:flex; gap:4px">
+                    <button onClick="{{ ph.moveUp }}" disabled="{{ ph.isFirst }}" style="padding:4px 7px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; cursor:pointer">↑</button>
+                    <button onClick="{{ ph.moveDown }}" disabled="{{ ph.isLast }}" style="padding:4px 7px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; cursor:pointer">↓</button>
+                    <button onClick="{{ ph.remove }}" style="padding:4px 7px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Videos ({{ videoCount }})</span>
+            <div>
+              <input type="file" accept="video/*" ref="{{ setVideoInputRef }}" onChange="{{ onVideoFileChange }}" style="display:none">
+              <button onClick="{{ triggerVideoPicker }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Upload video</button>
+            </div>
+          </div>
+          <sc-if value="{{ videoUploadStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ videoUploadStatus }}</span></sc-if>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <sc-for list="{{ videosVM }}" as="vd" hint-placeholder-count="0">
+              <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; border:1px solid var(--line); border-radius:3px">
+                <video ref="{{ vd.setVideoRef }}" style="width:120px; height:68px; object-fit:cover; background:#000; border-radius:2px"></video>
+                <span style="flex:1; font-size:12px; color:#5D6864; word-break:break-all">{{ vd.url }}</span>
+                <button onClick="{{ vd.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Remove</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
+const BUCKET = 'event-media';
+
+class Component extends DCLogic {
+  state = {
+    view: 'login',
+    email: '', password: '', authError: '', signingIn: false,
+    events: [], newCouple: '', newDate: '', newVenue: '', newSlug: '', creating: false, createError: '',
+    current: null, media: [], detailsStatus: '', uploadStatus: '', videoUploadStatus: '',
+    editCouple: '', editDate: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
+  };
+
+  componentDidMount() {
+    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    this.sb.auth.getSession().then(({ data }) => {
+      if (data.session) { this.setState({ view: 'dashboard' }); this.loadEvents(); }
+    });
+    this.sb.auth.onAuthStateChange((_e, session) => {
+      if (session && this.state.view === 'login') { this.setState({ view: 'dashboard' }); this.loadEvents(); }
+      if (!session) this.setState({ view: 'login' });
+    });
+  }
+
+  slugify(s) { return (s || '').toLowerCase().trim().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+
+  async doSignIn() {
+    this.setState({ signingIn: true, authError: '' });
+    const { error } = await this.sb.auth.signInWithPassword({ email: this.state.email, password: this.state.password });
+    if (error) this.setState({ signingIn: false, authError: error.message });
+    else this.setState({ signingIn: false });
+  }
+
+  async doSignOut() { await this.sb.auth.signOut(); this.setState({ view: 'login', email: '', password: '' }); }
+
+  async loadEvents() {
+    const { data, error } = await this.sb.from('events').select('*').order('created_at', { ascending: false });
+    if (!error) this.setState({ events: data || [] });
+  }
+
+  async doCreateEvent() {
+    const couple = this.state.newCouple.trim();
+    if (!couple) { this.setState({ createError: 'Couple names are required.' }); return; }
+    const slug = this.slugify(this.state.newSlug || couple);
+    this.setState({ creating: true, createError: '' });
+    const { error } = await this.sb.from('events').insert({
+      couple_names: couple, event_date: this.state.newDate || null, venue: this.state.newVenue || null, slug,
+    });
+    if (error) { this.setState({ creating: false, createError: error.message }); return; }
+    this.setState({ creating: false, newCouple: '', newDate: '', newVenue: '', newSlug: '' });
+    this.loadEvents();
+  }
+
+  async doDeleteEvent(ev) {
+    if (!window.confirm('Delete "' + ev.couple_names + '" and all its media?')) return;
+    await this.sb.from('events').delete().eq('id', ev.id);
+    this.loadEvents();
+  }
+
+  openEvent(ev) {
+    this.setState({
+      view: 'editor', current: ev,
+      editCouple: ev.couple_names, editDate: ev.event_date || '', editVenue: ev.venue || '', editSlug: ev.slug,
+      detailsStatus: '', copyLabel: 'Copy public link',
+    });
+    this.loadMedia(ev.id);
+  }
+
+  backToDashboard() { this.setState({ view: 'dashboard', current: null, media: [] }); this.loadEvents(); }
+
+  async loadMedia(eventId) {
+    const { data, error } = await this.sb.from('media').select('*').eq('event_id', eventId).order('sort_order', { ascending: true });
+    if (!error) this.setState({ media: data || [] });
+  }
+
+  async saveDetails() {
+    const c = this.state.current;
+    const slug = this.slugify(this.state.editSlug || this.state.editCouple);
+    this.setState({ detailsStatus: 'Saving…' });
+    const { error } = await this.sb.from('events').update({
+      couple_names: this.state.editCouple, event_date: this.state.editDate || null,
+      venue: this.state.editVenue || null, slug,
+    }).eq('id', c.id);
+    if (error) { this.setState({ detailsStatus: error.message }); return; }
+    this.setState({ current: { ...c, couple_names: this.state.editCouple, event_date: this.state.editDate, venue: this.state.editVenue, slug }, editSlug: slug, detailsStatus: 'Saved.' });
+    setTimeout(() => this.setState({ detailsStatus: '' }), 2000);
+  }
+
+  async uploadFile(file, prefix) {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+    const { error } = await this.sb.storage.from(BUCKET).upload(path, file, { cacheControl: '3600', upsert: false });
+    if (error) throw error;
+    const { data } = this.sb.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
+  async onCoverFile(file) {
+    if (!file) return;
+    this.setState({ detailsStatus: 'Uploading cover…' });
+    try {
+      const url = await this.uploadFile(file, 'cover');
+      await this.sb.from('events').update({ cover_url: url }).eq('id', this.state.current.id);
+      this.setState({ current: { ...this.state.current, cover_url: url }, detailsStatus: 'Cover updated.' });
+    } catch (e) { this.setState({ detailsStatus: e.message }); }
+    setTimeout(() => this.setState({ detailsStatus: '' }), 2500);
+  }
+
+  async onPhotosFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    let n = 0;
+    for (const file of files) {
+      n++;
+      this.setState({ uploadStatus: 'Uploading photo ' + n + ' of ' + files.length + '…' });
+      try {
+        const url = await this.uploadFile(file, 'photo');
+        await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', url, sort_order: this.state.media.length + n });
+      } catch (e) { this.setState({ uploadStatus: e.message }); }
+    }
+    this.setState({ uploadStatus: 'Done.' });
+    this.loadMedia(this.state.current.id);
+    setTimeout(() => this.setState({ uploadStatus: '' }), 2000);
+  }
+
+  async onVideoFile(file) {
+    if (!file) return;
+    this.setState({ videoUploadStatus: 'Uploading video…' });
+    try {
+      const url = await this.uploadFile(file, 'video');
+      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, sort_order: this.state.media.length + 1 });
+      this.setState({ videoUploadStatus: 'Done.' });
+    } catch (e) { this.setState({ videoUploadStatus: e.message }); }
+    this.loadMedia(this.state.current.id);
+    setTimeout(() => this.setState({ videoUploadStatus: '' }), 2000);
+  }
+
+  async toggleFullBleed(item, val) {
+    await this.sb.from('media').update({ full_bleed: val }).eq('id', item.id);
+    this.loadMedia(this.state.current.id);
+  }
+
+  async moveMedia(item, dir) {
+    const list = this.state.media;
+    const i = list.findIndex(m => m.id === item.id);
+    const j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    const a = list[i], b = list[j];
+    await this.sb.from('media').update({ sort_order: b.sort_order }).eq('id', a.id);
+    await this.sb.from('media').update({ sort_order: a.sort_order }).eq('id', b.id);
+    this.loadMedia(this.state.current.id);
+  }
+
+  async deleteMedia(item) {
+    await this.sb.from('media').delete().eq('id', item.id);
+    this.loadMedia(this.state.current.id);
+  }
+
+  copyLink() {
+    const url = window.location.origin + '/album.html?event=' + this.state.current.slug;
+    navigator.clipboard.writeText(url).then(() => {
+      this.setState({ copyLabel: 'Copied!' });
+      setTimeout(() => this.setState({ copyLabel: 'Copy public link' }), 1800);
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date TBD';
+    const eventsVM = s.events.map(ev => ({
+      ...ev, dateLabel: fmtDate(ev.event_date), noCover: !ev.cover_url,
+      open: () => this.openEvent(ev), remove: () => this.doDeleteEvent(ev),
+      setCoverRef: el => { if (el && ev.cover_url) { el.src = ev.cover_url; el.style.display = 'block'; } },
+    }));
+    const media = s.media;
+    const photosVM = media.filter(m => m.kind === 'photo').map((ph, i, arr) => ({
+      ...ph, isFirst: i === 0, isLast: i === arr.length - 1,
+      toggleFull: () => this.toggleFullBleed(ph, !ph.full_bleed),
+      moveUp: () => this.moveMedia(ph, -1), moveDown: () => this.moveMedia(ph, 1),
+      remove: () => this.deleteMedia(ph),
+      setImgRef: el => { if (el && ph.url) el.src = ph.url; },
+    }));
+    const videosVM = media.filter(m => m.kind === 'video').map(vd => ({
+      ...vd, remove: () => this.deleteMedia(vd),
+      setVideoRef: el => { if (el && vd.url) el.src = vd.url; },
+    }));
+
+    return {
+      isLogin: s.view === 'login', isDashboard: s.view === 'dashboard', isEditor: s.view === 'editor',
+      email: s.email, password: s.password, authError: s.authError, signingIn: s.signingIn,
+      signInLabel: s.signingIn ? 'Signing in…' : 'Sign in',
+      onEmailChange: e => this.setState({ email: e.target.value }),
+      onPasswordChange: e => this.setState({ password: e.target.value }),
+      onPasswordKeyDown: e => { if (e.key === 'Enter') this.doSignIn(); },
+      signIn: () => this.doSignIn(), signOut: () => this.doSignOut(),
+
+      newCouple: s.newCouple, newDate: s.newDate, newVenue: s.newVenue, newSlug: s.newSlug,
+      onNewCoupleChange: e => this.setState({ newCouple: e.target.value }),
+      onNewDateChange: e => this.setState({ newDate: e.target.value }),
+      onNewVenueChange: e => this.setState({ newVenue: e.target.value }),
+      onNewSlugChange: e => this.setState({ newSlug: e.target.value }),
+      createEvent: () => this.doCreateEvent(), creating: s.creating, createError: s.createError,
+      createLabel: s.creating ? 'Creating…' : 'Create event',
+      hasNoEvents: s.events.length === 0, eventsVM,
+
+      backToDashboard: () => this.backToDashboard(),
+      editCouple: s.editCouple, editDate: s.editDate, editVenue: s.editVenue, editSlug: s.editSlug,
+      onEditCoupleChange: e => this.setState({ editCouple: e.target.value }),
+      onEditDateChange: e => this.setState({ editDate: e.target.value }),
+      onEditVenueChange: e => this.setState({ editVenue: e.target.value }),
+      onEditSlugChange: e => this.setState({ editSlug: e.target.value }),
+      saveDetails: () => this.saveDetails(), detailsStatus: s.detailsStatus,
+      copyPublicLink: () => this.copyLink(), copyLabel: s.copyLabel, copiedColor: s.copyLabel === 'Copied!' ? '#10AF8B' : '#7C8985',
+      previewUrl: s.current ? 'album.html?event=' + s.current.slug : '#',
+
+      setCoverInputRef: el => { this.coverInputEl = el; },
+      triggerCoverPicker: () => this.coverInputEl && this.coverInputEl.click(),
+      onCoverFileChange: e => this.onCoverFile(e.target.files[0]),
+
+      setPhotosInputRef: el => { this.photosInputEl = el; },
+      triggerPhotosPicker: () => this.photosInputEl && this.photosInputEl.click(),
+      onPhotosFileChange: e => this.onPhotosFiles(e.target.files),
+      uploadStatus: s.uploadStatus, photoCount: photosVM.length, photosVM,
+
+      setVideoInputRef: el => { this.videoInputEl = el; },
+      triggerVideoPicker: () => this.videoInputEl && this.videoInputEl.click(),
+      onVideoFileChange: e => this.onVideoFile(e.target.files[0]),
+      videoUploadStatus: s.videoUploadStatus, videoCount: videosVM.length, videosVM,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

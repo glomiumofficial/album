@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ pageTitle }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root { --green:#10AF8B; --green-deep:#0A6E58; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#FFFFFF; color:#16231F; font-family:'Jost',Helvetica,sans-serif; overflow-x:hidden; }
+  a { color:var(--green); text-decoration:none; }
+  ::selection { background:var(--green); color:#fff; }
+</style>
+</helmet>
+
+<div style="position:relative; width:100%; background:#FFFFFF">
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh; display:grid; place-items:center">
+      <span style="font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Loading album…</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <span style="font-size:20px; font-weight:300; color:var(--green)">Album not found</span>
+        <span style="font-size:14px; color:#7C8985">Check the link and try again.</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasEvent }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; padding:16px clamp(18px,4vw,40px); opacity:0; pointer-events:none; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); border-bottom:1px solid rgba(16,175,139,.14); transition:opacity .3s">
+        <span style="font-size:13px; font-weight:400; color:#16231F">{{ event.couple_names }}</span>
+        <button onClick="{{ share }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ shareLabel }}</button>
+      </div>
+
+      <div style="position:relative; height:100vh; height:100svh; overflow:hidden; background:#111">
+<img ref="{{ setCoverRef }}" alt="{{ event.couple_names }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none">
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.32) 0%, rgba(0,0,0,.05) 30%, rgba(0,0,0,.05) 60%, rgba(0,0,0,.5) 100%)"></div>
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:0 24px">
+          <span style="font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#EAF5F1">Wedding Album</span>
+          <h1 style="margin:0; font-size:clamp(30px,7vw,64px); font-weight:200; letter-spacing:.01em; color:#FFFFFF; text-wrap:balance">{{ event.couple_names }}</h1>
+          <span style="font-size:clamp(13px,1.6vw,16px); letter-spacing:.08em; color:#DDEDE7">{{ dateLabel }}</span>
+          <sc-if value="{{ event.venue }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:13px; letter-spacing:.06em; color:#C7DED6">{{ event.venue }}</span>
+          </sc-if>
+        </div>
+        <div style="position:absolute; left:50%; bottom:28px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px">
+          <span style="font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:#EAF5F1">Scroll</span>
+          <div style="width:1px; height:30px; background:linear-gradient(180deg,#EAF5F1,transparent)"></div>
+        </div>
+      </div>
+
+      <div style="padding:clamp(48px,8vh,96px) clamp(20px,6vw,64px); display:flex; flex-direction:column; gap:clamp(48px,7vh,90px); max-width:1400px; margin:0 auto">
+        <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="3">
+          <sc-if value="{{ block.isGrid }}" hint-placeholder-val="{{ false }}">
+            <div style="columns:{{ block.cols }} 320px; column-gap:16px">
+              <sc-for list="{{ block.items }}" as="ph" hint-placeholder-count="6">
+<a ref="{{ ph.setLinkRef }}" download="" target="_blank" style="display:block; margin-bottom:16px; break-inside:avoid; border-radius:2px; overflow:hidden">
+                  <img ref="{{ ph.setImgRef }}" alt="" loading="lazy" style="width:100%; display:block">
+                </a>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ block.isFull }}" hint-placeholder-val="{{ false }}">
+<a ref="{{ block.setLinkRef }}" download="" target="_blank" style="display:block; width:100%; margin:0 calc(-1 * clamp(20px,6vw,64px)); width:calc(100% + 2 * clamp(20px,6vw,64px))">
+              <img ref="{{ block.setImgRef }}" alt="" loading="lazy" style="width:100%; max-height:92vh; object-fit:cover; display:block">
+            </a>
+          </sc-if>
+          <sc-if value="{{ block.isVideo }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; justify-content:center">
+              <video ref="{{ block.setVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="width:100%; max-width:920px; border-radius:2px; background:#000"></video>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+
+      <footer style="display:flex; flex-direction:column; align-items:center; gap:18px; padding:60px 24px 70px; border-top:1px solid rgba(16,175,139,.16)">
+        <span style="font-size:13px; letter-spacing:.1em; color:var(--green-deep)">{{ event.couple_names }} · {{ dateLabel }}</span>
+        <button onClick="{{ share }}" style="padding:12px 26px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ shareLabel }}</button>
+        <span style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#9AA6A2">creative <span style="color:var(--green-deep)">INFINITELY</span> · Glomium</span>
+      </footer>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
+
+class Component extends DCLogic {
+  state = { loading: true, notFound: false, event: null, media: [], shareLabel: 'Share album' };
+
+  componentDidMount() {
+    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    const slug = new URLSearchParams(window.location.search).get('event');
+    if (!slug) { this.setState({ loading: false, notFound: true }); return; }
+    this.load(slug);
+  }
+
+  componentWillUnmount() { window.removeEventListener('scroll', this.onScroll); }
+
+  onScroll = () => {
+    const bar = document.querySelector('[data-el="topbar"]');
+    if (!bar) return;
+    const past = window.scrollY > window.innerHeight * 0.85;
+    bar.style.opacity = past ? '1' : '0';
+    bar.style.pointerEvents = past ? 'auto' : 'none';
+  };
+
+  async load(slug) {
+    const { data: ev, error } = await this.sb.from('events').select('*').eq('slug', slug).maybeSingle();
+    if (error || !ev) { this.setState({ loading: false, notFound: true }); return; }
+    const { data: media } = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
+    this.setState({ loading: false, event: ev, media: media || [] });
+  }
+
+  share() {
+    const url = window.location.href;
+    if (navigator.share) { navigator.share({ title: this.state.event.couple_names, url }).catch(() => {}); return; }
+    navigator.clipboard.writeText(url).then(() => {
+      this.setState({ shareLabel: 'Link copied!' });
+      setTimeout(() => this.setState({ shareLabel: 'Share album' }), 1800);
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+
+    const blocks = [];
+    let run = [];
+    const flush = () => {
+      if (run.length) {
+        const items = run.map(ph => ({ ...ph, setImgRef: el => { if (el && ph.url) el.src = ph.url; }, setLinkRef: el => { if (el && ph.url) el.href = ph.url; } }));
+        blocks.push({ isGrid: true, isFull: false, isVideo: false, items, cols: Math.min(3, Math.max(2, items.length)) });
+        run = [];
+      }
+    };
+    for (const m of s.media) {
+      if (m.kind === 'video') {
+        flush();
+        blocks.push({ isGrid: false, isFull: false, isVideo: true, item: m, setVideoRef: el => { if (el && m.url) el.src = m.url; } });
+      } else if (m.full_bleed) {
+        flush();
+        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, setImgRef: el => { if (el && m.url) el.src = m.url; }, setLinkRef: el => { if (el && m.url) el.href = m.url; } });
+      } else run.push(m);
+    }
+    flush();
+
+    return {
+      loading: s.loading, notFound: s.notFound, hasEvent: !!s.event,
+      pageTitle: s.event ? s.event.couple_names + ' — Wedding Album' : 'Wedding Album',
+      event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
+      blocks, share: () => this.share(), shareLabel: s.shareLabel,
+      setCoverRef: el => { if (el && s.event && s.event.cover_url) { el.src = s.event.cover_url; el.style.display = 'block'; } },
+    };
+  }
+}
+
+</script>
+</body>
+</html>
