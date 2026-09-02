@@ -137,6 +137,7 @@
             <sc-for list="{{ photosVM }}" as="ph" hint-placeholder-count="0">
               <div style="border:1px solid var(--line); border-radius:3px; overflow:hidden; display:flex; flex-direction:column">
 <img ref="{{ ph.setImgRef }}" alt="" style="width:100%; aspect-ratio:1; object-fit:cover; display:block">
+                <div style="padding:8px 10px 0"><input placeholder="Rename photo" value="{{ ph.name }}" onChange="{{ ph.onNameChange }}" onBlur="{{ ph.saveName }}" style="width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-size:11px; outline:none" style-focus="border-color:var(--green)"></div>
                 <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; gap:6px">
                   <label style="display:flex; align-items:center; gap:6px; font-size:10px; letter-spacing:.06em; color:#5D6864; cursor:pointer">
                     <input type="checkbox" checked="{{ ph.full_bleed }}" onChange="{{ ph.toggleFull }}">
@@ -166,7 +167,7 @@
             <sc-for list="{{ videosVM }}" as="vd" hint-placeholder-count="0">
               <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; border:1px solid var(--line); border-radius:3px">
                 <video ref="{{ vd.setVideoRef }}" style="width:120px; height:68px; object-fit:cover; background:#000; border-radius:2px"></video>
-                <span style="flex:1; font-size:12px; color:#5D6864; word-break:break-all">{{ vd.url }}</span>
+                <input placeholder="Rename video" value="{{ vd.name }}" onChange="{{ vd.onNameChange }}" onBlur="{{ vd.saveName }}" style="flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:12px; outline:none" style-focus="border-color:var(--green)">
                 <button onClick="{{ vd.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Remove</button>
               </div>
             </sc-for>
@@ -298,7 +299,7 @@ class Component extends DCLogic {
       this.setState({ uploadStatus: 'Uploading photo ' + n + ' of ' + files.length + '…' });
       try {
         const url = await this.uploadFile(file, 'photo');
-        await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', url, sort_order: this.state.media.length + n });
+        await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', url, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + n });
       } catch (e) { this.setState({ uploadStatus: e.message }); }
     }
     this.setState({ uploadStatus: 'Done.' });
@@ -311,11 +312,19 @@ class Component extends DCLogic {
     this.setState({ videoUploadStatus: 'Uploading video…' });
     try {
       const url = await this.uploadFile(file, 'video');
-      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, sort_order: this.state.media.length + 1 });
+      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + 1 });
       this.setState({ videoUploadStatus: 'Done.' });
     } catch (e) { this.setState({ videoUploadStatus: e.message }); }
     this.loadMedia(this.state.current.id);
     setTimeout(() => this.setState({ videoUploadStatus: '' }), 2000);
+  }
+
+  onNameEdit(item, name) {
+    this.setState({ media: this.state.media.map(m => m.id === item.id ? { ...m, name } : m) });
+  }
+  async saveName(item) {
+    const cur = this.state.media.find(m => m.id === item.id);
+    await this.sb.from('media').update({ name: cur ? cur.name : item.name }).eq('id', item.id);
   }
 
   async toggleFullBleed(item, val) {
@@ -357,14 +366,16 @@ class Component extends DCLogic {
     }));
     const media = s.media;
     const photosVM = media.filter(m => m.kind === 'photo').map((ph, i, arr) => ({
-      ...ph, isFirst: i === 0, isLast: i === arr.length - 1,
+      ...ph, name: ph.name || '', isFirst: i === 0, isLast: i === arr.length - 1,
       toggleFull: () => this.toggleFullBleed(ph, !ph.full_bleed),
       moveUp: () => this.moveMedia(ph, -1), moveDown: () => this.moveMedia(ph, 1),
       remove: () => this.deleteMedia(ph),
+      onNameChange: e => this.onNameEdit(ph, e.target.value), saveName: () => this.saveName(ph),
       setImgRef: el => { if (el && ph.url) el.src = ph.url; },
     }));
     const videosVM = media.filter(m => m.kind === 'video').map(vd => ({
-      ...vd, remove: () => this.deleteMedia(vd),
+      ...vd, name: vd.name || '', remove: () => this.deleteMedia(vd),
+      onNameChange: e => this.onNameEdit(vd, e.target.value), saveName: () => this.saveName(vd),
       setVideoRef: el => { if (el && vd.url) el.src = vd.url; },
     }));
 
@@ -394,7 +405,7 @@ class Component extends DCLogic {
       onEditSlugChange: e => this.setState({ editSlug: e.target.value }),
       saveDetails: () => this.saveDetails(), detailsStatus: s.detailsStatus,
       copyPublicLink: () => this.copyLink(), copyLabel: s.copyLabel, copiedColor: s.copyLabel === 'Copied!' ? '#10AF8B' : '#7C8985',
-      previewUrl: s.current ? 'album.html?event=' + s.current.slug : '#',
+      previewUrl: s.current ? 'Album.dc.html?event=' + s.current.slug : '#', // local preview; hosted build uses album.html
 
       setCoverInputRef: el => { this.coverInputEl = el; },
       triggerCoverPicker: () => this.coverInputEl && this.coverInputEl.click(),

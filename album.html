@@ -68,24 +68,24 @@
         <div style="position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none; display:flex; align-items:center; justify-content:center">
           <span style="font-size:clamp(90px,22vw,340px); font-weight:200; letter-spacing:.02em; color:var(--green); opacity:.1; filter:blur(6px); white-space:nowrap; text-transform:uppercase">INFINITELY</span>
         </div>
-        <div style="position:relative; z-index:1; padding:clamp(48px,8vh,96px) clamp(20px,6vw,64px); display:flex; flex-direction:column; gap:clamp(48px,7vh,90px); max-width:1400px; margin:0 auto">
+        <div style="position:relative; z-index:1; padding:clamp(28px,6vh,64px) 0; display:flex; flex-direction:column; gap:6px; width:100%">
         <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="3">
           <sc-if value="{{ block.isGrid }}" hint-placeholder-val="{{ false }}">
-            <div style="columns:{{ block.cols }} 320px; column-gap:16px">
+            <div style="columns:{{ block.cols }} 300px; column-gap:6px; padding:0 6px">
               <sc-for list="{{ block.items }}" as="ph" hint-placeholder-count="6">
-<a ref="{{ ph.setLinkRef }}" download="" target="_blank" style="display:block; margin-bottom:16px; break-inside:avoid; border-radius:2px; overflow:hidden">
-                  <img ref="{{ ph.setImgRef }}" alt="" loading="lazy" style="width:100%; display:block">
-                </a>
+                <div onClick="{{ ph.openLightbox }}" style="display:block; margin-bottom:6px; break-inside:avoid; border-radius:1px; overflow:hidden; cursor:pointer">
+                  <img ref="{{ ph.setImgRef }}" alt="{{ ph.name }}" loading="lazy" style="width:100%; display:block">
+                </div>
               </sc-for>
             </div>
           </sc-if>
           <sc-if value="{{ block.isFull }}" hint-placeholder-val="{{ false }}">
-<a ref="{{ block.setLinkRef }}" download="" target="_blank" style="display:block; width:100%; margin:0 calc(-1 * clamp(20px,6vw,64px)); width:calc(100% + 2 * clamp(20px,6vw,64px))">
-              <img ref="{{ block.setImgRef }}" alt="" loading="lazy" style="width:100%; max-height:92vh; object-fit:cover; display:block">
-            </a>
+            <div onClick="{{ block.openLightbox }}" style="display:block; width:100%; cursor:pointer">
+              <img ref="{{ block.setImgRef }}" alt="{{ block.name }}" loading="lazy" style="width:100%; max-height:92vh; object-fit:cover; display:block">
+            </div>
           </sc-if>
           <sc-if value="{{ block.isVideo }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; justify-content:center">
+            <div style="display:flex; justify-content:center; padding:0 6px">
               <video ref="{{ block.setVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="width:100%; max-width:920px; border-radius:2px; background:#000"></video>
             </div>
           </sc-if>
@@ -101,6 +101,30 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; z-index:1000; background:rgba(10,14,13,.97); display:flex; flex-direction:column">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:16px clamp(16px,4vw,36px); flex-wrap:wrap; gap:10px">
+        <span style="font-size:13px; color:#EAF5F1; letter-spacing:.04em; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ lightboxName }}</span>
+        <div style="display:flex; gap:10px; align-items:center">
+          <button onClick="{{ toggleSlideshow }}" style="padding:9px 14px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">{{ slideshowLabel }}</button>
+          <button onClick="{{ shareCurrent }}" style="padding:9px 14px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">Share</button>
+          <button onClick="{{ downloadCurrent }}" style="padding:9px 14px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">Download</button>
+          <button onClick="{{ closeLightbox }}" style="padding:9px 12px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:14px; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">✕</button>
+        </div>
+      </div>
+      <div style="flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:0 clamp(8px,3vw,40px) clamp(16px,3vh,40px); min-height:0">
+        <button onClick="{{ prevItem }}" style="position:absolute; left:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); background:transparent; border:none; color:#EAF5F1; font-size:30px; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">‹</button>
+        <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ false }}">
+          <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; border-radius:2px; background:#000"></video>
+        </sc-if>
+        <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ true }}">
+        </sc-if>
+        <img src="{{ lightboxImgSrc }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain; display:{{ lightboxImgDisplay }}">
+        <button onClick="{{ nextItem }}" style="position:absolute; right:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); background:transparent; border:none; color:#EAF5F1; font-size:30px; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">›</button>
+      </div>
+    </div>
+  </sc-if>
+
 </div>
 
 </x-dc>
@@ -109,17 +133,25 @@ const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 
 class Component extends DCLogic {
-  state = { loading: true, notFound: false, event: null, media: [], shareLabel: 'Share album' };
+  state = {
+    loading: true, notFound: false, event: null, media: [], shareLabel: 'Share album',
+    lightboxOpen: false, lightboxIndex: 0, slideshowPlaying: false,
+  };
 
   componentDidMount() {
     this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.addEventListener('scroll', this.onScroll, { passive: true });
+    window.addEventListener('keydown', this.onKeyDown);
     const slug = new URLSearchParams(window.location.search).get('event');
     if (!slug) { this.setState({ loading: false, notFound: true }); return; }
     this.load(slug);
   }
 
-  componentWillUnmount() { window.removeEventListener('scroll', this.onScroll); }
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('keydown', this.onKeyDown);
+    this.stopSlideshow();
+  }
 
   onScroll = () => {
     const bar = document.querySelector('[data-el="topbar"]');
@@ -127,6 +159,13 @@ class Component extends DCLogic {
     const past = window.scrollY > window.innerHeight * 0.85;
     bar.style.opacity = past ? '1' : '0';
     bar.style.pointerEvents = past ? 'auto' : 'none';
+  };
+
+  onKeyDown = (e) => {
+    if (!this.state.lightboxOpen) return;
+    if (e.key === 'Escape') this.closeLightbox();
+    if (e.key === 'ArrowLeft') this.step(-1);
+    if (e.key === 'ArrowRight') this.step(1);
   };
 
   async load(slug) {
@@ -145,29 +184,78 @@ class Component extends DCLogic {
     });
   }
 
+  openLightbox(idx) { this.setState({ lightboxOpen: true, lightboxIndex: idx }); }
+  closeLightbox() { this.stopSlideshow(); this.setState({ lightboxOpen: false }); }
+
+  step(dir) {
+    const n = this.state.media.length;
+    if (!n) return;
+    this.setState({ lightboxIndex: (this.state.lightboxIndex + dir + n) % n });
+  }
+
+  toggleSlideshow() {
+    if (this.state.slideshowPlaying) { this.stopSlideshow(); return; }
+    this.setState({ slideshowPlaying: true });
+    this.slideTimer = setInterval(() => this.step(1), 3000);
+  }
+  stopSlideshow() {
+    if (this.slideTimer) { clearInterval(this.slideTimer); this.slideTimer = null; }
+    if (this.state.slideshowPlaying) this.setState({ slideshowPlaying: false });
+  }
+
+  async downloadCurrent() {
+    const item = this.state.media[this.state.lightboxIndex];
+    if (!item) return;
+    const name = item.name || item.url.split('/').pop().split('?')[0];
+    try {
+      const res = await fetch(item.url);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } catch (e) { window.open(item.url, '_blank'); }
+  }
+
+  shareCurrent() {
+    const item = this.state.media[this.state.lightboxIndex];
+    if (!item) return;
+    if (navigator.share) { navigator.share({ title: item.name || this.state.event.couple_names, url: item.url }).catch(() => {}); return; }
+    navigator.clipboard.writeText(item.url);
+  }
+
   renderVals() {
     const s = this.state;
     const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
 
+    const indexed = s.media.map((m, i) => ({ ...m, idx: i }));
     const blocks = [];
     let run = [];
     const flush = () => {
       if (run.length) {
-        const items = run.map(ph => ({ ...ph, setImgRef: el => { if (el && ph.url) el.src = ph.url; }, setLinkRef: el => { if (el && ph.url) el.href = ph.url; } }));
-        blocks.push({ isGrid: true, isFull: false, isVideo: false, items, cols: Math.min(3, Math.max(2, items.length)) });
+        const items = run.map(ph => ({
+          ...ph,
+          setImgRef: el => { if (el && ph.url) el.src = ph.url; },
+          openLightbox: () => this.openLightbox(ph.idx),
+        }));
+        blocks.push({ isGrid: true, isFull: false, isVideo: false, items, cols: Math.min(4, Math.max(2, items.length)) });
         run = [];
       }
     };
-    for (const m of s.media) {
+    for (const m of indexed) {
       if (m.kind === 'video') {
         flush();
         blocks.push({ isGrid: false, isFull: false, isVideo: true, item: m, setVideoRef: el => { if (el && m.url) el.src = m.url; } });
       } else if (m.full_bleed) {
         flush();
-        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, setImgRef: el => { if (el && m.url) el.src = m.url; }, setLinkRef: el => { if (el && m.url) el.href = m.url; } });
+        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, name: m.name || '', setImgRef: el => { if (el && m.url) el.src = m.url; }, openLightbox: () => this.openLightbox(m.idx) });
       } else run.push(m);
     }
     flush();
+
+    const current = s.media[s.lightboxIndex] || null;
+    const isVideoItem = !!(current && current.kind === 'video');
 
     return {
       loading: s.loading, notFound: s.notFound, hasEvent: !!s.event,
@@ -175,6 +263,19 @@ class Component extends DCLogic {
       event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
       blocks, share: () => this.share(), shareLabel: s.shareLabel,
       setCoverRef: el => { if (el && s.event && s.event.cover_url) { el.src = s.event.cover_url; el.style.display = 'block'; } },
+
+      lightboxOpen: s.lightboxOpen,
+      lightboxName: current ? (current.name || '') : '',
+      isVideoItem,
+      lightboxImgSrc: current && !isVideoItem ? current.url : '',
+      lightboxImgDisplay: current && !isVideoItem ? 'block' : 'none',
+      setLightboxVideoRef: el => { if (el && current && current.url) el.src = current.url; },
+      prevItem: () => this.step(-1), nextItem: () => this.step(1),
+      closeLightbox: () => this.closeLightbox(),
+      toggleSlideshow: () => this.toggleSlideshow(),
+      slideshowLabel: s.slideshowPlaying ? 'Pause' : 'Slideshow',
+      downloadCurrent: () => this.downloadCurrent(),
+      shareCurrent: () => this.shareCurrent(),
     };
   }
 }
