@@ -44,7 +44,7 @@
     <div>
       <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; padding:16px clamp(18px,4vw,40px); opacity:0; pointer-events:none; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); border-bottom:1px solid rgba(16,175,139,.14); transition:opacity .3s">
         <span style="font-size:13px; font-weight:400; color:#16231F">{{ event.couple_names }}</span>
-        <button onClick="{{ share }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ shareLabel }}</button>
+        <button onClick="{{ share }}" style="padding:9px 16px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">{{ shareLabel }}</button>
       </div>
 
       <div style="position:relative; height:100vh; height:100svh; overflow:hidden; background:#111">
@@ -64,7 +64,11 @@
         </div>
       </div>
 
-      <div style="padding:clamp(48px,8vh,96px) clamp(20px,6vw,64px); display:flex; flex-direction:column; gap:clamp(48px,7vh,90px); max-width:1400px; margin:0 auto">
+      <div style="position:relative">
+        <div style="position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none; display:flex; align-items:center; justify-content:center">
+          <span style="font-size:clamp(90px,22vw,340px); font-weight:200; letter-spacing:.02em; color:var(--green); opacity:.1; filter:blur(6px); white-space:nowrap; text-transform:uppercase">INFINITELY</span>
+        </div>
+        <div style="position:relative; z-index:1; padding:clamp(48px,8vh,96px) clamp(20px,6vw,64px); display:flex; flex-direction:column; gap:clamp(48px,7vh,90px); max-width:1400px; margin:0 auto">
         <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="3">
           <sc-if value="{{ block.isGrid }}" hint-placeholder-val="{{ false }}">
             <div style="columns:{{ block.cols }} 320px; column-gap:16px">
@@ -86,12 +90,13 @@
             </div>
           </sc-if>
         </sc-for>
+        </div>
       </div>
 
       <footer style="display:flex; flex-direction:column; align-items:center; gap:18px; padding:60px 24px 70px; border-top:1px solid rgba(16,175,139,.16)">
         <span style="font-size:13px; letter-spacing:.1em; color:var(--green-deep)">{{ event.couple_names }} · {{ dateLabel }}</span>
-        <button onClick="{{ share }}" style="padding:12px 26px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ shareLabel }}</button>
-        <span style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#9AA6A2">creative <span style="color:var(--green-deep)">INFINITELY</span> · Glomium</span>
+        <button onClick="{{ share }}" style="padding:12px 26px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">{{ shareLabel }}</button>
+        <span style="font-size:10px; letter-spacing:.2em; color:#9AA6A2"><span style="text-transform:lowercase">creative</span> <span style="color:var(--green-deep); text-transform:uppercase">INFINITELY</span></span>
       </footer>
     </div>
   </sc-if>
