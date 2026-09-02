@@ -405,7 +405,7 @@ class Component extends DCLogic {
       onEditSlugChange: e => this.setState({ editSlug: e.target.value }),
       saveDetails: () => this.saveDetails(), detailsStatus: s.detailsStatus,
       copyPublicLink: () => this.copyLink(), copyLabel: s.copyLabel, copiedColor: s.copyLabel === 'Copied!' ? '#10AF8B' : '#7C8985',
-      previewUrl: s.current ? 'Album.dc.html?event=' + s.current.slug : '#', // local preview; hosted build uses album.html
+      previewUrl: s.current ? 'album.html?event=' + s.current.slug : '#',
 
       setCoverInputRef: el => { this.coverInputEl = el; },
       triggerCoverPicker: () => this.coverInputEl && this.coverInputEl.click(),
