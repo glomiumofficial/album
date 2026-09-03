@@ -140,12 +140,19 @@ class Component extends DCLogic {
   state = {
     loading: true, notFound: false, event: null, media: [], shareLabel: 'Share album',
     lightboxOpen: false, lightboxIndex: 0, slideshowPlaying: false,
+    isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
+  };
+
+  onResize = () => {
+    const m = window.innerWidth < 768;
+    if (m !== this.state.isMobile) this.setState({ isMobile: m });
   };
 
   componentDidMount() {
     this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
+    window.addEventListener('resize', this.onResize);
     const slug = new URLSearchParams(window.location.search).get('event');
     document.title = 'creative INFINITELY';
     if (!slug) { this.setState({ loading: false, notFound: true }); return; }
@@ -155,6 +162,7 @@ class Component extends DCLogic {
   componentWillUnmount() {
     window.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('keydown', this.onKeyDown);
+    window.removeEventListener('resize', this.onResize);
     this.stopSlideshow();
   }
 
@@ -248,7 +256,7 @@ class Component extends DCLogic {
           setImgRef: el => { if (el && ph.url) el.src = ph.url; },
           openLightbox: () => this.openLightbox(ph.idx),
         }));
-        const numCols = Math.min(4, Math.max(1, Math.min(items.length, Math.max(2, items.length))));
+        const numCols = Math.min(this.state.isMobile ? 3 : 4, Math.max(2, items.length));
         const cols = Array.from({ length: Math.min(numCols, items.length) || 1 }, () => []);
         items.forEach((it, i) => cols[i % cols.length].push(it));
         blocks.push({ isGrid: true, isFull: false, isVideo: false, columns: cols.map(colItems => ({ items: colItems })) });
