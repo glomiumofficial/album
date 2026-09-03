@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root { --green:#10AF8B; --green-deep:#0A6E58; --line:rgba(16,175,139,.18); }
   * { box-sizing:border-box; }
@@ -124,6 +125,26 @@
           </div>
         </div>
 
+        <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Client &amp; billing (KYC)</span>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
+            <input placeholder="Client full name" value="{{ editClientName }}" onChange="{{ onEditClientNameChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            <input placeholder="Phone number" value="{{ editClientPhone }}" onChange="{{ onEditClientPhoneChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            <input type="email" placeholder="Client email" value="{{ editClientEmail }}" onChange="{{ onEditClientEmailChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            <input placeholder="PAN number" value="{{ editClientPan }}" onChange="{{ onEditClientPanChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; text-transform:uppercase">
+          </div>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+            <button onClick="{{ saveClientDetails }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save client details</button>
+            <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:6px; border-top:1px solid var(--line)">
+            <button onClick="{{ sendPreviewEmail }}" disabled="{{ noClientEmail }}" style="padding:11px 20px; background:none; border:1px solid var(--green); border-radius:2px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Email preview link</button>
+            <button onClick="{{ sendInvoiceEmail }}" disabled="{{ noClientEmail }}" style="padding:11px 20px; background:none; border:1px solid var(--green); border-radius:2px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Email invoice</button>
+          </div>
+          <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#9AA6A2">Add and save a client email to enable these.</span></sc-if>
+          <span style="font-size:11px; color:#9AA6A2">Sends automatically from official@glomium.in — no mail app needed.</span>
+        </div>
+
         <div style="display:flex; flex-direction:column; gap:16px">
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px">
             <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Photos ({{ photoCount }})</span>
@@ -133,19 +154,23 @@
             </div>
           </div>
           <sc-if value="{{ uploadStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ uploadStatus }}</span></sc-if>
+          <span style="font-size:11px; color:#9AA6A2">Drag a photo to reorder, or type a position number.</span>
           <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px">
             <sc-for list="{{ photosVM }}" as="ph" hint-placeholder-count="0">
-              <div style="border:1px solid var(--line); border-radius:3px; overflow:hidden; display:flex; flex-direction:column">
+              <div draggable="{{ true }}" onDragStart="{{ ph.onDragStart }}" onDragOver="{{ ph.onDragOver }}" onDrop="{{ ph.onDrop }}" onDragEnd="{{ ph.onDragEnd }}" style="border:1px solid var(--line); border-radius:3px; overflow:hidden; display:flex; flex-direction:column; cursor:grab">
+                <div style="position:relative">
 <img ref="{{ ph.setImgRef }}" alt="" style="width:100%; aspect-ratio:1; object-fit:cover; display:block">
+                  <span style="position:absolute; top:6px; left:6px; background:rgba(0,0,0,.55); color:#fff; font-size:10px; padding:3px 7px; border-radius:2px; letter-spacing:.04em; pointer-events:none">⠿ drag</span>
+                </div>
                 <div style="padding:8px 10px 0"><input placeholder="Rename photo" value="{{ ph.name }}" onChange="{{ ph.onNameChange }}" onBlur="{{ ph.saveName }}" style="width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-size:11px; outline:none" style-focus="border-color:var(--green)"></div>
                 <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; gap:6px">
                   <label style="display:flex; align-items:center; gap:6px; font-size:10px; letter-spacing:.06em; color:#5D6864; cursor:pointer">
                     <input type="checkbox" checked="{{ ph.full_bleed }}" onChange="{{ ph.toggleFull }}">
                     Full-bleed
                   </label>
-                  <div style="display:flex; gap:4px">
-                    <button onClick="{{ ph.moveUp }}" disabled="{{ ph.isFirst }}" style="padding:4px 7px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; cursor:pointer">↑</button>
-                    <button onClick="{{ ph.moveDown }}" disabled="{{ ph.isLast }}" style="padding:4px 7px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; cursor:pointer">↓</button>
+                  <div style="display:flex; gap:6px; align-items:center">
+                    <span style="font-size:10px; color:#9AA6A2">#</span>
+                    <input type="number" min="1" value="{{ ph.posInputValue }}" onChange="{{ ph.onPosChange }}" onBlur="{{ ph.commitPos }}" onKeyDown="{{ ph.onPosKeyDown }}" style="width:40px; padding:4px 6px; border:1px solid var(--line); border-radius:2px; font-size:11px; text-align:center; outline:none">
                     <button onClick="{{ ph.remove }}" style="padding:4px 7px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
                   </div>
                 </div>
@@ -185,6 +210,9 @@
 const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 const BUCKET = 'event-media';
+const EMAILJS_SERVICE_ID = 'service_j9mkj45';
+const EMAILJS_TEMPLATE_ID = 'template_9xph63f';
+const EMAILJS_PUBLIC_KEY = 'rRmmmx6iCKnvLcEuR';
 
 class Component extends DCLogic {
   state = {
@@ -193,6 +221,8 @@ class Component extends DCLogic {
     events: [], newCouple: '', newDate: '', newVenue: '', newSlug: '', creating: false, createError: '',
     current: null, media: [], detailsStatus: '', uploadStatus: '', videoUploadStatus: '',
     editCouple: '', editDate: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
+    editClientName: '', editClientPhone: '', editClientEmail: '', editClientPan: '', clientStatus: '',
+    posEdits: {},
   };
 
   componentDidMount() {
@@ -245,7 +275,8 @@ class Component extends DCLogic {
     this.setState({
       view: 'editor', current: ev,
       editCouple: ev.couple_names, editDate: ev.event_date || '', editVenue: ev.venue || '', editSlug: ev.slug,
-      detailsStatus: '', copyLabel: 'Copy public link',
+      editClientName: ev.client_name || '', editClientPhone: ev.client_phone || '', editClientEmail: ev.client_email || '', editClientPan: ev.client_pan || '',
+      detailsStatus: '', clientStatus: '', copyLabel: 'Copy public link',
     });
     this.loadMedia(ev.id);
   }
@@ -268,6 +299,52 @@ class Component extends DCLogic {
     if (error) { this.setState({ detailsStatus: error.message }); return; }
     this.setState({ current: { ...c, couple_names: this.state.editCouple, event_date: this.state.editDate, venue: this.state.editVenue, slug }, editSlug: slug, detailsStatus: 'Saved.' });
     setTimeout(() => this.setState({ detailsStatus: '' }), 2000);
+  }
+
+  async saveClientDetails() {
+    const c = this.state.current;
+    this.setState({ clientStatus: 'Saving…' });
+    const { error } = await this.sb.from('events').update({
+      client_name: this.state.editClientName || null, client_phone: this.state.editClientPhone || null,
+      client_email: this.state.editClientEmail || null, client_pan: this.state.editClientPan || null,
+    }).eq('id', c.id);
+    if (error) { this.setState({ clientStatus: error.message }); return; }
+    this.setState({
+      current: { ...c, client_name: this.state.editClientName, client_phone: this.state.editClientPhone, client_email: this.state.editClientEmail, client_pan: this.state.editClientPan },
+      clientStatus: 'Saved.',
+    });
+    setTimeout(() => this.setState({ clientStatus: '' }), 2000);
+  }
+
+  async sendEmail(params) {
+    await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params, { publicKey: EMAILJS_PUBLIC_KEY });
+  }
+
+  async sendPreviewEmail() {
+    const s = this.state;
+    const url = window.location.origin + '/album.html?event=' + s.current.slug;
+    const name = s.editClientName || 'there';
+    const subject = 'Your preview is ready — ' + s.editCouple;
+    const message = 'Hello ' + name + ', Dear customer, please find your album link below. Thank you, Regards Team Glomium.';
+    this.setState({ clientStatus: 'Sending…' });
+    try {
+      await this.sendEmail({ to_email: s.editClientEmail, to_name: name, subject, message, album_link: url });
+      this.setState({ clientStatus: 'Preview link sent.' });
+    } catch (e) { this.setState({ clientStatus: 'Failed: ' + (e.text || e.message || 'error') }); }
+    setTimeout(() => this.setState({ clientStatus: '' }), 3000);
+  }
+
+  async sendInvoiceEmail() {
+    const s = this.state;
+    const name = s.editClientName || 'there';
+    const subject = 'Invoice — ' + s.editCouple;
+    const message = 'Hello ' + name + ', Dear customer, please find your invoice for ' + s.editCouple + '. Thank you, Regards Team Glomium.';
+    this.setState({ clientStatus: 'Sending…' });
+    try {
+      await this.sendEmail({ to_email: s.editClientEmail, to_name: name, subject, message, album_link: '' });
+      this.setState({ clientStatus: 'Invoice email sent.' });
+    } catch (e) { this.setState({ clientStatus: 'Failed: ' + (e.text || e.message || 'error') }); }
+    setTimeout(() => this.setState({ clientStatus: '' }), 3000);
   }
 
   async uploadFile(file, prefix) {
@@ -343,6 +420,53 @@ class Component extends DCLogic {
     this.loadMedia(this.state.current.id);
   }
 
+  async persistOrder(arr) {
+    const updated = arr.map((m, i) => ({ ...m, sort_order: i }));
+    this.setState({ media: updated });
+    await Promise.all(updated.map(m => this.sb.from('media').update({ sort_order: m.sort_order }).eq('id', m.id)));
+  }
+
+  reorderPhotos(fromId, toId) {
+    if (fromId === toId) return;
+    const arr = [...this.state.media];
+    const photoIdxs = [];
+    arr.forEach((m, i) => { if (m.kind === 'photo') photoIdxs.push(i); });
+    const photos = photoIdxs.map(i => arr[i]);
+    const fromPos = photos.findIndex(p => p.id === fromId);
+    const toPos = photos.findIndex(p => p.id === toId);
+    if (fromPos === -1 || toPos === -1) return;
+    const [moved] = photos.splice(fromPos, 1);
+    photos.splice(toPos, 0, moved);
+    photoIdxs.forEach((idx, k) => { arr[idx] = photos[k]; });
+    this.persistOrder(arr);
+  }
+
+  movePhotoToPosition(id, targetPos) {
+    const arr = [...this.state.media];
+    const photoIdxs = [];
+    arr.forEach((m, i) => { if (m.kind === 'photo') photoIdxs.push(i); });
+    const photos = photoIdxs.map(i => arr[i]);
+    const fromPos = photos.findIndex(p => p.id === id);
+    if (fromPos === -1) return;
+    const clamped = Math.max(0, Math.min(photos.length - 1, targetPos));
+    const [moved] = photos.splice(fromPos, 1);
+    photos.splice(clamped, 0, moved);
+    photoIdxs.forEach((idx, k) => { arr[idx] = photos[k]; });
+    this.persistOrder(arr);
+  }
+
+  onPosInputChange(item, val) { this.setState({ posEdits: { ...this.state.posEdits, [item.id]: val } }); }
+
+  commitPos(item) {
+    const raw = this.state.posEdits[item.id];
+    const clean = { ...this.state.posEdits }; delete clean[item.id];
+    this.setState({ posEdits: clean });
+    if (raw === undefined) return;
+    const n = parseInt(raw, 10);
+    if (!n || isNaN(n)) return;
+    this.movePhotoToPosition(item.id, n - 1);
+  }
+
   async deleteMedia(item) {
     await this.sb.from('media').delete().eq('id', item.id);
     this.loadMedia(this.state.current.id);
@@ -366,12 +490,19 @@ class Component extends DCLogic {
     }));
     const media = s.media;
     const photosVM = media.filter(m => m.kind === 'photo').map((ph, i, arr) => ({
-      ...ph, name: ph.name || '', isFirst: i === 0, isLast: i === arr.length - 1,
+      ...ph, name: ph.name || '',
+      posInputValue: s.posEdits[ph.id] !== undefined ? s.posEdits[ph.id] : String(i + 1),
       toggleFull: () => this.toggleFullBleed(ph, !ph.full_bleed),
-      moveUp: () => this.moveMedia(ph, -1), moveDown: () => this.moveMedia(ph, 1),
       remove: () => this.deleteMedia(ph),
       onNameChange: e => this.onNameEdit(ph, e.target.value), saveName: () => this.saveName(ph),
       setImgRef: el => { if (el && ph.url) el.src = ph.url; },
+      onDragStart: () => { this.dragPhotoId = ph.id; },
+      onDragOver: e => e.preventDefault(),
+      onDrop: () => { if (this.dragPhotoId) { this.reorderPhotos(this.dragPhotoId, ph.id); this.dragPhotoId = null; } },
+      onDragEnd: () => { this.dragPhotoId = null; },
+      onPosChange: e => this.onPosInputChange(ph, e.target.value),
+      commitPos: () => this.commitPos(ph),
+      onPosKeyDown: e => { if (e.key === 'Enter') e.target.blur(); },
     }));
     const videosVM = media.filter(m => m.kind === 'video').map(vd => ({
       ...vd, name: vd.name || '', remove: () => this.deleteMedia(vd),
@@ -404,6 +535,15 @@ class Component extends DCLogic {
       onEditVenueChange: e => this.setState({ editVenue: e.target.value }),
       onEditSlugChange: e => this.setState({ editSlug: e.target.value }),
       saveDetails: () => this.saveDetails(), detailsStatus: s.detailsStatus,
+
+      editClientName: s.editClientName, editClientPhone: s.editClientPhone, editClientEmail: s.editClientEmail, editClientPan: s.editClientPan,
+      onEditClientNameChange: e => this.setState({ editClientName: e.target.value }),
+      onEditClientPhoneChange: e => this.setState({ editClientPhone: e.target.value }),
+      onEditClientEmailChange: e => this.setState({ editClientEmail: e.target.value }),
+      onEditClientPanChange: e => this.setState({ editClientPan: e.target.value.toUpperCase() }),
+      saveClientDetails: () => this.saveClientDetails(), clientStatus: s.clientStatus,
+      noClientEmail: !s.editClientEmail,
+      sendPreviewEmail: () => this.sendPreviewEmail(), sendInvoiceEmail: () => this.sendInvoiceEmail(),
       copyPublicLink: () => this.copyLink(), copyLabel: s.copyLabel, copiedColor: s.copyLabel === 'Copied!' ? '#10AF8B' : '#7C8985',
       previewUrl: s.current ? 'album.html?event=' + s.current.slug : '#',
 

@@ -51,7 +51,7 @@
 <img ref="{{ setCoverRef }}" alt="{{ event.couple_names }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none">
         <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.32) 0%, rgba(0,0,0,.05) 30%, rgba(0,0,0,.05) 60%, rgba(0,0,0,.5) 100%)"></div>
         <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:0 24px">
-          <span style="font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#EAF5F1">Wedding Album</span>
+          <span style="font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#EAF5F1">Infinitely</span>
           <h1 style="margin:0; font-size:clamp(30px,7vw,64px); font-weight:200; letter-spacing:.01em; color:#FFFFFF; text-wrap:balance">{{ event.couple_names }}</h1>
           <span style="font-size:clamp(13px,1.6vw,16px); letter-spacing:.08em; color:#DDEDE7">{{ dateLabel }}</span>
           <sc-if value="{{ event.venue }}" hint-placeholder-val="{{ false }}">
@@ -71,10 +71,14 @@
         <div style="position:relative; z-index:1; padding:clamp(28px,6vh,64px) 0; display:flex; flex-direction:column; gap:6px; width:100%">
         <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="3">
           <sc-if value="{{ block.isGrid }}" hint-placeholder-val="{{ false }}">
-            <div style="columns:{{ block.cols }} 150px; column-gap:6px; padding:0 6px">
-              <sc-for list="{{ block.items }}" as="ph" hint-placeholder-count="6">
-                <div onClick="{{ ph.openLightbox }}" style="display:block; margin-bottom:6px; break-inside:avoid; border-radius:1px; overflow:hidden; cursor:pointer">
-                  <img ref="{{ ph.setImgRef }}" alt="{{ ph.name }}" loading="lazy" style="width:100%; display:block">
+            <div style="display:flex; gap:6px; padding:0 6px; align-items:flex-start">
+              <sc-for list="{{ block.columns }}" as="col" hint-placeholder-count="3">
+                <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px">
+                  <sc-for list="{{ col.items }}" as="ph" hint-placeholder-count="2">
+                    <div onClick="{{ ph.openLightbox }}" style="display:block; border-radius:1px; overflow:hidden; cursor:pointer">
+                      <img ref="{{ ph.setImgRef }}" alt="{{ ph.name }}" loading="lazy" style="width:100%; display:block">
+                    </div>
+                  </sc-for>
                 </div>
               </sc-for>
             </div>
@@ -116,8 +120,6 @@
         <button onClick="{{ prevItem }}" style="position:absolute; left:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); background:transparent; border:none; color:#EAF5F1; font-size:30px; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">‹</button>
         <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ false }}">
           <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; border-radius:2px; background:#000"></video>
-        </sc-if>
-        <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ true }}">
         </sc-if>
         <sc-if value="{{ hasImgSrc }}" hint-placeholder-val="{{ false }}">
           <img src="{{ lightboxImgSrc }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain">
@@ -171,10 +173,13 @@ class Component extends DCLogic {
   };
 
   async load(slug) {
-    const { data: ev, error } = await this.sb.from('events').select('*').eq('slug', slug).maybeSingle();
-    if (error || !ev) { this.setState({ loading: false, notFound: true }); return; }
-    const { data: media } = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
-    this.setState({ loading: false, event: ev, media: media || [] });
+    try {
+      const { data: ev, error } = await this.sb.from('events').select('*').eq('slug', slug).maybeSingle();
+      if (error || !ev) { this.setState({ loading: false, notFound: true }); return; }
+      const { data: media, error: mErr } = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
+      if (mErr) { this.setState({ loading: false, notFound: true }); return; }
+      this.setState({ loading: false, event: ev, media: (media || []).filter(m => m.url) });
+    } catch (e) { this.setState({ loading: false, notFound: true }); }
   }
 
   share() {
@@ -229,7 +234,7 @@ class Component extends DCLogic {
 
   renderVals() {
     const s = this.state;
-    const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+    const fmtDate = d => { if (!d) return ''; const t = new Date(d + 'T00:00:00'); return isNaN(t.getTime()) ? '' : t.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
 
     const indexed = s.media.map((m, i) => ({ ...m, idx: i }));
     const blocks = [];
@@ -241,7 +246,10 @@ class Component extends DCLogic {
           setImgRef: el => { if (el && ph.url) el.src = ph.url; },
           openLightbox: () => this.openLightbox(ph.idx),
         }));
-        blocks.push({ isGrid: true, isFull: false, isVideo: false, items, cols: Math.min(4, Math.max(2, items.length)) });
+        const numCols = Math.min(4, Math.max(1, Math.min(items.length, Math.max(2, items.length))));
+        const cols = Array.from({ length: Math.min(numCols, items.length) || 1 }, () => []);
+        items.forEach((it, i) => cols[i % cols.length].push(it));
+        blocks.push({ isGrid: true, isFull: false, isVideo: false, columns: cols.map(colItems => ({ items: colItems })) });
         run = [];
       }
     };
@@ -261,7 +269,7 @@ class Component extends DCLogic {
 
     return {
       loading: s.loading, notFound: s.notFound, hasEvent: !!s.event,
-      pageTitle: s.event ? s.event.couple_names + ' — Wedding Album' : 'Wedding Album',
+      pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
       event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
       blocks, share: () => this.share(), shareLabel: s.shareLabel,
       setCoverRef: el => { if (el && s.event && s.event.cover_url) { el.src = s.event.cover_url; el.style.display = 'block'; } },
