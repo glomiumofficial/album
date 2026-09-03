@@ -147,6 +147,7 @@ class Component extends DCLogic {
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
     const slug = new URLSearchParams(window.location.search).get('event');
+    document.title = 'creative INFINITELY';
     if (!slug) { this.setState({ loading: false, notFound: true }); return; }
     this.load(slug);
   }
@@ -178,6 +179,7 @@ class Component extends DCLogic {
       if (error || !ev) { this.setState({ loading: false, notFound: true }); return; }
       const { data: media, error: mErr } = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
       if (mErr) { this.setState({ loading: false, notFound: true }); return; }
+      document.title = 'creative INFINITELY — ' + ev.couple_names;
       this.setState({ loading: false, event: ev, media: (media || []).filter(m => m.url) });
     } catch (e) { this.setState({ loading: false, notFound: true }); }
   }
