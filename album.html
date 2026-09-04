@@ -88,12 +88,21 @@
               <img ref="{{ block.setImgRef }}" alt="{{ block.name }}" loading="lazy" style="width:100%; max-height:92vh; object-fit:cover; display:block">
             </div>
           </sc-if>
-          <sc-if value="{{ block.isVideo }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; justify-content:center; padding:0 6px">
-              <video ref="{{ block.setVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="width:100%; max-width:920px; border-radius:2px; background:#000"></video>
-            </div>
-          </sc-if>
         </sc-for>
+
+        <sc-if value="{{ hasVideos }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:clamp(38px,7vh,72px); padding:clamp(56px,10vh,110px) 6px clamp(20px,4vh,40px)">
+            <div style="width:clamp(140px,26vw,260px); height:1px; background:linear-gradient(90deg, rgba(16,175,139,0) 0%, var(--green) 50%, rgba(16,175,139,0) 100%)"></div>
+            <sc-for list="{{ videos }}" as="vd" hint-placeholder-count="1">
+              <div style="width:100%; max-width:1080px; display:flex; flex-direction:column; align-items:center; gap:16px">
+                <video ref="{{ vd.setVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" preload="metadata" style="width:100%; border-radius:2px; background:#000; display:block"></video>
+                <sc-if value="{{ vd.hasLabel }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:clamp(10px,1.4vw,12px); letter-spacing:.26em; text-transform:uppercase; color:var(--green-deep); text-align:center">{{ vd.label }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
         </div>
       </div>
 
@@ -278,15 +287,21 @@ class Component extends DCLogic {
       }
     };
     for (const m of indexed) {
-      if (m.kind === 'video') {
-        flush();
-        blocks.push({ isGrid: false, isFull: false, isVideo: true, item: m, setVideoRef: el => { if (el && m.url) el.src = m.url; } });
-      } else if (m.full_bleed) {
+      if (m.kind === 'video') continue;
+      if (m.full_bleed) {
         flush();
         blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, name: m.name || '', setImgRef: el => { const u = m.url_view || m.url; if (el && u) el.src = u; }, openLightbox: () => this.openLightbox(m.idx) });
       } else run.push(m);
     }
     flush();
+
+    // Videos always sit below the full photo grid, in their own labelled section.
+    const videos = indexed.filter(m => m.kind === 'video').map(m => ({
+      ...m,
+      label: m.name || '',
+      hasLabel: !!(m.name && m.name.trim()),
+      setVideoRef: el => { if (el && m.url) el.src = m.url; },
+    }));
 
     const current = s.media[s.lightboxIndex] || null;
     const isVideoItem = !!(current && current.kind === 'video');
@@ -295,7 +310,8 @@ class Component extends DCLogic {
       loading: s.loading, notFound: s.notFound, hasEvent: !!s.event,
       pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
       event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
-      blocks, share: () => this.share(), shareLabel: s.shareLabel,
+      blocks, videos, hasVideos: videos.length > 0,
+      share: () => this.share(), shareLabel: s.shareLabel,
       setCoverRef: el => { const u = s.event && (s.event.cover_url_view || s.event.cover_url); if (el && u) { el.src = u; el.style.display = 'block'; } },
 
       lightboxOpen: s.lightboxOpen,

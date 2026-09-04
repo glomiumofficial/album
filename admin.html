@@ -211,12 +211,16 @@
             </div>
           </sc-if>
           <sc-if value="{{ videoStatusOnly }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ videoUploadStatus }}</span></sc-if>
+          <span style="font-size:11px; color:#9AA6A2">Drag to reorder, or type a position number. The name shows above each film on the album page.</span>
           <div style="display:flex; flex-direction:column; gap:10px">
             <sc-for list="{{ videosVM }}" as="vd" hint-placeholder-count="0">
-              <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; border:1px solid var(--line); border-radius:3px">
-                <video ref="{{ vd.setVideoRef }}" style="width:120px; height:68px; object-fit:cover; background:#000; border-radius:2px"></video>
-                <input placeholder="Rename video" value="{{ vd.name }}" onChange="{{ vd.onNameChange }}" onBlur="{{ vd.saveName }}" style="flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:12px; outline:none" style-focus="border-color:var(--green)">
-                <button onClick="{{ vd.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Remove</button>
+              <div draggable="{{ true }}" onDragStart="{{ vd.onDragStart }}" onDragOver="{{ vd.onDragOver }}" onDrop="{{ vd.onDrop }}" onDragEnd="{{ vd.onDragEnd }}" style="display:flex; align-items:center; gap:14px; padding:10px 14px; border:1px solid var(--line); border-radius:3px; cursor:grab">
+                <span style="font-size:11px; color:#9AA6A2; flex-shrink:0">⠿</span>
+                <video ref="{{ vd.setVideoRef }}" preload="metadata" style="width:120px; height:68px; object-fit:cover; background:#000; border-radius:2px; flex-shrink:0"></video>
+                <input placeholder="Name this film — e.g. Reel, Full Story, Celebration" value="{{ vd.name }}" onChange="{{ vd.onNameChange }}" onBlur="{{ vd.saveName }}" style="flex:1; min-width:0; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:12px; outline:none" style-focus="border-color:var(--green)">
+                <span style="font-size:10px; color:#9AA6A2; flex-shrink:0">#</span>
+                <input type="number" min="1" value="{{ vd.posInputValue }}" onChange="{{ vd.onPosChange }}" onBlur="{{ vd.commitPos }}" onKeyDown="{{ vd.onPosKeyDown }}" style="width:44px; padding:6px; border:1px solid var(--line); border-radius:2px; font-size:11px; text-align:center; outline:none; flex-shrink:0">
+                <button onClick="{{ vd.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer; flex-shrink:0">Remove</button>
               </div>
             </sc-for>
           </div>
@@ -647,6 +651,36 @@ class Component extends DCLogic {
     this.persistOrder(arr);
   }
 
+  // Same slot-swap approach as photos, but scoped to video rows.
+  reorderVideos(fromId, toId) {
+    if (fromId === toId) return;
+    const arr = [...this.state.media];
+    const idxs = [];
+    arr.forEach((m, i) => { if (m.kind === 'video') idxs.push(i); });
+    const vids = idxs.map(i => arr[i]);
+    const fromPos = vids.findIndex(v => v.id === fromId);
+    const toPos = vids.findIndex(v => v.id === toId);
+    if (fromPos === -1 || toPos === -1) return;
+    const [moved] = vids.splice(fromPos, 1);
+    vids.splice(toPos, 0, moved);
+    idxs.forEach((idx, k) => { arr[idx] = vids[k]; });
+    this.persistOrder(arr);
+  }
+
+  moveVideoToPosition(id, targetPos) {
+    const arr = [...this.state.media];
+    const idxs = [];
+    arr.forEach((m, i) => { if (m.kind === 'video') idxs.push(i); });
+    const vids = idxs.map(i => arr[i]);
+    const fromPos = vids.findIndex(v => v.id === id);
+    if (fromPos === -1) return;
+    const clamped = Math.max(0, Math.min(vids.length - 1, targetPos));
+    const [moved] = vids.splice(fromPos, 1);
+    vids.splice(clamped, 0, moved);
+    idxs.forEach((idx, k) => { arr[idx] = vids[k]; });
+    this.persistOrder(arr);
+  }
+
   onPosInputChange(item, val) { this.setState({ posEdits: { ...this.state.posEdits, [item.id]: val } }); }
 
   commitPos(item) {
@@ -656,7 +690,8 @@ class Component extends DCLogic {
     if (raw === undefined) return;
     const n = parseInt(raw, 10);
     if (!n || isNaN(n)) return;
-    this.movePhotoToPosition(item.id, n - 1);
+    if (item.kind === 'video') this.moveVideoToPosition(item.id, n - 1);
+    else this.movePhotoToPosition(item.id, n - 1);
   }
 
   async deleteMedia(item) {
@@ -696,8 +731,16 @@ class Component extends DCLogic {
       commitPos: () => this.commitPos(ph),
       onPosKeyDown: e => { if (e.key === 'Enter') e.target.blur(); },
     }));
-    const videosVM = media.filter(m => m.kind === 'video').map(vd => ({
+    const videosVM = media.filter(m => m.kind === 'video').map((vd, i) => ({
       ...vd, name: vd.name || '', remove: () => this.deleteMedia(vd),
+      posInputValue: s.posEdits[vd.id] !== undefined ? s.posEdits[vd.id] : String(i + 1),
+      onDragStart: () => { this.dragVideoId = vd.id; },
+      onDragOver: e => e.preventDefault(),
+      onDrop: () => { if (this.dragVideoId) { this.reorderVideos(this.dragVideoId, vd.id); this.dragVideoId = null; } },
+      onDragEnd: () => { this.dragVideoId = null; },
+      onPosChange: e => this.onPosInputChange(vd, e.target.value),
+      commitPos: () => this.commitPos(vd),
+      onPosKeyDown: e => { if (e.key === 'Enter') e.target.blur(); },
       onNameChange: e => this.onNameEdit(vd, e.target.value), saveName: () => this.saveName(vd),
       setVideoRef: el => { if (el && vd.url) el.src = vd.url; },
     }));
