@@ -152,6 +152,7 @@ class Component extends DCLogic {
     loading: true, notFound: false, event: null, media: [], shareLabel: 'Share album',
     lightboxOpen: false, lightboxIndex: 0, slideshowPlaying: false,
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
+    videoShareId: null,
   };
 
   onResize = () => {
@@ -245,6 +246,20 @@ class Component extends DCLogic {
     if (this.state.slideshowPlaying) this.setState({ slideshowPlaying: false });
   }
 
+  // Cross-origin hrefs ignore the download attribute, so fetch to a Blob and
+  // click a same-origin object URL instead.
+  async downloadUrl(url, name) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = obj; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(obj), 4000);
+    } catch (e) { window.open(url, '_blank'); }
+  }
+
   async downloadCurrent() {
     const item = this.state.media[this.state.lightboxIndex];
     if (!item) return;
@@ -302,6 +317,23 @@ class Component extends DCLogic {
       ...m,
       label: m.name || '',
       hasLabel: !!(m.name && m.name.trim()),
+      downloadVideo: () => {
+        const src = m.url.split('?')[0];
+        const ext = (src.split('.').pop() || 'mp4').toLowerCase();
+        const safeExt = /^[a-z0-9]{2,5}$/.test(ext) ? ext : 'mp4';
+        const base = (m.name || 'film').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'film';
+        this.downloadUrl(m.url, base + '.' + safeExt);
+      },
+      shareVideo: async () => {
+        const title = (m.name || 'Film') + ' — ' + ((s.event && s.event.couple_names) || 'Album');
+        try {
+          if (navigator.share) { await navigator.share({ title, url: m.url }); return; }
+          await navigator.clipboard.writeText(m.url);
+          this.setState({ videoShareId: m.id });
+          setTimeout(() => this.setState({ videoShareId: null }), 1800);
+        } catch (e) {}
+      },
+      shareLabel: s.videoShareId === m.id ? 'Link copied' : 'Share',
       setVideoRef: el => {
         if (!el || !m.url) return;
         el.src = m.url;
