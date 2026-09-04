@@ -93,14 +93,16 @@
         <sc-if value="{{ hasVideos }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; align-items:center; gap:clamp(38px,7vh,72px); padding:clamp(56px,10vh,110px) 6px clamp(20px,4vh,40px)">
             <div style="width:clamp(140px,26vw,260px); height:1px; background:linear-gradient(90deg, rgba(16,175,139,0) 0%, var(--green) 50%, rgba(16,175,139,0) 100%)"></div>
-            <sc-for list="{{ videos }}" as="vd" hint-placeholder-count="1">
-              <div style="width:100%; max-width:1080px; display:flex; flex-direction:column; align-items:center; gap:16px">
-                <video ref="{{ vd.setVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" preload="metadata" style="width:100%; border-radius:2px; background:#000; display:block"></video>
-                <sc-if value="{{ vd.hasLabel }}" hint-placeholder-val="{{ false }}">
-                  <span style="font-size:clamp(10px,1.4vw,12px); letter-spacing:.26em; text-transform:uppercase; color:var(--green-deep); text-align:center">{{ vd.label }}</span>
-                </sc-if>
-              </div>
-            </sc-for>
+            <div style="width:100%; max-width:1480px; display:grid; gap:clamp(18px,2.4vw,34px); grid-template-columns:{{ videoCols }}">
+              <sc-for list="{{ videos }}" as="vd" hint-placeholder-count="2">
+                <div style="display:flex; flex-direction:column; gap:14px">
+                  <video ref="{{ vd.setVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" preload="metadata" style="width:100%; border-radius:2px; background:#000; display:block"></video>
+                  <sc-if value="{{ vd.hasLabel }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:clamp(9px,1.1vw,11px); letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep); text-align:center">{{ vd.label }}</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
           </div>
         </sc-if>
         </div>
@@ -300,7 +302,21 @@ class Component extends DCLogic {
       ...m,
       label: m.name || '',
       hasLabel: !!(m.name && m.name.trim()),
-      setVideoRef: el => { if (el && m.url) el.src = m.url; },
+      setVideoRef: el => {
+        if (!el || !m.url) return;
+        el.src = m.url;
+        // Fit each film to its own frame — vertical reels stay vertical instead of
+        // sitting letterboxed inside a wide black box.
+        const fit = () => {
+          const w = el.videoWidth, h = el.videoHeight;
+          if (!w || !h) return;
+          el.style.aspectRatio = w + ' / ' + h;
+          el.style.width = '100%';
+          el.style.height = 'auto';
+        };
+        el.addEventListener('loadedmetadata', fit);
+        if (el.readyState >= 1) fit();
+      },
     }));
 
     const current = s.media[s.lightboxIndex] || null;
@@ -311,6 +327,10 @@ class Component extends DCLogic {
       pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
       event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
       blocks, videos, hasVideos: videos.length > 0,
+      // One video sits alone full-width; 2+ share a row (2 on mobile, 3 on desktop).
+      videoCols: videos.length === 1
+        ? 'minmax(0,1fr)'
+        : 'repeat(' + Math.min(videos.length, s.isMobile ? 2 : 3) + ', minmax(0,1fr))',
       share: () => this.share(), shareLabel: s.shareLabel,
       setCoverRef: el => { const u = s.event && (s.event.cover_url_view || s.event.cover_url); if (el && u) { el.src = u; el.style.display = 'block'; } },
 
