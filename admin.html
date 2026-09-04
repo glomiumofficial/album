@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4/dist/tus.min.js"></script>
 <style>
   :root { --green:#10AF8B; --green-deep:#0A6E58; --line:rgba(16,175,139,.18); }
   * { box-sizing:border-box; }
@@ -187,7 +188,29 @@
               <button onClick="{{ triggerVideoPicker }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Upload video</button>
             </div>
           </div>
-          <sc-if value="{{ videoUploadStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ videoUploadStatus }}</span></sc-if>
+          <sc-if value="{{ videoUploading }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:8px; padding:12px 14px; border:1px solid var(--line); border-radius:3px; background:#FAFCFB">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px">
+                <span style="font-size:11px; color:#5D6864; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ videoUploadName }}</span>
+                <span style="font-size:16px; font-weight:500; color:var(--green-deep); font-variant-numeric:tabular-nums; flex-shrink:0">{{ videoProgressPct }}</span>
+              </div>
+              <div style="height:5px; background:#E4EDEA; border-radius:3px; overflow:hidden">
+                <div style="height:100%; background:var(--green); border-radius:3px; transition:width .18s linear; width:{{ videoProgressBarWidth }}"></div>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                <span style="font-size:11px; color:#9AA6A2">{{ videoUploadStatus }}</span>
+                <button onClick="{{ cancelVideoUpload }}" style="padding:3px 9px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; color:#B4433A; cursor:pointer">Cancel</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ videoIsError }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1px solid #E3C4C0; border-left:3px solid #B4433A; border-radius:3px; background:#FDF6F5">
+              <span style="font-size:13px; color:#B4433A; line-height:1.5; flex-shrink:0">✕</span>
+              <span style="font-size:12px; color:#B4433A; line-height:1.55; overflow-wrap:anywhere; flex:1">{{ videoUploadStatus }}</span>
+              <button onClick="{{ dismissVideoError }}" style="padding:3px 9px; background:none; border:1px solid #E3C4C0; border-radius:2px; font-size:10px; letter-spacing:.06em; color:#B4433A; cursor:pointer; flex-shrink:0">Dismiss</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ videoStatusOnly }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ videoUploadStatus }}</span></sc-if>
           <div style="display:flex; flex-direction:column; gap:10px">
             <sc-for list="{{ videosVM }}" as="vd" hint-placeholder-count="0">
               <div style="display:flex; align-items:center; gap:14px; padding:10px 14px; border:1px solid var(--line); border-radius:3px">
@@ -220,6 +243,7 @@ class Component extends DCLogic {
     email: '', password: '', authError: '', signingIn: false,
     events: [], newCouple: '', newDate: '', newVenue: '', newSlug: '', creating: false, createError: '',
     current: null, media: [], detailsStatus: '', uploadStatus: '', videoUploadStatus: '',
+    videoProgress: null, videoUploadName: '', videoUploadError: false,
     editCouple: '', editDate: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
     editClientName: '', editClientPhone: '', editClientEmail: '', editClientPan: '', clientStatus: '',
     posEdits: {},
@@ -347,6 +371,57 @@ class Component extends DCLogic {
     setTimeout(() => this.setState({ clientStatus: '' }), 3000);
   }
 
+  // Raw XHR PUT so we get upload.onprogress — the SDK's upload() has no progress
+  // event. Bytes go up verbatim: no transcode, no re-encode, no quality change.
+  async uploadBlobWithProgress(blob, prefix, ext, onProgress) {
+    const path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+    const { data: sess } = await this.sb.auth.getSession();
+    const token = (sess && sess.session && sess.session.access_token) || SUPABASE_KEY;
+    try {
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', SUPABASE_URL + '/storage/v1/object/' + BUCKET + '/' + path);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        xhr.setRequestHeader('apikey', SUPABASE_KEY);
+        xhr.setRequestHeader('x-upsert', 'true');
+        xhr.setRequestHeader('cache-control', 'max-age=31536000');
+        xhr.setRequestHeader('Content-Type', blob.type || 'application/octet-stream');
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100), e.loaded, e.total);
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) return resolve();
+          let msg = xhr.responseText || '';
+          try { const j = JSON.parse(msg); msg = j.message || j.error || msg; } catch (e2) {}
+          if (xhr.status === 413 || /exceeded the maximum allowed size|payload too large/i.test(msg)) {
+            return reject(new Error('File too large for the bucket (' + this.fmtBytes(blob.size) + '). Raise the event-media file size limit in Supabase > Storage > Buckets > event-media > Edit.'));
+          }
+          if (xhr.status === 401 || xhr.status === 403) return reject(new Error('Not authorised (' + xhr.status + '). Sign out and back in, then retry.'));
+          reject(new Error('Upload failed ' + xhr.status + ': ' + String(msg).slice(0, 180)));
+        };
+        xhr.onerror = () => reject(new Error('NETWORK'));
+        xhr.onabort = () => reject(new Error('Upload cancelled'));
+        this.videoXhr = xhr;
+        xhr.send(blob);
+      });
+    } catch (err) {
+      this.videoXhr = null;
+      if (err.message === 'Upload cancelled') throw err;
+      // Only a transport-level failure is worth retrying via the SDK; a real
+      // server rejection (size, auth) would fail identically.
+      if (err.message !== 'NETWORK') throw err;
+      if (onProgress) onProgress(0, 0, blob.size);
+      const { error } = await this.sb.storage.from(BUCKET).upload(path, blob, {
+        cacheControl: '31536000', upsert: true, contentType: blob.type || undefined,
+      });
+      if (error) throw new Error(error.message || 'Upload failed');
+      if (onProgress) onProgress(100, blob.size, blob.size);
+    }
+    this.videoXhr = null;
+    const { data } = this.sb.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  }
+
   async uploadFile(file, prefix) {
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
     return this.uploadBlob(file, prefix, ext);
@@ -431,14 +506,86 @@ class Component extends DCLogic {
 
   async onVideoFile(file) {
     if (!file) return;
-    this.setState({ videoUploadStatus: 'Uploading video…' });
+    const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+    const big = file.size > 20 * 1024 * 1024;
+    this.setState({ videoUploadStatus: 'Starting — ' + this.fmtBytes(file.size) + (big ? ' (resumable)' : ''), videoProgress: 0, videoUploadName: file.name, videoUploadError: false });
     try {
-      const url = await this.uploadFile(file, 'video');
+      const onProg = (pct, loaded, total) => {
+        this.setState({ videoProgress: pct, videoUploadStatus: this.fmtBytes(loaded) + ' of ' + this.fmtBytes(total) });
+      };
+      const url = big
+        ? await this.uploadResumable(file, 'video', ext, onProg)
+        : await this.uploadBlobWithProgress(file, 'video', ext, onProg);
+      this.setState({ videoProgress: 100, videoUploadStatus: 'Saving…' });
       await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + 1 });
-      this.setState({ videoUploadStatus: 'Done.' });
-    } catch (e) { this.setState({ videoUploadStatus: e.message }); }
+      this.setState({ videoUploadStatus: 'Done — original quality, no compression.' });
+      setTimeout(() => this.setState({ videoUploadStatus: '', videoProgress: null, videoUploadName: '' }), 3000);
+    } catch (e) {
+      this.tusUpload = null; this.tusReject = null;
+      this.setState({ videoUploadStatus: e.message || 'Upload failed', videoProgress: null, videoUploadName: '', videoUploadError: true });
+    }
+    if (this.videoInputEl) this.videoInputEl.value = '';
     this.loadMedia(this.state.current.id);
-    setTimeout(() => this.setState({ videoUploadStatus: '' }), 2000);
+  }
+
+  fmtBytes(b) {
+    if (!b && b !== 0) return '';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(0) + ' KB';
+    if (b < 1024 * 1024 * 1024) return (b / 1024 / 1024).toFixed(1) + ' MB';
+    return (b / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+  }
+
+  cancelVideoUpload() {
+    if (this.tusUpload) {
+      this.tusUpload.abort(true);
+      this.tusUpload = null;
+      // abort() never fires onError, so settle the promise ourselves or the
+      // await in onVideoFile hangs and the file input never resets.
+      const rej = this.tusReject; this.tusReject = null;
+      if (rej) rej(new Error('Upload cancelled'));
+      return;
+    }
+    if (this.videoXhr) this.videoXhr.abort();
+  }
+
+  // Resumable (TUS) upload — required by Supabase for large files, and the only
+  // path that survives a dropped connection on a 600 MB file. Chunk size must be
+  // exactly 6 MB; Supabase rejects anything else. Bytes are never re-encoded.
+  async uploadResumable(file, prefix, ext, onProgress) {
+    if (!window.tus) throw new Error('Resumable uploader failed to load. Check your connection and reload.');
+    const path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+    const { data: sess } = await this.sb.auth.getSession();
+    const token = (sess && sess.session && sess.session.access_token) || SUPABASE_KEY;
+    await new Promise((resolve, reject) => {
+      const upload = new window.tus.Upload(file, {
+        endpoint: SUPABASE_URL + '/storage/v1/upload/resumable',
+        retryDelays: [0, 3000, 6000, 12000, 24000],
+        headers: { authorization: 'Bearer ' + token, apikey: SUPABASE_KEY, 'x-upsert': 'true' },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true,
+        chunkSize: 6 * 1024 * 1024,
+        metadata: { bucketName: BUCKET, objectName: path, contentType: file.type || 'video/mp4', cacheControl: '31536000' },
+        onError: err => {
+          this.tusUpload = null; this.tusReject = null;
+          const raw = (err && err.originalResponse && err.originalResponse.getBody && err.originalResponse.getBody()) || (err && err.message) || '';
+          if (/exceeded the maximum allowed size|payload too large|413/i.test(String(raw))) {
+            return reject(new Error('Rejected: ' + this.fmtBytes(file.size) + ' is over the limit. Raise event-media\u2019s file size limit (Storage > Buckets > event-media > Edit). Free plan caps single files at 50 MB.'));
+          }
+          reject(new Error(String(raw).slice(0, 200) || 'Resumable upload failed'));
+        },
+        onProgress: (sent, total) => onProgress && onProgress(Math.round((sent / total) * 100), sent, total),
+        onSuccess: () => { this.tusReject = null; resolve(); },
+      });
+      this.tusUpload = upload;
+      this.tusReject = reject;
+      upload.findPreviousUploads().then(prev => {
+        if (prev.length) upload.resumeFromPreviousUpload(prev[0]);
+        upload.start();
+      }).catch(() => upload.start());
+    });
+    this.tusUpload = null;
+    const { data } = this.sb.storage.from(BUCKET).getPublicUrl(path);
+    return data.publicUrl;
   }
 
   onNameEdit(item, name) {
@@ -605,6 +752,14 @@ class Component extends DCLogic {
       triggerVideoPicker: () => this.videoInputEl && this.videoInputEl.click(),
       onVideoFileChange: e => this.onVideoFile(e.target.files[0]),
       videoUploadStatus: s.videoUploadStatus, videoCount: videosVM.length, videosVM,
+      videoProgress: s.videoProgress, videoUploadName: s.videoUploadName,
+      videoProgressPct: s.videoProgress == null ? '' : s.videoProgress + '%',
+      videoProgressBarWidth: (s.videoProgress == null ? 0 : s.videoProgress) + '%',
+      videoUploading: s.videoProgress != null,
+      videoStatusOnly: s.videoProgress == null && !!s.videoUploadStatus && !s.videoUploadError,
+      videoIsError: !!s.videoUploadError && !!s.videoUploadStatus,
+      dismissVideoError: () => this.setState({ videoUploadStatus: '', videoUploadError: false }),
+      cancelVideoUpload: () => this.cancelVideoUpload(),
     };
   }
 }
