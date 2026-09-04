@@ -9,7 +9,7 @@
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ pageTitle }}</title>
+<title>creative INFINITELY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -122,7 +122,7 @@
           <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; border-radius:2px; background:#000"></video>
         </sc-if>
         <sc-if value="{{ hasImgSrc }}" hint-placeholder-val="{{ false }}">
-          <img src="{{ lightboxImgSrc }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain">
+          <img ref="{{ setLightboxImgRef }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain">
         </sc-if>
         <button onClick="{{ nextItem }}" style="position:absolute; right:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); background:transparent; border:none; color:#EAF5F1; font-size:30px; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">›</button>
       </div>
@@ -153,11 +153,26 @@ class Component extends DCLogic {
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('resize', this.onResize);
+    // helmet's static <title> lands on stream completion, which can be after
+    // mount — re-assert once the frame settles so JS wins.
+    this.syncTitle();
+    requestAnimationFrame(() => this.syncTitle());
+    setTimeout(() => this.syncTitle(), 400);
     const slug = new URLSearchParams(window.location.search).get('event');
-    document.title = 'creative INFINITELY';
     if (!slug) { this.setState({ loading: false, notFound: true }); return; }
     this.load(slug);
   }
+
+  // Single source of truth for the tab title. The <helmet> title is a static
+  // literal, injected on stream completion; this runs after that and on every
+  // update, so the event name always wins once it loads.
+  syncTitle() {
+    const e = this.state.event;
+    const t = e && e.couple_names ? 'creative INFINITELY — ' + e.couple_names : 'creative INFINITELY';
+    if (document.title !== t) document.title = t;
+  }
+
+  componentDidUpdate() { this.syncTitle(); }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.onScroll);
@@ -187,7 +202,6 @@ class Component extends DCLogic {
       if (error || !ev) { this.setState({ loading: false, notFound: true }); return; }
       const { data: media, error: mErr } = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
       if (mErr) { this.setState({ loading: false, notFound: true }); return; }
-      document.title = 'creative INFINITELY — ' + ev.couple_names;
       this.setState({ loading: false, event: ev, media: (media || []).filter(m => m.url) });
     } catch (e) { this.setState({ loading: false, notFound: true }); }
   }
@@ -253,7 +267,7 @@ class Component extends DCLogic {
       if (run.length) {
         const items = run.map(ph => ({
           ...ph,
-          setImgRef: el => { if (el && ph.url) el.src = ph.url; },
+          setImgRef: el => { const g = ph.url_grid || ph.url, v = ph.url_view || ph.url; if (el && g) { el.src = g; if (v && v !== g) el.srcset = g + ' 1200w, ' + v + ' 2800w'; el.sizes = this.state.isMobile ? '33vw' : '25vw'; } },
           openLightbox: () => this.openLightbox(ph.idx),
         }));
         const numCols = Math.min(this.state.isMobile ? 3 : 4, Math.max(2, items.length));
@@ -269,7 +283,7 @@ class Component extends DCLogic {
         blocks.push({ isGrid: false, isFull: false, isVideo: true, item: m, setVideoRef: el => { if (el && m.url) el.src = m.url; } });
       } else if (m.full_bleed) {
         flush();
-        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, name: m.name || '', setImgRef: el => { if (el && m.url) el.src = m.url; }, openLightbox: () => this.openLightbox(m.idx) });
+        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, name: m.name || '', setImgRef: el => { const u = m.url_view || m.url; if (el && u) el.src = u; }, openLightbox: () => this.openLightbox(m.idx) });
       } else run.push(m);
     }
     flush();
@@ -282,12 +296,13 @@ class Component extends DCLogic {
       pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
       event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
       blocks, share: () => this.share(), shareLabel: s.shareLabel,
-      setCoverRef: el => { if (el && s.event && s.event.cover_url) { el.src = s.event.cover_url; el.style.display = 'block'; } },
+      setCoverRef: el => { const u = s.event && (s.event.cover_url_view || s.event.cover_url); if (el && u) { el.src = u; el.style.display = 'block'; } },
 
       lightboxOpen: s.lightboxOpen,
       lightboxName: current ? (current.name || '') : '',
       isVideoItem,
-      lightboxImgSrc: current && !isVideoItem ? current.url : '',
+      lightboxImgSrc: current && !isVideoItem ? (current.url_view || current.url) : '',
+      setLightboxImgRef: el => { const u = current && !isVideoItem && (current.url_view || current.url); if (el && u) el.src = u; },
       hasImgSrc: !!(current && !isVideoItem && current.url),
       setLightboxVideoRef: el => { if (el && current && current.url) el.src = current.url; },
       prevItem: () => this.step(-1), nextItem: () => this.step(1),

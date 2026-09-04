@@ -349,11 +349,51 @@ class Component extends DCLogic {
 
   async uploadFile(file, prefix) {
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    return this.uploadBlob(file, prefix, ext);
+  }
+
+  async uploadBlob(blob, prefix, ext) {
     const path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
-    const { error } = await this.sb.storage.from(BUCKET).upload(path, file, { cacheControl: '3600', upsert: false });
+    const { error } = await this.sb.storage.from(BUCKET).upload(path, blob, {
+      cacheControl: '31536000', upsert: false, contentType: blob.type || undefined,
+    });
     if (error) throw error;
     const { data } = this.sb.storage.from(BUCKET).getPublicUrl(path);
     return data.publicUrl;
+  }
+
+  // Downscale to a max long edge. Returns null if the source is already smaller.
+  async resizeImage(file, maxEdge, quality) {
+    const bmp = await createImageBitmap(file);
+    const long = Math.max(bmp.width, bmp.height);
+    if (long <= maxEdge * 1.02) { bmp.close && bmp.close(); return null; }
+    const scale = maxEdge / long;
+    const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { alpha: false });
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bmp, 0, 0, w, h);
+    bmp.close && bmp.close();
+    const webp = c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    const type = webp ? 'image/webp' : 'image/jpeg';
+    const blob = await new Promise(r => c.toBlob(r, type, quality));
+    return blob ? { blob, ext: webp ? 'webp' : 'jpg' } : null;
+  }
+
+  // Original stays untouched for download; grid + view are the delivery tiers.
+  async uploadPhotoSet(file) {
+    const original = await this.uploadFile(file, 'photo');
+    const out = { url: original, url_grid: original, url_view: original };
+    try {
+      const view = await this.resizeImage(file, 2800, 0.92);
+      if (view) out.url_view = await this.uploadBlob(view.blob, 'view', view.ext);
+      const grid = await this.resizeImage(file, 1200, 0.9);
+      if (grid) out.url_grid = await this.uploadBlob(grid.blob, 'grid', grid.ext);
+      else out.url_grid = out.url_view;
+    } catch (e) { /* fall back to original on any canvas/codec failure */ }
+    return out;
   }
 
   async onCoverFile(file) {
@@ -361,8 +401,13 @@ class Component extends DCLogic {
     this.setState({ detailsStatus: 'Uploading cover…' });
     try {
       const url = await this.uploadFile(file, 'cover');
-      await this.sb.from('events').update({ cover_url: url }).eq('id', this.state.current.id);
-      this.setState({ current: { ...this.state.current, cover_url: url }, detailsStatus: 'Cover updated.' });
+      let coverView = url;
+      try {
+        const v = await this.resizeImage(file, 2800, 0.92);
+        if (v) coverView = await this.uploadBlob(v.blob, 'cover-view', v.ext);
+      } catch (e) {}
+      await this.sb.from('events').update({ cover_url: url, cover_url_view: coverView }).eq('id', this.state.current.id);
+      this.setState({ current: { ...this.state.current, cover_url: url, cover_url_view: coverView }, detailsStatus: 'Cover updated.' });
     } catch (e) { this.setState({ detailsStatus: e.message }); }
     setTimeout(() => this.setState({ detailsStatus: '' }), 2500);
   }
@@ -373,10 +418,10 @@ class Component extends DCLogic {
     let n = 0;
     for (const file of files) {
       n++;
-      this.setState({ uploadStatus: 'Uploading photo ' + n + ' of ' + files.length + '…' });
+      this.setState({ uploadStatus: 'Uploading photo ' + n + ' of ' + files.length + ' (3 sizes)…' });
       try {
-        const url = await this.uploadFile(file, 'photo');
-        await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', url, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + n });
+        const set = await this.uploadPhotoSet(file);
+        await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', ...set, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + n });
       } catch (e) { this.setState({ uploadStatus: e.message }); }
     }
     this.setState({ uploadStatus: 'Done.' });
@@ -495,7 +540,7 @@ class Component extends DCLogic {
       toggleFull: () => this.toggleFullBleed(ph, !ph.full_bleed),
       remove: () => this.deleteMedia(ph),
       onNameChange: e => this.onNameEdit(ph, e.target.value), saveName: () => this.saveName(ph),
-      setImgRef: el => { if (el && ph.url) el.src = ph.url; },
+      setImgRef: el => { const u = ph.url_grid || ph.url; if (el && u) el.src = u; },
       onDragStart: () => { this.dragPhotoId = ph.id; },
       onDragOver: e => e.preventDefault(),
       onDrop: () => { if (this.dragPhotoId) { this.reorderPhotos(this.dragPhotoId, ph.id); this.dragPhotoId = null; } },
