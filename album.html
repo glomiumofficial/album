@@ -96,7 +96,14 @@
             <div style="width:100%; max-width:1480px; display:grid; gap:clamp(18px,2.4vw,34px); grid-template-columns:{{ videoCols }}">
               <sc-for list="{{ videos }}" as="vd" hint-placeholder-count="2">
                 <div style="display:flex; flex-direction:column; gap:14px">
-                  <video ref="{{ vd.setVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" preload="metadata" style="width:100%; border-radius:2px; background:#000; display:block"></video>
+                  <div onClick="{{ vd.open }}" style="position:relative; cursor:pointer; background:#000; border-radius:2px; overflow:hidden" style-hover="opacity:.94">
+                    <video ref="{{ vd.setVideoRef }}" muted="{{ true }}" playsinline="{{ true }}" preload="metadata" tabIndex="-1" style="width:100%; display:block; pointer-events:none"></video>
+                    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,14,13,.22)">
+                      <div style="width:clamp(44px,4.6vw,62px); height:clamp(44px,4.6vw,62px); border-radius:50%; border:1px solid rgba(255,255,255,.72); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px)">
+                        <div style="width:0; height:0; margin-left:4px; border-left:13px solid rgba(255,255,255,.95); border-top:8px solid transparent; border-bottom:8px solid transparent"></div>
+                      </div>
+                    </div>
+                  </div>
                   <sc-if value="{{ vd.hasLabel }}" hint-placeholder-val="{{ false }}">
                     <span style="font-size:clamp(9px,1.1vw,11px); letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep); text-align:center">{{ vd.label }}</span>
                   </sc-if>
@@ -120,8 +127,13 @@
     <div style="position:fixed; inset:0; z-index:1000; background:rgba(10,14,13,.97); display:flex; flex-direction:column">
       <div style="display:flex; align-items:center; justify-content:space-between; padding:16px clamp(16px,4vw,36px); flex-wrap:wrap; gap:10px">
         <span style="font-size:13px; color:#EAF5F1; letter-spacing:.04em; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ lightboxName }}</span>
-        <div style="display:flex; gap:10px; align-items:center">
-          <button onClick="{{ toggleSlideshow }}" style="padding:9px 14px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">{{ slideshowLabel }}</button>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+          <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ toggleFullscreen }}" style="padding:9px 14px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">{{ fullscreenLabel }}</button>
+          </sc-if>
+          <sc-if value="{{ showSlideshowBtn }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ toggleSlideshow }}" style="padding:9px 14px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">{{ slideshowLabel }}</button>
+          </sc-if>
           <button onClick="{{ shareCurrent }}" style="padding:9px 14px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">Share</button>
           <button onClick="{{ downloadCurrent }}" style="padding:9px 14px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">Download</button>
           <button onClick="{{ closeLightbox }}" style="padding:9px 12px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:14px; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">✕</button>
@@ -130,7 +142,7 @@
       <div style="flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:0 clamp(8px,3vw,40px) clamp(16px,3vh,40px); min-height:0">
         <button onClick="{{ prevItem }}" style="position:absolute; left:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); background:transparent; border:none; color:#EAF5F1; font-size:30px; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">‹</button>
         <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ false }}">
-          <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; border-radius:2px; background:#000"></video>
+          <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; border-radius:2px; background:#000"></video>
         </sc-if>
         <sc-if value="{{ hasImgSrc }}" hint-placeholder-val="{{ false }}">
           <img ref="{{ setLightboxImgRef }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain">
@@ -152,7 +164,7 @@ class Component extends DCLogic {
     loading: true, notFound: false, event: null, media: [], shareLabel: 'Share album',
     lightboxOpen: false, lightboxIndex: 0, slideshowPlaying: false,
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
-    videoShareId: null,
+    videoShareId: null, isFullscreen: false,
   };
 
   onResize = () => {
@@ -165,6 +177,7 @@ class Component extends DCLogic {
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('resize', this.onResize);
+    document.addEventListener('fullscreenchange', this.onFsChange);
     // helmet's static <title> lands on stream completion, which can be after
     // mount — re-assert once the frame settles so JS wins.
     this.syncTitle();
@@ -190,6 +203,7 @@ class Component extends DCLogic {
     window.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('resize', this.onResize);
+    document.removeEventListener('fullscreenchange', this.onFsChange);
     this.stopSlideshow();
   }
 
@@ -248,6 +262,17 @@ class Component extends DCLogic {
 
   // Cross-origin hrefs ignore the download attribute, so fetch to a Blob and
   // click a same-origin object URL instead.
+  toggleFullscreen() {
+    const el = this.lightboxVideoEl;
+    if (!el) return;
+    if (document.fullscreenElement) { document.exitFullscreen && document.exitFullscreen(); return; }
+    // iOS Safari only exposes the proprietary video fullscreen API.
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
+  }
+
+  onFsChange = () => this.setState({ isFullscreen: !!document.fullscreenElement });
+
   async downloadUrl(url, name) {
     try {
       const res = await fetch(url);
@@ -260,19 +285,22 @@ class Component extends DCLogic {
     } catch (e) { window.open(url, '_blank'); }
   }
 
+  // Always append the real extension — a named item would otherwise download
+  // as a bare, extensionless file that the OS can't open.
+  fileNameFor(item) {
+    const src = String(item.url).split('?')[0];
+    const raw = src.split('/').pop() || '';
+    const ext = (raw.split('.').pop() || '').toLowerCase();
+    const safeExt = /^[a-z0-9]{2,5}$/.test(ext) ? ext : (item.kind === 'video' ? 'mp4' : 'jpg');
+    if (!item.name || !item.name.trim()) return raw || 'file.' + safeExt;
+    const base = item.name.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'file';
+    return base + '.' + safeExt;
+  }
+
   async downloadCurrent() {
     const item = this.state.media[this.state.lightboxIndex];
     if (!item) return;
-    const name = item.name || item.url.split('/').pop().split('?')[0];
-    try {
-      const res = await fetch(item.url);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = name;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-    } catch (e) { window.open(item.url, '_blank'); }
+    this.downloadUrl(item.url, this.fileNameFor(item));
   }
 
   shareCurrent() {
@@ -317,23 +345,7 @@ class Component extends DCLogic {
       ...m,
       label: m.name || '',
       hasLabel: !!(m.name && m.name.trim()),
-      downloadVideo: () => {
-        const src = m.url.split('?')[0];
-        const ext = (src.split('.').pop() || 'mp4').toLowerCase();
-        const safeExt = /^[a-z0-9]{2,5}$/.test(ext) ? ext : 'mp4';
-        const base = (m.name || 'film').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'film';
-        this.downloadUrl(m.url, base + '.' + safeExt);
-      },
-      shareVideo: async () => {
-        const title = (m.name || 'Film') + ' — ' + ((s.event && s.event.couple_names) || 'Album');
-        try {
-          if (navigator.share) { await navigator.share({ title, url: m.url }); return; }
-          await navigator.clipboard.writeText(m.url);
-          this.setState({ videoShareId: m.id });
-          setTimeout(() => this.setState({ videoShareId: null }), 1800);
-        } catch (e) {}
-      },
-      shareLabel: s.videoShareId === m.id ? 'Link copied' : 'Share',
+      open: () => this.openLightbox(m.idx),
       setVideoRef: el => {
         if (!el || !m.url) return;
         el.src = m.url;
@@ -345,6 +357,8 @@ class Component extends DCLogic {
           el.style.aspectRatio = w + ' / ' + h;
           el.style.width = '100%';
           el.style.height = 'auto';
+          // Nudge past 0 so browsers paint a real frame instead of a black box.
+          if (el.currentTime === 0) { try { el.currentTime = 0.12; } catch (err) {} }
         };
         el.addEventListener('loadedmetadata', fit);
         if (el.readyState >= 1) fit();
@@ -359,6 +373,9 @@ class Component extends DCLogic {
       pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
       event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
       blocks, videos, hasVideos: videos.length > 0,
+      showSlideshowBtn: !isVideoItem,
+      fullscreenLabel: s.isFullscreen ? 'Exit full screen' : 'Full screen',
+      toggleFullscreen: () => this.toggleFullscreen(),
       // One video sits alone full-width; 2+ share a row (2 on mobile, 3 on desktop).
       videoCols: videos.length === 1
         ? 'minmax(0,1fr)'
@@ -372,7 +389,17 @@ class Component extends DCLogic {
       lightboxImgSrc: current && !isVideoItem ? (current.url_view || current.url) : '',
       setLightboxImgRef: el => { const u = current && !isVideoItem && (current.url_view || current.url); if (el && u) el.src = u; },
       hasImgSrc: !!(current && !isVideoItem && current.url),
-      setLightboxVideoRef: el => { if (el && current && current.url) el.src = current.url; },
+      setLightboxVideoRef: el => {
+        this.lightboxVideoEl = el;
+        if (!el || !current || !current.url) return;
+        if (el.src !== current.url) {
+          el.src = current.url;
+          // Autoplay with sound is blocked; start muted, viewer unmutes via controls.
+          el.muted = true;
+          const p = el.play();
+          if (p && p.catch) p.catch(() => {});
+        }
+      },
       prevItem: () => this.step(-1), nextItem: () => this.step(1),
       closeLightbox: () => this.closeLightbox(),
       toggleSlideshow: () => this.toggleSlideshow(),
