@@ -262,6 +262,43 @@ class Component extends DCLogic {
 
   // Cross-origin hrefs ignore the download attribute, so fetch to a Blob and
   // click a same-origin object URL instead.
+  // Browsers resume the instant ~0.2s is buffered, then stall again a moment later —
+  // which reads as repeated stutter even on a fast line. Hold playback until there is
+  // a real cushion ahead of the playhead, then let it run.
+  wireStallGuard(el) {
+    if (el.dataset.guard) return;
+    el.dataset.guard = '1';
+    const CUSHION = 6;
+    let holding = false;
+    const ahead = () => {
+      const b = el.buffered;
+      for (let i = 0; i < b.length; i++) {
+        if (el.currentTime >= b.start(i) - 0.25 && el.currentTime <= b.end(i)) return b.end(i) - el.currentTime;
+      }
+      return 0;
+    };
+    const check = () => {
+      if (!holding) return;
+      const done = el.duration && el.currentTime + ahead() >= el.duration - 0.4;
+      if (ahead() >= CUSHION || done) {
+        holding = false;
+        const p = el.play();
+        if (p && p.catch) p.catch(() => {});
+      }
+    };
+    const hold = () => {
+      if (holding || el.paused || el.ended) return;
+      if (ahead() >= CUSHION) return;
+      holding = true;
+      el.pause();
+    };
+    el.addEventListener('waiting', hold);
+    el.addEventListener('stalled', hold);
+    el.addEventListener('progress', check);
+    el.addEventListener('canplaythrough', check);
+    el.addEventListener('play', () => { if (holding) { holding = false; } });
+  }
+
   toggleFullscreen() {
     const el = this.lightboxVideoEl;
     if (!el) return;
@@ -347,7 +384,9 @@ class Component extends DCLogic {
       hasLabel: !!(m.name && m.name.trim()),
       open: () => this.openLightbox(m.idx),
       setVideoRef: el => {
-        if (!el || !m.url) return;
+        if (!el || !m.url || el.dataset.wired) return;
+        el.dataset.wired = '1';
+        el.preload = 'metadata';
         el.src = m.url;
         // Fit each film to its own frame — vertical reels stay vertical instead of
         // sitting letterboxed inside a wide black box.
@@ -355,12 +394,28 @@ class Component extends DCLogic {
           const w = el.videoWidth, h = el.videoHeight;
           if (!w || !h) return;
           el.style.aspectRatio = w + ' / ' + h;
-          el.style.width = '100%';
           el.style.height = 'auto';
-          // Nudge past 0 so browsers paint a real frame instead of a black box.
           if (el.currentTime === 0) { try { el.currentTime = 0.12; } catch (err) {} }
         };
+        // Once a real frame exists, freeze it into a poster and DROP the source.
+        // Otherwise every tile keeps a live range request open against storage and
+        // starves the film the viewer is actually watching.
+        const freeze = () => {
+          const w = el.videoWidth, h = el.videoHeight;
+          if (!w || !h || el.dataset.frozen) return;
+          el.dataset.frozen = '1';
+          try {
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(el, 0, 0, w, h);
+            el.poster = c.toDataURL('image/jpeg', 0.72);
+          } catch (err) {}
+          el.removeAttribute('src');
+          try { el.load(); } catch (err) {}
+        };
         el.addEventListener('loadedmetadata', fit);
+        el.addEventListener('seeked', freeze);
+        el.addEventListener('loadeddata', freeze);
         if (el.readyState >= 1) fit();
       },
     }));
@@ -393,9 +448,11 @@ class Component extends DCLogic {
         this.lightboxVideoEl = el;
         if (!el || !current || !current.url) return;
         if (el.src !== current.url) {
+          el.preload = 'auto';
           el.src = current.url;
           // Autoplay with sound is blocked; start muted, viewer unmutes via controls.
           el.muted = true;
+          this.wireStallGuard(el);
           const p = el.play();
           if (p && p.catch) p.catch(() => {});
         }
