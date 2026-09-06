@@ -386,6 +386,19 @@ class Component extends DCLogic {
       setVideoRef: el => {
         if (!el || !m.url || el.dataset.wired) return;
         el.dataset.wired = '1';
+        // A custom cover means this tile needs no video bytes at all.
+        if (m.thumb_url) {
+          el.preload = 'none';
+          el.poster = m.thumb_url;
+          el.dataset.frozen = '1';
+          const probe = new Image();
+          probe.onload = () => {
+            el.style.aspectRatio = probe.naturalWidth + ' / ' + probe.naturalHeight;
+            el.style.height = 'auto';
+          };
+          probe.src = m.thumb_url;
+          return;
+        }
         el.preload = 'metadata';
         el.src = m.url;
         // Fit each film to its own frame — vertical reels stay vertical instead of
@@ -449,6 +462,7 @@ class Component extends DCLogic {
         if (!el || !current || !current.url) return;
         if (el.src !== current.url) {
           el.preload = 'auto';
+          if (current.thumb_url) el.poster = current.thumb_url;
           el.src = current.url;
           // Autoplay with sound is blocked; start muted, viewer unmutes via controls.
           el.muted = true;

@@ -216,7 +216,11 @@
             <sc-for list="{{ videosVM }}" as="vd" hint-placeholder-count="0">
               <div draggable="{{ true }}" onDragStart="{{ vd.onDragStart }}" onDragOver="{{ vd.onDragOver }}" onDrop="{{ vd.onDrop }}" onDragEnd="{{ vd.onDragEnd }}" style="display:flex; align-items:center; gap:14px; padding:10px 14px; border:1px solid var(--line); border-radius:3px; cursor:grab">
                 <span style="font-size:11px; color:#9AA6A2; flex-shrink:0">⠿</span>
-                <video ref="{{ vd.setVideoRef }}" preload="metadata" style="width:120px; height:68px; object-fit:cover; background:#000; border-radius:2px; flex-shrink:0"></video>
+                <label style="position:relative; display:block; width:120px; height:68px; flex-shrink:0; background:#000; border-radius:2px; overflow:hidden; cursor:pointer">
+                  <img ref="{{ vd.setThumbRef }}" alt="" style="width:100%; height:100%; object-fit:cover; display:none" />
+                  <input type="file" accept="image/*" onChange="{{ vd.onThumbFile }}" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer" />
+                  <span style="position:absolute; left:0; right:0; bottom:0; padding:3px 0; text-align:center; font-size:9px; letter-spacing:.06em; text-transform:uppercase; background:rgba(0,0,0,.62); color:#EAF5F1; pointer-events:none">{{ vd.thumbLabel }}</span>
+                </label>
                 <input placeholder="Name this film — e.g. Reel, Full Story, Celebration" value="{{ vd.name }}" onChange="{{ vd.onNameChange }}" onBlur="{{ vd.saveName }}" style="flex:1; min-width:0; padding:8px 10px; border:1px solid var(--line); border-radius:2px; font-size:12px; outline:none" style-focus="border-color:var(--green)">
                 <span style="font-size:10px; color:#9AA6A2; flex-shrink:0">#</span>
                 <input type="number" min="1" value="{{ vd.posInputValue }}" onChange="{{ vd.onPosChange }}" onBlur="{{ vd.commitPos }}" onKeyDown="{{ vd.onPosKeyDown }}" style="width:44px; padding:6px; border:1px solid var(--line); border-radius:2px; font-size:11px; text-align:center; outline:none; flex-shrink:0">
@@ -461,6 +465,50 @@ class Component extends DCLogic {
     return blob ? { blob, ext: webp ? 'webp' : 'jpg' } : null;
   }
 
+  // Pull one frame out of the local file before it leaves the browser — the album
+  // grid then needs zero video bytes to paint a tile.
+  async grabVideoFrame(file, at) {
+    const objUrl = URL.createObjectURL(file);
+    try {
+      const v = document.createElement('video');
+      v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
+      await new Promise((res, rej) => {
+        v.onloadeddata = res;
+        v.onerror = () => rej(new Error('could not read video'));
+      });
+      const t = Math.min(at == null ? 1 : at, Math.max(0, (v.duration || 1) - 0.1));
+      await new Promise(res => { v.onseeked = res; try { v.currentTime = t; } catch (e) { res(); } });
+      const w = v.videoWidth, h = v.videoHeight;
+      if (!w || !h) throw new Error('no frame');
+      const scale = Math.min(1, 1200 / Math.max(w, h));
+      const c = document.createElement('canvas');
+      c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+      c.getContext('2d', { alpha: false }).drawImage(v, 0, 0, c.width, c.height);
+      const webp = c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+      const type = webp ? 'image/webp' : 'image/jpeg';
+      const blob = await new Promise(r => c.toBlob(r, type, 0.9));
+      return blob ? { blob, ext: webp ? 'webp' : 'jpg' } : null;
+    } finally { URL.revokeObjectURL(objUrl); }
+  }
+
+  async setVideoThumb(item, file) {
+    if (!file) return;
+    this.setState({ videoUploadStatus: 'Uploading cover…', videoUploadError: false });
+    try {
+      const small = await this.resizeImage(file, 1200, 0.9);
+      const url = small ? await this.uploadBlob(small.blob, 'vthumb', small.ext) : await this.uploadFile(file, 'vthumb');
+      const { error } = await this.sb.from('media').update({ thumb_url: url }).eq('id', item.id);
+      if (error) throw error;
+      this.setState({
+        media: this.state.media.map(m => m.id === item.id ? { ...m, thumb_url: url } : m),
+        videoUploadStatus: 'Cover updated.',
+      });
+    } catch (e) {
+      this.setState({ videoUploadStatus: e.message || 'Cover upload failed', videoUploadError: true });
+    }
+    setTimeout(() => this.setState({ videoUploadStatus: '', videoUploadError: false }), 2500);
+  }
+
   // Original stays untouched for download; grid + view are the delivery tiers.
   async uploadPhotoSet(file) {
     const original = await this.uploadFile(file, 'photo');
@@ -520,8 +568,14 @@ class Component extends DCLogic {
       const url = big
         ? await this.uploadResumable(file, 'video', ext, onProg)
         : await this.uploadBlobWithProgress(file, 'video', ext, onProg);
-      this.setState({ videoProgress: 100, videoUploadStatus: 'Saving…' });
-      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + 1 });
+      this.setState({ videoProgress: 100, videoUploadStatus: 'Making cover…' });
+      let thumbUrl = null;
+      try {
+        const fr = await this.grabVideoFrame(file, 1);
+        if (fr) thumbUrl = await this.uploadBlob(fr.blob, 'vthumb', fr.ext);
+      } catch (e) { /* a missing cover is survivable — admin can set one by hand */ }
+      this.setState({ videoUploadStatus: 'Saving…' });
+      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + 1 });
       this.setState({ videoUploadStatus: 'Done — original quality, no compression.' });
       setTimeout(() => this.setState({ videoUploadStatus: '', videoProgress: null, videoUploadName: '' }), 3000);
     } catch (e) {
@@ -742,7 +796,13 @@ class Component extends DCLogic {
       commitPos: () => this.commitPos(vd),
       onPosKeyDown: e => { if (e.key === 'Enter') e.target.blur(); },
       onNameChange: e => this.onNameEdit(vd, e.target.value), saveName: () => this.saveName(vd),
-      setVideoRef: el => { if (el && vd.url) el.src = vd.url; },
+      thumbLabel: vd.thumb_url ? 'Change cover' : 'Add cover',
+      setThumbRef: el => {
+        if (!el) return;
+        if (vd.thumb_url) { el.src = vd.thumb_url; el.style.display = 'block'; }
+        else { el.removeAttribute('src'); el.style.display = 'none'; }
+      },
+      onThumbFile: e => this.setVideoThumb(vd, e.target.files[0]),
     }));
 
     return {
