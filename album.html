@@ -310,7 +310,9 @@ class Component extends DCLogic {
     if (el.dataset.guard) return;
     el.dataset.guard = '1';
     const CUSHION = 6;
-    let holding = false;
+    const MAX_HOLD = 2500;
+    let holding = false, holdTimer = null, watchdog = null;
+
     const ahead = () => {
       const b = el.buffered;
       for (let i = 0; i < b.length; i++) {
@@ -318,26 +320,48 @@ class Component extends DCLogic {
       }
       return 0;
     };
-    const check = () => {
+    const nearEnd = () => el.duration && el.currentTime + ahead() >= el.duration - 0.4;
+
+    const release = () => {
       if (!holding) return;
-      const done = el.duration && el.currentTime + ahead() >= el.duration - 0.4;
-      if (ahead() >= CUSHION || done) {
-        holding = false;
-        const p = el.play();
-        if (p && p.catch) p.catch(() => {});
-      }
+      holding = false;
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      if (watchdog) { clearInterval(watchdog); watchdog = null; }
+      const p = el.play();
+      if (p && p.catch) p.catch(() => {});
     };
+    const check = () => { if (holding && (ahead() >= CUSHION || nearEnd())) release(); };
+
     const hold = () => {
       if (holding || el.paused || el.ended) return;
-      if (ahead() >= CUSHION) return;
+      // readyState 3+ means the browser already has enough to keep playing — a
+      // cached file reports this and needs no help from us.
+      if (el.readyState >= 3 || ahead() >= CUSHION || nearEnd()) return;
       holding = true;
       el.pause();
+      // A cached video fires almost no progress events, so an event-only release
+      // can wait forever. Poll, and give up holding after a hard ceiling either way.
+      watchdog = setInterval(check, 250);
+      holdTimer = setTimeout(release, MAX_HOLD);
     };
+
     el.addEventListener('waiting', hold);
     el.addEventListener('stalled', hold);
     el.addEventListener('progress', check);
+    el.addEventListener('canplay', check);
     el.addEventListener('canplaythrough', check);
-    el.addEventListener('play', () => { if (holding) { holding = false; } });
+    el.addEventListener('timeupdate', check);
+    // Any deliberate tap on the player outranks the guard.
+    el.addEventListener('play', () => {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      if (watchdog) { clearInterval(watchdog); watchdog = null; }
+      holding = false;
+    });
+    el.addEventListener('emptied', () => {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      if (watchdog) { clearInterval(watchdog); watchdog = null; }
+      holding = false;
+    });
   }
 
   toggleFullscreen() {
