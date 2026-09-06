@@ -208,7 +208,7 @@ class Component extends DCLogic {
   }
 
   onScroll = () => {
-    const bar = document.querySelector('[data-el="topbar"]');
+    const bar = this.topbarEl || (this.topbarEl = document.querySelector('[data-el="topbar"]'));
     if (!bar) return;
     const past = window.scrollY > window.innerHeight * 0.85;
     bar.style.opacity = past ? '1' : '0';
@@ -217,7 +217,11 @@ class Component extends DCLogic {
 
   onKeyDown = (e) => {
     if (!this.state.lightboxOpen) return;
-    if (e.key === 'Escape') this.closeLightbox();
+    if (e.key === 'Escape') { this.closeLightbox(); return; }
+    // Arrow keys belong to the video's own scrubber when it has focus — otherwise
+    // one press both seeks the film and jumps to the next item.
+    const t = e.target;
+    if (t && (t.tagName === 'VIDEO' || t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
     if (e.key === 'ArrowLeft') this.step(-1);
     if (e.key === 'ArrowRight') this.step(1);
   };
@@ -241,8 +245,28 @@ class Component extends DCLogic {
     });
   }
 
-  openLightbox(idx) { this.setState({ lightboxOpen: true, lightboxIndex: idx }); }
-  closeLightbox() { this.stopSlideshow(); this.setState({ lightboxOpen: false }); }
+  openLightbox(idx) {
+    this.scrollLock(true);
+    this.setState({ lightboxOpen: true, lightboxIndex: idx });
+  }
+  closeLightbox() {
+    this.stopSlideshow();
+    this.scrollLock(false);
+    this.setState({ lightboxOpen: false });
+  }
+
+  // Without this the album scrolls under the overlay — worst on mobile, where the
+  // viewer closes the lightbox and finds themselves somewhere else entirely.
+  scrollLock(on) {
+    const b = document.body;
+    if (on) {
+      this.savedScrollY = window.scrollY;
+      b.style.overflow = 'hidden';
+    } else {
+      b.style.overflow = '';
+      if (this.savedScrollY != null) window.scrollTo(0, this.savedScrollY);
+    }
+  }
 
   step(dir) {
     const n = this.state.media.length;
@@ -250,18 +274,29 @@ class Component extends DCLogic {
     this.setState({ lightboxIndex: (this.state.lightboxIndex + dir + n) % n });
   }
 
+  // A slideshow is a photo experience — landing on a film would autoplay it for
+  // three seconds and then cut away mid-sentence.
+  stepPhoto(dir) {
+    const media = this.state.media, n = media.length;
+    if (!n) return;
+    let i = this.state.lightboxIndex;
+    for (let hop = 0; hop < n; hop++) {
+      i = (i + dir + n) % n;
+      if (media[i] && media[i].kind !== 'video') { this.setState({ lightboxIndex: i }); return; }
+    }
+    this.stopSlideshow();
+  }
+
   toggleSlideshow() {
     if (this.state.slideshowPlaying) { this.stopSlideshow(); return; }
     this.setState({ slideshowPlaying: true });
-    this.slideTimer = setInterval(() => this.step(1), 3000);
+    this.slideTimer = setInterval(() => this.stepPhoto(1), 3000);
   }
   stopSlideshow() {
     if (this.slideTimer) { clearInterval(this.slideTimer); this.slideTimer = null; }
     if (this.state.slideshowPlaying) this.setState({ slideshowPlaying: false });
   }
 
-  // Cross-origin hrefs ignore the download attribute, so fetch to a Blob and
-  // click a same-origin object URL instead.
   // Browsers resume the instant ~0.2s is buffered, then stall again a moment later —
   // which reads as repeated stutter even on a fast line. Hold playback until there is
   // a real cushion ahead of the playhead, then let it run.
@@ -310,6 +345,8 @@ class Component extends DCLogic {
 
   onFsChange = () => this.setState({ isFullscreen: !!document.fullscreenElement });
 
+  // Cross-origin hrefs ignore the download attribute, so fetch to a Blob and
+  // click a same-origin object URL instead.
   async downloadUrl(url, name) {
     try {
       const res = await fetch(url);
@@ -337,7 +374,18 @@ class Component extends DCLogic {
   async downloadCurrent() {
     const item = this.state.media[this.state.lightboxIndex];
     if (!item) return;
-    this.downloadUrl(item.url, this.fileNameFor(item));
+    const name = this.fileNameFor(item);
+    // Buffering a multi-hundred-MB film into a Blob crashes phones. Storage can set
+    // the attachment header itself, so hand the save straight to the browser.
+    if (item.kind === 'video') {
+      const sep = item.url.indexOf('?') === -1 ? '?' : '&';
+      const a = document.createElement('a');
+      a.href = item.url + sep + 'download=' + encodeURIComponent(name);
+      a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+      return;
+    }
+    this.downloadUrl(item.url, name);
   }
 
   shareCurrent() {
@@ -372,7 +420,12 @@ class Component extends DCLogic {
       if (m.kind === 'video') continue;
       if (m.full_bleed) {
         flush();
-        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, name: m.name || '', setImgRef: el => { const u = m.url_view || m.url; if (el && u) el.src = u; }, openLightbox: () => this.openLightbox(m.idx) });
+        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, name: m.name || '', setImgRef: el => {
+          const g = m.url_grid || m.url, v = m.url_view || m.url;
+          if (!el || !g) return;
+          el.src = g;
+          if (v && v !== g) { el.srcset = g + ' 1200w, ' + v + ' 2800w'; el.sizes = '100vw'; }
+        }, openLightbox: () => this.openLightbox(m.idx) });
       } else run.push(m);
     }
     flush();
@@ -464,11 +517,17 @@ class Component extends DCLogic {
           el.preload = 'auto';
           if (current.thumb_url) el.poster = current.thumb_url;
           el.src = current.url;
-          // Autoplay with sound is blocked; start muted, viewer unmutes via controls.
-          el.muted = true;
+          // The lightbox only opens from a tap, so that gesture buys us sound —
+          // start at full volume and fall back to muted only if a browser refuses.
+          el.muted = false;
+          el.volume = 1;
           this.wireStallGuard(el);
           const p = el.play();
-          if (p && p.catch) p.catch(() => {});
+          if (p && p.catch) p.catch(() => {
+            el.muted = true;
+            const q = el.play();
+            if (q && q.catch) q.catch(() => {});
+          });
         }
       },
       prevItem: () => this.step(-1), nextItem: () => this.step(1),
