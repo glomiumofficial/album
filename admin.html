@@ -299,6 +299,14 @@ class Component extends DCLogic {
 
   async doDeleteEvent(ev) {
     if (!window.confirm('Delete "' + ev.couple_names + '" and all its media?')) return;
+    // Every asset for an event lives under a folder named after its id. Clear the
+    // folder first, or the whole album stays on the storage bill after deletion.
+    try {
+      const { data: files } = await this.sb.storage.from(BUCKET).list(ev.id, { limit: 1000 });
+      if (files && files.length) {
+        await this.sb.storage.from(BUCKET).remove(files.map(f => ev.id + '/' + f.name));
+      }
+    } catch (e) { /* the row delete still proceeds */ }
     await this.sb.from('events').delete().eq('id', ev.id);
     this.loadEvents();
   }
@@ -548,7 +556,7 @@ class Component extends DCLogic {
       this.setState({ uploadStatus: 'Uploading photo ' + n + ' of ' + files.length + ' (3 sizes)…' });
       try {
         const set = await this.uploadPhotoSet(file);
-        await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', ...set, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + n });
+        await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', ...set, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.nextSortOrder(n) });
       } catch (e) { this.setState({ uploadStatus: e.message }); }
     }
     this.setState({ uploadStatus: 'Done.' });
@@ -575,7 +583,7 @@ class Component extends DCLogic {
         if (fr) thumbUrl = await this.uploadBlob(fr.blob, 'vthumb', fr.ext);
       } catch (e) { /* a missing cover is survivable — admin can set one by hand */ }
       this.setState({ videoUploadStatus: 'Saving…' });
-      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + 1 });
+      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.nextSortOrder(0) });
       this.setState({ videoUploadStatus: 'Done — original quality, no compression.' });
       setTimeout(() => this.setState({ videoUploadStatus: '', videoProgress: null, videoUploadName: '' }), 3000);
     } catch (e) {
@@ -584,6 +592,13 @@ class Component extends DCLogic {
     }
     if (this.videoInputEl) this.videoInputEl.value = '';
     this.loadMedia(this.state.current.id);
+  }
+
+  // One authority for the next position. Reusing media.length produced duplicate
+  // sort_order values, which made drag-reorder and the position input misbehave.
+  nextSortOrder(offset) {
+    const max = this.state.media.reduce((n, m) => Math.max(n, m.sort_order || 0), -1);
+    return max + 1 + (offset || 0);
   }
 
   fmtBytes(b) {
@@ -651,7 +666,10 @@ class Component extends DCLogic {
   }
   async saveName(item) {
     const cur = this.state.media.find(m => m.id === item.id);
-    await this.sb.from('media').update({ name: cur ? cur.name : item.name }).eq('id', item.id);
+    const next = cur ? cur.name : item.name;
+    if (this.savedNames && this.savedNames[item.id] === next) return;
+    (this.savedNames = this.savedNames || {})[item.id] = next;
+    await this.sb.from('media').update({ name: next }).eq('id', item.id);
   }
 
   async toggleFullBleed(item, val) {
@@ -748,7 +766,27 @@ class Component extends DCLogic {
     else this.movePhotoToPosition(item.id, n - 1);
   }
 
+  // A public URL looks like <project>/storage/v1/object/public/<bucket>/<path>.
+  // Everything after the bucket name is the key we need to delete.
+  storagePathFromUrl(url) {
+    if (!url) return null;
+    const marker = '/object/public/' + BUCKET + '/';
+    const i = String(url).indexOf(marker);
+    if (i === -1) return null;
+    return decodeURIComponent(String(url).slice(i + marker.length).split('?')[0]) || null;
+  }
+
   async deleteMedia(item) {
+    const label = item.name || (item.kind === 'video' ? 'this video' : 'this photo');
+    if (!window.confirm('Delete ' + label + '? This removes the file permanently.')) return;
+    // Delete the objects too — a row-only delete leaves every tier orphaned in
+    // storage, and you keep paying for files nobody can reach.
+    const paths = [item.url, item.url_grid, item.url_view, item.thumb_url]
+      .map(u => this.storagePathFromUrl(u))
+      .filter((p, i, arr) => p && arr.indexOf(p) === i);
+    if (paths.length) {
+      try { await this.sb.storage.from(BUCKET).remove(paths); } catch (e) { /* row still goes */ }
+    }
     await this.sb.from('media').delete().eq('id', item.id);
     this.loadMedia(this.state.current.id);
   }
