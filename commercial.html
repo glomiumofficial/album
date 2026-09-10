@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>creative INFINITELY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root { --green:#10AF8B; --green-deep:#0A6E58; --line:rgba(16,175,139,.16); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#FFFFFF; color:#16231F; font-family:'Jost',Helvetica,sans-serif; overflow-x:hidden; }
+  a { color:var(--green); text-decoration:none; }
+  a:hover { color:var(--green-deep); }
+  ::selection { background:var(--green); color:#fff; }
+</style>
+</helmet>
+
+<div style="position:relative; width:100%; background:#FFFFFF">
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh; display:grid; place-items:center">
+      <span style="font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Loading project…</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
+      <div style="display:flex; flex-direction:column; gap:10px">
+        <span style="font-size:20px; font-weight:300; color:var(--green)">Project not found</span>
+        <span style="font-size:14px; color:#7C8985">Check the link and try again.</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasProject }}" hint-placeholder-val="{{ false }}">
+  <div>
+
+    <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px clamp(18px,4vw,40px); opacity:0; pointer-events:none; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); transition:opacity .3s">
+      <span style="font-size:13px; color:#16231F; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ clientName }}</span>
+      <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#9AA6A2; flex-shrink:0">Private preview</span>
+    </div>
+
+    <div style="position:relative; height:100vh; height:100svh; overflow:hidden; background:#111">
+      <img ref="{{ setCoverRef }}" alt="{{ clientName }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none">
+      <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.38) 0%, rgba(0,0,0,.08) 32%, rgba(0,0,0,.08) 58%, rgba(0,0,0,.58) 100%)"></div>
+      <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:0 24px">
+        <span style="font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#EAF5F1">{{ divisionLabel }}</span>
+        <h1 style="margin:0; font-size:clamp(30px,7vw,64px); font-weight:200; letter-spacing:.01em; color:#FFFFFF; text-wrap:balance">{{ clientName }}</h1>
+        <sc-if value="{{ hasTitle }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:clamp(13px,1.8vw,17px); font-weight:300; letter-spacing:.06em; color:#DDEDE7; text-wrap:balance">{{ projectTitle }}</span>
+        </sc-if>
+        <sc-if value="{{ hasSector }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#A9CCC1">{{ sector }}</span>
+        </sc-if>
+      </div>
+      <div style="position:absolute; left:50%; bottom:28px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px">
+        <span style="font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:#EAF5F1">Scroll</span>
+        <div style="width:1px; height:30px; background:linear-gradient(180deg,#EAF5F1,transparent)"></div>
+      </div>
+    </div>
+
+    <sc-if value="{{ isDemo }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:14px clamp(16px,4vw,40px); background:#FDF9F0; border-bottom:1px solid #EFE1C6; text-align:center">
+        <span style="font-size:12px; color:#8A6D3B">Layout preview with sample content. Brief, colour and typography are live; the image sections appear once a real project has media.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasBrief }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:22px; padding:clamp(60px,11vh,130px) 24px clamp(20px,4vh,40px)">
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">The brief</span>
+        <p style="margin:0; max-width:680px; font-size:clamp(16px,2vw,21px); font-weight:200; line-height:1.65; color:#2C3A35; text-align:center; text-wrap:pretty">{{ brief }}</p>
+        <sc-if value="{{ hasTagline }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:clamp(13px,1.5vw,15px); letter-spacing:.1em; color:var(--green-deep); font-style:italic">{{ tagline }}</span>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasPalette }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:clamp(56px,9vh,112px) clamp(16px,4vw,40px) clamp(14px,3vh,30px)">
+        <div style="width:clamp(90px,18vw,180px); height:1px; background:linear-gradient(90deg,rgba(16,175,139,0),var(--green),rgba(16,175,139,0))"></div>
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">Colour</span>
+        <span style="font-size:12px; letter-spacing:.06em; color:#9AA6A2">{{ paletteHint }}</span>
+      </div>
+      <div style="width:100%; max-width:1480px; margin:0 auto; padding:0 clamp(16px,4vw,40px) clamp(20px,4vh,40px); display:grid; gap:clamp(10px,1.4vw,18px); grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+        <sc-for list="{{ paletteVM }}" as="sw" hint-placeholder-count="4">
+          <button onClick="{{ sw.copy }}" style="display:flex; flex-direction:column; gap:0; padding:0; border:1px solid var(--line); border-radius:2px; overflow:hidden; background:none; cursor:pointer; text-align:left" style-hover="border-color:var(--green)">
+            <span ref="{{ sw.setSwatchRef }}" style="display:block; width:100%; aspect-ratio:4 / 3"></span>
+            <span style="display:flex; flex-direction:column; gap:3px; padding:12px 14px 14px; background:#fff">
+              <span style="font-size:13px; color:#16231F">{{ sw.name }}</span>
+              <span style="font-size:11px; letter-spacing:.1em; color:#7C8985; font-variant-numeric:tabular-nums">{{ sw.hexLabel }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasLogos }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:clamp(56px,9vh,112px) clamp(16px,4vw,40px) clamp(14px,3vh,30px)">
+        <div style="width:clamp(90px,18vw,180px); height:1px; background:linear-gradient(90deg,rgba(16,175,139,0),var(--green),rgba(16,175,139,0))"></div>
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">Identity</span>
+      </div>
+      <div style="width:100%; max-width:1480px; margin:0 auto; padding:0 clamp(16px,4vw,40px) clamp(20px,4vh,40px); display:grid; gap:clamp(10px,1.4vw,18px); grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">
+        <sc-for list="{{ logosVM }}" as="lg" hint-placeholder-count="3">
+          <div style="display:flex; flex-direction:column; gap:0; border:1px solid var(--line); border-radius:2px; overflow:hidden">
+            <div ref="{{ lg.setGroundRef }}" onClick="{{ lg.open }}" style="display:grid; place-items:center; aspect-ratio:4 / 3; padding:clamp(22px,3vw,42px); cursor:zoom-in">
+              <img ref="{{ lg.setImgRef }}" alt="{{ lg.name }}" loading="lazy" style="max-width:100%; max-height:100%; object-fit:contain; display:block">
+            </div>
+            <sc-if value="{{ lg.hasName }}" hint-placeholder-val="{{ false }}">
+              <span style="padding:11px 14px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#7C8985; background:#fff">{{ lg.name }}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasFonts }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:clamp(56px,9vh,112px) clamp(16px,4vw,40px) clamp(14px,3vh,30px)">
+        <div style="width:clamp(90px,18vw,180px); height:1px; background:linear-gradient(90deg,rgba(16,175,139,0),var(--green),rgba(16,175,139,0))"></div>
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">Typography</span>
+      </div>
+      <div style="width:100%; max-width:1100px; margin:0 auto; padding:0 clamp(16px,4vw,40px) clamp(20px,4vh,40px); display:flex; flex-direction:column; gap:clamp(14px,2vw,22px)">
+        <sc-for list="{{ fontsVM }}" as="ft" hint-placeholder-count="2">
+          <div style="display:flex; align-items:center; gap:clamp(18px,4vw,44px); flex-wrap:wrap; padding:clamp(20px,3vw,34px) clamp(20px,3vw,36px); border:1px solid var(--line); border-radius:2px">
+            <span ref="{{ ft.setSampleRef }}" style="font-size:clamp(52px,9vw,104px); font-weight:400; line-height:1; color:#16231F; flex-shrink:0">{{ ft.sample }}</span>
+            <div style="display:flex; flex-direction:column; gap:7px; min-width:180px; flex:1">
+              <span style="font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">{{ ft.role }}</span>
+              <span style="font-size:clamp(17px,2vw,22px); font-weight:300; color:#16231F">{{ ft.name }}</span>
+              <span ref="{{ ft.setLineRef }}" style="font-size:clamp(13px,1.5vw,15px); font-weight:300; line-height:1.5; color:#5F6C68; text-wrap:pretty">{{ ft.line }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasSocial }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:clamp(56px,9vh,112px) clamp(16px,4vw,40px) clamp(14px,3vh,30px)">
+        <div style="width:clamp(90px,18vw,180px); height:1px; background:linear-gradient(90deg,rgba(16,175,139,0),var(--green),rgba(16,175,139,0))"></div>
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">Social</span>
+        <span style="font-size:12px; letter-spacing:.06em; color:#9AA6A2">{{ socialCountLabel }}</span>
+      </div>
+      <div style="width:100%; max-width:1480px; margin:0 auto; padding:0 clamp(6px,1.4vw,18px) clamp(20px,4vh,40px); display:grid; gap:clamp(6px,.9vw,12px); grid-template-columns:repeat(auto-fill,minmax(210px,1fr))">
+        <sc-for list="{{ socialVM }}" as="so" hint-placeholder-count="6">
+          <div onClick="{{ so.open }}" style="position:relative; overflow:hidden; background:#F4F6F5; cursor:zoom-in">
+            <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" loading="lazy" style="width:100%; aspect-ratio:1; object-fit:cover; display:block">
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasBanners }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:clamp(56px,9vh,112px) clamp(16px,4vw,40px) clamp(14px,3vh,30px)">
+        <div style="width:clamp(90px,18vw,180px); height:1px; background:linear-gradient(90deg,rgba(16,175,139,0),var(--green),rgba(16,175,139,0))"></div>
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">Banners &amp; outdoor</span>
+      </div>
+      <div style="width:100%; display:flex; flex-direction:column; gap:clamp(6px,1vw,14px); padding-bottom:clamp(20px,4vh,40px)">
+        <sc-for list="{{ bannersVM }}" as="bn" hint-placeholder-count="2">
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div onClick="{{ bn.open }}" style="width:100%; cursor:zoom-in; background:#F4F6F5">
+              <img ref="{{ bn.setImgRef }}" alt="{{ bn.name }}" loading="lazy" style="width:100%; max-height:88vh; object-fit:cover; display:block">
+            </div>
+            <sc-if value="{{ bn.hasCaption }}" hint-placeholder-val="{{ false }}">
+              <span style="padding:0 clamp(16px,4vw,40px); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ bn.caption }}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasFilms }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:clamp(56px,9vh,112px) clamp(16px,4vw,40px) clamp(14px,3vh,30px)">
+        <div style="width:clamp(90px,18vw,180px); height:1px; background:linear-gradient(90deg,rgba(16,175,139,0),var(--green),rgba(16,175,139,0))"></div>
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">Films &amp; reels</span>
+      </div>
+      <div style="width:100%; max-width:1480px; margin:0 auto; padding:0 clamp(16px,4vw,40px) clamp(20px,4vh,40px); display:grid; gap:clamp(18px,2.4vw,34px); grid-template-columns:{{ filmCols }}">
+        <sc-for list="{{ filmsVM }}" as="fm" hint-placeholder-count="2">
+          <div style="display:flex; flex-direction:column; gap:14px">
+            <div onClick="{{ fm.open }}" style="position:relative; cursor:pointer; background:#000; border-radius:2px; overflow:hidden" style-hover="opacity:.94">
+              <video ref="{{ fm.setVideoRef }}" muted="{{ true }}" playsinline="{{ true }}" preload="metadata" tabIndex="-1" style="width:100%; aspect-ratio:16 / 9; object-fit:cover; display:block; pointer-events:none"></video>
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,14,13,.22)">
+                <div style="width:clamp(44px,4.6vw,62px); height:clamp(44px,4.6vw,62px); border-radius:50%; border:1px solid rgba(255,255,255,.72); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px)">
+                  <div style="width:0; height:0; margin-left:4px; border-left:13px solid rgba(255,255,255,.95); border-top:8px solid transparent; border-bottom:8px solid transparent"></div>
+                </div>
+              </div>
+            </div>
+            <sc-if value="{{ fm.hasName }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:clamp(9px,1.1vw,11px); letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep); text-align:center">{{ fm.name }}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasPrint }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px; padding:clamp(56px,9vh,112px) clamp(16px,4vw,40px) clamp(14px,3vh,30px)">
+        <div style="width:clamp(90px,18vw,180px); height:1px; background:linear-gradient(90deg,rgba(16,175,139,0),var(--green),rgba(16,175,139,0))"></div>
+        <span style="font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">Print &amp; packaging</span>
+      </div>
+      <div style="width:100%; max-width:1480px; margin:0 auto; padding:0 clamp(16px,4vw,40px) clamp(20px,4vh,40px); display:grid; gap:clamp(10px,1.4vw,18px); grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+        <sc-for list="{{ printVM }}" as="pr" hint-placeholder-count="2">
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div onClick="{{ pr.open }}" style="overflow:hidden; background:#F4F6F5; cursor:zoom-in">
+              <img ref="{{ pr.setImgRef }}" alt="{{ pr.name }}" loading="lazy" style="width:100%; display:block">
+            </div>
+            <sc-if value="{{ pr.hasCaption }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ pr.caption }}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <footer style="display:flex; flex-direction:column; align-items:center; padding:clamp(60px,11vh,124px) 24px clamp(26px,4vh,40px)">
+      <div style="width:clamp(140px,26vw,260px); height:1px; background:linear-gradient(90deg, rgba(16,175,139,0) 0%, var(--green) 50%, rgba(16,175,139,0) 100%)"></div>
+      <span style="margin-top:clamp(28px,5vh,50px); font-size:clamp(26px,3.4vw,38px); font-weight:200; line-height:1; color:var(--green); opacity:.5">∞</span>
+      <span style="margin-top:clamp(20px,3vh,30px); font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">{{ divisionLabel }}</span>
+      <h2 style="margin:clamp(12px,2vh,18px) 0 0; font-size:clamp(26px,4.6vw,46px); font-weight:200; letter-spacing:.015em; line-height:1.15; color:#16231F; text-align:center; text-wrap:balance">{{ clientName }}</h2>
+      <span style="margin-top:clamp(10px,1.6vh,15px); font-size:clamp(11px,1.3vw,13px); letter-spacing:.14em; color:#5F6C68; text-align:center; text-wrap:pretty">{{ footerMeta }}</span>
+      <span style="margin-top:clamp(22px,4vh,38px); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#9AA6A2; text-align:center; text-wrap:pretty">Private preview prepared for {{ clientName }}</span>
+      <div style="width:100%; max-width:1480px; margin-top:clamp(30px,6vh,60px); padding-top:clamp(18px,3vh,26px); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:center">
+        <span style="font-size:10px; letter-spacing:.2em; color:#9AA6A2"><span style="text-transform:lowercase">creative</span> <span style="color:var(--green-deep); text-transform:uppercase">INFINITELY</span></span>
+      </div>
+    </footer>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; z-index:1000; background:rgba(10,14,13,.97); display:flex; flex-direction:column">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:clamp(10px,2vh,16px) clamp(10px,4vw,36px); flex-wrap:wrap">
+        <span style="font-size:13px; color:#EAF5F1; letter-spacing:.04em; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ lightboxName }}</span>
+        <div style="display:flex; gap:10px; align-items:center">
+          <span style="font-size:11px; letter-spacing:.12em; color:#8FA39C; font-variant-numeric:tabular-nums">{{ lightboxCounter }}</span>
+          <button onClick="{{ closeLightbox }}" style="min-width:44px; min-height:44px; padding:10px 12px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:14px; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">✕</button>
+        </div>
+      </div>
+      <div style="flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:0 clamp(8px,3vw,40px) clamp(16px,3vh,40px); min-height:0">
+        <button onClick="{{ prevItem }}" style="position:absolute; left:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">‹</button>
+        <sc-if value="{{ lightboxIsVideo }}" hint-placeholder-val="{{ false }}">
+          <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; border-radius:2px; background:#000"></video>
+        </sc-if>
+        <sc-if value="{{ lightboxIsImage }}" hint-placeholder-val="{{ false }}">
+          <img ref="{{ setLightboxImgRef }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain">
+        </sc-if>
+        <button onClick="{{ nextItem }}" style="position:absolute; right:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">›</button>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
+
+const DIVISION_LABEL = {
+  commercial: 'Commercial & branding',
+  festival: 'Festivals & live',
+  digital: 'Digital & social',
+  press: 'Press & corporate',
+};
+
+// The order sections appear in. Media rows carry one of these in `section`.
+const SECTIONS = ['logo', 'social', 'banner', 'film', 'print', 'guideline'];
+
+// Layout preview only, reachable at ?demo=1. Never served to a client link:
+// a real link carries ?project=<slug> and goes to the database.
+const DEMO = {
+  slug: 'demo', division: 'commercial',
+  client_name: 'Kaithal Coffee Roasters',
+  project_title: 'Identity, packaging and launch campaign',
+  sector: 'Speciality coffee · Kozhikode',
+  start_date: '2026-03-01',
+  tagline: 'Roasted where the hills meet the coast.',
+  brief: 'A single-origin roastery with a following at the farmers market and nothing to put on a shelf. We built the identity, the bag system and a launch campaign that had to work at 40mm on a sticker and at four metres on a hoarding.',
+  palette: [
+    { name: 'Roast', hex: '#2A1A14' }, { name: 'Cardamom', hex: '#7E8B5C' },
+    { name: 'Chicory', hex: '#C2703D' }, { name: 'Husk', hex: '#E8DCC8' },
+    { name: 'Paper', hex: '#FAF7F1' },
+  ],
+  brand_fonts: [
+    { name: 'Fraunces', role: 'Display', google: 'Fraunces', sample: 'Aa', line: 'Single origin, twice roasted' },
+    { name: 'Jost', role: 'Text & packaging', google: 'Jost', sample: 'Aa', line: 'ABCDEFGHIJKLM · abcdefghijklm · 0123456789' },
+  ],
+};
+
+class Component extends DCLogic {
+  state = {
+    loading: true, notFound: false,
+    project: null, media: [],
+    copied: '',
+    lightboxOpen: false, lightboxIndex: 0,
+  };
+
+  // ---- Boot ---------------------------------------------------------------
+
+  componentDidMount() {
+    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    window.addEventListener('keydown', this.onKeyDown);
+    // A client link always carries ?project=<slug>. Opened bare, or with ?demo=1,
+    // the page shows the layout preview instead of a dead end.
+    const q = new URLSearchParams(window.location.search);
+    const slug = q.get('project');
+    if (!slug || q.get('demo') === '1') {
+      this.setState({ project: DEMO, media: [], loading: false });
+      this.loadBrandFonts(DEMO);
+      return;
+    }
+    this.load(slug);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('keydown', this.onKeyDown);
+  }
+
+  // The title tag is a stream-time literal, so it has to be re-set once the
+  // project name arrives — and on every update after that.
+  componentDidUpdate() {
+    const p = this.state.project;
+    const t = p ? 'creative INFINITELY — ' + p.client_name : 'creative INFINITELY';
+    if (document.title !== t) document.title = t;
+  }
+
+  onScroll = () => {
+    const bar = document.querySelector('[data-el="topbar"]');
+    if (!bar) return;
+    const on = window.scrollY > window.innerHeight * .7;
+    bar.style.opacity = on ? '1' : '0';
+    bar.style.pointerEvents = on ? 'auto' : 'none';
+  };
+
+  onKeyDown = e => {
+    if (!this.state.lightboxOpen) return;
+    if (e.key === 'Escape') this.closeLightbox();
+    if (e.key === 'ArrowRight') this.step(1);
+    if (e.key === 'ArrowLeft') this.step(-1);
+  };
+
+  async load(slug) {
+    try {
+      const { data: p, error } = await this.sb.from('projects').select('*').eq('slug', slug).maybeSingle();
+      if (error || !p) { this.setState({ loading: false, notFound: true }); return; }
+      const { data: m } = await this.sb.from('project_media').select('*')
+        .eq('project_id', p.id).order('sort_order', { ascending: true });
+      this.setState({ project: p, media: m || [], loading: false });
+      this.loadBrandFonts(p);
+    } catch (e) {
+      this.setState({ loading: false, notFound: true });
+    }
+  }
+
+  // A brand's own typefaces are the point of the specimen, so pull the ones
+  // that name a Google family. Anything else falls back to the page font.
+  loadBrandFonts(p) {
+    const fams = (this.asList(p.brand_fonts)).map(f => f && f.google).filter(Boolean);
+    if (!fams.length) return;
+    const href = 'https://fonts.googleapis.com/css2?' +
+      fams.map(f => 'family=' + encodeURIComponent(f).replace(/%20/g, '+') + ':wght@300;400;600').join('&') +
+      '&display=swap';
+    if (document.querySelector('link[data-brand-fonts]')) return;
+    const el = document.createElement('link');
+    el.rel = 'stylesheet'; el.href = href; el.setAttribute('data-brand-fonts', '1');
+    document.head.appendChild(el);
+  }
+
+  // jsonb columns arrive as arrays, but a hand-edited row can hold a string.
+  asList(v) {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string') { try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch (e) { return []; } }
+    return [];
+  }
+
+  // ---- Lightbox -----------------------------------------------------------
+
+  // One flat list across every section, so the arrows walk the whole project.
+  viewable() { return this.state.media.filter(m => m.url); }
+
+  openLightbox(id) {
+    const list = this.viewable();
+    const i = list.findIndex(m => m.id === id);
+    if (i < 0) return;
+    this.scrollLock(true);
+    this.setState({ lightboxOpen: true, lightboxIndex: i });
+  }
+
+  closeLightbox() {
+    this.scrollLock(false);
+    this.setState({ lightboxOpen: false });
+  }
+
+  // Without this the page scrolls under the overlay and the viewer closes the
+  // lightbox somewhere they never were.
+  scrollLock(on) {
+    const b = document.body;
+    if (on) {
+      this._scrollY = window.scrollY;
+      b.style.position = 'fixed'; b.style.top = -this._scrollY + 'px';
+      b.style.left = '0'; b.style.right = '0';
+    } else {
+      b.style.position = ''; b.style.top = ''; b.style.left = ''; b.style.right = '';
+      window.scrollTo(0, this._scrollY || 0);
+    }
+  }
+
+  step(dir) {
+    const n = this.viewable().length;
+    if (!n) return;
+    this.setState({ lightboxIndex: (this.state.lightboxIndex + dir + n) % n });
+  }
+
+  async copyHex(hex) {
+    try { await navigator.clipboard.writeText(hex); } catch (e) { /* clipboard blocked — the hex is on screen anyway */ }
+    this.setState({ copied: hex });
+    clearTimeout(this._copyTimer);
+    this._copyTimer = setTimeout(() => this.setState({ copied: '' }), 1600);
+  }
+
+  // ---- Render -------------------------------------------------------------
+
+  // Every media section renders from the same shape; only the wrapper differs.
+  mediaVM(section) {
+    return this.state.media.filter(m => m.section === section).map(m => ({
+      ...m,
+      name: m.name || '',
+      hasName: !!m.name,
+      caption: m.caption || '',
+      hasCaption: !!m.caption,
+      open: () => this.openLightbox(m.id),
+      setImgRef: el => { const u = m.url_grid || m.url_view || m.url; if (el && u) el.src = u; },
+      setVideoRef: el => {
+        if (!el) return;
+        if (m.thumb_url) { el.poster = m.thumb_url; }
+        if (el.getAttribute('src') !== m.url) el.src = m.url;
+      },
+      setGroundRef: el => { if (el) el.style.background = m.ground === 'dark' ? '#14201C' : '#FFFFFF'; },
+    }));
+  }
+
+  renderVals() {
+    const s = this.state, p = s.project || {};
+    const fmtDate = d => {
+      if (!d) return '';
+      const t = new Date(d + 'T00:00:00');
+      return isNaN(t.getTime()) ? '' : t.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+    };
+
+    const paletteVM = this.asList(p.palette).map(c => {
+      const hex = String(c.hex || '').trim();
+      return {
+        name: c.name || hex,
+        hexLabel: s.copied === hex ? 'Copied' : hex.toUpperCase(),
+        copy: () => this.copyHex(hex),
+        setSwatchRef: el => { if (el) el.style.background = hex || '#F4F6F5'; },
+      };
+    }).filter(c => c.name);
+
+    const fontsVM = this.asList(p.brand_fonts).map(f => {
+      const fam = f.google ? "'" + f.google + "', 'Jost', sans-serif" : "'Jost', sans-serif";
+      return {
+        name: f.name || f.google || 'Typeface',
+        role: f.role || 'Typeface',
+        sample: f.sample || 'Aa',
+        line: f.line || 'ABCDEFGHIJKLM · abcdefghijklm · 0123456789',
+        setSampleRef: el => { if (el) el.style.fontFamily = fam; },
+        setLineRef: el => { if (el) el.style.fontFamily = fam; },
+      };
+    });
+
+    const logosVM = this.mediaVM('logo');
+    const socialVM = this.mediaVM('social');
+    const bannersVM = this.mediaVM('banner');
+    const printVM = this.mediaVM('print').concat(this.mediaVM('guideline'));
+    const filmsVM = this.mediaVM('film');
+
+    const view = this.viewable();
+    const cur = view[s.lightboxIndex] || null;
+
+    return {
+      loading: s.loading, notFound: s.notFound, hasProject: !!s.project,
+
+      clientName: p.client_name || '',
+      projectTitle: p.project_title || '', hasTitle: !!p.project_title,
+      tagline: p.tagline || '', hasTagline: !!p.tagline,
+      brief: p.brief || '', hasBrief: !!p.brief,
+      sector: p.sector || '', hasSector: !!p.sector,
+      divisionLabel: DIVISION_LABEL[p.division] || 'Creative work',
+      footerMeta: [fmtDate(p.start_date), p.sector].filter(Boolean).join('  ·  '),
+      setCoverRef: el => {
+        const u = p.cover_url_view || p.cover_url;
+        if (el && u) { el.src = u; el.style.display = 'block'; }
+      },
+
+      isDemo: !!s.project && s.project.slug === 'demo',
+      paletteVM, hasPalette: paletteVM.length > 0,
+      paletteHint: paletteVM.length ? 'Tap a swatch to copy its hex' : '',
+      fontsVM, hasFonts: fontsVM.length > 0,
+      logosVM, hasLogos: logosVM.length > 0,
+      socialVM, hasSocial: socialVM.length > 0,
+      socialCountLabel: socialVM.length + (socialVM.length === 1 ? ' post' : ' posts'),
+      bannersVM, hasBanners: bannersVM.length > 0,
+      printVM, hasPrint: printVM.length > 0,
+      filmsVM, hasFilms: filmsVM.length > 0,
+      filmCols: filmsVM.length === 1 ? '1fr' : 'repeat(auto-fit,minmax(360px,1fr))',
+
+      lightboxOpen: s.lightboxOpen,
+      lightboxName: cur ? (cur.name || cur.caption || '') : '',
+      lightboxCounter: view.length ? (s.lightboxIndex + 1) + ' / ' + view.length : '',
+      lightboxIsVideo: !!cur && cur.kind === 'video',
+      lightboxIsImage: !!cur && cur.kind !== 'video',
+      setLightboxImgRef: el => { const u = cur && (cur.url_view || cur.url); if (el && u) el.src = u; },
+      setLightboxVideoRef: el => { if (el && cur && el.getAttribute('src') !== cur.url) el.src = cur.url; },
+      closeLightbox: () => this.closeLightbox(),
+      prevItem: () => this.step(-1),
+      nextItem: () => this.step(1),
+    };
+  }
+}
+</script>
+</body>
+</html>
