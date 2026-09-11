@@ -83,7 +83,7 @@
 
       <sc-if value="{{ roleMissing }}" hint-placeholder-val="{{ false }}">
         <div style="padding:12px clamp(20px,5vw,60px); background:#FDF9F0; border-bottom:1px solid #EFE1C6">
-          <span style="font-size:12px; color:#8A6D3B">No workspace role assigned to this account yet — People, Crew and Payouts stay hidden until an admin adds a row to <b>staff_roles</b>. Albums, media and billing still work.</span>
+          <span style="font-size:12px; color:#8A6D3B">No workspace role assigned to this account yet — you can see the album and project list only. Media, billing, crew and payouts open up once an admin adds a row to <b>staff_roles</b>.</span>
         </div>
       </sc-if>
 
@@ -192,6 +192,35 @@
       <sc-if value="{{ isPeople }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
 
+        <sc-if value="{{ hasRequestStatus }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1 1 100%; padding:12px 16px; border:1px solid #E3D8BC; border-left:3px solid #C9A227; border-radius:3px; background:#FDFBF4; font-size:12px; color:#8A6D3B; line-height:1.6">{{ requestStatus }}</div>
+        </sc-if>
+
+        <sc-if value="{{ hasChangeRequests }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1 1 100%; display:flex; flex-direction:column; gap:12px; padding:20px 22px; border:1px solid #E3D8BC; border-radius:4px; background:#FDFBF4">
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:#8A6D3B">{{ approvalTitle }}</span>
+            <span style="font-size:11px; color:#9AA6A2">{{ approvalNote }}</span>
+          </div>
+          <sc-for list="{{ changeRequestsVM }}" as="cr" hint-placeholder-count="0">
+            <div style="display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid var(--line); border-radius:3px; background:#fff; flex-wrap:wrap">
+              <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ cr.kindBg }}; color:{{ cr.kindColor }}; letter-spacing:.08em; text-transform:uppercase">{{ cr.kindLabel }}</span>
+              <div style="display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 220px">
+                <span style="font-size:14px; color:#16231F">{{ cr.name }}</span>
+                <span style="font-size:11px; color:#7C8985; overflow-wrap:anywhere">{{ cr.detailLabel }}</span>
+              </div>
+              <span style="font-size:11px; color:#9AA6A2">{{ cr.byLabel }}</span>
+              <sc-if value="{{ canApprovePeople }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:8px; margin-left:auto">
+                  <button onClick="{{ cr.approve }}" style="padding:8px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Approve</button>
+                  <button onClick="{{ cr.reject }}" style="padding:8px 13px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Reject</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
         <div style="flex:0 1 280px; min-width:240px; display:flex; flex-direction:column; gap:10px">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
             <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Crew ({{ peopleCount }})</span>
@@ -199,7 +228,7 @@
               <button onClick="{{ newPerson }}" style="padding:8px 13px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">+ Add</button>
             </sc-if>
           </div>
-          <input placeholder="Search name, ID or role" value="{{ peopleQuery }}" onChange="{{ onPeopleQueryChange }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+          <input placeholder="Search name, ID, role or skill" value="{{ peopleQuery }}" onChange="{{ onPeopleQueryChange }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
           <sc-if value="{{ hasNoPeople }}" hint-placeholder-val="{{ true }}">
             <span style="font-size:13px; color:#7C8985; line-height:1.6">No crew on record yet. Add photographers, editors and assistants here — each gets an ID like PH-001 automatically.</span>
           </sc-if>
@@ -224,11 +253,32 @@
 
           <sc-if value="{{ isPersonView }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; gap:20px; padding:26px; border:1px solid var(--line); border-radius:4px">
-            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
-              <span style="font-size:20px; color:#16231F">{{ personTitle }}</span>
-              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ personCrewId }}</span>
-              <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ personActiveBg }}; color:{{ personActiveColor }}; letter-spacing:.06em; text-transform:uppercase">{{ personActiveLabel }}</span>
-              <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ personStatus }}</span>
+            <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap">
+              <div style="display:flex; flex-direction:column; gap:8px; align-items:center; flex-shrink:0">
+                <div style="width:104px; height:136px; border:1px solid var(--line); border-radius:3px; background:#F4F6F5; overflow:hidden; display:flex; align-items:center; justify-content:center">
+                  <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+                    <img ref="{{ setPhotoRef }}" alt="" style="width:100%; height:100%; object-fit:cover; display:block">
+                  </sc-if>
+                  <sc-if value="{{ hasNoPhoto }}" hint-placeholder-val="{{ true }}">
+                    <span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2; text-align:center; line-height:1.6; padding:0 10px">Passport photo</span>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:6px; align-items:center">
+                    <input type="file" accept="image/*" ref="{{ setPhotoInputRef }}" onChange="{{ onPhotoFileChange }}" style="display:none">
+                    <button onClick="{{ triggerPhotoPicker }}" style="padding:6px 11px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ photoUploadLabel }}</button>
+                    <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ removePhoto }}" style="padding:6px 9px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; color:#B4433A; cursor:pointer">✕</button>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="flex:1 1 220px; min-width:0; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:20px; color:#16231F">{{ personTitle }}</span>
+                <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ personCrewId }}</span>
+                <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ personActiveBg }}; color:{{ personActiveColor }}; letter-spacing:.06em; text-transform:uppercase">{{ personActiveLabel }}</span>
+                <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ personStatus }}</span>
+              </div>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:18px 24px">
               <sc-for list="{{ personViewVM }}" as="pv" hint-placeholder-count="6">
@@ -358,10 +408,13 @@
             </div>
 
             <textarea value="{{ pfNotes }}" onChange="{{ onPfNotes }}" rows="3" placeholder="Notes — gear, specialities, availability quirks" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; resize:vertical; font-family:inherit"></textarea>
+            <sc-if value="{{ needsApproval }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px; color:#8A6D3B; line-height:1.6">These details go to an admin for approval — the record only changes once they accept. Skills, CV, photo and joining dates on the Career tab save straight away.</span>
+            </sc-if>
 
             <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
-                <button onClick="{{ savePerson }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save crew member</button>
+                <button onClick="{{ savePerson }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ savePersonLabel }}</button>
                 <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
                   <input type="checkbox" checked="{{ pfActive }}" onChange="{{ onPfActive }}"> Active
                 </label>
@@ -374,6 +427,273 @@
           </sc-if>
 
           <sc-if value="{{ isExistingPerson }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <sc-for list="{{ personTabsVM }}" as="pt" hint-placeholder-count="3">
+              <button onClick="{{ pt.go }}" style="padding:9px 16px; background:{{ pt.bg }}; border:1px solid {{ pt.border }}; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ pt.color }}; cursor:pointer" style-hover="border-color:var(--green)">{{ pt.label }}</button>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ showCareerTab }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:22px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Career</span>
+              <span style="font-size:11px; color:#9AA6A2">Joining dates, experience, skills and CV.</span>
+              <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ careerStatus }}</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:12px">
+              <sc-for list="{{ tenureStatsVM }}" as="ts" hint-placeholder-count="5">
+                <div style="display:flex; flex-direction:column; gap:5px; padding:14px 16px; border:1px solid var(--line); border-radius:3px; background:#FAFCFB">
+                  <span style="font-size:21px; font-weight:300; color:#16231F; font-variant-numeric:tabular-nums">{{ ts.value }}</span>
+                  <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ ts.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <span style="font-size:11px; color:#9AA6A2; line-height:1.6">Counted from their crew assignments and logged day sheets — nothing to fill in by hand.</span>
+
+            <div style="display:flex; flex-direction:column; gap:14px; padding-top:18px; border-top:1px solid var(--line)">
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Joining dates</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px">
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Appointed as staff
+                  <input type="date" value="{{ cfAppointed }}" onChange="{{ onCfAppointed }}" readOnly="{{ careerReadOnly }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Intern from
+                  <input type="date" value="{{ cfIntern }}" onChange="{{ onCfIntern }}" readOnly="{{ careerReadOnly }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Freelance since
+                  <input type="date" value="{{ cfFreelance }}" onChange="{{ onCfFreelance }}" readOnly="{{ careerReadOnly }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Years of experience before
+                  <input type="number" min="0" step="0.5" value="{{ cfPriorYears }}" onChange="{{ onCfPriorYears }}" readOnly="{{ careerReadOnly }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+              </div>
+              <span style="font-size:11px; color:#9AA6A2; line-height:1.6">Fill in whichever apply — an intern who later joined the payroll keeps both dates, and tenure counts from the earliest one.</span>
+              <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <button onClick="{{ saveCareer }}" style="padding:10px 20px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save dates</button>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; padding-top:18px; border-top:1px solid var(--line)">
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Skills</span>
+              <sc-if value="{{ hasSkills }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:8px; flex-wrap:wrap">
+                  <sc-for list="{{ skillsVM }}" as="sk" hint-placeholder-count="0">
+                    <span style="display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border:1px solid var(--line); border-radius:14px; background:#F3FAF8; font-size:12px; color:#16231F">{{ sk.label }}
+                      <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ sk.remove }}" style="padding:0; background:none; border:none; font-size:12px; line-height:1; color:#9AA6A2; cursor:pointer" style-hover="color:#B4433A">✕</button>
+                      </sc-if>
+                    </span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ hasNoSkills }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:13px; color:#7C8985">No skills listed yet.</span>
+              </sc-if>
+              <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+                  <input placeholder="Wedding candid, Premiere Pro, Drone…" value="{{ skillDraft }}" onChange="{{ onSkillDraft }}" onKeyDown="{{ onSkillKeyDown }}" style="flex:1 1 220px; min-width:0; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  <button onClick="{{ addSkill }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Add skill</button>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; padding-top:18px; border-top:1px solid var(--line)">
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Before Glomium</span>
+              <sc-if value="{{ hasNoExperience }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:13px; color:#7C8985">No previous employers on record.</span>
+              </sc-if>
+              <div style="display:flex; flex-direction:column; gap:8px">
+                <sc-for list="{{ experienceVM }}" as="xp" hint-placeholder-count="0">
+                  <div style="display:flex; align-items:baseline; gap:12px; padding:10px 13px; border:1px solid var(--line); border-radius:3px; flex-wrap:wrap">
+                    <span style="font-size:13px; color:#16231F">{{ xp.employer }}</span>
+                    <span style="font-size:12px; color:#7C8985">{{ xp.roleLabel }}</span>
+                    <span style="font-size:11px; color:#9AA6A2; margin-left:auto">{{ xp.periodLabel }}</span>
+                    <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ xp.remove }}" style="padding:5px 9px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; align-items:end">
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Employer
+                    <input placeholder="Studio or company" value="{{ expEmployer }}" onChange="{{ onExpEmployer }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Role there
+                    <input placeholder="Second shooter" value="{{ expRole }}" onChange="{{ onExpRole }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">From
+                    <input type="date" value="{{ expFrom }}" onChange="{{ onExpFrom }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">To
+                    <input type="date" value="{{ expTo }}" onChange="{{ onExpTo }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  </label>
+                  <button onClick="{{ addExperience }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Add</button>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; padding-top:18px; border-top:1px solid var(--line)">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">CV / resume</span>
+                <span style="font-size:11px; color:#9AA6A2">{{ cvMetaLabel }}</span>
+                <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:8px; margin-left:auto">
+                    <input type="file" accept=".pdf,image/*" ref="{{ setCvInputRef }}" onChange="{{ onCvFileChange }}" style="display:none">
+                    <button onClick="{{ triggerCvPicker }}" style="padding:8px 15px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ cvUploadLabel }}</button>
+                    <sc-if value="{{ hasCv }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ removeCv }}" style="padding:8px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Remove</button>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+              <sc-if value="{{ hasNoCv }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:13px; color:#7C8985; line-height:1.6">No CV on file. PDF or image — it is stored privately and only opens through a signed link.</span>
+              </sc-if>
+              <sc-if value="{{ cvReady }}" hint-placeholder-val="{{ false }}">
+                <iframe ref="{{ setCvFrameRef }}" title="CV preview" style="width:100%; height:min(52vh,520px); border:1px solid var(--line); border-radius:3px; background:#fff"></iframe>
+              </sc-if>
+              <sc-if value="{{ cvLoading }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px; color:#9AA6A2">Opening preview…</span>
+              </sc-if>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ showPayTab }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:22px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Pay</span>
+              <span style="font-size:11px; color:#9AA6A2">Bank details, payslips, bonuses and everything earned here.</span>
+              <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ payStatus }}</span>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:3px; background:#F3FAF8">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#7C8985">Total earned from Glomium</span>
+              <span style="font-size:28px; font-weight:300; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ payTotalLabel }}</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
+              <sc-for list="{{ payTotalsVM }}" as="pt2" hint-placeholder-count="4">
+                <div style="display:flex; flex-direction:column; gap:5px; padding:13px 15px; border:1px solid var(--line); border-radius:3px">
+                  <span style="font-size:15px; color:#16231F; font-variant-numeric:tabular-nums">{{ pt2.value }}</span>
+                  <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ pt2.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; padding-top:18px; border-top:1px solid var(--line)">
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Where they get paid</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:16px 24px">
+                <div style="display:flex; flex-direction:column; gap:4px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Bank</span><span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ payBankName }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:4px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Account</span><span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ payBankAccount }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:4px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">IFSC</span><span style="font-size:14px; color:#16231F">{{ payBankIfsc }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:4px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">UPI</span><span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ payUpi }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:4px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">PAN</span><span style="font-size:14px; color:#16231F">{{ payPan }}</span></div>
+              </div>
+              <sc-if value="{{ payBankIncomplete }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11px; color:#8A6D3B">No account or UPI on file — add it under Edit details before running a payout.</span>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; padding-top:18px; border-top:1px solid var(--line)">
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Payslips &amp; bonuses</span>
+              <sc-if value="{{ hasNoPayments }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:13px; color:#7C8985">Nothing recorded yet.</span>
+              </sc-if>
+              <sc-for list="{{ paymentsVM }}" as="pm2" hint-placeholder-count="0">
+                <div style="display:flex; flex-direction:column; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:3px">
+                  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                    <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ pm2.kindBg }}; color:{{ pm2.kindColor }}; letter-spacing:.08em; text-transform:uppercase">{{ pm2.kindLabel }}</span>
+                    <div style="display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 160px">
+                      <span style="font-size:14px; color:#16231F">{{ pm2.periodLabel }}</span>
+                      <span style="font-size:11px; color:#9AA6A2">{{ pm2.paidLabel }}</span>
+                    </div>
+                    <span style="font-size:15px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.netLabel }}</span>
+                    <div style="display:flex; gap:8px; margin-left:auto">
+                      <sc-if value="{{ pm2.isSalary }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ pm2.toggle }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ pm2.slipLabel }}</button>
+                      </sc-if>
+                      <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ pm2.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                  <sc-if value="{{ pm2.isOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; gap:10px">
+                      <div ref="{{ pm2.setSlipRef }}" style="display:flex; flex-direction:column; gap:18px; padding:34px 32px; background:#fff; border:1px solid var(--line); border-radius:2px">
+                        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding-bottom:14px; border-bottom:1px solid var(--line)">
+                          <span style="font-size:15px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Glomium</span>
+                          <span style="font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#9AA6A2">Payslip</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px">
+                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Crew member</span><span style="font-size:14px; color:#16231F">{{ personPayName }}</span></div>
+                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Crew ID</span><span style="font-size:14px; color:#16231F">{{ personPayId }}</span></div>
+                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Role</span><span style="font-size:14px; color:#16231F">{{ personPayRole }}</span></div>
+                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Period</span><span style="font-size:14px; color:#16231F">{{ pm2.periodLabel }}</span></div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px">
+                          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid #F1F4F3"><span style="font-size:13px; color:#5D6864">Gross pay</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.grossLabel }}</span></div>
+                          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid #F1F4F3"><span style="font-size:13px; color:#5D6864">Deductions</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.dedLabel }}</span></div>
+                          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:12px 0 0; border-top:1px solid var(--line)"><span style="font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep)">Net pay</span><span style="font-size:19px; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ pm2.netLabel }}</span></div>
+                          <span style="font-size:11px; color:#7C8985; font-style:italic">{{ pm2.netWords }}</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:4px; padding-top:12px; border-top:1px solid var(--line)">
+                          <span style="font-size:11px; color:#7C8985">{{ pm2.paidLabel }} · Credited to {{ payBankName }} {{ payBankAccount }}</span>
+                          <sc-if value="{{ pm2.hasNote }}" hint-placeholder-val="{{ false }}">
+                            <span style="font-size:11px; color:#7C8985">{{ pm2.note }}</span>
+                          </sc-if>
+                          <span style="font-size:10px; color:#9AA6A2; line-height:1.6">Computer-generated payslip. No signature required.</span>
+                        </div>
+                      </div>
+                      <div>
+                        <button onClick="{{ pm2.download }}" style="padding:8px 16px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Download PDF</button>
+                      </div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="padding-top:12px; border-top:1px solid var(--line)">
+                  <button onClick="{{ togglePayForm }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ payFormToggleLabel }}</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ payFormOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end">
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Kind
+                    <select value="{{ payKind }}" onChange="{{ onPayKind }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff">
+                      <option value="salary">Payslip</option>
+                      <option value="bonus">Bonus</option>
+                      <option value="reimbursement">Reimbursement</option>
+                    </select>
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ payPeriodFieldLabel }}
+                    <input value="{{ payPeriod }}" onChange="{{ onPayPeriod }}" placeholder="{{ payPeriodPlaceholder }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ payAmountLabel }}
+                    <input type="number" min="0" value="{{ payGross }}" onChange="{{ onPayGross }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
+                  </label>
+                  <sc-if value="{{ payIsSalary }}" hint-placeholder-val="{{ true }}">
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Deductions (₹)
+                      <input type="number" min="0" value="{{ payDeductions }}" onChange="{{ onPayDeductions }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
+                    </label>
+                  </sc-if>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Paid on
+                    <input type="date" value="{{ payPaidOn }}" onChange="{{ onPayPaidOn }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Note
+                    <input placeholder="Optional" value="{{ payNote }}" onChange="{{ onPayNote }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  </label>
+                  <button onClick="{{ addPayment }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Add</button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ showAvailTab }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:4px">
             <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
               <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Availability</span>
@@ -406,7 +726,7 @@
           </sc-if>
 
           <sc-if value="{{ canDocs }}" hint-placeholder-val="{{ false }}">
-          <sc-if value="{{ isExistingPerson }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ showDocsTab }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:4px">
             <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
               <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Documents</span>
@@ -437,6 +757,61 @@
         </div>
         </sc-if>
 
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isApprovals }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1040px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:22px; font-weight:300; color:#16231F">Approvals</span>
+          <span style="font-size:12px; color:#7C8985">{{ approvalsCountLabel }}</span>
+          <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ requestStatus }}</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <sc-for list="{{ requestFilterVM }}" as="rf" hint-placeholder-count="2">
+            <button onClick="{{ rf.go }}" style="padding:8px 15px; background:{{ rf.bg }}; border:1px solid {{ rf.border }}; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ rf.color }}; cursor:pointer">{{ rf.label }}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ hasNoApprovals }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size:14px; color:#7C8985; line-height:1.7">{{ emptyApprovalsHint }}</span>
+        </sc-if>
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <sc-for list="{{ approvalsVM }}" as="ap" hint-placeholder-count="0">
+            <div style="display:flex; flex-direction:column; gap:14px; padding:18px 20px; border:1px solid var(--line); border-radius:4px">
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ ap.kindBg }}; color:{{ ap.kindColor }}; letter-spacing:.08em; text-transform:uppercase">{{ ap.kindLabel }}</span>
+                <div style="display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 200px">
+                  <span style="font-size:15px; color:#16231F">{{ ap.name }} <span style="font-size:11px; color:#9AA6A2">{{ ap.crewId }}</span></span>
+                  <span style="font-size:11px; color:#7C8985">{{ ap.summary }} · {{ ap.byLabel }}</span>
+                </div>
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ ap.statusBg }}; color:{{ ap.statusColor }}; letter-spacing:.08em; text-transform:uppercase">{{ ap.statusLabel }}</span>
+                <div style="display:flex; gap:8px; margin-left:auto; flex-wrap:wrap">
+                  <button onClick="{{ ap.toggle }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ ap.previewLabel }}</button>
+                  <sc-if value="{{ ap.isPending }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ ap.approve }}" style="padding:8px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Approve</button>
+                    <button onClick="{{ ap.reject }}" style="padding:8px 13px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Reject</button>
+                  </sc-if>
+                </div>
+              </div>
+              <sc-if value="{{ ap.isOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:2px; padding-top:14px; border-top:1px solid var(--line)">
+                  <div style="display:grid; grid-template-columns:minmax(120px,1fr) minmax(0,1.2fr) minmax(0,1.2fr); gap:10px; padding:0 2px 8px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Field</span>
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">On record</span>
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Proposed</span>
+                  </div>
+                  <sc-for list="{{ ap.diffVM }}" as="df" hint-placeholder-count="5">
+                    <div style="display:grid; grid-template-columns:minmax(120px,1fr) minmax(0,1.2fr) minmax(0,1.2fr); gap:10px; padding:8px 2px; border-top:1px solid #F1F4F3">
+                      <span style="font-size:12px; color:#5D6864">{{ df.label }}</span>
+                      <span style="font-size:13px; color:{{ df.beforeColor }}; overflow-wrap:anywhere">{{ df.before }}</span>
+                      <span style="font-size:13px; color:{{ df.afterColor }}; overflow-wrap:anywhere">{{ df.after }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
       </div>
       </sc-if>
 
@@ -634,11 +1009,18 @@
           </sc-if>
         </div>
 
+        <sc-if value="{{ hasEditorTabs }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; gap:16px; border-bottom:1px solid var(--line)">
           <sc-for list="{{ editorTabsVM }}" as="tb" hint-placeholder-count="2">
             <button onClick="{{ tb.go }}" style="padding:12px 4px; margin-bottom:-1px; background:none; border:none; border-bottom:2px solid {{ tb.border }}; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:{{ tb.color }}; cursor:pointer">{{ tb.label }}</button>
           </sc-for>
         </div>
+        </sc-if>
+        <sc-if value="{{ hasNoEditorTabs }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:16px 18px; border:1px solid var(--line); border-left:3px solid #C9A227; border-radius:3px; background:#FDFBF4">
+            <span style="font-size:12px; color:#8A6D3B; line-height:1.6">Your account can see this record's name and dates, nothing inside it. Ask an admin for the access you need.</span>
+          </div>
+        </sc-if>
 
         <sc-if value="{{ isCrewTab }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex; flex-direction:column; gap:22px">
@@ -861,6 +1243,71 @@
             </sc-if>
           </div>
 
+          <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Contract</span>
+              <span style="font-size:11px; color:#9AA6A2">A retainer bills on a cycle and carries a delivery date per period.</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px">
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Billing
+                <select value="{{ editBillingType }}" onChange="{{ onEditBillingType }}" disabled="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff">
+                  <option value="one_time">One-off project</option>
+                  <option value="retainer">Retainer contract</option>
+                </select>
+              </label>
+              <sc-if value="{{ isRetainerDraft }}" hint-placeholder-val="{{ false }}">
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Contract starts
+                  <input type="date" value="{{ editContractStart }}" onChange="{{ onEditContractStart }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Term (months)
+                  <input type="number" min="1" value="{{ editContractMonths }}" onChange="{{ onEditContractMonths }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Bills every
+                  <select value="{{ editBillingCycle }}" onChange="{{ onEditBillingCycle }}" disabled="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff">
+                    <option value="monthly">Month</option>
+                    <option value="quarterly">Quarter</option>
+                    <option value="half_yearly">Six months</option>
+                    <option value="yearly">Year</option>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Amount per cycle (₹)
+                  <input type="number" min="0" value="{{ editRetainerAmount }}" onChange="{{ onEditRetainerAmount }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Payment terms (days)
+                  <input type="number" min="0" value="{{ editPaymentTerms }}" onChange="{{ onEditPaymentTerms }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+              </sc-if>
+            </div>
+            <sc-if value="{{ isRetainerDraft }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">What each cycle delivers
+                <input value="{{ editRetainerScope }}" onChange="{{ onEditRetainerScope }}" readOnly="{{ contractLocked }}" placeholder="e.g. 8 reels, 2 photoshoots, monthly content calendar" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </label>
+              <div style="display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--line)">
+                <span style="font-size:12px; color:#5D6864">{{ contractSummary }}</span>
+                <span style="font-size:15px; color:var(--green-deep); margin-left:auto; font-variant-numeric:tabular-nums">{{ contractValueLabel }}</span>
+                <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Contract value</span>
+              </div>
+            </sc-if>
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--line)">
+              <button onClick="{{ saveContract }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save contract</button>
+              <span style="font-size:12px; color:var(--green-deep)">{{ contractStatus }}</span>
+              <sc-if value="{{ contractDirty }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11px; color:#8A6D3B">Unsaved — the billing schedule updates once you save.</span>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 24px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+              <button onClick="{{ sendPreviewEmail }}" disabled="{{ noClientEmail }}" style="padding:11px 20px; background:none; border:1px solid var(--green); border-radius:2px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Email project link</button>
+              <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
+            </div>
+            <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:11px; color:#9AA6A2">Add a client email under Billing &amp; invoices, then save, to enable the email.</span>
+            </sc-if>
+            <span style="font-size:11px; color:#9AA6A2">Sends automatically from official@glomium.in — no mail app needed.</span>
+          </div>
+
           <div style="display:flex; flex-direction:column; gap:18px; padding:24px; border:1px solid var(--line); border-radius:4px">
             <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
               <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Brand</span>
@@ -1074,6 +1521,41 @@
             </div>
           </sc-if>
 
+          <sc-if value="{{ hasSchedule }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:12px; padding:20px 22px; border:1px solid var(--line); border-radius:4px; background:#FAFCFB">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Billing schedule</span>
+              <span style="font-size:11px; color:#9AA6A2">{{ scheduleSummary }}</span>
+              <sc-if value="{{ hasUnbilled }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ generateDueInvoices }}" style="margin-left:auto; padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ unbilledLabel }}</button>
+              </sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <sc-for list="{{ scheduleVM }}" as="sp" hint-placeholder-count="0">
+                <div style="display:flex; align-items:center; gap:14px; padding:11px 14px; border:1px solid var(--line); border-radius:3px; background:#fff; flex-wrap:wrap">
+                  <div style="display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 190px">
+                    <span style="font-size:14px; color:#16231F">{{ sp.label }}</span>
+                    <span style="font-size:11px; color:#7C8985">{{ sp.rangeLabel }} · {{ sp.deliveryLabel }}</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                    <span style="font-size:12px; color:#5D6864">{{ sp.invoiceNumber }}</span>
+                    <span style="font-size:11px; color:#9AA6A2">{{ sp.dueLabel }}</span>
+                  </div>
+                  <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ sp.stateBg }}; color:{{ sp.stateColor }}; letter-spacing:.08em; text-transform:uppercase">{{ sp.stateLabel }}</span>
+                  <div style="display:flex; gap:8px; margin-left:auto">
+                    <sc-if value="{{ sp.needsInvoice }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ sp.generate }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Invoice</button>
+                    </sc-if>
+                    <sc-if value="{{ sp.hasInvoice }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ sp.toggleDelivered }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ sp.deliveredBtnLabel }}</button>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ hasNoInvoices }}" hint-placeholder-val="{{ true }}">
             <span style="font-size:13px; color:#7C8985">No invoices yet.</span>
           </sc-if>
@@ -1084,6 +1566,12 @@
                 <span style="font-size:13px; color:#16231F; font-weight:500">{{ inv.number }}</span>
                 <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ inv.typeBg }}; color:{{ inv.typeColor }}; letter-spacing:.06em; text-transform:uppercase">{{ inv.typeLabel }}</span>
                 <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ inv.statusBg }}; color:{{ inv.statusColor }}; letter-spacing:.06em; text-transform:uppercase">{{ inv.status }}</span>
+                <sc-if value="{{ inv.hasPeriod }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:#5D6864">{{ inv.periodLabel }}</span>
+                </sc-if>
+                <sc-if value="{{ inv.hasDelivery }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:11px; color:{{ inv.deliveryColor }}">{{ inv.deliveryLabel }}</span>
+                </sc-if>
                 <span style="font-size:13px; color:#5D6864; margin-left:auto">{{ inv.totalFmt }}</span>
                 <div style="display:flex; gap:8px">
                   <button onClick="{{ inv.preview }}" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer">Preview</button>
@@ -1347,12 +1835,16 @@ const STAFF_ROLE_LABEL = { admin: 'Admin', creative: 'Creative', accounts: 'Acco
 //               so nobody is locked out of their own panel mid-migration; the crew and
 //               payout sides stay shut until an admin adds their row.
 const CAPS = {
+  // Accounts sees the work only as status and money: the album list, the billing
+  // tab and payouts. Never the media, never a crew profile.
   albums:      ['none', 'admin', 'creative', 'accounts', 'hr'],
-  recordsEdit: ['none', 'admin', 'creative', 'hr'],
-  media:       ['none', 'admin', 'creative', 'hr'],
-  billing:     ['none', 'admin', 'accounts', 'hr'],
+  recordsEdit: ['admin', 'creative', 'hr'],
+  media:       ['admin', 'creative', 'hr'],
+  billing:     ['admin', 'accounts', 'hr'],
   people:      ['admin', 'hr'],
   peopleEdit:  ['admin', 'hr'],
+  // Adding, editing or removing a crew member is an admin decision; HR proposes.
+  peopleApprove: ['admin'],
   payouts:     ['admin', 'accounts', 'hr'],
   payoutsEdit: ['admin', 'accounts'],
   docs:        ['admin', 'hr'],
@@ -1392,6 +1884,15 @@ const EMPTY_PERSON = {
   id_proof_type: 'aadhaar', id_proof_number: '',
   pay_mode: 'hourly',
   monthly_salary: '', default_hourly_rate: '', notes: '', active: true,
+};
+
+// Human names for the crew form fields, used by the approval preview.
+const PERSON_FIELD_LABEL = {
+  full_name: 'Full name', primary_role: 'Role', engagement: 'Engagement', phone: 'Phone',
+  email: 'Email', address: 'Address', bank_name: 'Bank', bank_account: 'Account number',
+  bank_ifsc: 'IFSC', upi_id: 'UPI ID', pan: 'PAN', id_proof_type: 'ID proof type',
+  id_proof_number: 'ID proof number', pay_mode: 'Paid as', monthly_salary: 'Monthly salary',
+  default_hourly_rate: 'Default hourly rate', notes: 'Notes', active: 'Active',
 };
 
 const PAY_MODES = [
@@ -1492,11 +1993,20 @@ class Component extends DCLogic {
     editorTab: 'album',
     role: null,
     people: [], peopleQuery: '', personId: null, personForm: null, personStatus: '', personMode: 'view',
+    changeRequests: [], requestStatus: '', requestFilter: 'pending', requestOpen: null,
     workload: [], workloadFailed: false, works: [], workFilter: 'active', workStatus: '',
     personRates: [], rateLabel: '', rateAmount: '',
     agDeliverables: [], dlFor: '', dlLabel: '', dlQty: '1', dlRate: '', dlStatus: '',
     crewRates: [],
     personDocs: [], docLabel: '',
+    personTab: 'career',
+    careerDraft: { appointed_date: '', intern_from: '', freelance_from: '', prior_years: '' },
+    careerStatus: '', careerSkills: [], skillDraft: '',
+    experience: [], expEmployer: '', expRole: '', expFrom: '', expTo: '',
+    cvPath: '', cvName: '', cvUploadedAt: null, cvUrl: '',
+    photoPath: '', photoUrl: '',
+    payments: [], payStatus: '', payOpen: null, payFormOpen: false,
+    payKind: 'salary', payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '',
     personAvail: [], availDay: '', availStatus: 'busy', availNote: '',
     assignments: [], costing: null, crewStatus: '', agEdits: {},
     eventDays: [], dayDate: '', dayHours: {}, dayStatus: '',
@@ -1589,7 +2099,10 @@ class Component extends DCLogic {
     const uid = u && u.user ? u.user.id : null;
     if (!uid) return;
     const { data } = await this.sb.from('staff_roles').select('role').eq('auth_id', uid).maybeSingle();
-    this.setState({ role: (data && data.role) || 'none' });
+    const role = (data && data.role) || 'none';
+    this.setState({ role });
+    // The nav badge needs the pending count before the page is ever opened.
+    this.loadChangeRequests(role);
   }
 
   can(what) { return (CAPS[what] || []).indexOf(this.state.role || 'none') !== -1; }
@@ -1599,7 +2112,8 @@ class Component extends DCLogic {
     this.setState({ view, current: null, media: [], assignments: [], costing: null });
     if (view === 'dashboard') this.loadForDivision();
     if (view === 'schedule') this.loadSchedule();
-    if (view === 'people') { this.loadPeople(); this.loadWorkload(); }
+    if (view === 'people') { this.loadPeople(); this.loadWorkload(); this.loadChangeRequests(); }
+    if (view === 'approvals') { this.loadChangeRequests(); if (!this.state.people.length) this.loadPeople(); }
     if (view === 'payouts') { this.loadPayouts(); }
   }
 
@@ -1661,7 +2175,7 @@ class Component extends DCLogic {
       editPackagePrice: ev.package_price != null ? String(ev.package_price) : '', editClientGstin: ev.client_gstin || '', editClientState: ev.client_state || '',
       detailsStatus: '', clientStatus: '', copyLabel: 'Copy public link',
       invoices: [], showInvoiceForm: false, newInvType: 'tax', newInvDiscount: '0', newInvAdvancePct: '30', newInvGstOverride: 'auto', newInvAddons: [], newInvNotes: DEFAULT_INVOICE_NOTES,
-      editorTab: this.can('media') ? 'album' : this.can('billing') ? 'billing' : 'crew',
+      editorTab: this.firstEditorTab(),
       assignments: [], costing: null, agEdits: {}, crewStatus: '',
       eventDays: [], dayDate: ev.event_date || '', dayHours: {}, dayStatus: '',
       afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
@@ -1676,6 +2190,15 @@ class Component extends DCLogic {
       this.loadCosting(ev.id, rec);
       if (!this.state.people.length) this.loadPeople();
     }
+  }
+
+  // Never land on a tab this account cannot hold — an empty tab is what makes the
+  // "no access" notice the only thing that renders.
+  firstEditorTab() {
+    if (this.can('media')) return 'album';
+    if (this.can('people')) return 'crew';
+    if (this.can('billing')) return 'billing';
+    return '';
   }
 
   backToDashboard() {
@@ -1779,6 +2302,7 @@ class Component extends DCLogic {
   schemaHint(raw) {
     const m = raw || '';
     if (/album_unlocked/.test(m)) return 'Run album-system/album-lock-schema.sql in Supabase — the album_unlocked column does not exist yet.';
+    if (/billing_type|contract_start|contract_months|billing_cycle|retainer_|payment_terms_days|period_start|delivery_due/.test(m)) return 'Run album-system/retainer-schema.sql in Supabase — the contract billing columns do not exist yet.';
     if (/taken_date|delivered_date/.test(m)) return 'Run album-system/project-dates-schema.sql in Supabase — the taken_date / delivered_date columns do not exist yet.';
     if (/production_status_check/.test(m)) return 'Run album-system/planning-stage.sql in Supabase — the database does not allow the Planning stage yet.';
     if (/work_nature/.test(m)) return 'Run album-system/projects-schema.sql in Supabase (latest version) — the work_nature column is missing on projects.';
@@ -1860,6 +2384,13 @@ class Component extends DCLogic {
     this.setState({
       view: 'editor', current: { ...pr, _table: 'projects', couple_names: pr.client_name, venue: pr.sector || '' },
       editProjClient: pr.client_name || '', editProjTitle: pr.project_title || '', editSector: pr.sector || '',
+      editBillingType: pr.billing_type || 'one_time', editContractStart: pr.contract_start || '',
+      editContractMonths: pr.contract_months == null ? '12' : String(pr.contract_months),
+      editBillingCycle: pr.billing_cycle || 'monthly',
+      editRetainerAmount: pr.retainer_amount == null ? '' : String(pr.retainer_amount),
+      editRetainerScope: pr.retainer_scope || '',
+      editPaymentTerms: pr.payment_terms_days == null ? '7' : String(pr.payment_terms_days),
+      contractStatus: '',
       editTagline: pr.tagline || '', editBrief: pr.brief || '',
       editDate: pr.start_date || '', editTaken: pr.taken_date || '', editDelivered: pr.delivered_date || '', editSlug: pr.slug,
       editClientName: pr.client_name || '', editClientPhone: pr.client_phone || '', editClientEmail: pr.client_email || '',
@@ -1868,7 +2399,7 @@ class Component extends DCLogic {
       paletteDraft: this.asList(pr.palette).map(p => ({ id: Date.now() + Math.random(), name: p.name || '', hex: p.hex || '' })),
       fontDraft: this.asList(pr.brand_fonts).map(f => ({ id: Date.now() + Math.random(), name: f.name || '', role: f.role || '', google: f.google || '', line: f.line || '' })),
       detailsStatus: '', brandStatus: '', clientStatus: '',
-      editorTab: this.can('media') ? 'album' : (this.can('people') ? 'crew' : 'billing'),
+      editorTab: this.firstEditorTab(),
       projectMedia: [], projMediaStatus: {},
       assignments: [], costing: null, agEdits: {}, crewStatus: '',
       eventDays: [], dayDate: pr.start_date || '', dayHours: {}, dayStatus: '',
@@ -1979,7 +2510,7 @@ class Component extends DCLogic {
   // whether the booking came from events or projects.
   async loadWorkload() {
     const { data, error } = await this.sb.from('assignments')
-      .select('id, person_id, crew_role, event_id, project_id, events(couple_names, event_date, production_status), projects(client_name, start_date, production_status)');
+      .select('id, person_id, crew_role, hours, days_logged, amount_owed, payout_status, pay_basis, event_id, project_id, events(couple_names, event_date, production_status), projects(client_name, start_date, production_status)');
     if (error) { this.setState({ workload: [], workloadFailed: true, personStatus: error.message }); return; }
     const norm = (data || []).map(a => ({
       ...a,
@@ -2553,6 +3084,169 @@ class Component extends DCLogic {
     setTimeout(() => this.setState({ invStatus: '' }), 2500);
   }
 
+  // ---- Retainer contracts ------------------------------------------------------
+
+  // Its own save, so the billing schedule is only ever built from a stored
+  // contract — a half-typed term must not offer Generate buttons.
+  async saveContract() {
+    const s = this.state, pr = s.current;
+    if (!pr) return;
+    if (this.albumLocked()) { this.setState({ contractStatus: 'Locked — this project is delivered.' }); return; }
+    const months = s.editContractMonths === '' ? null : Number(s.editContractMonths);
+    const amount = s.editRetainerAmount === '' ? null : Number(s.editRetainerAmount);
+    if (s.editBillingType === 'retainer') {
+      if (!s.editContractStart) { this.setState({ contractStatus: 'When does the contract start?' }); return; }
+      if (!months || months < 1) { this.setState({ contractStatus: 'How many months does it run?' }); return; }
+      if (!amount || amount <= 0) { this.setState({ contractStatus: 'Set the amount per cycle.' }); return; }
+    }
+    this.setState({ contractStatus: 'Saving…' });
+    const patch = {
+      billing_type: s.editBillingType,
+      contract_start: s.editContractStart || null,
+      contract_months: months,
+      billing_cycle: s.editBillingCycle,
+      retainer_amount: amount,
+      retainer_scope: s.editRetainerScope || null,
+      payment_terms_days: s.editPaymentTerms === '' ? 7 : Number(s.editPaymentTerms),
+    };
+    const { error } = await this.sb.from('projects').update(patch).eq('id', pr.id);
+    if (error) {
+      const missing = /billing_type|contract_start|retainer_amount|payment_terms_days/i.test(error.message || '');
+      this.setState({ contractStatus: missing ? 'Run album-system/retainer-schema.sql in Supabase first.' : error.message });
+      return;
+    }
+    this.setState({ contractStatus: 'Contract saved.', current: { ...pr, ...patch } });
+    setTimeout(() => this.setState({ contractStatus: '' }), 2500);
+  }
+
+  // Month arithmetic on a yyyy-mm-dd string. Clamped, so a contract starting on
+  // the 31st still bills on the 28th/30th of short months instead of skipping.
+  addMonths(iso, n) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const target = new Date(y, m - 1 + n, 1);
+    const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+    target.setDate(Math.min(d, lastDay));
+    return this.toIso(target);
+  }
+
+  addDays(iso, n) {
+    const [y, m, d] = iso.split('-').map(Number);
+    return this.toIso(new Date(y, m - 1, d + n));
+  }
+
+  toIso(dt) {
+    return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+  }
+
+  cycleMonths(cycle) { return { monthly: 1, quarterly: 3, half_yearly: 6, yearly: 12 }[cycle || 'monthly'] || 1; }
+
+  // Every billing period the contract implies, whether invoiced yet or not.
+  contractSchedule(pr) {
+    if (!pr || pr.billing_type !== 'retainer') return [];
+    const start = pr.contract_start, months = Number(pr.contract_months || 0);
+    if (!start || !months) return [];
+    const step = this.cycleMonths(pr.billing_cycle);
+    const terms = Number(pr.payment_terms_days == null ? 7 : pr.payment_terms_days);
+    const out = [];
+    for (let i = 0; i * step < months; i++) {
+      const ps = this.addMonths(start, i * step);
+      const pe = this.addDays(this.addMonths(start, Math.min((i + 1) * step, months)), -1);
+      out.push({
+        index: i + 1, start: ps, end: pe,
+        // Billed at the start of the period; the work for it is due by its end.
+        dueDate: this.addDays(ps, terms), deliveryDue: pe,
+      });
+    }
+    return out;
+  }
+
+  periodLabel(p, cycle) {
+    const short = iso => new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+    if (this.cycleMonths(cycle) === 1) return short(p.start);
+    return short(p.start) + ' – ' + short(p.end);
+  }
+
+  // The GST split, shared by the one-off form and the recurring schedule.
+  invoiceTotals(lineItems, discount, clientState, gstOverride) {
+    const subtotal = lineItems.reduce((sum, l) => sum + l.amount, 0);
+    const disc = Number(discount || 0);
+    const taxable = Math.max(0, subtotal - disc);
+    const gstMode = gstOverride === 'auto' || !gstOverride
+      ? ((clientState || '').trim().toLowerCase() === 'kerala' ? 'cgst_sgst' : 'igst')
+      : gstOverride;
+    const rate = 18, half = rate / 2;
+    const cgst = gstMode === 'cgst_sgst' ? +(taxable * half / 100).toFixed(2) : 0;
+    const igst = gstMode === 'igst' ? +(taxable * rate / 100).toFixed(2) : 0;
+    const total = +(taxable + (gstMode === 'cgst_sgst' ? cgst * 2 : igst)).toFixed(2);
+    return { subtotal, discount: disc, taxable, gstMode, rate, cgst, sgst: cgst, igst, total };
+  }
+
+  async generatePeriodInvoice(period, silent) {
+    const s = this.state, pr = s.current;
+    const name = s.editProjClient || pr.client_name;
+    if (!name) { this.setState({ invStatus: 'Add and save a client name first.' }); return false; }
+    const amount = Number(pr.retainer_amount || 0);
+    if (!amount) { this.setState({ invStatus: 'Set the amount per cycle first.' }); return false; }
+    if (!silent) this.setState({ invStatus: 'Generating…' });
+    try {
+      const label = this.periodLabel(period, pr.billing_cycle);
+      if (this.state.invoices.some(i => i.period_start === period.start)) return false;
+      const scope = pr.retainer_scope || 'Retainer services';
+      const lineItems = [{ desc: scope + ' — ' + label, amount }];
+      const t = this.invoiceTotals(lineItems, 0, s.editClientState || pr.client_state, s.newInvGstOverride);
+      const number = await this.nextInvoiceNumber('tax');
+      const { error } = await this.sb.from('invoices').insert({
+        project_id: pr.id, type: 'tax', number, status: 'draft',
+        issue_date: period.start, due_date: period.dueDate,
+        period_start: period.start, period_end: period.end, period_label: label,
+        delivery_due: period.deliveryDue,
+        bill_name: name, bill_couple: pr.project_title || pr.client_name,
+        bill_gstin: s.editClientGstin || pr.client_gstin || '', bill_pan: s.editClientPan || pr.client_pan || '',
+        bill_email: s.editClientEmail || pr.client_email || '',
+        place_of_supply: (s.editClientState || pr.client_state || '').trim() || '—',
+        gst_mode: t.gstMode, gst_rate: t.rate, line_items: lineItems,
+        discount: 0, subtotal: t.subtotal, taxable_value: t.taxable,
+        cgst_amount: t.cgst, sgst_amount: t.sgst, igst_amount: t.igst, total: t.total,
+        advance_pct: 0, advance_amount: 0, balance_amount: t.total,
+        notes: 'Payment due by ' + period.dueDate + '. Deliverables for this period due by ' + period.deliveryDue + '.',
+      });
+      if (error) throw error;
+      if (!silent) {
+        this.setState({ invStatus: 'Generated ' + number + ' for ' + label + '.' });
+        this.loadInvoices(pr.id, pr);
+        setTimeout(() => this.setState({ invStatus: '' }), 2500);
+      }
+      return true;
+    } catch (e) {
+      const missing = /period_start|billing_type|retainer_amount/i.test(e.message || '');
+      this.setState({ invStatus: missing ? 'Run album-system/retainer-schema.sql in Supabase first.' : (e.message || 'Failed to generate.') });
+      return false;
+    }
+  }
+
+  // One press for a contract that has been running un-invoiced for months.
+  async generateDueInvoices() {
+    const pr = this.state.current;
+    const today = this.toIso(new Date());
+    const billed = new Set(this.state.invoices.map(i => i.period_start).filter(Boolean));
+    const due = this.contractSchedule(pr).filter(p => p.start <= today && !billed.has(p.start));
+    if (!due.length) { this.setState({ invStatus: 'Nothing outstanding.' }); setTimeout(() => this.setState({ invStatus: '' }), 2500); return; }
+    this.setState({ invStatus: 'Generating ' + due.length + '…' });
+    let made = 0;
+    for (const p of due) { if (await this.generatePeriodInvoice(p, true)) made++; else break; }
+    if (made) {
+      this.setState({ invStatus: made + (made === 1 ? ' invoice' : ' invoices') + ' generated.' });
+      this.loadInvoices(pr.id, pr);
+      setTimeout(() => this.setState({ invStatus: '' }), 3000);
+    }
+  }
+
+  async markPeriodDelivered(inv) {
+    const done = inv.delivered_on ? null : this.toIso(new Date());
+    await this.sb.from('invoices').update({ delivered_on: done }).eq('id', inv.id);
+    this.loadInvoices(this.state.current.id, this.state.current);
+  }
+
   openInvoicePreview(inv) { this.setState({ previewInvoice: inv, showInvoicePreview: true }); }
   closeInvoicePreview() { this.setState({ showInvoicePreview: false, previewInvoice: null }); }
 
@@ -2675,9 +3369,14 @@ class Component extends DCLogic {
 
   async sendPreviewEmail() {
     const s = this.state;
-    const url = window.location.origin + '/album.html?event=' + s.current.slug;
+    const isProject = this.parentTable() === 'projects';
+    const page = isProject ? '/commercial.html?project=' : '/album.html?event=';
+    const url = window.location.origin + page + s.current.slug;
     const name = s.editClientName || 'there';
-    const subject = 'Your album is ready — ' + s.editCouple;
+    const title = isProject
+      ? (s.editProjTitle || (s.current && s.current.project_title) || (s.current && s.current.client_name) || '')
+      : (s.editCouple || (s.current && s.current.couple_names) || '');
+    const subject = (isProject ? 'Your project page is ready — ' : 'Your album is ready — ') + title;
     const sentDate = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
     this.setState({ clientStatus: 'Sending…' });
     try {
@@ -2686,7 +3385,7 @@ class Component extends DCLogic {
       await this.sendEmail({
         to_email: clientEmail, email: clientEmail, user_email: clientEmail, reply_to: clientEmail,
         to_name: name, subject,
-        album_name: s.editCouple || (s.current && s.current.couple_names) || '',
+        album_name: title,
         album_date: sentDate,
         album_link: url,
       });
@@ -2707,7 +3406,22 @@ class Component extends DCLogic {
   }
 
   newPerson() {
-    this.setState({ personId: null, personForm: { ...EMPTY_PERSON }, personMode: 'edit', personStatus: '', personDocs: [], personAvail: [], personRates: [], rateLabel: '', rateAmount: '', docLabel: '', availDay: '', availNote: '' });
+    this.setState({ personId: null, personForm: { ...EMPTY_PERSON }, personMode: 'edit', personStatus: '', personDocs: [], personAvail: [], personRates: [], rateLabel: '', rateAmount: '', docLabel: '', availDay: '', availNote: '', ...this.blankCareerState() });
+  }
+
+  // Career fields live outside personForm: they save on their own button, so the
+  // details form staying in view mode does not block a date correction.
+  blankCareerState() {
+    this.payslipRefs = {};
+    return {
+      careerDraft: { appointed_date: '', intern_from: '', freelance_from: '', prior_years: '' },
+      careerStatus: '', careerSkills: [], skillDraft: '',
+      experience: [], expEmployer: '', expRole: '', expFrom: '', expTo: '',
+      cvPath: '', cvName: '', cvUploadedAt: null, cvUrl: '',
+      photoPath: '', photoUrl: '',
+      payments: [], payStatus: '', payOpen: null, payFormOpen: false,
+      payKind: 'salary', payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '',
+    };
   }
 
   formFromRow(p) {
@@ -2728,9 +3442,19 @@ class Component extends DCLogic {
 
   openPerson(p) {
     const f = this.formFromRow(p);
-    this.setState({ personId: p.id, personForm: f, personMode: 'view', personStatus: '', personRates: [], rateLabel: '', rateAmount: '', docLabel: '', availDay: '', availNote: '' });
+    this.setState({
+      personId: p.id, personForm: f, personMode: 'view', personStatus: '', personRates: [],
+      rateLabel: '', rateAmount: '', docLabel: '', availDay: '', availNote: '',
+      ...this.blankCareerState(),
+      careerDraft: {
+        appointed_date: p.appointed_date || '', intern_from: p.intern_from || '',
+        freelance_from: p.freelance_from || '',
+        prior_years: p.prior_years == null ? '' : String(p.prior_years),
+      },
+      careerSkills: this.asList(p.skills),
+    });
     if (this.can('docs')) this.loadDocs(p.id);
-    if (this.can('people')) { this.loadAvail(p.id); this.loadRates(p.id); }
+    if (this.can('people')) { this.loadAvail(p.id); this.loadRates(p.id); this.loadExperience(p.id); this.loadCv(p); this.loadPhoto(p); this.loadPayments(p.id); }
   }
 
   async savePerson() {
@@ -2748,6 +3472,16 @@ class Component extends DCLogic {
       monthly_salary: num(f.monthly_salary), default_hourly_rate: num(f.default_hourly_rate),
       notes: f.notes || null, active: !!f.active,
     };
+    // HR proposes, an admin decides. The record itself is untouched until then.
+    if (!this.can('peopleApprove')) {
+      const ok = await this.submitPersonRequest(this.state.personId ? 'update' : 'create', row, this.state.personId);
+      if (ok) {
+        this.setState({ personStatus: 'Sent to an admin for approval.', personMode: this.state.personId ? 'view' : 'edit' });
+        this.loadChangeRequests();
+        setTimeout(() => this.setState({ personStatus: '' }), 4000);
+      }
+      return;
+    }
     const res = this.state.personId
       ? await this.sb.from('people').update(row).eq('id', this.state.personId).select().single()
       : await this.sb.from('people').insert(row).select().single();
@@ -2765,11 +3499,84 @@ class Component extends DCLogic {
   async deletePerson() {
     const p = this.state.people.find(x => x.id === this.state.personId);
     if (!p) return;
+    if (!this.can('peopleApprove')) {
+      if (!window.confirm('Ask an admin to remove ' + p.full_name + '?')) return;
+      const ok = await this.submitPersonRequest('delete', { full_name: p.full_name }, p.id);
+      if (ok) {
+        this.setState({ personStatus: 'Removal sent to an admin for approval.' });
+        this.loadChangeRequests();
+        setTimeout(() => this.setState({ personStatus: '' }), 4000);
+      }
+      return;
+    }
     if (!window.confirm('Remove ' + p.full_name + '? Past assignments block deletion — deactivate instead if they have worked events.')) return;
     const { error } = await this.sb.from('people').delete().eq('id', p.id);
     if (error) { this.setState({ personStatus: error.message }); return; }
     this.setState({ personId: null, personForm: null, personMode: 'view' });
     this.loadPeople();
+  }
+
+  // ---- Crew change requests (admin approval) -----------------------------------
+
+  async loadChangeRequests(roleOverride) {
+    const role = roleOverride || this.state.role;
+    if (['admin', 'hr'].indexOf(role) === -1) return;
+    const base = this.sb.from('people_change_requests').select('*');
+    const { data, error } = this.state.requestFilter === 'pending'
+      ? await base.eq('status', 'pending').order('created_at', { ascending: true })
+      : await base.order('created_at', { ascending: false }).limit(60);
+    if (error) {
+      const missing = /people_change_requests/i.test(error.message || '');
+      this.setState({
+        changeRequests: [],
+        requestStatus: missing ? 'Run album-system/people-approval.sql in Supabase to enable crew approvals.' : '',
+      });
+      return;
+    }
+    this.setState({ changeRequests: data || [], requestStatus: '' });
+  }
+
+  async submitPersonRequest(kind, payload, personId) {
+    const { data: u } = await this.sb.auth.getUser();
+    const me = u && u.user ? u.user : null;
+    const { error } = await this.sb.from('people_change_requests').insert({
+      kind, person_id: personId || null, payload: payload || {}, status: 'pending',
+      requested_by: me ? me.id : null, requested_email: me ? me.email : null,
+    });
+    if (error) {
+      const missing = /people_change_requests/i.test(error.message || '');
+      this.setState({ personStatus: missing ? 'Run album-system/people-approval.sql in Supabase first — approvals are not set up yet.' : error.message });
+      return false;
+    }
+    return true;
+  }
+
+  async approveRequest(r) {
+    this.setState({ requestStatus: 'Applying…' });
+    let err = null;
+    if (r.kind === 'create') err = (await this.sb.from('people').insert(r.payload)).error;
+    else if (r.kind === 'update') err = (await this.sb.from('people').update(r.payload).eq('id', r.person_id)).error;
+    else if (r.kind === 'delete') err = (await this.sb.from('people').delete().eq('id', r.person_id)).error;
+    if (err) { this.setState({ requestStatus: err.message }); return; }
+    await this.markRequestReviewed(r, 'approved');
+    this.setState({ requestStatus: 'Applied.' });
+    this.loadChangeRequests(); this.loadPeople();
+    setTimeout(() => this.setState({ requestStatus: '' }), 2500);
+  }
+
+  async rejectRequest(r) {
+    if (!window.confirm('Reject this change?')) return;
+    await this.markRequestReviewed(r, 'rejected');
+    this.setState({ requestStatus: 'Rejected.' });
+    this.loadChangeRequests();
+    setTimeout(() => this.setState({ requestStatus: '' }), 2500);
+  }
+
+  async markRequestReviewed(r, status) {
+    const { data: u } = await this.sb.auth.getUser();
+    await this.sb.from('people_change_requests')
+      .update({ status, reviewed_at: new Date().toISOString(), reviewed_by: u && u.user ? u.user.id : null })
+      .eq('id', r.id);
   }
 
   // ---- Rate card ---------------------------------------------------------------
@@ -2797,6 +3604,243 @@ class Component extends DCLogic {
   async removeRate(r) {
     await this.sb.from('people_rates').delete().eq('id', r.id);
     this.loadRates(this.state.personId);
+  }
+
+  // ---- Career: joining dates, skills, prior experience, CV ---------------------
+
+  // The columns arrived in a later migration, so name the file instead of leaving
+  // a raw Postgres error on screen.
+  careerHint(raw) {
+    const m = raw || '';
+    if (/appointed_date|intern_from|freelance_from|prior_years|skills|cv_path|photo_path|people_experience/i.test(m)) {
+      return 'Run album-system/career-schema.sql in Supabase — the career columns do not exist yet.';
+    }
+    return m;
+  }
+
+  onCareerField(field, v) { this.setState({ careerDraft: { ...this.state.careerDraft, [field]: v }, careerStatus: '' }); }
+
+  async saveCareer() {
+    const pid = this.state.personId;
+    if (!pid) { this.setState({ careerStatus: 'Save the person first.' }); return; }
+    const d = this.state.careerDraft;
+    const years = d.prior_years === '' ? null : Number(d.prior_years);
+    if (years !== null && !isFinite(years)) { this.setState({ careerStatus: 'Years before is not a number.' }); return; }
+    this.setState({ careerStatus: 'Saving…' });
+    const patch = {
+      appointed_date: d.appointed_date || null, intern_from: d.intern_from || null,
+      freelance_from: d.freelance_from || null, prior_years: years,
+    };
+    const { error } = await this.sb.from('people').update(patch).eq('id', pid);
+    if (error) { this.setState({ careerStatus: this.careerHint(error.message) }); return; }
+    this.setState({ careerStatus: 'Saved.', people: this.state.people.map(p => p.id === pid ? { ...p, ...patch } : p) });
+    setTimeout(() => this.setState({ careerStatus: '' }), 2500);
+  }
+
+  async writeSkills(pid, list) {
+    const { error } = await this.sb.from('people').update({ skills: list }).eq('id', pid);
+    if (error) { this.setState({ careerStatus: this.careerHint(error.message) }); return; }
+    this.setState({ people: this.state.people.map(p => p.id === pid ? { ...p, skills: list } : p) });
+  }
+
+  addSkill() {
+    const pid = this.state.personId;
+    const tag = (this.state.skillDraft || '').trim();
+    if (!pid) { this.setState({ careerStatus: 'Save the person first.' }); return; }
+    if (!tag) return;
+    const list = this.state.careerSkills;
+    if (list.some(x => String(x).toLowerCase() === tag.toLowerCase())) { this.setState({ skillDraft: '' }); return; }
+    const next = [...list, tag];
+    this.setState({ careerSkills: next, skillDraft: '', careerStatus: '' });
+    this.writeSkills(pid, next);
+  }
+
+  removeSkill(tag) {
+    const pid = this.state.personId;
+    const next = this.state.careerSkills.filter(x => x !== tag);
+    this.setState({ careerSkills: next });
+    this.writeSkills(pid, next);
+  }
+
+  async loadExperience(pid) {
+    const { data, error } = await this.sb.from('people_experience').select('*')
+      .eq('person_id', pid).order('from_date', { ascending: false, nullsFirst: false });
+    this.setState({ experience: error ? [] : (data || []) });
+  }
+
+  async addExperience() {
+    const s = this.state, pid = s.personId;
+    if (!pid) { this.setState({ careerStatus: 'Save the person first.' }); return; }
+    if (!s.expEmployer.trim()) { this.setState({ careerStatus: 'Name the employer first.' }); return; }
+    const { error } = await this.sb.from('people_experience').insert({
+      person_id: pid, employer: s.expEmployer.trim(), role: s.expRole || null,
+      from_date: s.expFrom || null, to_date: s.expTo || null,
+    });
+    if (error) { this.setState({ careerStatus: this.careerHint(error.message) }); return; }
+    this.setState({ expEmployer: '', expRole: '', expFrom: '', expTo: '', careerStatus: '' });
+    this.loadExperience(pid);
+  }
+
+  async removeExperience(x) {
+    await this.sb.from('people_experience').delete().eq('id', x.id);
+    this.loadExperience(this.state.personId);
+  }
+
+  // The passport photo is personal data like the CV: private bucket, shown through
+  // a short-lived signed URL rather than a guessable public link.
+  async loadPhoto(p) {
+    this.setState({ photoPath: p.photo_path || '', photoUrl: '' });
+    if (!p.photo_path) return;
+    for (const b of [PRIVATE_BUCKET, BUCKET]) {
+      const { data } = await this.sb.storage.from(b).createSignedUrl(p.photo_path, 3600);
+      if (data && data.signedUrl) { this.setState({ photoUrl: data.signedUrl }); return; }
+    }
+  }
+
+  async uploadPhoto(file) {
+    const pid = this.state.personId;
+    if (!pid || !file) return;
+    this.setState({ personStatus: 'Uploading photo…' });
+    let blob = file, ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    // A phone camera shot is 4–8 MB for a 104px-wide frame; downscale first.
+    try { const small = await this.resizeImage(file, 900, 0.9); if (small) { blob = small.blob; ext = small.ext; } } catch (e) {}
+    const path = 'crew-photo/' + pid + '/' + Date.now() + '.' + ext;
+    let res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, blob, { contentType: blob.type || undefined });
+    if (res.error && /bucket not found|does not exist/i.test(res.error.message || '')) {
+      res = await this.sb.storage.from(BUCKET).upload(path, blob, { contentType: blob.type || undefined });
+    }
+    if (res.error) { this.setState({ personStatus: res.error.message }); return; }
+    const old = this.state.photoPath;
+    const { error } = await this.sb.from('people').update({ photo_path: path }).eq('id', pid);
+    if (error) { this.setState({ personStatus: this.careerHint(error.message) }); return; }
+    if (old && old !== path) {
+      this.sb.storage.from(PRIVATE_BUCKET).remove([old]);
+      this.sb.storage.from(BUCKET).remove([old]);
+    }
+    this.setState({ personStatus: 'Photo updated.', people: this.state.people.map(p => p.id === pid ? { ...p, photo_path: path } : p) });
+    this.loadPhoto({ photo_path: path });
+    setTimeout(() => this.setState({ personStatus: '' }), 2500);
+  }
+
+  async removePhoto() {
+    const pid = this.state.personId, path = this.state.photoPath;
+    if (!pid || !path) return;
+    if (!window.confirm('Remove this photo?')) return;
+    await this.sb.storage.from(PRIVATE_BUCKET).remove([path]);
+    await this.sb.storage.from(BUCKET).remove([path]);
+    const { error } = await this.sb.from('people').update({ photo_path: null }).eq('id', pid);
+    if (error) { this.setState({ personStatus: this.careerHint(error.message) }); return; }
+    this.setState({
+      photoPath: '', photoUrl: '', personStatus: 'Photo removed.',
+      people: this.state.people.map(p => p.id === pid ? { ...p, photo_path: null } : p),
+    });
+    setTimeout(() => this.setState({ personStatus: '' }), 2500);
+  }
+
+  // A CV is personal data, so it sits in the private bucket and is previewed
+  // through a short-lived signed URL rather than a public link.
+  async loadCv(p) {
+    this.setState({ cvPath: p.cv_path || '', cvName: p.cv_name || '', cvUploadedAt: p.cv_uploaded_at || null, cvUrl: '' });
+    if (!p.cv_path) return;
+    for (const b of [PRIVATE_BUCKET, BUCKET]) {
+      const { data } = await this.sb.storage.from(b).createSignedUrl(p.cv_path, 3600);
+      if (data && data.signedUrl) { this.setState({ cvUrl: data.signedUrl }); return; }
+    }
+  }
+
+  async uploadCv(file) {
+    const pid = this.state.personId;
+    if (!pid || !file) return;
+    const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = 'cv/' + pid + '/' + Date.now() + '-' + safe;
+    this.setState({ careerStatus: 'Uploading CV…' });
+    let res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, file, { contentType: file.type || undefined });
+    if (res.error && /bucket not found|does not exist/i.test(res.error.message || '')) {
+      res = await this.sb.storage.from(BUCKET).upload(path, file, { contentType: file.type || undefined });
+    }
+    if (res.error) { this.setState({ careerStatus: res.error.message }); return; }
+    const patch = { cv_path: path, cv_name: file.name, cv_uploaded_at: new Date().toISOString() };
+    const { error } = await this.sb.from('people').update(patch).eq('id', pid);
+    if (error) { this.setState({ careerStatus: this.careerHint(error.message) }); return; }
+    this.setState({ careerStatus: 'CV uploaded.', people: this.state.people.map(p => p.id === pid ? { ...p, ...patch } : p) });
+    this.loadCv(patch);
+    setTimeout(() => this.setState({ careerStatus: '' }), 2500);
+  }
+
+  async removeCv() {
+    const pid = this.state.personId, path = this.state.cvPath;
+    if (!pid || !path) return;
+    if (!window.confirm('Remove this CV?')) return;
+    await this.sb.storage.from(PRIVATE_BUCKET).remove([path]);
+    await this.sb.storage.from(BUCKET).remove([path]);
+    const patch = { cv_path: null, cv_name: null, cv_uploaded_at: null };
+    const { error } = await this.sb.from('people').update(patch).eq('id', pid);
+    if (error) { this.setState({ careerStatus: this.careerHint(error.message) }); return; }
+    this.setState({
+      cvPath: '', cvName: '', cvUrl: '', cvUploadedAt: null, careerStatus: 'CV removed.',
+      people: this.state.people.map(p => p.id === pid ? { ...p, ...patch } : p),
+    });
+    setTimeout(() => this.setState({ careerStatus: '' }), 2500);
+  }
+
+  // ---- Pay: payslips, bonuses, lifetime earnings -------------------------------
+
+  async loadPayments(pid) {
+    const { data, error } = await this.sb.from('people_payments').select('*')
+      .eq('person_id', pid).order('paid_on', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+    if (error) {
+      this.setState({
+        payments: [],
+        payStatus: /people_payments/i.test(error.message || '') ? 'Run album-system/people-pay.sql in Supabase to enable payslips.' : error.message,
+      });
+      return;
+    }
+    this.setState({ payments: data || [], payStatus: '' });
+  }
+
+  async addPayment() {
+    const s = this.state, pid = s.personId;
+    if (!pid) { this.setState({ payStatus: 'Save the person first.' }); return; }
+    const gross = Number(s.payGross || 0), ded = Number(s.payDeductions || 0);
+    if (!isFinite(gross) || gross <= 0) { this.setState({ payStatus: 'Enter the amount first.' }); return; }
+    if (!isFinite(ded) || ded < 0) { this.setState({ payStatus: 'Deductions must be a number.' }); return; }
+    if (s.payKind === 'salary' && !/^\d{4}-\d{2}$/.test(s.payPeriod || '')) {
+      this.setState({ payStatus: 'Month goes in as 2026-09.' }); return;
+    }
+    this.setState({ payStatus: 'Saving…' });
+    const { error } = await this.sb.from('people_payments').insert({
+      person_id: pid, kind: s.payKind, period: s.payPeriod || null,
+      gross, deductions: s.payKind === 'salary' ? ded : 0,
+      net: +(gross - (s.payKind === 'salary' ? ded : 0)).toFixed(2),
+      paid_on: s.payPaidOn || null, note: s.payNote || null,
+    });
+    if (error) { this.setState({ payStatus: error.message }); return; }
+    this.setState({ payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '', payStatus: 'Added.' });
+    this.loadPayments(pid);
+    setTimeout(() => this.setState({ payStatus: '' }), 2500);
+  }
+
+  async removePayment(x) {
+    if (!window.confirm('Delete this entry?')) return;
+    await this.sb.from('people_payments').delete().eq('id', x.id);
+    this.loadPayments(this.state.personId);
+  }
+
+  // The payslip is rendered in place, so the PDF is a capture of exactly what is
+  // on screen — no second template to keep in sync.
+  async downloadPayslip(x) {
+    const el = this.payslipRefs && this.payslipRefs[x.id];
+    if (!el) return;
+    this.setState({ payStatus: 'Preparing PDF…' });
+    try {
+      await loadLib('html2pdf');
+      await window.html2pdf().set({
+        margin: 0, image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+      }).from(el).save('payslip-' + (x.period || x.id.slice(0, 6)) + '.pdf');
+      this.setState({ payStatus: '' });
+    } catch (e) { this.setState({ payStatus: e.message || 'PDF failed' }); }
   }
 
   // ---- Documents & availability ------------------------------------------------
@@ -3109,6 +4153,8 @@ class Component extends DCLogic {
     if (this.can('albums')) nav.push({ key: 'schedule', label: 'Schedule' });
     if (this.can('people')) nav.push({ key: 'people', label: 'People' });
     if (this.can('payouts')) nav.push({ key: 'payouts', label: 'Payouts' });
+    const pendingRequests = s.changeRequests.filter(r => r.status === 'pending').length;
+    if (this.can('peopleApprove')) nav.push({ key: 'approvals', label: 'Approvals' + (pendingRequests ? ' (' + pendingRequests + ')' : '') });
     const navVM = nav.map(n => ({
       label: n.label, go: () => this.goWorkspace(n.key),
       bg: s.view === n.key ? 'var(--green)' : 'none',
@@ -3128,7 +4174,10 @@ class Component extends DCLogic {
 
     const q = s.peopleQuery.trim().toLowerCase();
     const peopleVM = !onPeople ? [] : s.people
-      .filter(p => !q || (p.full_name || '').toLowerCase().includes(q) || (p.crew_id || '').toLowerCase().includes(q) || roleName(p.primary_role).toLowerCase().includes(q))
+      .filter(p => !q || (p.full_name || '').toLowerCase().includes(q) || (p.crew_id || '').toLowerCase().includes(q)
+        || roleName(p.primary_role).toLowerCase().includes(q)
+        // Skills are searchable too — "drone" should find whoever can fly one.
+        || this.asList(p.skills).some(sk => String(sk).toLowerCase().includes(q)))
       .map(p => {
         const mine = openWork.filter(w => w.person_id === p.id);
         const next = mine.slice().sort((a, b) => String(a.events.event_date || '9999').localeCompare(String(b.events.event_date || '9999')))[0];
@@ -3171,6 +4220,8 @@ class Component extends DCLogic {
     const person = s.personId ? s.people.find(p => p.id === s.personId) : null;
     const dash = v => (v === null || v === undefined || v === '' ? '—' : String(v));
     const personViewVM = (!onPeople || !person) ? [] : (() => {
+      const joined = [person.appointed_date, person.intern_from, person.freelance_from].filter(Boolean).sort()[0];
+      const skillList = this.asList(person.skills);
       const rows = [
         ['Role', roleName(person.primary_role)],
         ['Paid as', PAY_MODE_LABEL[person.pay_mode] || 'Hourly'],
@@ -3189,8 +4240,142 @@ class Component extends DCLogic {
         ['IFSC', dash(person.bank_ifsc)],
         ['UPI ID', dash(person.upi_id)],
       );
+      if (joined) rows.splice(3, 0, ['With us since', fmtDay(joined)]);
+      if (skillList.length) rows.push(['Skills', skillList.join(' · ')]);
       return rows.map(r => ({ label: r[0], value: r[1] }));
     })();
+    // Experience accrued here, read straight off the crew's own assignment rows.
+    const mineAll = (onPeople && s.personId) ? s.workload.filter(w => w.person_id === s.personId) : [];
+    const jobsDelivered = mineAll.filter(w => w.events && this.isDelivered(w.events)).length;
+    const hoursHere = mineAll.reduce((t, w) => t + Number(w.hours || 0), 0);
+    const startDates = person ? [person.appointed_date, person.intern_from, person.freelance_from].filter(Boolean).sort() : [];
+    const monthsHere = startDates.length ? Math.max(0, Math.round((today - new Date(startDates[0] + 'T00:00:00')) / 2629800000)) : null;
+    const tenureLabel = monthsHere == null ? '—'
+      : monthsHere < 12 ? monthsHere + ' mo'
+      : Math.floor(monthsHere / 12) + 'y ' + (monthsHere % 12) + 'm';
+    const priorYears = person && person.prior_years != null && person.prior_years !== '' ? Number(person.prior_years) : null;
+    const tenureStatsVM = (!onPeople || !person) ? [] : [
+      { label: 'With Glomium', value: tenureLabel },
+      { label: 'Jobs assigned', value: String(mineAll.length) },
+      { label: 'Jobs delivered', value: String(jobsDelivered) },
+      { label: 'Hours logged', value: String(Math.round(hoursHere)) },
+      { label: 'Years before', value: priorYears == null ? '—' : String(priorYears) },
+    ];
+
+    const changeRequestsVM = !onPeople ? [] : s.changeRequests.map(r => {
+      const known = s.people.find(x => x.id === r.person_id);
+      const payload = r.payload || {};
+      const fields = Object.keys(payload).filter(k => k !== 'full_name');
+      return {
+        kindLabel: r.kind === 'create' ? 'New crew member' : r.kind === 'delete' ? 'Removal' : 'Edited details',
+        kindBg: r.kind === 'delete' ? '#F7E9E7' : r.kind === 'create' ? '#DDEFE8' : '#EFE9DA',
+        kindColor: r.kind === 'delete' ? '#B4433A' : r.kind === 'create' ? '#0A6E58' : '#8A6D3B',
+        name: payload.full_name || (known && known.full_name) || 'Crew member',
+        byLabel: (r.requested_email || 'HR') + ' · ' + new Date(r.created_at).toLocaleDateString(),
+        detailLabel: r.kind === 'delete' ? 'The person record and their history go with it.'
+          : fields.length ? fields.length + (fields.length === 1 ? ' field: ' : ' fields: ') + fields.slice(0, 5).join(', ') + (fields.length > 5 ? '…' : '')
+          : 'No field changes',
+        approve: () => this.approveRequest(r), reject: () => this.rejectRequest(r),
+      };
+    });
+
+    // One card per request, with a field-by-field preview of what would change.
+    const onApprovals = s.view === 'approvals';
+    const show = v => (v === null || v === undefined || v === '' ? '—' : v === true ? 'Yes' : v === false ? 'No' : String(v));
+    const approvalsVM = !onApprovals ? [] : s.changeRequests.map(r => {
+      const known = s.people.find(x => x.id === r.person_id) || null;
+      const payload = r.payload || {};
+      const keys = r.kind === 'delete'
+        ? ['primary_role', 'engagement', 'phone', 'email', 'pay_mode', 'default_hourly_rate']
+        : Object.keys(payload);
+      const diffVM = keys.map(k => {
+        const before = r.kind === 'create' ? '' : (known ? known[k] : '');
+        const after = r.kind === 'delete' ? '' : payload[k];
+        return {
+          label: PERSON_FIELD_LABEL[k] || k,
+          before: show(before), after: show(after),
+          changed: r.kind !== 'delete' && show(before) !== show(after),
+          beforeColor: '#5D6864',
+          afterColor: show(before) !== show(after) ? 'var(--green-deep)' : '#7C8985',
+        };
+      });
+      const changedCount = diffVM.filter(d => d.changed).length;
+      return {
+        kindLabel: r.kind === 'create' ? 'New crew member' : r.kind === 'delete' ? 'Removal' : 'Edited details',
+        kindBg: r.kind === 'delete' ? '#F7E9E7' : r.kind === 'create' ? '#DDEFE8' : '#EFE9DA',
+        kindColor: r.kind === 'delete' ? '#B4433A' : r.kind === 'create' ? '#0A6E58' : '#8A6D3B',
+        name: payload.full_name || (known && known.full_name) || 'Crew member',
+        crewId: known && known.crew_id ? known.crew_id : '',
+        byLabel: (r.requested_email || 'HR') + ' · ' + new Date(r.created_at).toLocaleString(),
+        summary: r.kind === 'delete' ? 'The person record and their history go with it.'
+          : r.kind === 'create' ? Object.keys(payload).length + ' fields on a brand-new record'
+          : changedCount ? changedCount + (changedCount === 1 ? ' field changes' : ' fields change') : 'No field changes',
+        statusLabel: r.status.charAt(0).toUpperCase() + r.status.slice(1),
+        statusBg: r.status === 'approved' ? '#DDEFE8' : r.status === 'rejected' ? '#F7E9E7' : '#EFE9DA',
+        statusColor: r.status === 'approved' ? '#0A6E58' : r.status === 'rejected' ? '#B4433A' : '#8A6D3B',
+        isPending: r.status === 'pending',
+        isOpen: s.requestOpen === r.id,
+        previewLabel: s.requestOpen === r.id ? 'Hide preview' : 'Quick preview',
+        toggle: () => this.setState({ requestOpen: s.requestOpen === r.id ? null : r.id }),
+        diffVM, showsBoth: r.kind === 'update',
+        approve: () => this.approveRequest(r), reject: () => this.rejectRequest(r),
+      };
+    });
+    const requestFilterVM = !onApprovals ? [] : [['pending', 'Waiting'], ['all', 'Everything']].map(([key, label]) => ({
+      label,
+      go: () => this.setState({ requestFilter: key, requestOpen: null }, () => this.loadChangeRequests()),
+      bg: s.requestFilter === key ? 'var(--green)' : 'none',
+      border: s.requestFilter === key ? 'var(--green)' : 'var(--line)',
+      color: s.requestFilter === key ? '#FFFFFF' : 'var(--green-deep)',
+    }));
+
+    // Everything this person has earned here: payslips and bonuses on record, plus
+    // the event payouts already marked paid.
+    const payRows = (onPeople && s.personId) ? s.payments : [];
+    const sumNet = k => payRows.filter(x => x.kind === k).reduce((t, x) => t + Number(x.net || 0), 0);
+    const salaryTotal = sumNet('salary'), bonusTotal = sumNet('bonus'), reimburseTotal = sumNet('reimbursement');
+    const paidPayouts = mineAll.filter(a => a.payout_status === 'paid' && a.pay_basis !== 'salaried')
+      .reduce((t, a) => t + Number(a.amount_owed || 0), 0);
+    const payTotalsVM = (!onPeople || !person) ? [] : [
+      { label: 'Payslips', value: fmtINR(salaryTotal) },
+      { label: 'Bonuses', value: fmtINR(bonusTotal) },
+      { label: 'Event payouts paid', value: fmtINR(paidPayouts) },
+      { label: 'Reimbursed', value: fmtINR(reimburseTotal) },
+    ];
+    const payPeriodLabel = p => {
+      if (!p) return '—';
+      const m = /^(\d{4})-(\d{2})$/.exec(p);
+      if (!m) return p;
+      return new Date(Number(m[1]), Number(m[2]) - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    };
+    const paymentsVM = payRows.map(x => ({
+      kindLabel: x.kind === 'bonus' ? 'Bonus' : x.kind === 'reimbursement' ? 'Reimbursement' : 'Payslip',
+      kindBg: x.kind === 'bonus' ? '#EFE9DA' : x.kind === 'reimbursement' ? '#E4EEF7' : '#DDEFE8',
+      kindColor: x.kind === 'bonus' ? '#8A6D3B' : x.kind === 'reimbursement' ? '#2C5F8A' : '#0A6E58',
+      periodLabel: x.kind === 'salary' ? payPeriodLabel(x.period) : (x.period || x.note || '—'),
+      grossLabel: fmtINR(x.gross), dedLabel: fmtINR(x.deductions), netLabel: fmtINR(x.net),
+      hasDeductions: Number(x.deductions || 0) > 0,
+      paidLabel: x.paid_on ? 'Paid ' + fmtDay(x.paid_on) : 'Not marked paid',
+      note: x.note || '', hasNote: !!x.note,
+      isSalary: x.kind === 'salary',
+      isOpen: s.payOpen === x.id,
+      slipLabel: s.payOpen === x.id ? 'Hide slip' : 'View slip',
+      toggle: () => this.setState({ payOpen: s.payOpen === x.id ? null : x.id }),
+      netWords: s.payOpen === x.id ? numberToWordsINR(Number(x.net || 0)) : '',
+      setSlipRef: el => { this.payslipRefs = this.payslipRefs || {}; this.payslipRefs[x.id] = el; },
+      download: () => this.downloadPayslip(x),
+      remove: () => this.removePayment(x),
+    }));
+
+    const personTabs = [['career', 'Career'], ['pay', 'Pay'], ['avail', 'Availability']];
+    if (this.can('docs')) personTabs.push(['documents', 'Documents']);
+    const personTabsVM = !onPeople ? [] : personTabs.map(([key, label]) => ({
+      label, go: () => this.setState({ personTab: key }),
+      bg: s.personTab === key ? 'var(--green)' : 'none',
+      border: s.personTab === key ? 'var(--green)' : 'var(--line)',
+      color: s.personTab === key ? '#FFFFFF' : 'var(--green-deep)',
+    }));
+
     const docsVM = !onPeople ? [] : s.personDocs.map(d => ({
       label: d.label, dateLabel: new Date(d.uploaded_at).toLocaleDateString(),
       open: () => this.openDoc(d), remove: () => this.removeDoc(d),
@@ -3202,6 +4387,82 @@ class Component extends DCLogic {
       statusBg: a.status === 'available' ? '#DDEFE8' : a.status === 'leave' ? '#EFE9DA' : '#F7E9E7',
       remove: () => this.removeAvail(a),
     }));
+
+    const careerVals = {
+      personTabsVM,
+      showCareerTab: onPeople && !!s.personId && s.personTab === 'career',
+      showPayTab: onPeople && !!s.personId && s.personTab === 'pay',
+      showAvailTab: onPeople && !!s.personId && s.personTab === 'avail',
+      showDocsTab: onPeople && !!s.personId && s.personTab === 'documents',
+      careerStatus: s.careerStatus, careerReadOnly: !this.can('peopleEdit'),
+      tenureStatsVM,
+      cfAppointed: s.careerDraft.appointed_date, onCfAppointed: e => this.onCareerField('appointed_date', e.target.value),
+      cfIntern: s.careerDraft.intern_from, onCfIntern: e => this.onCareerField('intern_from', e.target.value),
+      cfFreelance: s.careerDraft.freelance_from, onCfFreelance: e => this.onCareerField('freelance_from', e.target.value),
+      cfPriorYears: s.careerDraft.prior_years, onCfPriorYears: e => this.onCareerField('prior_years', e.target.value),
+      saveCareer: () => this.saveCareer(),
+      skillsVM: s.careerSkills.map(tag => ({ label: String(tag), remove: () => this.removeSkill(tag) })),
+      hasSkills: s.careerSkills.length > 0, hasNoSkills: s.careerSkills.length === 0,
+      skillDraft: s.skillDraft, onSkillDraft: e => this.setState({ skillDraft: e.target.value }),
+      onSkillKeyDown: e => { if (e.key === 'Enter') { e.preventDefault(); this.addSkill(); } },
+      addSkill: () => this.addSkill(),
+      experienceVM: s.experience.map(x => ({
+        employer: x.employer, roleLabel: x.role || '',
+        periodLabel: [x.from_date ? fmtDay(x.from_date) : '?', x.to_date ? fmtDay(x.to_date) : 'present'].join(' → '),
+        remove: () => this.removeExperience(x),
+      })),
+      hasNoExperience: s.experience.length === 0,
+      expEmployer: s.expEmployer, onExpEmployer: e => this.setState({ expEmployer: e.target.value }),
+      expRole: s.expRole, onExpRole: e => this.setState({ expRole: e.target.value }),
+      expFrom: s.expFrom, onExpFrom: e => this.setState({ expFrom: e.target.value }),
+      expTo: s.expTo, onExpTo: e => this.setState({ expTo: e.target.value }),
+      addExperience: () => this.addExperience(),
+      payTotalsVM, paymentsVM, hasNoPayments: paymentsVM.length === 0,
+      payStatus: s.payStatus,
+      payTotalLabel: fmtINR(salaryTotal + bonusTotal + paidPayouts + reimburseTotal),
+      payBankName: person ? (person.bank_name || '—') : '—',
+      payBankAccount: person ? (person.bank_account || '—') : '—',
+      payBankIfsc: person ? (person.bank_ifsc || '—') : '—',
+      payUpi: person ? (person.upi_id || '—') : '—',
+      payPan: person ? (person.pan || '—') : '—',
+      payBankIncomplete: !!person && !(person.bank_account && person.bank_ifsc) && !person.upi_id,
+      payFormOpen: s.payFormOpen,
+      payFormToggleLabel: s.payFormOpen ? 'Cancel' : 'Record a payment',
+      togglePayForm: () => this.setState({ payFormOpen: !s.payFormOpen, payStatus: '' }),
+      payKind: s.payKind, onPayKind: e => this.setState({ payKind: e.target.value, payStatus: '' }),
+      payIsSalary: s.payKind === 'salary',
+      payPeriod: s.payPeriod, onPayPeriod: e => this.setState({ payPeriod: e.target.value }),
+      payGross: s.payGross, onPayGross: e => this.setState({ payGross: e.target.value }),
+      payDeductions: s.payDeductions, onPayDeductions: e => this.setState({ payDeductions: e.target.value }),
+      payPaidOn: s.payPaidOn, onPayPaidOn: e => this.setState({ payPaidOn: e.target.value }),
+      payNote: s.payNote, onPayNote: e => this.setState({ payNote: e.target.value }),
+      addPayment: () => this.addPayment(),
+      payAmountLabel: s.payKind === 'salary' ? 'Gross (₹)' : 'Amount (₹)',
+      payPeriodFieldLabel: s.payKind === 'salary' ? 'Month' : 'What for',
+      payPeriodPlaceholder: s.payKind === 'salary' ? '2026-09' : 'Diwali bonus',
+      personPayName: person ? person.full_name : '',
+      personPayId: person && person.crew_id ? person.crew_id : '',
+      personPayRole: person ? (ROLE_LABEL[person.primary_role] || person.primary_role || '') : '',
+
+      hasPhoto: !!s.photoPath, hasNoPhoto: !s.photoPath,
+      photoUploadLabel: s.photoPath ? 'Replace' : 'Add photo',
+      setPhotoRef: el => { if (el && s.photoUrl && el.src !== s.photoUrl) el.src = s.photoUrl; },
+      setPhotoInputRef: el => { this.photoInputEl = el; },
+      triggerPhotoPicker: () => this.photoInputEl && this.photoInputEl.click(),
+      onPhotoFileChange: e => { const fl = e.target.files[0]; e.target.value = ''; this.uploadPhoto(fl); },
+      removePhoto: () => this.removePhoto(),
+
+      hasCv: !!s.cvPath, hasNoCv: !s.cvPath,
+      cvReady: !!s.cvUrl, cvLoading: !!s.cvPath && !s.cvUrl,
+      cvUploadLabel: s.cvPath ? 'Replace CV' : 'Upload CV',
+      cvMetaLabel: !s.cvPath ? 'PDF or image, stored privately.'
+        : (s.cvName || 'CV') + (s.cvUploadedAt ? ' · added ' + new Date(s.cvUploadedAt).toLocaleDateString() : ''),
+      setCvFrameRef: el => { if (el && s.cvUrl && el.src !== s.cvUrl) el.src = s.cvUrl; },
+      setCvInputRef: el => { this.cvInputEl = el; },
+      triggerCvPicker: () => this.cvInputEl && this.cvInputEl.click(),
+      onCvFileChange: e => { const fl = e.target.files[0]; e.target.value = ''; this.uploadCv(fl); },
+      removeCv: () => this.removeCv(),
+    };
 
     const agRow = ag => {
       const p = ag.people || {};
@@ -3471,8 +4732,9 @@ class Component extends DCLogic {
         };
       }),
 
-      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'payouts' || s.view === 'schedule'),
+      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals'),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
+      isApprovals: s.view === 'approvals',
       worksVM, workFilterVM, workStatus: s.workStatus,
       hasNoWorks: worksVM.length === 0,
       workCountLabel: worksVM.length + (worksVM.length === 1 ? ' project' : ' projects'),
@@ -3483,7 +4745,8 @@ class Component extends DCLogic {
         : scheduleCounts.week + (scheduleCounts.week === 1 ? ' project is' : ' projects are') + ' due this week',
       personWorkVM, hasPersonWork: personWorkVM.length > 0,
       roleLabel: STAFF_ROLE_LABEL[role] || role, roleMissing: role === 'none',
-      navVM, editorTabsVM, isCrewTab: s.editorTab === 'crew',
+      navVM, editorTabsVM, isCrewTab: s.editorTab === 'crew' && this.can('people'),
+      hasEditorTabs: editorTabsVM.length > 0, hasNoEditorTabs: editorTabsVM.length === 0,
       // Weddings are named by the couple, projects by the client. Reading the
       // wedding fields for a project showed the last-opened album's name.
       editorEventName: !s.current ? ''
@@ -3564,6 +4827,27 @@ class Component extends DCLogic {
       onPfUpi: pfSet('upi_id'), onPfPan: pfSet('pan', true), onPfSalary: pfSet('monthly_salary'),
       onPfHourly: pfSet('default_hourly_rate'), onPfNotes: pfSet('notes'), onPfActive: pfSet('active'),
       ...personVals,
+
+      ...careerVals,
+
+      approvalsVM, hasNoApprovals: approvalsVM.length === 0,
+      requestFilterVM,
+      approvalsCountLabel: s.requestFilter === 'pending'
+        ? approvalsVM.length + (approvalsVM.length === 1 ? ' request waiting' : ' requests waiting')
+        : approvalsVM.length + (approvalsVM.length === 1 ? ' request' : ' requests') + ' — latest first',
+      emptyApprovalsHint: s.requestFilter === 'pending'
+        ? 'Nothing waiting. HR\u2019s changes to crew records land here for your approval.'
+        : 'No crew change requests on record yet.',
+
+      changeRequestsVM, hasChangeRequests: changeRequestsVM.length > 0 && !this.can('peopleApprove'),
+      canApprovePeople: this.can('peopleApprove'),
+      requestStatus: s.requestStatus, hasRequestStatus: !!s.requestStatus,
+      approvalTitle: this.can('peopleApprove') ? 'Waiting for your approval' : 'Waiting for admin approval',
+      approvalNote: this.can('peopleApprove')
+        ? 'Nothing changes on a crew record until you approve it here.'
+        : 'An admin reviews these before they land on the record.',
+      savePersonLabel: this.can('peopleApprove') ? 'Save crew member' : 'Send for approval',
+      needsApproval: !this.can('peopleApprove'),
 
       docsVM, hasNoDocs: docsVM.length === 0,
       docLabel: s.docLabel, onDocLabelChange: e => this.setState({ docLabel: e.target.value }),
@@ -3665,8 +4949,62 @@ class Component extends DCLogic {
     }));
 
     const hasClientEmail = !!(s.editClientEmail || (s.current && s.current.client_email));
+
+    // A retainer contract's periods, each matched to its invoice if one exists.
+    const contract = s.current && s.current._table === 'projects' ? s.current : null;
+    const isRetainerDraft = !!contract && s.editBillingType === 'retainer';
+    const isRetainer = !!contract && contract.billing_type === 'retainer';
+    const schedule = isRetainer ? this.contractSchedule(contract) : [];
+    // Typing in the contract card must not quietly rewrite the schedule below it.
+    const contractDirty = !!contract && (
+      s.editBillingType !== (contract.billing_type || 'one_time')
+      || s.editContractStart !== (contract.contract_start || '')
+      || s.editContractMonths !== (contract.contract_months == null ? '12' : String(contract.contract_months))
+      || s.editBillingCycle !== (contract.billing_cycle || 'monthly')
+      || s.editRetainerAmount !== (contract.retainer_amount == null ? '' : String(contract.retainer_amount))
+      || s.editRetainerScope !== (contract.retainer_scope || '')
+      || s.editPaymentTerms !== (contract.payment_terms_days == null ? '7' : String(contract.payment_terms_days)));
+    const byPeriod = {};
+    s.invoices.forEach(i => { if (i.period_start) byPeriod[i.period_start] = i; });
+    const todayIso = this.toIso(new Date());
+    const scheduleVM = schedule.map(p => {
+      const inv = byPeriod[p.start];
+      const overdue = !inv && p.start <= todayIso;
+      const blocked = contractDirty;
+      return {
+        label: this.periodLabel(p, contract.billing_cycle),
+        rangeLabel: fmtDay(p.start) + ' → ' + fmtDay(p.end),
+        dueLabel: 'Payment due ' + fmtDay(p.dueDate),
+        deliveryLabel: 'Deliverables due ' + fmtDay(p.deliveryDue),
+        invoiceNumber: inv ? inv.number : '',
+        hasInvoice: !!inv, needsInvoice: !inv && !blocked,
+        stateLabel: inv ? (inv.status === 'paid' ? 'Paid' : inv.status === 'sent' ? 'Sent' : 'Drafted')
+          : overdue ? 'Not invoiced' : 'Upcoming',
+        stateBg: inv ? (inv.status === 'paid' ? '#DDEFE8' : '#EFE9DA') : overdue ? '#F7E9E7' : '#F1F4F3',
+        stateColor: inv ? (inv.status === 'paid' ? '#0A6E58' : '#8A6D3B') : overdue ? '#B4433A' : '#7C8985',
+        deliveredLabel: inv && inv.delivered_on ? 'Delivered ' + fmtDay(inv.delivered_on) : '',
+        isDelivered: !!(inv && inv.delivered_on),
+        toggleDelivered: () => inv && this.markPeriodDelivered(inv),
+        deliveredBtnLabel: inv && inv.delivered_on ? 'Undo delivered' : 'Mark delivered',
+        generate: () => this.generatePeriodInvoice(p),
+      };
+    });
+    const unbilledDue = scheduleVM.filter(r => r.needsInvoice && r.stateLabel === 'Not invoiced').length;
+    // The card shows what the draft would produce; the schedule shows what is saved.
+    const draftPeriods = isRetainerDraft ? this.contractSchedule({
+      billing_type: 'retainer', contract_start: s.editContractStart,
+      contract_months: Number(s.editContractMonths || 0), billing_cycle: s.editBillingCycle,
+      payment_terms_days: Number(s.editPaymentTerms || 7),
+    }).length : 0;
+    const contractValue = Number(s.editRetainerAmount || 0) * draftPeriods;
+
     const invoicesVM = s.invoices.map(inv => ({
       ...inv,
+      periodLabel: inv.period_label || '',
+      hasPeriod: !!inv.period_label,
+      deliveryLabel: inv.delivery_due ? (inv.delivered_on ? 'Delivered ' + fmtDay(inv.delivered_on) : 'Due ' + fmtDay(inv.delivery_due)) : '',
+      hasDelivery: !!inv.delivery_due,
+      deliveryColor: inv.delivered_on ? '#0A6E58' : (inv.delivery_due && inv.delivery_due < todayIso ? '#B4433A' : '#7C8985'),
       typeLabel: inv.type === 'proforma' ? 'Proforma' : 'Tax invoice',
       typeBg: inv.type === 'proforma' ? '#EFE9DA' : '#DDEFE8', typeColor: inv.type === 'proforma' ? '#8A6D3B' : '#0A6E58',
       status: inv.status.charAt(0).toUpperCase() + inv.status.slice(1),
@@ -3782,6 +5120,29 @@ class Component extends DCLogic {
       onEditClientGstinChange: e => this.setState({ editClientGstin: e.target.value.toUpperCase() }),
       onEditClientStateChange: e => this.setState({ editClientState: e.target.value }),
 
+      isRetainer, isRetainerDraft, scheduleVM, hasSchedule: scheduleVM.length > 0,
+      contractValueLabel: fmtINR(contractValue),
+      contractStatus: s.contractStatus,
+      contractDirty, saveContract: () => this.saveContract(),
+      contractLocked: this.albumLocked(),
+      contractSummary: draftPeriods
+        ? draftPeriods + ' billing periods · ' + fmtINR(Number(s.editRetainerAmount || 0)) + ' per cycle before GST'
+        : 'Set a start date and term to build the schedule.',
+      scheduleSummary: schedule.length
+        ? schedule.length + ' billing periods · ' + fmtINR(Number(contract && contract.retainer_amount || 0)) + ' per cycle before GST'
+        : '',
+      unbilledLabel: unbilledDue ? 'Generate ' + unbilledDue + ' outstanding' : 'Nothing outstanding',
+      hasUnbilled: unbilledDue > 0 && !contractDirty,
+      generateDueInvoices: () => this.generateDueInvoices(),
+      editBillingType: s.editBillingType,
+      onEditBillingType: e => this.setState({ editBillingType: e.target.value }),
+      editContractStart: s.editContractStart, onEditContractStart: e => this.setState({ editContractStart: e.target.value }),
+      editContractMonths: s.editContractMonths, onEditContractMonths: e => this.setState({ editContractMonths: e.target.value }),
+      editBillingCycle: s.editBillingCycle, onEditBillingCycle: e => this.setState({ editBillingCycle: e.target.value }),
+      editRetainerAmount: s.editRetainerAmount, onEditRetainerAmount: e => this.setState({ editRetainerAmount: e.target.value }),
+      editRetainerScope: s.editRetainerScope, onEditRetainerScope: e => this.setState({ editRetainerScope: e.target.value }),
+      editPaymentTerms: s.editPaymentTerms, onEditPaymentTerms: e => this.setState({ editPaymentTerms: e.target.value }),
+
       invoiceCount: invoicesVM.length, invoicesVM, hasNoInvoices: invoicesVM.length === 0, invStatus: s.invStatus, noClientEmail: !hasClientEmail,
       showInvoiceForm: s.showInvoiceForm, toggleInvoiceForm: () => this.toggleInvoiceForm(),
       invoiceFormToggleLabel: s.showInvoiceForm ? 'Cancel' : '+ New invoice',
@@ -3810,8 +5171,9 @@ class Component extends DCLogic {
       emailInvoicePreview: () => this.emailInvoicePreview(), downloadInvoicePreview: () => this.downloadInvoicePreview(),
       ...previewVals,
 
-      isAlbumTab: s.editorTab === 'album', isBillingTab: s.editorTab === 'billing',
-      isWeddingAlbumTab: s.editorTab === 'album' && this.parentTable() !== 'projects',
+      isAlbumTab: s.editorTab === 'album' && this.can('media'),
+      isBillingTab: s.editorTab === 'billing' && this.can('billing'),
+      isWeddingAlbumTab: s.editorTab === 'album' && this.can('media') && this.parentTable() !== 'projects',
       isProjectRecord: this.parentTable() === 'projects',
       isWeddingRecord: this.parentTable() !== 'projects',
 
