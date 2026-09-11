@@ -586,7 +586,7 @@
   <sc-if value="{{ isEditor }}" hint-placeholder-val="{{ false }}">
     <div>
       <div style="display:flex; align-items:center; padding:20px clamp(20px,5vw,60px); border-bottom:1px solid var(--line); flex-wrap:wrap; gap:14px">
-        <button onClick="{{ backToDashboard }}" style="background:none; border:none; font-size:13px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; padding:0">← All events</button>
+        <button onClick="{{ backToDashboard }}" style="background:none; border:none; font-size:13px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; padding:0">{{ backLabel }}</button>
         <div style="display:flex; flex-direction:column; gap:2px; padding-left:14px; border-left:1px solid var(--line)">
           <span style="font-size:15px; color:#16231F">{{ editorEventName }}</span>
           <span style="font-size:11px; color:#7C8985">{{ editorEventMeta }}</span>
@@ -1316,6 +1316,9 @@
 const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 const BUCKET = 'event-media';
+// The album bucket is public by design. Invoices and crew ID proofs must not be
+// fetchable by URL, so they go in a private bucket instead.
+const PRIVATE_BUCKET = 'staff-private';
 const EMAILJS_SERVICE_ID = 'service_j9mkj45';
 const EMAILJS_TEMPLATE_ID = 'template_9xph63f';
 // Separate template for invoices — the album template hardcodes the preview-link body.
@@ -1576,6 +1579,10 @@ class Component extends DCLogic {
   // tagged _table at load time, so this reads that tag rather than guessing.
   parentTable(ev) { return ((ev !== undefined ? ev : this.state.current) || {})._table === 'projects' ? 'projects' : 'events'; }
   parentCol(ev) { return this.parentTable(ev) === 'projects' ? 'project_id' : 'event_id'; }
+  // Which record a child row hangs off, read from the row itself. setState is not
+  // synchronous, so anything reloading right after a record is opened must be told
+  // which record it is — trusting this.state.current reads the PREVIOUS one.
+  rowParentId(row) { return (row && (row.event_id || row.project_id)) || (this.state.current && this.state.current.id) || null; }
 
   async loadRole() {
     const { data: u } = await this.sb.auth.getUser();
@@ -1606,7 +1613,16 @@ class Component extends DCLogic {
     else this.setState({ signingIn: false });
   }
 
-  async doSignOut() { await this.sb.auth.signOut(); this.setState({ view: 'login', email: '', password: '' }); }
+  // Everything loaded under the old session goes with it — otherwise the next person
+  // to sign in on this browser briefly sees the previous user's records.
+  async doSignOut() {
+    await this.sb.auth.signOut();
+    this.setState({
+      view: 'login', email: '', password: '', role: null, current: null, media: [],
+      invoices: [], assignments: [], costing: null, people: [], payouts: [], workload: [],
+      personForm: null, personId: null, personDocs: [], personAvail: [], personRates: [],
+    });
+  }
 
   // ---- Events: list, create, open, save ----------------------------------------
 
@@ -1652,11 +1668,12 @@ class Component extends DCLogic {
     });
     // Only fetch what this role can actually see — otherwise every event open fires
     // queries the row-level policies will reject anyway.
+    const rec = { ...ev, _table: 'events' };
     if (this.can('media')) this.loadMedia(ev.id);
-    if (this.can('billing')) this.loadInvoices(ev.id);
+    if (this.can('billing')) this.loadInvoices(ev.id, rec);
     if (this.can('people')) {
-      this.loadAssignments(ev.id);
-      this.loadCosting(ev.id);
+      this.loadAssignments(ev.id, rec);
+      this.loadCosting(ev.id, rec);
       if (!this.state.people.length) this.loadPeople();
     }
   }
@@ -1858,9 +1875,10 @@ class Component extends DCLogic {
       afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
       invoices: [],
     });
+    const rec = { ...pr, _table: 'projects' };
     this.loadProjectMedia(pr.id);
-    this.loadAssignments(pr.id);
-    this.loadInvoices(pr.id);
+    this.loadAssignments(pr.id, rec);
+    this.loadInvoices(pr.id, rec);
   }
 
   async saveProjectDetails() {
@@ -1892,7 +1910,6 @@ class Component extends DCLogic {
   setFontField(id, field, val) { this.setState({ fontDraft: this.state.fontDraft.map(r => r.id === id ? { ...r, [field]: val } : r) }); }
   addFontRow() { this.setState({ fontDraft: [...this.state.fontDraft, { id: Date.now() + Math.random(), name: '', role: '', google: '', line: '' }] }); }
   removeFontRow(id) { this.setState({ fontDraft: this.state.fontDraft.filter(r => r.id !== id) }); }
-  setFontField(id, field, val) { this.setState({ fontDraft: this.state.fontDraft.map(r => r.id === id ? { ...r, [field]: val } : r) }); }
 
   async saveBrand() {
     if (this.albumLocked()) return;
@@ -1945,6 +1962,9 @@ class Component extends DCLogic {
   async deleteProjectMedia(item) {
     if (this.albumLocked()) return;
     await this.sb.from('project_media').delete().eq('id', item.id);
+    const paths = Array.from(new Set([item.url, item.url_view, item.url_grid, item.thumb_url]
+      .map(u => this.storagePathFromUrl(u)).filter(Boolean)));
+    if (paths.length) await this.sb.storage.from(BUCKET).remove(paths);
     this.loadProjectMedia(this.state.current.id);
   }
 
@@ -2106,16 +2126,30 @@ class Component extends DCLogic {
   // Pull one frame out of the local file before it leaves the browser — the album
   // grid then needs zero video bytes to paint a tile.
   async grabVideoFrame(file, at) {
+    // Decoding a frame makes the browser buffer the source file. On a very large
+    // film that can exhaust memory and kill the tab — too high a price for a
+    // cover image, which the admin can still set by hand.
+    if (file.size > 600 * 1024 * 1024) return null;
     const objUrl = URL.createObjectURL(file);
+    let vEl = null;
     try {
       const v = document.createElement('video');
-      v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
-      await new Promise((res, rej) => {
-        v.onloadeddata = res;
-        v.onerror = () => rej(new Error('could not read video'));
-      });
+      vEl = v;
+      const limit = (ms, label) => new Promise((_, rej) => setTimeout(() => rej(new Error(label)), ms));
+      // preload=metadata reads headers only; 'auto' pulls the whole file into memory.
+      v.muted = true; v.playsInline = true; v.preload = 'metadata'; v.src = objUrl;
+      await Promise.race([
+        new Promise((res, rej) => {
+          v.onloadedmetadata = res;
+          v.onerror = () => rej(new Error('could not read video'));
+        }),
+        limit(20000, 'cover: metadata timed out'),
+      ]);
       const t = Math.min(at == null ? 1 : at, Math.max(0, (v.duration || 1) - 0.1));
-      await new Promise(res => { v.onseeked = res; try { v.currentTime = t; } catch (e) { res(); } });
+      await Promise.race([
+        new Promise(res => { v.onseeked = res; try { v.currentTime = t; } catch (e) { res(); } }),
+        limit(20000, 'cover: seek timed out'),
+      ]);
       const w = v.videoWidth, h = v.videoHeight;
       if (!w || !h) throw new Error('no frame');
       const scale = Math.min(1, 1200 / Math.max(w, h));
@@ -2126,7 +2160,11 @@ class Component extends DCLogic {
       const type = webp ? 'image/webp' : 'image/jpeg';
       const blob = await new Promise(r => c.toBlob(r, type, 0.9));
       return blob ? { blob, ext: webp ? 'webp' : 'jpg' } : null;
-    } finally { URL.revokeObjectURL(objUrl); }
+    } finally {
+      // Drop the decoder's buffers before the album reloads.
+      if (vEl) { try { vEl.removeAttribute('src'); vEl.load(); } catch (e) {} }
+      URL.revokeObjectURL(objUrl);
+    }
   }
 
   async setVideoThumb(item, file) {
@@ -2205,7 +2243,12 @@ class Component extends DCLogic {
     this.setState({ videoUploadStatus: 'Starting — ' + this.fmtBytes(file.size) + (big ? ' (resumable)' : ''), videoProgress: 0, videoUploadName: file.name, videoUploadError: false });
     try {
       const onProg = (pct, loaded, total) => {
-        this.setState({ videoProgress: pct, videoUploadStatus: this.fmtBytes(loaded) + ' of ' + this.fmtBytes(total) });
+        this.setState({
+          videoProgress: pct,
+          videoUploadStatus: pct >= 100
+            ? 'All ' + this.fmtBytes(total) + ' sent — finishing on the server…'
+            : this.fmtBytes(loaded) + ' of ' + this.fmtBytes(total),
+        });
       };
       const url = big
         ? await this.uploadResumable(file, 'video', ext, onProg)
@@ -2217,7 +2260,7 @@ class Component extends DCLogic {
         if (fr) thumbUrl = await this.uploadBlob(fr.blob, 'vthumb', fr.ext);
       } catch (e) { /* a missing cover is survivable — admin can set one by hand */ }
       this.setState({ videoUploadStatus: 'Saving…' });
-      await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'video', url, thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + 1 });
+      await this.insertMediaRow({ event_id: this.state.current.id, kind: 'video', url, thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + 1 });
       this.setState({ videoUploadStatus: 'Done — original quality, no compression.' });
       setTimeout(() => this.setState({ videoUploadStatus: '', videoProgress: null, videoUploadName: '' }), 3000);
     } catch (e) {
@@ -2226,6 +2269,19 @@ class Component extends DCLogic {
     }
     if (this.videoInputEl) this.videoInputEl.value = '';
     this.loadMedia(this.state.current.id);
+  }
+
+  // A long upload can outlive the access token, so the row insert gets rejected
+  // by RLS just as the bytes land. Refresh once and retry before giving up — the
+  // file is already in storage at this point.
+  async insertMediaRow(row) {
+    let res = await this.sb.from('media').insert(row);
+    if (res.error) {
+      try { await this.sb.auth.refreshSession(); } catch (e) {}
+      res = await this.sb.from('media').insert(row);
+    }
+    if (res.error) throw new Error('Uploaded, but saving it to the album failed: ' + (res.error.message || 'unknown error') + ' — sign out, sign back in, then re-add the film.');
+    return res;
   }
 
   fmtBytes(b) {
@@ -2255,7 +2311,13 @@ class Component extends DCLogic {
     try { await loadLib('tus'); } catch (e) { /* checked below */ }
     if (!window.tus) throw new Error('Resumable uploader failed to load. Check your connection and reload.');
     const path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
-    const { data: sess } = await this.sb.auth.getSession();
+    let { data: sess } = await this.sb.auth.getSession();
+    // Every chunk carries the header set at creation time, so a token that is
+    // close to expiry would die mid-transfer. Start from a fresh one.
+    const expAt = sess && sess.session && sess.session.expires_at ? sess.session.expires_at * 1000 : 0;
+    if (expAt && expAt - Date.now() < 45 * 60 * 1000) {
+      try { await this.sb.auth.refreshSession(); ({ data: sess } = await this.sb.auth.getSession()); } catch (e) {}
+    }
     const token = (sess && sess.session && sess.session.access_token) || SUPABASE_KEY;
     await new Promise((resolve, reject) => {
       const upload = new window.tus.Upload(file, {
@@ -2279,8 +2341,14 @@ class Component extends DCLogic {
       });
       this.tusUpload = upload;
       this.tusReject = reject;
+      // A resume URL Supabase has already expired lets the transfer run all the
+      // way to 100% and then fail at finalise, so only resume a recent attempt.
       upload.findPreviousUploads().then(prev => {
-        if (prev.length) upload.resumeFromPreviousUpload(prev[0]);
+        const fresh = (prev || []).filter(p => {
+          const t = p && p.creationTime ? new Date(p.creationTime).getTime() : 0;
+          return t && (Date.now() - t) < 12 * 60 * 60 * 1000;
+        });
+        if (fresh.length) upload.resumeFromPreviousUpload(fresh[0]);
         upload.start();
       }).catch(() => upload.start());
     });
@@ -2386,9 +2454,23 @@ class Component extends DCLogic {
     else this.movePhotoToPosition(item.id, n - 1);
   }
 
+  // A deleted row used to leave its bytes in storage forever — a few hundred MB per
+  // film. Turn the public URL back into its bucket path and delete that too.
+  storagePathFromUrl(u) {
+    if (!u) return null;
+    const marker = '/storage/v1/object/public/' + BUCKET + '/';
+    const i = String(u).indexOf(marker);
+    if (i === -1) return null;
+    return decodeURIComponent(String(u).slice(i + marker.length).split('?')[0]);
+  }
+
   async deleteMedia(item) {
     if (this.albumLocked()) return;
+    if (item.kind === 'video' && !window.confirm('Delete this film for good? The file is removed from storage too.')) return;
     await this.sb.from('media').delete().eq('id', item.id);
+    const paths = Array.from(new Set([item.url, item.url_view, item.url_grid, item.thumb_url]
+      .map(u => this.storagePathFromUrl(u)).filter(Boolean)));
+    if (paths.length) await this.sb.storage.from(BUCKET).remove(paths);
     this.loadMedia(this.state.current.id);
   }
 
@@ -2405,8 +2487,8 @@ class Component extends DCLogic {
 
   // ---- Billing & invoices ------------------------------------------------------
 
-  async loadInvoices(eventId) {
-    const { data, error } = await this.sb.from('invoices').select('*').eq(this.parentCol(), eventId).order('created_at', { ascending: false });
+  async loadInvoices(eventId, rec) {
+    const { data, error } = await this.sb.from('invoices').select('*').eq(this.parentCol(rec), eventId).order('created_at', { ascending: false });
     if (!error) this.setState({ invoices: data || [] });
   }
 
@@ -2419,9 +2501,12 @@ class Component extends DCLogic {
   async nextInvoiceNumber(type) {
     const year = new Date().getFullYear();
     const prefix = type === 'proforma' ? 'PRO' : 'INV';
-    const { count } = await this.sb.from('invoices').select('id', { count: 'exact', head: true })
-      .eq('type', type).gte('issue_date', year + '-01-01').lte('issue_date', year + '-12-31');
-    return prefix + '-' + year + '-' + String((count || 0) + 1).padStart(3, '0');
+    // Counting rows re-issues a number that a deleted invoice already used, so read
+    // the highest number actually issued this year instead.
+    const { data } = await this.sb.from('invoices').select('number')
+      .like('number', prefix + '-' + year + '-%').order('number', { ascending: false }).limit(1);
+    const last = data && data[0] ? parseInt(String(data[0].number).split('-').pop(), 10) : 0;
+    return prefix + '-' + year + '-' + String((isFinite(last) ? last : 0) + 1).padStart(3, '0');
   }
 
   async generateInvoice() {
@@ -2498,9 +2583,11 @@ class Component extends DCLogic {
     this.setState({ pdfBusy: true });
     try {
       const blob = await this.getInvoicePdfBlob();
+      const href = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob); a.download = inv.number + '.pdf'; a.click();
-      URL.revokeObjectURL(a.href);
+      a.href = href; a.download = inv.number + '.pdf'; a.click();
+      // Revoking immediately cancels the save in some browsers.
+      setTimeout(() => URL.revokeObjectURL(href), 15000);
     } catch (e) { window.alert('PDF failed: ' + (e.message || e)); }
     this.setState({ pdfBusy: false });
   }
@@ -2528,10 +2615,14 @@ class Component extends DCLogic {
       stage = 'uploading to storage';
       let pdfUrl = '';
       try {
-        const path = inv.event_id + '/invoices/' + inv.number + '.pdf';
-        const { error: upErr } = await this.sb.storage.from(BUCKET).upload(path, blob, { contentType: 'application/pdf', upsert: true });
+        // An invoice carries the client's name, PAN and amounts, so it lives in the
+        // private bucket and travels as a signed link, not a guessable public URL.
+        const path = (inv.event_id || inv.project_id || 'misc') + '/invoices/' + inv.number + '.pdf';
+        const { error: upErr } = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, blob, { contentType: 'application/pdf', upsert: true });
         if (upErr) throw upErr;
-        pdfUrl = this.sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+        const { data: signed, error: signErr } = await this.sb.storage.from(PRIVATE_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 180);
+        if (signErr) throw signErr;
+        pdfUrl = signed.signedUrl;
       } catch (upe) { console.warn('[invoice] storage upload failed, sending anyway:', upe); }
 
       const name = s.editClientName || 'there';
@@ -2721,22 +2812,32 @@ class Component extends DCLogic {
     const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = 'documents/' + pid + '/' + Date.now() + '-' + safe;
     this.setState({ personStatus: 'Uploading document…' });
-    const { error } = await this.sb.storage.from(BUCKET).upload(path, file);
-    if (error) { this.setState({ personStatus: error.message }); return; }
+    // ID proofs go to the private bucket. Until security-fixes.sql has been run it
+    // does not exist yet, so fall back rather than losing the upload.
+    let res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, file);
+    if (res.error && /bucket not found|does not exist/i.test(res.error.message || '')) {
+      res = await this.sb.storage.from(BUCKET).upload(path, file);
+    }
+    if (res.error) { this.setState({ personStatus: res.error.message }); return; }
     await this.sb.from('people_documents').insert({ person_id: pid, label: this.state.docLabel || file.name, storage_path: path });
     this.setState({ personStatus: 'Document added.', docLabel: '' });
     setTimeout(() => this.setState({ personStatus: '' }), 2500);
     this.loadDocs(pid);
   }
 
+  // Documents uploaded before the private bucket existed still live in event-media,
+  // so try both.
   async openDoc(d) {
-    const { data, error } = await this.sb.storage.from(BUCKET).createSignedUrl(d.storage_path, 300);
-    if (error || !data) { this.setState({ personStatus: error ? error.message : 'Could not open.' }); return; }
-    window.open(data.signedUrl, '_blank');
+    for (const b of [PRIVATE_BUCKET, BUCKET]) {
+      const { data } = await this.sb.storage.from(b).createSignedUrl(d.storage_path, 300);
+      if (data && data.signedUrl) { window.open(data.signedUrl, '_blank'); return; }
+    }
+    this.setState({ personStatus: 'Could not open that document.' });
   }
 
   async removeDoc(d) {
     if (!window.confirm('Remove ' + d.label + '?')) return;
+    await this.sb.storage.from(PRIVATE_BUCKET).remove([d.storage_path]);
     await this.sb.storage.from(BUCKET).remove([d.storage_path]);
     await this.sb.from('people_documents').delete().eq('id', d.id);
     this.loadDocs(this.state.personId);
@@ -2766,10 +2867,10 @@ class Component extends DCLogic {
 
   // ---- Crew on an event --------------------------------------------------------
 
-  async loadAssignments(eventId) {
+  async loadAssignments(eventId, rec) {
     const { data, error } = await this.sb.from('assignments')
       .select('*, people(full_name, crew_id, engagement)')
-      .eq(this.parentCol(), eventId).order('created_at', { ascending: true });
+      .eq(this.parentCol(rec), eventId).order('created_at', { ascending: true });
     if (!error) { this.loadEventDays(data || []); this.loadDeliverables(data || []); this.loadCrewRates(data || []); }
     if (!error) this.setState({ assignments: data || [] });
   }
@@ -2782,9 +2883,9 @@ class Component extends DCLogic {
     this.setState({ crewRates: data || [] });
   }
 
-  async loadCosting(eventId) {
+  async loadCosting(eventId, rec) {
     // No costing view for projects yet — the Crew tab still shows individual rows.
-    if (this.parentTable() === 'projects') { this.setState({ costing: null }); return; }
+    if (this.parentTable(rec) === 'projects') { this.setState({ costing: null }); return; }
     const { data } = await this.sb.from('event_costing').select('*').eq('event_id', eventId).maybeSingle();
     this.setState({ costing: data || null });
   }
@@ -2815,27 +2916,33 @@ class Component extends DCLogic {
     const key = ag.id + ':' + field;
     const raw = this.state.agEdits[key];
     if (raw === undefined) return;
-    const patch = {}; patch[field] = raw === '' ? null : Number(raw);
-    const { error } = await this.sb.from('assignments').update(patch).eq('id', ag.id);
     const next = { ...this.state.agEdits }; delete next[key];
+    const n = raw === '' ? null : Number(raw);
+    // Number('12k') is NaN, which Postgres stores as null — silently wiping the rate.
+    if (n !== null && !isFinite(n)) { this.setState({ agEdits: next, crewStatus: 'That is not a number — nothing saved.' }); return; }
+    const patch = {}; patch[field] = n;
+    const { error } = await this.sb.from('assignments').update(patch).eq('id', ag.id);
     this.setState({ agEdits: next, crewStatus: error ? error.message : '' });
-    this.loadAssignments(ag.event_id); this.loadCosting(ag.event_id);
+    const pid = this.rowParentId(ag);
+    this.loadAssignments(pid); this.loadCosting(pid);
   }
 
   async setAgRole(ag, role) {
     await this.sb.from('assignments').update({ crew_role: role }).eq('id', ag.id);
-    this.loadAssignments(ag.event_id);
+    this.loadAssignments(this.rowParentId(ag));
   }
 
   async setAgBasis(ag, basis) {
     await this.sb.from('assignments').update({ pay_basis: basis }).eq('id', ag.id);
-    this.loadAssignments(ag.event_id); this.loadCosting(ag.event_id);
+    const pid = this.rowParentId(ag);
+    this.loadAssignments(pid); this.loadCosting(pid);
   }
 
   async removeAssignment(ag) {
     if (!window.confirm('Remove this crew assignment?')) return;
     await this.sb.from('assignments').delete().eq('id', ag.id);
-    this.loadAssignments(ag.event_id || ag.project_id); this.loadCosting(ag.event_id || ag.project_id);
+    const pid = this.rowParentId(ag);
+    this.loadAssignments(pid); this.loadCosting(pid);
     if (this.state.view === 'payouts') this.loadPayouts();
   }
 
@@ -2871,7 +2978,8 @@ class Component extends DCLogic {
     });
     if (error) { this.setState({ dlStatus: error.message }); return; }
     this.setState({ dlLabel: '', dlQty: '1', dlRate: '', dlStatus: '' });
-    this.loadAssignments(ag.event_id); this.loadCosting(ag.event_id);
+    const pid = this.rowParentId(ag);
+    this.loadAssignments(pid); this.loadCosting(pid);
   }
 
   async removeDeliverable(d, eventId) {
@@ -3117,8 +3225,8 @@ class Component extends DCLogic {
           doneLabel: d.delivered ? 'Delivered' : 'Pending',
           doneColor: d.delivered ? '#0A6E58' : '#8A6D3B',
           doneBg: d.delivered ? '#DDEFE8' : '#EFE9DA',
-          toggle: () => this.toggleDelivered(d, ag.event_id),
-          remove: () => this.removeDeliverable(d, ag.event_id),
+          toggle: () => this.toggleDelivered(d, this.rowParentId(ag)),
+          remove: () => this.removeDeliverable(d, this.rowParentId(ag)),
         })),
         dlOpen: s.dlFor === ag.id,
         toggleDlForm: () => this.openDeliverableForm(ag.id),
@@ -3376,10 +3484,17 @@ class Component extends DCLogic {
       personWorkVM, hasPersonWork: personWorkVM.length > 0,
       roleLabel: STAFF_ROLE_LABEL[role] || role, roleMissing: role === 'none',
       navVM, editorTabsVM, isCrewTab: s.editorTab === 'crew',
-      editorEventName: s.current ? (s.editCouple || s.current.couple_names) : '',
-      editorEventMeta: s.current
-        ? [fmtDay(s.editDate || s.current.event_date), s.editVenue || s.current.venue].filter(Boolean).join(' · ')
-        : '',
+      // Weddings are named by the couple, projects by the client. Reading the
+      // wedding fields for a project showed the last-opened album's name.
+      editorEventName: !s.current ? ''
+        : this.parentTable() === 'projects'
+          ? (s.editProjClient || s.current.client_name || '')
+          : (s.editCouple || s.current.couple_names || ''),
+      editorEventMeta: !s.current ? ''
+        : this.parentTable() === 'projects'
+          ? [fmtDay(s.editDate || s.current.start_date), s.editProjTitle || s.current.project_title,
+             s.editSector || s.current.sector].filter(Boolean).join(' · ')
+          : [fmtDay(s.editDate || s.current.event_date), s.editVenue || s.current.venue].filter(Boolean).join(' · '),
       canPeopleEdit: this.can('peopleEdit'), canDocs: this.can('docs'), canPayoutsEdit: this.can('payoutsEdit'),
       crewRoleOptions,
 
@@ -3639,7 +3754,6 @@ class Component extends DCLogic {
       previewUrl: !s.current ? '#' : (this.parentTable() === 'projects' ? 'commercial.html?project=' + s.current.slug : 'album.html?event=' + s.current.slug),
       previewLabel: this.parentTable() === 'projects' ? 'Preview project' : 'Preview album',
       backLabel: this.parentTable() === 'projects' ? '← All projects' : '← All events',
-      previewLabel: this.parentTable() === 'projects' ? 'Preview project' : 'Preview album',
 
       setCoverInputRef: el => { this.coverInputEl = el; },
       triggerCoverPicker: () => this.coverInputEl && this.coverInputEl.click(),

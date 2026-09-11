@@ -234,11 +234,21 @@ class Component extends DCLogic {
 
   async load(slug) {
     try {
-      const { data: ev, error } = await this.sb.from('events').select('*').eq('slug', slug).maybeSingle();
-      if (error || !ev) { this.setState({ loading: false, notFound: true }); return; }
-      const { data: media, error: mErr } = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
-      if (mErr) { this.setState({ loading: false, notFound: true }); return; }
-      this.setState({ loading: false, event: ev, media: (media || []).filter(m => m.url) });
+      // get_album returns only the columns an album page renders, so the client's
+      // phone, email and PAN on the events row are never readable from here.
+      // Databases that predate the function fall back to the direct read.
+      let ev = null, media = null;
+      const rpc = await this.sb.rpc('get_album', { p_slug: slug });
+      if (!rpc.error && rpc.data && rpc.data.event) { ev = rpc.data.event; media = rpc.data.media || []; }
+      else {
+        const direct = await this.sb.from('events').select('*').eq('slug', slug).maybeSingle();
+        if (direct.error || !direct.data) { this.setState({ loading: false, notFound: true }); return; }
+        ev = direct.data;
+        const m = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
+        if (m.error) { this.setState({ loading: false, notFound: true }); return; }
+        media = m.data || [];
+      }
+      this.setState({ loading: false, event: ev, media: (media || []).filter(x => x.url) });
     } catch (e) { this.setState({ loading: false, notFound: true }); }
   }
 

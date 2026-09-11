@@ -348,11 +348,21 @@ class Component extends DCLogic {
 
   async load(slug) {
     try {
-      const { data: p, error } = await this.sb.from('projects').select('*').eq('slug', slug).maybeSingle();
-      if (error || !p) { this.setState({ loading: false, notFound: true }); return; }
-      const { data: m } = await this.sb.from('project_media').select('*')
-        .eq('project_id', p.id).order('sort_order', { ascending: true });
-      this.setState({ project: p, media: m || [], loading: false });
+      // get_project exposes only the columns this page renders — the client's
+      // billing fields on the projects row stay private. Older databases without
+      // the function fall back to the direct read.
+      let p = null, media = null;
+      const rpc = await this.sb.rpc('get_project', { p_slug: slug });
+      if (!rpc.error && rpc.data && rpc.data.project) { p = rpc.data.project; media = rpc.data.media || []; }
+      else {
+        const direct = await this.sb.from('projects').select('*').eq('slug', slug).maybeSingle();
+        if (direct.error || !direct.data) { this.setState({ loading: false, notFound: true }); return; }
+        p = direct.data;
+        const m = await this.sb.from('project_media').select('*')
+          .eq('project_id', p.id).order('sort_order', { ascending: true });
+        media = m.data || [];
+      }
+      this.setState({ project: p, media: media || [], loading: false });
       this.loadBrandFonts(p);
     } catch (e) {
       this.setState({ loading: false, notFound: true });
