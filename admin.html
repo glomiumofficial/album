@@ -46,10 +46,32 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ isPicker }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(24px,5vh,44px); padding:clamp(24px,6vw,64px)">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center">
+        <span style="font-size:17px; font-weight:300; color:var(--green)">Glomium Workspace</span>
+        <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#9AA6A2">Choose a division</span>
+      </div>
+      <div style="width:100%; max-width:900px; display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+        <sc-for list="{{ divisionCardsVM }}" as="dv" hint-placeholder-count="5">
+          <button onClick="{{ dv.go }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:22px 24px; background:{{ dv.bg }}; border:1px solid {{ dv.border }}; border-radius:4px; cursor:pointer; text-align:left" style-hover="border-color:var(--green)">
+            <span style="font-size:16px; font-weight:400; color:{{ dv.color }}">{{ dv.label }}</span>
+            <span style="font-size:12px; line-height:1.5; color:#7C8985; text-wrap:pretty">{{ dv.note }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ canCancelPicker }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ cancelPicker }}" style="padding:10px 18px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985; cursor:pointer">Cancel</button>
+      </sc-if>
+      <span style="font-size:11px; color:#9AA6A2; text-align:center; text-wrap:pretty">Crew, availability and payouts are shared across every division.</span>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ isWorkspace }}" hint-placeholder-val="{{ false }}">
     <div>
       <div style="display:flex; align-items:center; gap:16px; padding:20px clamp(20px,5vw,60px); border-bottom:1px solid var(--line); flex-wrap:wrap">
         <span style="font-size:17px; font-weight:300; color:var(--green)">Glomium Workspace</span>
+        <button onClick="{{ openDivisionPicker }}" style="display:flex; align-items:center; gap:8px; padding:8px 14px; background:#F3FAF8; border:1px solid var(--line); border-radius:14px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ divisionLabel }} <span style="font-size:9px; color:#9AA6A2">Switch</span></button>
         <div style="display:flex; gap:6px; flex-wrap:wrap; margin-right:auto">
           <sc-for list="{{ navVM }}" as="nv" hint-placeholder-count="1">
             <button onClick="{{ nv.go }}" style="padding:9px 15px; background:{{ nv.bg }}; border:1px solid {{ nv.border }}; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:{{ nv.color }}; cursor:pointer">{{ nv.label }}</button>
@@ -67,6 +89,56 @@
 
       <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); display:flex; flex-direction:column; gap:36px; max-width:1080px; margin:0 auto">
+
+        <sc-if value="{{ isProjectDivision }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">New {{ divisionNoun }}</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
+              <input placeholder="Client / brand name" value="{{ newClientName }}" onChange="{{ onNewClientNameChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+              <input placeholder="Project title (optional)" value="{{ newProjTitle }}" onChange="{{ onNewProjTitleChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+              <input placeholder="Sector — e.g. Speciality coffee" value="{{ newSector }}" onChange="{{ onNewSectorChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+            </div>
+            <sc-if value="{{ createProjectError }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#B4433A">{{ createProjectError }}</span></sc-if>
+            <span style="font-size:11px; color:#9AA6A2; line-height:1.5">Starts in Planning, dated today. Palette, logos and media go in once the project is open.</span>
+            <div>
+              <button onClick="{{ createProject }}" disabled="{{ creatingProject }}" style="padding:12px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ createProjectLabel }}</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showProjectList }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">{{ divisionLabel }}</span>
+            <sc-if value="{{ hasNoProjects }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:14px; color:#7C8985">{{ emptyProjectsHint }}</span>
+            </sc-if>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px">
+              <sc-for list="{{ projectsVM }}" as="pj" hint-placeholder-count="0">
+                <div style="border:1px solid var(--line); border-radius:4px; overflow:hidden; display:flex; flex-direction:column">
+                  <div style="aspect-ratio:4/3; background:#F4F6F5; display:grid; place-items:center; overflow:hidden">
+                    <img ref="{{ pj.setCoverRef }}" alt="{{ pj.client_name }}" style="width:100%; height:100%; object-fit:cover; display:none">
+                    <sc-if value="{{ pj.noCover }}" hint-placeholder-val="{{ true }}">
+                      <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">No cover yet</span>
+                    </sc-if>
+                  </div>
+                  <div style="padding:14px 16px; display:flex; flex-direction:column; gap:6px">
+                    <span style="font-size:15px; font-weight:400; color:#16231F">{{ pj.client_name }}</span>
+                    <span style="font-size:12px; color:#7C8985">{{ pj.metaLabel }}</span>
+                    <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ pj.statusBg }}; color:{{ pj.statusColor }}; letter-spacing:.08em; text-transform:uppercase; align-self:flex-start">{{ pj.statusLabel }}</span>
+                    <div style="display:flex; gap:8px; margin-top:8px">
+                      <button onClick="{{ pj.open }}" style="flex:1; padding:9px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Edit</button>
+                      <sc-if value="{{ canRecordsEdit }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ pj.remove }}" style="padding:9px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Delete</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isWeddingDivision }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
           <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">New event</span>
           <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
@@ -81,11 +153,13 @@
             <button onClick="{{ createEvent }}" disabled="{{ creating }}" style="padding:12px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ createLabel }}</button>
           </div>
         </div>
+        </sc-if>
 
+        <sc-if value="{{ showWeddingList }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; flex-direction:column; gap:16px">
           <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Events</span>
           <sc-if value="{{ hasNoEvents }}" hint-placeholder-val="{{ false }}">
-            <span style="font-size:14px; color:#7C8985">No events yet — create one above.</span>
+            <span style="font-size:14px; color:#7C8985">{{ emptyEventsHint }}</span>
           </sc-if>
           <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px">
             <sc-for list="{{ eventsVM }}" as="ev" hint-placeholder-count="0">
@@ -102,13 +176,16 @@
                   <span style="font-size:11px; color:var(--green-deep)">/album/{{ ev.slug }}</span>
                   <div style="display:flex; gap:8px; margin-top:8px">
                     <button onClick="{{ ev.open }}" style="flex:1; padding:9px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Edit</button>
-                    <button onClick="{{ ev.remove }}" style="padding:9px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Delete</button>
+                    <sc-if value="{{ canRecordsEdit }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ ev.remove }}" style="padding:9px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Delete</button>
+                    </sc-if>
                   </div>
                 </div>
               </div>
             </sc-for>
           </div>
         </div>
+        </sc-if>
       </div>
       </sc-if>
 
@@ -384,7 +461,7 @@
         </div>
 
         <sc-if value="{{ hasNoWorks }}" hint-placeholder-val="{{ true }}">
-          <span style="font-size:13px; color:#7C8985; line-height:1.6">Nothing here. Create an event under Albums, then set its nature of work and delivery deadline.</span>
+          <span style="font-size:13px; color:#7C8985; line-height:1.6">{{ emptyScheduleHint }}</span>
         </sc-if>
 
         <div style="display:flex; flex-direction:column; gap:12px">
@@ -398,14 +475,17 @@
 
               <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
                 <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Nature of work
-                  <input placeholder="Wedding / Pre-wedding / Corporate…" value="{{ wk.natureValue }}" onChange="{{ wk.onNature }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  <input placeholder="Wedding / Pre-wedding / Corporate…" value="{{ wk.natureValue }}" onChange="{{ wk.onNature }}" readOnly="{{ wk.readOnly }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Taken
+                  <span style="font-size:13px; color:#16231F; padding:9px 0">{{ wk.takenLabel }}</span>
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Shoot date
-                  <input type="date" value="{{ wk.dateValue }}" onChange="{{ wk.onDate }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  <input type="date" value="{{ wk.dateValue }}" onChange="{{ wk.onDate }}" readOnly="{{ wk.readOnly }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
                   <span style="font-size:10px; letter-spacing:0; text-transform:none; color:#B99A5B">{{ wk.dateHint }}</span>
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Delivery deadline
-                  <input type="date" value="{{ wk.deadlineValue }}" onChange="{{ wk.onDeadline }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  <input type="date" value="{{ wk.deadlineValue }}" onChange="{{ wk.onDeadline }}" readOnly="{{ wk.readOnly }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
                   <span style="font-size:10px; letter-spacing:0; text-transform:none; color:#B99A5B">{{ wk.deadlineHint }}</span>
                 </label>
                 <div style="display:flex; flex-direction:column; gap:5px">
@@ -461,7 +541,7 @@
         </div>
 
         <sc-if value="{{ hasNoPayouts }}" hint-placeholder-val="{{ true }}">
-          <span style="font-size:13px; color:#7C8985">Nothing here. Assign crew to an event under Albums → Crew &amp; cost, and their payouts appear in this list.</span>
+          <span style="font-size:13px; color:#7C8985">{{ emptyPayoutsHint }}</span>
         </sc-if>
 
         <sc-if value="{{ hasPendingPayouts }}" hint-placeholder-val="{{ false }}">
@@ -518,9 +598,8 @@
         </div>
         <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ roleLabel }}</span>
         <div style="display:flex; gap:10px; align-items:center">
-          <span style="font-size:12px; color:{{ copiedColor }}">{{ copyLabel }}</span>
-          <button onClick="{{ copyPublicLink }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Copy public link</button>
-          <a href="{{ previewUrl }}" target="_blank" style="padding:9px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Preview album</a>
+          <button onClick="{{ copyPublicLink }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ copyLabel }}</button>
+          <a href="{{ previewUrl }}" target="_blank" style="padding:9px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ previewLabel }}</a>
         </div>
       </div>
 
@@ -747,13 +826,147 @@
         </sc-if>
 
         <sc-if value="{{ isAlbumTab }}" hint-placeholder-val="{{ true }}">
+
+        <sc-if value="{{ isProjectRecord }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Project</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
+              <input placeholder="Client / brand name" value="{{ editProjClient }}" onChange="{{ onEditProjClientChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+              <input placeholder="Project title" value="{{ editProjTitle }}" onChange="{{ onEditProjTitleChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+              <input placeholder="Sector" value="{{ editSector }}" onChange="{{ onEditSectorChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+              <input placeholder="slug" value="{{ editSlug }}" onChange="{{ onEditSlugChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            </div>
+            <input placeholder="Tagline — one line, shown under the brief" value="{{ editTagline }}" onChange="{{ onEditTaglineChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">The brief
+              <textarea value="{{ editBrief }}" onChange="{{ onEditBriefChange }}" readOnly="{{ albumLocked }}" rows="4" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; resize:vertical; font-family:inherit; line-height:1.6"></textarea>
+            </label>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Taken
+                <input type="date" value="{{ editTaken }}" onChange="{{ onEditTakenChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Start date
+                <input type="date" value="{{ editDate }}" onChange="{{ onEditDateChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Delivered
+                <input type="date" value="{{ editDelivered }}" onChange="{{ onEditDeliveredChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+              </label>
+            </div>
+            <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+                <input type="file" accept="image/*" ref="{{ setCoverInputRef }}" onChange="{{ onCoverFileChange }}" style="display:none">
+                <button onClick="{{ triggerCoverPicker }}" style="padding:11px 18px; background:none; border:1px solid var(--line); border-radius:2px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Upload cover</button>
+                <button onClick="{{ saveProjectDetails }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save project</button>
+                <span style="font-size:12px; color:var(--green-deep)">{{ detailsStatus }}</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:18px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Brand</span>
+              <span style="font-size:11px; color:#9AA6A2">Colour and type as the client sees them on the project page.</span>
+              <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ brandStatus }}</span>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <span style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#9AA6A2">Colour palette</span>
+              <sc-for list="{{ paletteRowsVM }}" as="pc" hint-placeholder-count="0">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+                  <span ref="{{ pc.setChipRef }}" style="width:38px; height:38px; border:1px solid var(--line); border-radius:2px; flex-shrink:0"></span>
+                  <input placeholder="Name — e.g. Roast" value="{{ pc.name }}" onChange="{{ pc.onName }}" readOnly="{{ albumLocked }}" style="flex:2; min-width:130px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  <input placeholder="#2A1A14" value="{{ pc.hex }}" onChange="{{ pc.onHex }}" readOnly="{{ albumLocked }}" style="width:120px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; text-transform:uppercase">
+                  <input type="color" value="{{ pc.hexSafe }}" onChange="{{ pc.onHex }}" disabled="{{ albumLocked }}" style="width:44px; height:38px; padding:2px; border:1px solid var(--line); border-radius:2px; background:#fff; cursor:pointer">
+                  <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ pc.remove }}" style="padding:8px 11px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                <div><button onClick="{{ addPaletteRow }}" style="padding:8px 14px; background:none; border:1px dashed var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer">+ Add colour</button></div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; padding-top:14px; border-top:1px solid var(--line)">
+              <span style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#9AA6A2">Typography</span>
+              <sc-for list="{{ fontRowsVM }}" as="fr" hint-placeholder-count="0">
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+                  <input placeholder="Typeface name" value="{{ fr.name }}" onChange="{{ fr.onName }}" readOnly="{{ albumLocked }}" style="flex:1; min-width:130px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  <input placeholder="Role — Display" value="{{ fr.role }}" onChange="{{ fr.onRole }}" readOnly="{{ albumLocked }}" style="flex:1; min-width:120px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  <input placeholder="Google font family" value="{{ fr.google }}" onChange="{{ fr.onGoogle }}" readOnly="{{ albumLocked }}" style="flex:1; min-width:130px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  <input placeholder="Specimen line" value="{{ fr.line }}" onChange="{{ fr.onLine }}" readOnly="{{ albumLocked }}" style="flex:2; min-width:150px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ fr.remove }}" style="padding:8px 11px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+                  <button onClick="{{ addFontRow }}" style="padding:8px 14px; background:none; border:1px dashed var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer">+ Add typeface</button>
+                  <button onClick="{{ saveBrand }}" style="margin-left:auto; padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save brand</button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+
+          <sc-for list="{{ mediaSectionsVM }}" as="ms" hint-placeholder-count="5">
+            <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:4px">
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">{{ ms.label }}</span>
+                <span style="font-size:11px; color:#9AA6A2">{{ ms.countLabel }}</span>
+                <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ ms.status }}</span>
+                <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                  <input type="file" accept="{{ ms.accept }}" multiple="{{ true }}" ref="{{ ms.setInputRef }}" onChange="{{ ms.onFiles }}" style="display:none">
+                  <button onClick="{{ ms.trigger }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Upload</button>
+                </sc-if>
+              </div>
+              <sc-if value="{{ ms.isEmpty }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:12px; color:#9AA6A2; line-height:1.5">{{ ms.emptyHint }}</span>
+              </sc-if>
+              <div style="display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+                <sc-for list="{{ ms.itemsVM }}" as="mi" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:2px; overflow:hidden">
+                    <div ref="{{ mi.setGroundRef }}" style="aspect-ratio:1; display:grid; place-items:center; overflow:hidden; padding:{{ mi.pad }}">
+                      <img ref="{{ mi.setImgRef }}" alt="{{ mi.name }}" style="width:100%; height:100%; object-fit:{{ mi.fit }}; display:none">
+                      <sc-if value="{{ mi.isVideo }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Film</span>
+                      </sc-if>
+                    </div>
+                    <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex; flex-direction:column; gap:6px; padding:8px 10px 10px">
+                        <input placeholder="Name" value="{{ mi.name }}" onChange="{{ mi.onName }}" onBlur="{{ mi.saveName }}" style="width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-size:11px; outline:none">
+                        <div style="display:flex; gap:6px">
+                          <sc-if value="{{ mi.canFlipGround }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ mi.flipGround }}" style="flex:1; padding:5px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#7C8985; cursor:pointer">{{ mi.groundLabel }}</button>
+                          </sc-if>
+                          <button onClick="{{ mi.remove }}" style="padding:5px 9px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; color:#B4433A; cursor:pointer">✕</button>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ isWeddingRecord }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
           <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Details</span>
           <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
             <input placeholder="Couple names" value="{{ editCouple }}" onChange="{{ onEditCoupleChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
-            <input type="date" value="{{ editDate }}" onChange="{{ onEditDateChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
             <input placeholder="Venue" value="{{ editVenue }}" onChange="{{ onEditVenueChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
             <input placeholder="slug" value="{{ editSlug }}" onChange="{{ onEditSlugChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Taken
+              <input type="date" value="{{ editTaken }}" onChange="{{ onEditTakenChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Shoot date
+              <input type="date" value="{{ editDate }}" onChange="{{ onEditDateChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Delivered
+              <input type="date" value="{{ editDelivered }}" onChange="{{ onEditDeliveredChange }}" readOnly="{{ albumLocked }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+            </label>
           </div>
           <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
@@ -770,6 +983,7 @@
           <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#9AA6A2">Add a client email under Billing &amp; invoices, then save, to enable this.</span></sc-if>
           <span style="font-size:11px; color:#9AA6A2">Sends automatically from official@glomium.in — no mail app needed.</span>
         </div>
+        </sc-if>
         </sc-if>
 
         <sc-if value="{{ isBillingTab }}" hint-placeholder-val="{{ false }}">
@@ -883,7 +1097,7 @@
         </div>
         </sc-if>
 
-        <sc-if value="{{ isAlbumTab }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ isWeddingAlbumTab }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; flex-direction:column; gap:16px">
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px">
             <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Photos ({{ photoCount }})</span>
@@ -1130,7 +1344,8 @@ const STAFF_ROLE_LABEL = { admin: 'Admin', creative: 'Creative', accounts: 'Acco
 //               so nobody is locked out of their own panel mid-migration; the crew and
 //               payout sides stay shut until an admin adds their row.
 const CAPS = {
-  albums:      ['none', 'admin', 'creative', 'hr'],
+  albums:      ['none', 'admin', 'creative', 'accounts', 'hr'],
+  recordsEdit: ['none', 'admin', 'creative', 'hr'],
   media:       ['none', 'admin', 'creative', 'hr'],
   billing:     ['none', 'admin', 'accounts', 'hr'],
   people:      ['admin', 'hr'],
@@ -1141,6 +1356,27 @@ const CAPS = {
   hoursUnlock: ['admin'],
   albumUnlock: ['admin'],
 };
+
+// Divisions Glomium's creative unit works across. Weddings keep the existing
+// events table; every other division shares one projects table (see
+// projects-schema.sql) distinguished by the division column.
+const DIVISIONS = [
+  ['wedding', 'Weddings'],
+  ['commercial', 'Commercial & branding'],
+  ['festival', 'Festivals & live'],
+  ['digital', 'Digital & social'],
+  ['press', 'Press & corporate'],
+];
+const DIVISION_LABEL = DIVISIONS.reduce((m, d) => { m[d[0]] = d[1]; return m; }, {});
+const DIVISION_STORAGE_KEY = 'gl_division';
+const DIVISION_NOTE = {
+  wedding: 'Albums, films and day-sheet hours for weddings and destination weddings.',
+  commercial: 'Identity, palette and campaign assets for brands.',
+  festival: 'Multi-day festival and live event coverage.',
+  digital: 'Social handling, post sets and always-on content.',
+  press: 'Press conferences, launches and corporate coverage.',
+};
+const MEDIA_SECTIONS = [['logo', 'Logo suite'], ['social', 'Social posts'], ['banner', 'Banners & outdoor'], ['film', 'Films & reels'], ['print', 'Print & packaging']];
 
 // Work is often booked long before a shoot date exists — planning is where a
 // project sits while the story is being built and nothing is scheduled yet.
@@ -1234,9 +1470,14 @@ class Component extends DCLogic {
     view: 'login',
     email: '', password: '', authError: '', signingIn: false,
     events: [], newCouple: '', newDate: '', newVenue: '', newSlug: '', creating: false, createError: '',
+    division: null, pickingDivision: false,
+    projects: [], newClientName: '', newProjTitle: '', newSector: '', creatingProject: false, createProjectError: '',
+    editProjClient: '', editProjTitle: '', editSector: '', editTagline: '', editBrief: '',
+    paletteDraft: [], fontDraft: [], brandStatus: '',
+    projectMedia: [], projMediaStatus: {},
     current: null, media: [], detailsStatus: '', uploadStatus: '', videoUploadStatus: '',
     videoProgress: null, videoUploadName: '', videoUploadError: false,
-    editCouple: '', editDate: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
+    editCouple: '', editDate: '', editTaken: '', editDelivered: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
     editClientName: '', editClientPhone: '', editClientEmail: '', editClientPan: '', clientStatus: '',
     editPackagePrice: '', editClientGstin: '', editClientState: '',
     bankName: '', bankAccount: '', bankIfsc: '', upiId: '', settingsStatus: '',
@@ -1289,20 +1530,52 @@ class Component extends DCLogic {
   }
 
   async boot() {
+    let storedDivision = null;
+    try { storedDivision = localStorage.getItem(DIVISION_STORAGE_KEY); } catch (e) {}
+    if (storedDivision && DIVISION_LABEL[storedDivision]) this.setState({ division: storedDivision });
     const lib = await this.waitForGlobal('supabase');
     if (!lib) { this.setState({ bootError: 'Could not reach Supabase — check your connection and reload the page.' }); return; }
     this.sb = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
     this.setState({ bootError: '' });
     const { data } = await this.sb.auth.getSession();
-    if (data.session) { this.setState({ view: 'dashboard' }); this.loadEvents(); this.loadRole(); }
+    if (data.session) { this.setState({ view: 'dashboard' }); this.loadRole(); this.loadForDivision(storedDivision); }
     this.sb.auth.onAuthStateChange((_e, session) => {
       // The role belongs to the session, not the page — refetch it on every sign-in,
       // or a second user signing in on this browser inherits the first one's access.
-      if (session && this.state.view === 'login') { this.setState({ view: 'dashboard' }); this.loadEvents(); this.loadRole(); }
+      if (session && this.state.view === 'login') { this.setState({ view: 'dashboard' }); this.loadRole(); this.loadForDivision(storedDivision); }
       if (!session) this.setState({ view: 'login', role: null, people: [], payouts: [], personForm: null, personId: null });
     });
     this.loadSettings();
   }
+
+  // Which division's dashboard/schedule to load. A null division means the
+  // picker is showing and there is nothing to fetch yet.
+  loadForDivision(div) {
+    const d = div || this.state.division;
+    if (!d) return;
+    if (d === 'wedding') this.loadEvents(); else this.loadProjects(d);
+  }
+
+  chooseDivision(key) {
+    try { localStorage.setItem(DIVISION_STORAGE_KEY, key); } catch (e) {}
+    this.setState({ division: key, pickingDivision: false });
+    this.loadForDivision(key);
+    if (this.state.view === 'schedule') this.loadSchedule();
+  }
+
+  openDivisionPicker() { this.setState({ pickingDivision: true }); }
+
+  // jsonb columns arrive as arrays; a hand-edited row can hold a JSON string.
+  asList(v) {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string') { try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch (e) { return []; } }
+    return [];
+  }
+
+  // Which table/column an open record belongs to. Every event/project row is
+  // tagged _table at load time, so this reads that tag rather than guessing.
+  parentTable(ev) { return ((ev !== undefined ? ev : this.state.current) || {})._table === 'projects' ? 'projects' : 'events'; }
+  parentCol(ev) { return this.parentTable(ev) === 'projects' ? 'project_id' : 'event_id'; }
 
   async loadRole() {
     const { data: u } = await this.sb.auth.getUser();
@@ -1317,7 +1590,7 @@ class Component extends DCLogic {
   goWorkspace(view) {
     if (view === this.state.view) return;
     this.setState({ view, current: null, media: [], assignments: [], costing: null });
-    if (view === 'dashboard') this.loadEvents();
+    if (view === 'dashboard') this.loadForDivision();
     if (view === 'schedule') this.loadSchedule();
     if (view === 'people') { this.loadPeople(); this.loadWorkload(); }
     if (view === 'payouts') { this.loadPayouts(); }
@@ -1341,7 +1614,7 @@ class Component extends DCLogic {
 
   async loadEvents() {
     const { data, error } = await this.sb.from('events').select('*').order('created_at', { ascending: false });
-    if (!error) this.setState({ events: data || [] });
+    if (!error) this.setState({ events: (data || []).map(ev => ({ ...ev, _table: 'events' })) });
   }
 
   async doCreateEvent() {
@@ -1351,9 +1624,9 @@ class Component extends DCLogic {
     this.setState({ creating: true, createError: '' });
     const { error } = await this.sb.from('events').insert({
       couple_names: couple, event_date: this.state.newDate || null, venue: this.state.newVenue || null, slug,
-      production_status: 'planning',
+      production_status: 'planning', taken_date: new Date().toISOString().slice(0, 10),
     });
-    if (error) { this.setState({ creating: false, createError: error.message }); return; }
+    if (error) { this.setState({ creating: false, createError: this.schemaHint(error.message) }); return; }
     this.setState({ creating: false, newCouple: '', newDate: '', newVenue: '', newSlug: '' });
     this.loadEvents();
   }
@@ -1366,8 +1639,8 @@ class Component extends DCLogic {
 
   openEvent(ev) {
     this.setState({
-      view: 'editor', current: ev,
-      editCouple: ev.couple_names, editDate: ev.event_date || '', editVenue: ev.venue || '', editSlug: ev.slug,
+      view: 'editor', current: { ...ev, _table: 'events' },
+      editCouple: ev.couple_names, editDate: ev.event_date || '', editTaken: ev.taken_date || '', editDelivered: ev.delivered_date || '', editVenue: ev.venue || '', editSlug: ev.slug,
       editClientName: ev.client_name || '', editClientPhone: ev.client_phone || '', editClientEmail: ev.client_email || '', editClientPan: ev.client_pan || '',
       editPackagePrice: ev.package_price != null ? String(ev.package_price) : '', editClientGstin: ev.client_gstin || '', editClientState: ev.client_state || '',
       detailsStatus: '', clientStatus: '', copyLabel: 'Copy public link',
@@ -1388,7 +1661,12 @@ class Component extends DCLogic {
     }
   }
 
-  backToDashboard() { this.setState({ view: 'dashboard', current: null, media: [], assignments: [], costing: null, agEdits: {} }); this.loadEvents(); }
+  backToDashboard() {
+    const wasProject = this.parentTable() === 'projects';
+    this.setState({ view: 'dashboard', current: null, media: [], assignments: [], costing: null, agEdits: {} });
+    this.loadForDivision();
+    if (!wasProject) this.loadEvents();
+  }
 
   async saveDetails() {
     if (this.albumLocked()) { this.setState({ detailsStatus: 'Album is locked — this event is delivered.' }); return; }
@@ -1397,9 +1675,10 @@ class Component extends DCLogic {
     this.setState({ detailsStatus: 'Saving…' });
     const { error } = await this.sb.from('events').update({
       couple_names: this.state.editCouple, event_date: this.state.editDate || null,
+      taken_date: this.state.editTaken || null, delivered_date: this.state.editDelivered || null,
       venue: this.state.editVenue || null, slug,
     }).eq('id', c.id);
-    if (error) { this.setState({ detailsStatus: error.message }); return; }
+    if (error) { this.setState({ detailsStatus: this.schemaHint(error.message) }); return; }
     // Draft invoices follow the album name; sent/paid invoices stay frozen as issued.
     let syncNote = '';
     if (this.state.editCouple) {
@@ -1420,7 +1699,7 @@ class Component extends DCLogic {
         syncNote = ' Updated ' + drafts.length + ' draft invoice' + (drafts.length > 1 ? 's' : '') + '.';
       }
     }
-    this.setState({ current: { ...c, couple_names: this.state.editCouple, event_date: this.state.editDate, venue: this.state.editVenue, slug }, editSlug: slug, detailsStatus: 'Saved.' + syncNote, previewInvoice: null, showInvoicePreview: false });
+    this.setState({ current: { ...c, couple_names: this.state.editCouple, event_date: this.state.editDate, taken_date: this.state.editTaken, delivered_date: this.state.editDelivered, venue: this.state.editVenue, slug }, editSlug: slug, detailsStatus: 'Saved.' + syncNote, previewInvoice: null, showInvoicePreview: false });
     this.loadInvoices(c.id);
     setTimeout(() => this.setState({ detailsStatus: '' }), 3500);
   }
@@ -1428,7 +1707,7 @@ class Component extends DCLogic {
   async saveClientDetails() {
     const c = this.state.current;
     this.setState({ clientStatus: 'Saving…' });
-    const { error } = await this.sb.from('events').update({
+    const { error } = await this.sb.from(this.parentTable(c)).update({
       client_name: this.state.editClientName || null, client_phone: this.state.editClientPhone || null,
       client_email: this.state.editClientEmail || null, client_pan: this.state.editClientPan || null,
       package_price: this.state.editPackagePrice ? parseFloat(this.state.editPackagePrice) : null,
@@ -1446,7 +1725,7 @@ class Component extends DCLogic {
     if (this.state.editClientName) billPatch.bill_name = this.state.editClientName;
     const { count: syncedCount, error: syncErr } = await this.sb.from('invoices')
       .update(billPatch, { count: 'exact' })
-      .eq('event_id', c.id).eq('status', 'draft');
+      .eq(this.parentCol(c), c.id).eq('status', 'draft');
     this.setState({
       current: { ...c, client_name: this.state.editClientName, client_phone: this.state.editClientPhone, client_email: this.state.editClientEmail, client_pan: this.state.editClientPan, package_price: this.state.editPackagePrice, client_gstin: this.state.editClientGstin, client_state: this.state.editClientState },
       clientStatus: syncErr ? 'Saved, but draft invoices not updated: ' + syncErr.message
@@ -1478,19 +1757,27 @@ class Component extends DCLogic {
     return !!ev && this.isDelivered(ev) && !ev.hours_unlocked;
   }
 
+  // A missing column means a migration hasn't been run. Name the file rather than
+  // leaving a raw Postgres error on screen.
+  schemaHint(raw) {
+    const m = raw || '';
+    if (/album_unlocked/.test(m)) return 'Run album-system/album-lock-schema.sql in Supabase — the album_unlocked column does not exist yet.';
+    if (/taken_date|delivered_date/.test(m)) return 'Run album-system/project-dates-schema.sql in Supabase — the taken_date / delivered_date columns do not exist yet.';
+    if (/production_status_check/.test(m)) return 'Run album-system/planning-stage.sql in Supabase — the database does not allow the Planning stage yet.';
+    if (/work_nature/.test(m)) return 'Run album-system/projects-schema.sql in Supabase (latest version) — the work_nature column is missing on projects.';
+    if (/relation "?projects"?|project_media/.test(m)) return 'Run album-system/projects-schema.sql in Supabase — the projects tables do not exist yet.';
+    return m;
+  }
+
   // Single write path for status and locks — one place to keep the optimistic
   // state update, the reloads, and the missing-column hint.
   async patchEvent(ev, patch) {
     if (!ev) return false;
+    const table = this.parentTable(ev);
     const keys = ['crewStatus', 'detailsStatus', 'workStatus'];
-    const { error } = await this.sb.from('events').update(patch).eq('id', ev.id);
+    const { error } = await this.sb.from(table).update(patch).eq('id', ev.id);
     if (error) {
-      const raw = error.message || '';
-      const msg = /album_unlocked/.test(raw)
-        ? 'Run album-system/album-lock-schema.sql in Supabase first — the album_unlocked column does not exist yet.'
-        : /production_status_check/.test(raw)
-        ? 'Run album-system/planning-stage.sql in Supabase first — the database does not allow the Planning stage yet.'
-        : raw;
+      const msg = this.schemaHint(error.message);
       const fail = {}; keys.forEach(k => { fail[k] = msg; });
       this.setState(fail);
       return false;
@@ -1498,7 +1785,7 @@ class Component extends DCLogic {
     const next = {}; keys.forEach(k => { next[k] = ''; });
     if (this.state.current && this.state.current.id === ev.id) next.current = { ...this.state.current, ...patch };
     this.setState(next);
-    this.loadEvents();
+    if (table === 'projects') this.loadProjects(ev.division); else this.loadEvents();
     if (this.state.view === 'schedule') this.loadSchedule();
     if (this.state.view === 'payouts') this.loadPayouts();
     return true;
@@ -1510,10 +1797,155 @@ class Component extends DCLogic {
   setHoursUnlocked(unlocked) { return this.patchEvent(this.state.current, { hours_unlocked: unlocked }); }
 
   // The closing action, reachable from the event header and each Schedule row.
+  recordName(ev) { return (ev && (ev.couple_names || ev.client_name)) || 'this project'; }
+
   markDelivered(ev) {
     if (!ev) return;
-    if (!window.confirm('Mark "' + ev.couple_names + '" as delivered?\n\nThe album becomes read-only and crew hours freeze. An admin can reopen it later.')) return;
-    return this.patchEvent(ev, { production_status: 'delivered', album_unlocked: false, hours_unlocked: false });
+    if (!window.confirm('Mark "' + this.recordName(ev) + '" as delivered?\n\nThe album becomes read-only and crew hours freeze. An admin can reopen it later.')) return;
+    const patch = { production_status: 'delivered', album_unlocked: false, hours_unlocked: false };
+    if (!ev.delivered_date) patch.delivered_date = new Date().toISOString().slice(0, 10);
+    if (this.state.current && this.state.current.id === ev.id && !this.state.editDelivered) this.setState({ editDelivered: patch.delivered_date });
+    return this.patchEvent(ev, patch);
+  }
+
+  // ---- Projects: commercial / festival / digital / press --------------------
+
+  async loadProjects(division) {
+    const div = division || this.state.division;
+    if (!div) return;
+    const { data, error } = await this.sb.from('projects').select('*').eq('division', div).order('created_at', { ascending: false });
+    if (error) { this.setState({ projects: [], createProjectError: this.schemaHint(error.message) }); return; }
+    this.setState({ projects: (data || []).map(p => ({ ...p, _table: 'projects' })), createProjectError: '' });
+  }
+
+  async doCreateProject() {
+    const name = this.state.newClientName.trim();
+    if (!name) { this.setState({ createProjectError: 'Client / brand name is required.' }); return; }
+    const slug = this.slugify(name) + '-' + Math.random().toString(36).slice(2, 6);
+    this.setState({ creatingProject: true, createProjectError: '' });
+    const { error } = await this.sb.from('projects').insert({
+      client_name: name, project_title: this.state.newProjTitle || null, sector: this.state.newSector || null,
+      division: this.state.division, slug, production_status: 'planning',
+      taken_date: new Date().toISOString().slice(0, 10),
+    });
+    if (error) { this.setState({ creatingProject: false, createProjectError: this.schemaHint(error.message) }); return; }
+    this.setState({ creatingProject: false, newClientName: '', newProjTitle: '', newSector: '' });
+    this.loadProjects(this.state.division);
+  }
+
+  async doDeleteProject(pr) {
+    if (!window.confirm('Delete "' + pr.client_name + '" and all its media?')) return;
+    await this.sb.from('projects').delete().eq('id', pr.id);
+    this.loadProjects(this.state.division);
+  }
+
+  openProject(pr) {
+    this.setState({
+      view: 'editor', current: { ...pr, _table: 'projects', couple_names: pr.client_name, venue: pr.sector || '' },
+      editProjClient: pr.client_name || '', editProjTitle: pr.project_title || '', editSector: pr.sector || '',
+      editTagline: pr.tagline || '', editBrief: pr.brief || '',
+      editDate: pr.start_date || '', editTaken: pr.taken_date || '', editDelivered: pr.delivered_date || '', editSlug: pr.slug,
+      editClientName: pr.client_name || '', editClientPhone: pr.client_phone || '', editClientEmail: pr.client_email || '',
+      editClientPan: pr.client_pan || '', editPackagePrice: pr.package_price != null ? String(pr.package_price) : '',
+      editClientGstin: pr.client_gstin || '', editClientState: pr.client_state || '',
+      paletteDraft: this.asList(pr.palette).map(p => ({ id: Date.now() + Math.random(), name: p.name || '', hex: p.hex || '' })),
+      fontDraft: this.asList(pr.brand_fonts).map(f => ({ id: Date.now() + Math.random(), name: f.name || '', role: f.role || '', google: f.google || '', line: f.line || '' })),
+      detailsStatus: '', brandStatus: '', clientStatus: '',
+      editorTab: this.can('media') ? 'album' : (this.can('people') ? 'crew' : 'billing'),
+      projectMedia: [], projMediaStatus: {},
+      assignments: [], costing: null, agEdits: {}, crewStatus: '',
+      eventDays: [], dayDate: pr.start_date || '', dayHours: {}, dayStatus: '',
+      afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
+      invoices: [],
+    });
+    this.loadProjectMedia(pr.id);
+    this.loadAssignments(pr.id);
+    this.loadInvoices(pr.id);
+  }
+
+  async saveProjectDetails() {
+    if (this.albumLocked()) { this.setState({ detailsStatus: 'Locked — this project is delivered.' }); return; }
+    const c = this.state.current;
+    const slug = this.slugify(this.state.editSlug || this.state.editProjClient);
+    this.setState({ detailsStatus: 'Saving…' });
+    const { error } = await this.sb.from('projects').update({
+      client_name: this.state.editProjClient, project_title: this.state.editProjTitle || null,
+      sector: this.state.editSector || null, tagline: this.state.editTagline || null, brief: this.state.editBrief || null,
+      start_date: this.state.editDate || null, taken_date: this.state.editTaken || null, delivered_date: this.state.editDelivered || null,
+      slug,
+    }).eq('id', c.id);
+    if (error) { this.setState({ detailsStatus: this.schemaHint(error.message) }); return; }
+    this.setState({
+      current: {
+        ...c, client_name: this.state.editProjClient, couple_names: this.state.editProjClient, project_title: this.state.editProjTitle,
+        sector: this.state.editSector, venue: this.state.editSector, tagline: this.state.editTagline, brief: this.state.editBrief,
+        start_date: this.state.editDate, taken_date: this.state.editTaken, delivered_date: this.state.editDelivered, slug,
+      },
+      editSlug: slug, detailsStatus: 'Saved.',
+    });
+    setTimeout(() => this.setState({ detailsStatus: '' }), 2500);
+  }
+
+  addPaletteRow() { this.setState({ paletteDraft: [...this.state.paletteDraft, { id: Date.now() + Math.random(), name: '', hex: '' }] }); }
+  removePaletteRow(id) { this.setState({ paletteDraft: this.state.paletteDraft.filter(r => r.id !== id) }); }
+  setPaletteField(id, field, val) { this.setState({ paletteDraft: this.state.paletteDraft.map(r => r.id === id ? { ...r, [field]: val } : r) }); }
+  setFontField(id, field, val) { this.setState({ fontDraft: this.state.fontDraft.map(r => r.id === id ? { ...r, [field]: val } : r) }); }
+  addFontRow() { this.setState({ fontDraft: [...this.state.fontDraft, { id: Date.now() + Math.random(), name: '', role: '', google: '', line: '' }] }); }
+  removeFontRow(id) { this.setState({ fontDraft: this.state.fontDraft.filter(r => r.id !== id) }); }
+  setFontField(id, field, val) { this.setState({ fontDraft: this.state.fontDraft.map(r => r.id === id ? { ...r, [field]: val } : r) }); }
+
+  async saveBrand() {
+    if (this.albumLocked()) return;
+    const c = this.state.current;
+    const palette = this.state.paletteDraft.filter(r => r.name && r.hex).map(r => ({ name: r.name, hex: r.hex }));
+    const brand_fonts = this.state.fontDraft.filter(r => r.name).map(r => ({ name: r.name, role: r.role, google: r.google, line: r.line, sample: 'Aa' }));
+    this.setState({ brandStatus: 'Saving…' });
+    const { error } = await this.sb.from('projects').update({ palette, brand_fonts }).eq('id', c.id);
+    if (error) { this.setState({ brandStatus: this.schemaHint(error.message) }); return; }
+    this.setState({ current: { ...c, palette, brand_fonts }, brandStatus: 'Saved.' });
+    setTimeout(() => this.setState({ brandStatus: '' }), 2500);
+  }
+
+  async loadProjectMedia(projectId) {
+    const { data, error } = await this.sb.from('project_media').select('*').eq('project_id', projectId).order('sort_order', { ascending: true });
+    if (!error) this.setState({ projectMedia: data || [] });
+  }
+
+  async uploadProjectMedia(section, file) {
+    if (this.albumLocked()) return;
+    const kind = section === 'film' ? 'video' : 'photo';
+    this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: 'Uploading…' } });
+    try {
+      let url, urlGrid = null;
+      if (kind === 'photo') {
+        const set = await this.uploadPhotoSet(file);
+        url = set.url; urlGrid = set.url_grid;
+      } else {
+        url = await this.uploadFile(file, 'film');
+      }
+      const count = this.state.projectMedia.filter(m => m.section === section).length;
+      await this.sb.from('project_media').insert({
+        project_id: this.state.current.id, section, kind, url, url_grid: urlGrid, url_view: url,
+        name: file.name.replace(/\.[^.]+$/, ''), sort_order: count,
+      });
+      this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: 'Done.' } });
+    } catch (e) {
+      this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: e.message || 'Upload failed' } });
+    }
+    this.loadProjectMedia(this.state.current.id);
+    setTimeout(() => this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: '' } }), 2500);
+  }
+
+  async saveProjectMediaField(item, patch) {
+    if (this.albumLocked()) return;
+    await this.sb.from('project_media').update(patch).eq('id', item.id);
+    this.loadProjectMedia(this.state.current.id);
+  }
+
+  async deleteProjectMedia(item) {
+    if (this.albumLocked()) return;
+    await this.sb.from('project_media').delete().eq('id', item.id);
+    this.loadProjectMedia(this.state.current.id);
   }
 
   // ---- Schedule ----------------------------------------------------------------
@@ -1522,29 +1954,61 @@ class Component extends DCLogic {
   // so it is fetched once and shared rather than per-person.
   // The badge only needs status, not the schedule columns — so it keeps working
   // whether or not schedule-schema.sql has been run yet.
+  // Person cards need "what's this person booked on", regardless of division —
+  // normalise both parents into one .events shape so nothing downstream cares
+  // whether the booking came from events or projects.
   async loadWorkload() {
     const { data, error } = await this.sb.from('assignments')
-      .select('id, person_id, crew_role, event_id, events(couple_names, event_date, production_status)');
+      .select('id, person_id, crew_role, event_id, project_id, events(couple_names, event_date, production_status), projects(client_name, start_date, production_status)');
     if (error) { this.setState({ workload: [], workloadFailed: true, personStatus: error.message }); return; }
-    this.setState({ workload: data || [], workloadFailed: false });
+    const norm = (data || []).map(a => ({
+      ...a,
+      events: a.event_id ? a.events
+        : (a.project_id && a.projects ? { couple_names: a.projects.client_name, event_date: a.projects.start_date, production_status: a.projects.production_status } : { couple_names: '—', event_date: null, production_status: 'planning' }),
+    }));
+    this.setState({ workload: norm, workloadFailed: false });
   }
 
   async loadSchedule() {
     this.setState({ workStatus: 'Loading…' });
-    const { data, error } = await this.sb.from('events')
-      .select('*, assignments(id, crew_role, person_id, people(full_name, crew_id))')
-      .order('event_date', { ascending: true });
+    if (!this.state.division || this.state.division === 'wedding') {
+      const { data, error } = await this.sb.from('events')
+        .select('*, assignments(id, crew_role, person_id, people(full_name, crew_id))')
+        .order('event_date', { ascending: true });
+      if (error) { this.setState({ workStatus: error.message }); return; }
+      const missing = (data || []).length > 0 && !('deadline' in (data[0] || {}));
+      this.setState({
+        works: (data || []).map(w => ({ ...w, _table: 'events' })),
+        workStatus: missing ? 'Run schedule-schema.sql in Supabase to enable work nature and deadlines.' : '',
+      });
+      return;
+    }
+    const div = this.state.division;
+    const { data: rows, error } = await this.sb.from('projects').select('*').eq('division', div).order('start_date', { ascending: true });
     if (error) { this.setState({ workStatus: error.message }); return; }
-    const missing = (data || []).length > 0 && !('deadline' in (data[0] || {}));
+    const ids = (rows || []).map(r => r.id);
+    const byProject = {};
+    if (ids.length) {
+      const { data: ags } = await this.sb.from('assignments')
+        .select('id, crew_role, person_id, project_id, people(full_name, crew_id)')
+        .in('project_id', ids);
+      (ags || []).forEach(a => { (byProject[a.project_id] = byProject[a.project_id] || []).push(a); });
+    }
     this.setState({
-      works: data || [],
-      workStatus: missing ? 'Run schedule-schema.sql in Supabase to enable work nature and deadlines.' : '',
+      works: (rows || []).map(r => ({
+        ...r, _table: 'projects', couple_names: r.client_name, venue: r.sector || '',
+        event_date: r.start_date, assignments: byProject[r.id] || [],
+      })),
+      workStatus: '',
     });
   }
 
   async setWorkField(ev, field, value) {
-    const { error } = await this.sb.from('events').update({ [field]: value || null }).eq('id', ev.id);
-    if (error) { this.setState({ workStatus: error.message }); return; }
+    if (!this.can('recordsEdit')) return;
+    const table = ev._table || 'events';
+    const col = (table === 'projects' && field === 'event_date') ? 'start_date' : field;
+    const { error } = await this.sb.from(table).update({ [col]: value || null }).eq('id', ev.id);
+    if (error) { this.setState({ workStatus: this.schemaHint(error.message) }); return; }
     this.setState({ works: this.state.works.map(w => (w.id === ev.id ? { ...w, [field]: value } : w)) });
   }
 
@@ -1709,7 +2173,7 @@ class Component extends DCLogic {
         const v = await this.resizeImage(file, 2800, 0.92);
         if (v) coverView = await this.uploadBlob(v.blob, 'cover-view', v.ext);
       } catch (e) {}
-      await this.sb.from('events').update({ cover_url: url, cover_url_view: coverView }).eq('id', this.state.current.id);
+      await this.sb.from(this.parentTable()).update({ cover_url: url, cover_url_view: coverView }).eq('id', this.state.current.id);
       this.setState({ current: { ...this.state.current, cover_url: url, cover_url_view: coverView }, detailsStatus: 'Cover updated.' });
     } catch (e) { this.setState({ detailsStatus: e.message }); }
     setTimeout(() => this.setState({ detailsStatus: '' }), 2500);
@@ -1788,11 +2252,11 @@ class Component extends DCLogic {
   // path that survives a dropped connection on a 600 MB file. Chunk size must be
   // exactly 6 MB; Supabase rejects anything else. Bytes are never re-encoded.
   async uploadResumable(file, prefix, ext, onProgress) {
+    try { await loadLib('tus'); } catch (e) { /* checked below */ }
     if (!window.tus) throw new Error('Resumable uploader failed to load. Check your connection and reload.');
     const path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
     const { data: sess } = await this.sb.auth.getSession();
     const token = (sess && sess.session && sess.session.access_token) || SUPABASE_KEY;
-    await loadLib('tus');
     await new Promise((resolve, reject) => {
       const upload = new window.tus.Upload(file, {
         endpoint: SUPABASE_URL + '/storage/v1/upload/resumable',
@@ -1931,7 +2395,8 @@ class Component extends DCLogic {
   // ---- Public album link -------------------------------------------------------
 
   copyLink() {
-    const url = window.location.origin + '/album.html?event=' + this.state.current.slug;
+    const page = this.parentTable() === 'projects' ? '/commercial.html?project=' : '/album.html?event=';
+    const url = window.location.origin + page + this.state.current.slug;
     navigator.clipboard.writeText(url).then(() => {
       this.setState({ copyLabel: 'Copied!' });
       setTimeout(() => this.setState({ copyLabel: 'Copy public link' }), 1800);
@@ -1941,7 +2406,7 @@ class Component extends DCLogic {
   // ---- Billing & invoices ------------------------------------------------------
 
   async loadInvoices(eventId) {
-    const { data, error } = await this.sb.from('invoices').select('*').eq('event_id', eventId).order('created_at', { ascending: false });
+    const { data, error } = await this.sb.from('invoices').select('*').eq(this.parentCol(), eventId).order('created_at', { ascending: false });
     if (!error) this.setState({ invoices: data || [] });
   }
 
@@ -1987,7 +2452,7 @@ class Component extends DCLogic {
       const advance = +(total * advPct / 100).toFixed(2);
       const balance = +(total - advance).toFixed(2);
       const row = {
-        event_id: ev.id, type, number, status: 'draft', issue_date: new Date().toISOString().slice(0, 10),
+        [this.parentCol(ev)]: ev.id, type, number, status: 'draft', issue_date: new Date().toISOString().slice(0, 10),
         bill_name: name, bill_couple: ev.couple_names, bill_gstin: s.editClientGstin || ev.client_gstin || '',
         bill_pan: s.editClientPan || ev.client_pan || '', bill_email: s.editClientEmail || ev.client_email || '',
         place_of_supply: clientState || '—', gst_mode: gstMode, gst_rate: rate,
@@ -2304,7 +2769,7 @@ class Component extends DCLogic {
   async loadAssignments(eventId) {
     const { data, error } = await this.sb.from('assignments')
       .select('*, people(full_name, crew_id, engagement)')
-      .eq('event_id', eventId).order('created_at', { ascending: true });
+      .eq(this.parentCol(), eventId).order('created_at', { ascending: true });
     if (!error) { this.loadEventDays(data || []); this.loadDeliverables(data || []); this.loadCrewRates(data || []); }
     if (!error) this.setState({ assignments: data || [] });
   }
@@ -2318,6 +2783,8 @@ class Component extends DCLogic {
   }
 
   async loadCosting(eventId) {
+    // No costing view for projects yet — the Crew tab still shows individual rows.
+    if (this.parentTable() === 'projects') { this.setState({ costing: null }); return; }
     const { data } = await this.sb.from('event_costing').select('*').eq('event_id', eventId).maybeSingle();
     this.setState({ costing: data || null });
   }
@@ -2329,7 +2796,7 @@ class Component extends DCLogic {
     const basis = s.afBasis;
     this.setState({ crewStatus: 'Adding…' });
     const { error } = await this.sb.from('assignments').insert({
-      event_id: ev.id, person_id: s.afPerson,
+      [this.parentCol(ev)]: ev.id, person_id: s.afPerson,
       crew_role: s.afRole || (person && person.primary_role) || 'assistant',
       pay_basis: basis,
       hourly_rate: basis === 'hourly' ? (parseFloat(s.afRate) || (person && person.default_hourly_rate) || 0) : null,
@@ -2368,7 +2835,7 @@ class Component extends DCLogic {
   async removeAssignment(ag) {
     if (!window.confirm('Remove this crew assignment?')) return;
     await this.sb.from('assignments').delete().eq('id', ag.id);
-    this.loadAssignments(ag.event_id); this.loadCosting(ag.event_id);
+    this.loadAssignments(ag.event_id || ag.project_id); this.loadCosting(ag.event_id || ag.project_id);
     if (this.state.view === 'payouts') this.loadPayouts();
   }
 
@@ -2461,10 +2928,15 @@ class Component extends DCLogic {
 
   async loadPayouts() {
     const { data, error } = await this.sb.from('assignments')
-      .select('*, people(full_name, crew_id, engagement, upi_id, bank_account, bank_ifsc), events(couple_names, event_date, production_status)')
+      .select('*, people(full_name, crew_id, engagement, upi_id, bank_account, bank_ifsc), events(couple_names, event_date, production_status), projects(client_name, start_date, production_status)')
       .order('created_at', { ascending: false });
     if (error) { this.setState({ payoutStatus: error.message }); return; }
-    this.setState({ payouts: data || [], payoutStatus: '' });
+    const norm = (data || []).map(a => ({
+      ...a,
+      events: a.event_id ? a.events
+        : (a.project_id && a.projects ? { couple_names: a.projects.client_name, event_date: a.projects.start_date, production_status: a.projects.production_status } : a.events),
+    }));
+    this.setState({ payouts: norm, payoutStatus: '' });
   }
 
   async setPayoutStatus(ag, status) {
@@ -2502,6 +2974,8 @@ class Component extends DCLogic {
   workspaceVals() {
     const s = this.state;
     const role = s.role || 'none';
+    // No division chosen yet — or an explicit switch — takes over the whole screen.
+    const picking = s.view !== 'login' && (!s.division || s.pickingDivision);
     const fmtDay = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
     const crewRoleOptions = CREW_ROLES.map(([value, label]) => ({ value, label }));
     const roleName = r => ROLE_LABEL[r] || r || '—';
@@ -2523,7 +2997,7 @@ class Component extends DCLogic {
     const openWork = s.workload.filter(w => w.events && !this.isDelivered(w.events));
 
     const nav = [];
-    if (this.can('albums')) nav.push({ key: 'dashboard', label: 'Albums' });
+    if (this.can('albums')) nav.push({ key: 'dashboard', label: s.division && s.division !== 'wedding' ? 'Projects' : 'Albums' });
     if (this.can('albums')) nav.push({ key: 'schedule', label: 'Schedule' });
     if (this.can('people')) nav.push({ key: 'people', label: 'People' });
     if (this.can('payouts')) nav.push({ key: 'payouts', label: 'Payouts' });
@@ -2788,6 +3262,8 @@ class Component extends DCLogic {
           id: w.id, couple: w.couple_names,
           natureValue: w.work_nature || '',
           onNature: e => this.setWorkField(w, 'work_nature', e.target.value),
+          readOnly: !this.can('recordsEdit'),
+          takenLabel: w.taken_date ? fmtDay(w.taken_date) : '—',
           dateValue: w.event_date || '',
           onDate: e => this.setWorkField(w, 'event_date', e.target.value),
           dateHint: w.event_date ? '' : 'Not fixed yet',
@@ -2812,7 +3288,7 @@ class Component extends DCLogic {
           canDeliver: st !== 'delivered' && this.can('peopleEdit'),
           lockNote: w.album_unlocked ? 'Album reopened for edits' : 'Album locked',
           markDelivered: () => this.markDelivered(w),
-          open: () => this.openEvent(w),
+          open: () => (w._table === 'projects' ? this.openProject(w) : this.openEvent(w)),
         };
       });
 
@@ -2836,7 +3312,58 @@ class Component extends DCLogic {
 
     const c = s.costing;
     return {
-      isWorkspace: s.view === 'dashboard' || s.view === 'people' || s.view === 'payouts' || s.view === 'schedule',
+      isPicker: picking,
+      canCancelPicker: picking && !!s.division,
+      cancelPicker: () => this.setState({ pickingDivision: false }),
+      openDivisionPicker: () => this.openDivisionPicker(),
+      divisionLabel: DIVISION_LABEL[s.division] || 'Choose division',
+      divisionNoun: s.division === 'wedding' ? 'event' : 'project',
+      emptyScheduleHint: s.division && s.division !== 'wedding'
+        ? 'Nothing here. Create a project under Projects, then set its dates and brief.'
+        : 'Nothing here. Create an event under Albums, then set its nature of work and delivery deadline.',
+      emptyPayoutsHint: s.division && s.division !== 'wedding'
+        ? 'Nothing here. Assign crew to a project under Projects → Crew & cost, and their payouts appear in this list.'
+        : 'Nothing here. Assign crew to an event under Albums → Crew & cost, and their payouts appear in this list.',
+      canRecordsEdit: this.can('recordsEdit'),
+      isWeddingDivision: this.can('recordsEdit') && (s.division === 'wedding' || !s.division),
+      isProjectDivision: this.can('recordsEdit') && !!s.division && s.division !== 'wedding',
+      // The lists themselves stay visible to accounts — only creating and deleting go.
+      emptyProjectsHint: this.can('recordsEdit') ? 'Nothing here yet — create the first one above.' : 'Nothing here yet.',
+      emptyEventsHint: this.can('recordsEdit') ? 'No events yet — create one above.' : 'No events yet.',
+      showWeddingList: s.division === 'wedding' || !s.division,
+      showProjectList: !!s.division && s.division !== 'wedding',
+      divisionCardsVM: DIVISIONS.map(d => ({
+        label: d[1], note: DIVISION_NOTE[d[0]] || '',
+        go: () => this.chooseDivision(d[0]),
+        bg: s.division === d[0] ? '#F3FAF8' : 'none',
+        border: s.division === d[0] ? 'var(--green)' : 'var(--line)',
+        color: s.division === d[0] ? 'var(--green-deep)' : '#16231F',
+      })),
+
+      newClientName: s.newClientName, newProjTitle: s.newProjTitle, newSector: s.newSector,
+      onNewClientNameChange: e => this.setState({ newClientName: e.target.value }),
+      onNewProjTitleChange: e => this.setState({ newProjTitle: e.target.value }),
+      onNewSectorChange: e => this.setState({ newSector: e.target.value }),
+      createProject: () => this.doCreateProject(), creatingProject: s.creatingProject,
+      createProjectError: s.createProjectError,
+      createProjectLabel: s.creatingProject ? 'Creating…' : 'Create project',
+      hasNoProjects: s.projects.length === 0,
+      projectsVM: s.projects.map(pr => {
+        const st = this.prodStatus(pr);
+        return {
+          client_name: pr.client_name,
+          metaLabel: [pr.project_title, pr.sector].filter(Boolean).join(' · ') || '/' + pr.slug,
+          statusLabel: PROD_LABEL[st] || st,
+          statusBg: st === 'delivered' ? '#DDEFE8' : st === 'editing' ? '#EFE9DA' : st === 'planning' ? '#EDEAF3' : '#EAF1EE',
+          statusColor: st === 'delivered' ? '#0A6E58' : st === 'editing' ? '#8A6D3B' : st === 'planning' ? '#5B5379' : 'var(--green-deep)',
+          noCover: !pr.cover_url,
+          setCoverRef: el => { if (el && pr.cover_url) { el.src = pr.cover_url; el.style.display = 'block'; } },
+          open: () => this.openProject(pr),
+          remove: () => this.doDeleteProject(pr),
+        };
+      }),
+
+      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'payouts' || s.view === 'schedule'),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       worksVM, workFilterVM, workStatus: s.workStatus,
       hasNoWorks: worksVM.length === 0,
@@ -3092,9 +3619,11 @@ class Component extends DCLogic {
       hasNoEvents: s.events.length === 0, eventsVM,
 
       backToDashboard: () => this.backToDashboard(),
-      editCouple: s.editCouple, editDate: s.editDate, editVenue: s.editVenue, editSlug: s.editSlug,
+      editCouple: s.editCouple, editDate: s.editDate, editTaken: s.editTaken, editDelivered: s.editDelivered, editVenue: s.editVenue, editSlug: s.editSlug,
       onEditCoupleChange: e => this.setState({ editCouple: e.target.value }),
       onEditDateChange: e => this.setState({ editDate: e.target.value }),
+      onEditTakenChange: e => this.setState({ editTaken: e.target.value }),
+      onEditDeliveredChange: e => this.setState({ editDelivered: e.target.value }),
       onEditVenueChange: e => this.setState({ editVenue: e.target.value }),
       onEditSlugChange: e => this.setState({ editSlug: e.target.value }),
       saveDetails: () => this.saveDetails(), detailsStatus: s.detailsStatus,
@@ -3107,7 +3636,10 @@ class Component extends DCLogic {
       saveClientDetails: () => this.saveClientDetails(), clientStatus: s.clientStatus,
       sendPreviewEmail: () => this.sendPreviewEmail(),
       copyPublicLink: () => this.copyLink(), copyLabel: s.copyLabel, copiedColor: s.copyLabel === 'Copied!' ? '#10AF8B' : '#7C8985',
-      previewUrl: s.current ? 'album.html?event=' + s.current.slug : '#',
+      previewUrl: !s.current ? '#' : (this.parentTable() === 'projects' ? 'commercial.html?project=' + s.current.slug : 'album.html?event=' + s.current.slug),
+      previewLabel: this.parentTable() === 'projects' ? 'Preview project' : 'Preview album',
+      backLabel: this.parentTable() === 'projects' ? '← All projects' : '← All events',
+      previewLabel: this.parentTable() === 'projects' ? 'Preview project' : 'Preview album',
 
       setCoverInputRef: el => { this.coverInputEl = el; },
       triggerCoverPicker: () => this.coverInputEl && this.coverInputEl.click(),
@@ -3165,6 +3697,73 @@ class Component extends DCLogic {
       ...previewVals,
 
       isAlbumTab: s.editorTab === 'album', isBillingTab: s.editorTab === 'billing',
+      isWeddingAlbumTab: s.editorTab === 'album' && this.parentTable() !== 'projects',
+      isProjectRecord: this.parentTable() === 'projects',
+      isWeddingRecord: this.parentTable() !== 'projects',
+
+      editProjClient: s.editProjClient, editProjTitle: s.editProjTitle, editSector: s.editSector,
+      editTagline: s.editTagline, editBrief: s.editBrief,
+      onEditProjClientChange: e => this.setState({ editProjClient: e.target.value }),
+      onEditProjTitleChange: e => this.setState({ editProjTitle: e.target.value }),
+      onEditSectorChange: e => this.setState({ editSector: e.target.value }),
+      onEditTaglineChange: e => this.setState({ editTagline: e.target.value }),
+      onEditBriefChange: e => this.setState({ editBrief: e.target.value }),
+      saveProjectDetails: () => this.saveProjectDetails(),
+
+      brandStatus: s.brandStatus,
+      addPaletteRow: () => this.addPaletteRow(),
+      addFontRow: () => this.addFontRow(),
+      saveBrand: () => this.saveBrand(),
+      paletteRowsVM: s.paletteDraft.map(r => ({
+        name: r.name, hex: r.hex,
+        hexSafe: /^#[0-9a-f]{6}$/i.test(r.hex) ? r.hex : '#cccccc',
+        setChipRef: el => { if (el) el.style.background = /^#[0-9a-f]{3,8}$/i.test(r.hex) ? r.hex : '#F4F6F5'; },
+        onName: e => this.setPaletteField(r.id, 'name', e.target.value),
+        onHex: e => this.setPaletteField(r.id, 'hex', e.target.value),
+        remove: () => this.removePaletteRow(r.id),
+      })),
+      fontRowsVM: s.fontDraft.map(r => ({
+        name: r.name, role: r.role, google: r.google, line: r.line,
+        onName: e => this.setFontField(r.id, 'name', e.target.value),
+        onRole: e => this.setFontField(r.id, 'role', e.target.value),
+        onGoogle: e => this.setFontField(r.id, 'google', e.target.value),
+        onLine: e => this.setFontField(r.id, 'line', e.target.value),
+        remove: () => this.removeFontRow(r.id),
+      })),
+
+      mediaSectionsVM: this.parentTable() !== 'projects' ? [] : MEDIA_SECTIONS.map(sec => {
+        const key = sec[0], label = sec[1];
+        const items = s.projectMedia.filter(m => m.section === key);
+        const isLogo = key === 'logo', isFilm = key === 'film';
+        return {
+          label, countLabel: items.length ? items.length + (items.length === 1 ? ' item' : ' items') : '',
+          status: s.projMediaStatus[key] || '',
+          accept: isFilm ? 'video/*' : 'image/*',
+          isEmpty: items.length === 0,
+          emptyHint: isLogo ? 'Primary mark, wordmark, lockups. Flip any tile to a dark ground to show the reversed version.'
+            : isFilm ? 'Reels and campaign films.'
+            : key === 'social' ? 'Posts and grid sets, shown as a square grid.'
+            : key === 'banner' ? 'Hoardings and wide artwork, shown full-bleed.'
+            : 'Packaging, collateral and guideline pages.',
+          setInputRef: el => { this.projInputs = this.projInputs || {}; this.projInputs[key] = el; },
+          trigger: () => { const el = this.projInputs && this.projInputs[key]; if (el) el.click(); },
+          onFiles: e => { const fs = Array.from(e.target.files || []); e.target.value = ''; fs.forEach(f => this.uploadProjectMedia(key, f)); },
+          itemsVM: items.map(m => ({
+            name: m.name || '',
+            isVideo: m.kind === 'video',
+            pad: isLogo ? '18%' : '0',
+            fit: isLogo ? 'contain' : 'cover',
+            canFlipGround: isLogo,
+            groundLabel: m.ground === 'dark' ? 'On dark' : 'On light',
+            setGroundRef: el => { if (el) el.style.background = m.ground === 'dark' ? '#14201C' : '#F4F6F5'; },
+            setImgRef: el => { const u = m.thumb_url || m.url_grid || m.url; if (el && u && m.kind !== 'video') { el.src = u; el.style.display = 'block'; } },
+            onName: e => this.setState({ projectMedia: s.projectMedia.map(x => x.id === m.id ? { ...x, name: e.target.value } : x) }),
+            saveName: () => this.saveProjectMediaField(m, { name: (this.state.projectMedia.find(x => x.id === m.id) || {}).name || null }),
+            flipGround: () => this.saveProjectMediaField(m, { ground: m.ground === 'dark' ? 'light' : 'dark' }),
+            remove: () => this.deleteProjectMedia(m),
+          })),
+        };
+      }),
 
       ...this.workspaceVals(),
     };
