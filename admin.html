@@ -280,6 +280,14 @@
                 <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ personStatus }}</span>
               </div>
             </div>
+            <sc-if value="{{ hasIdentityGaps }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:6px; padding:14px 16px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#8A6D3B">Documents outstanding</span>
+                <sc-for list="{{ identityGapsVM }}" as="ig" hint-placeholder-count="0">
+                  <span style="font-size:13px; color:#6E5526">{{ ig.label }}</span>
+                </sc-for>
+              </div>
+            </sc-if>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:18px 24px">
               <sc-for list="{{ personViewVM }}" as="pv" hint-placeholder-count="6">
                 <div style="display:flex; flex-direction:column; gap:4px; min-width:0">
@@ -345,10 +353,38 @@
               <input placeholder="Phone" value="{{ pfPhone }}" onChange="{{ onPfPhone }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
               <input type="email" placeholder="Email" value="{{ pfEmail }}" onChange="{{ onPfEmail }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
               <input placeholder="Address" value="{{ pfAddress }}" onChange="{{ onPfAddress }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
-              <select value="{{ pfIdType }}" onChange="{{ onPfIdType }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; background:#fff">
-                <sc-for list="{{ idProofOptions }}" as="ip" hint-placeholder-count="4"><option value="{{ ip.value }}">{{ ip.label }}</option></sc-for>
-              </select>
-              <input placeholder="ID proof number" value="{{ pfIdNumber }}" onChange="{{ onPfIdNumber }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; text-transform:uppercase">
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; padding-top:14px; border-top:1px solid var(--line)">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Identity</span>
+                <span style="font-size:11px; color:#9AA6A2">Passport is what we want on file. A national ID stands in where there isn't one.</span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; align-items:end">
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Passport number
+                  <input placeholder="J8369854" value="{{ pfPassport }}" onChange="{{ onPfPassport }}" style="padding:11px 13px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; text-transform:uppercase">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Passport expiry
+                  <input type="date" value="{{ pfPassportExpiry }}" onChange="{{ onPfPassportExpiry }}" style="padding:11px 13px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">PAN
+                  <input placeholder="ABCDE1234F" value="{{ pfPan }}" onChange="{{ onPfPan }}" style="padding:11px 13px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; text-transform:uppercase">
+                </label>
+              </div>
+              <sc-if value="{{ pfHasPassport }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11px; color:#9AA6A2">Passport on file — a national ID is optional now, but fill it in if you have it.</span>
+              </sc-if>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; align-items:end">
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">National ID type
+                  <select value="{{ pfIdType }}" onChange="{{ onPfIdType }}" style="padding:11px 13px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; background:#fff">
+                    <sc-for list="{{ idProofOptions }}" as="ip" hint-placeholder-count="5"><option value="{{ ip.value }}">{{ ip.label }}</option></sc-for>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">National ID number
+                  <input placeholder="Aadhaar / licence / voter number" value="{{ pfIdNumber }}" onChange="{{ onPfIdNumber }}" style="padding:11px 13px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; text-transform:uppercase">
+                </label>
+              </div>
+              <span style="font-size:11px; color:#9AA6A2">PAN is what TDS is deducted against. Scans of all three go on the Documents tab.</span>
             </div>
 
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; padding-top:14px; border-top:1px solid var(--line)">
@@ -403,7 +439,6 @@
                 <input placeholder="Account number" value="{{ pfBankAccount }}" onChange="{{ onPfBankAccount }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
                 <input placeholder="IFSC" value="{{ pfBankIfsc }}" onChange="{{ onPfBankIfsc }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; text-transform:uppercase">
                 <input placeholder="UPI ID" value="{{ pfUpi }}" onChange="{{ onPfUpi }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none">
-                <input placeholder="PAN" value="{{ pfPan }}" onChange="{{ onPfPan }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:2px; font-size:14px; outline:none; text-transform:uppercase">
               </div>
             </div>
 
@@ -617,10 +652,13 @@
                         <button onClick="{{ pm2.toggle }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ pm2.slipLabel }}</button>
                       </sc-if>
                       <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
-                        <button onClick="{{ pm2.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                        <button onClick="{{ pm2.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">{{ pm2.removeLabel }}</button>
                       </sc-if>
                     </div>
                   </div>
+                  <sc-if value="{{ pm2.isVoid }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11px; color:#B4433A; letter-spacing:.06em">{{ pm2.voidLabel }}</span>
+                  </sc-if>
                   <sc-if value="{{ pm2.isOpen }}" hint-placeholder-val="{{ false }}">
                     <div style="display:flex; flex-direction:column; gap:10px">
                       <div ref="{{ pm2.setSlipRef }}" style="display:flex; flex-direction:column; gap:18px; padding:34px 32px; background:#fff; border:1px solid var(--line); border-radius:2px">
@@ -633,15 +671,43 @@
                           <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Crew ID</span><span style="font-size:14px; color:#16231F">{{ personPayId }}</span></div>
                           <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Role</span><span style="font-size:14px; color:#16231F">{{ personPayRole }}</span></div>
                           <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Period</span><span style="font-size:14px; color:#16231F">{{ pm2.periodLabel }}</span></div>
+                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Payslip no.</span><span style="font-size:14px; color:#16231F">{{ pm2.payslipNo }}</span></div>
+                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">PAN</span><span style="font-size:14px; color:#16231F">{{ payPan }}</span></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:28px">
+                          <div style="display:flex; flex-direction:column; gap:6px">
+                            <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep); padding-bottom:6px; border-bottom:1px solid var(--line)">Earnings</span>
+                            <sc-for list="{{ pm2.earnRows }}" as="er" hint-placeholder-count="3">
+                              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:5px 0"><span style="font-size:12px; color:#5D6864">{{ er.label }}</span><span style="font-size:12px; color:#16231F; font-variant-numeric:tabular-nums">{{ er.value }}</span></div>
+                            </sc-for>
+                            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0 0; border-top:1px solid #F1F4F3"><span style="font-size:12px; color:#16231F">Gross earnings</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.grossLabel }}</span></div>
+                          </div>
+                          <div style="display:flex; flex-direction:column; gap:6px">
+                            <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep); padding-bottom:6px; border-bottom:1px solid var(--line)">Deductions</span>
+                            <sc-for list="{{ pm2.dedRows }}" as="dr" hint-placeholder-count="3">
+                              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:5px 0"><span style="font-size:12px; color:#5D6864">{{ dr.label }}</span><span style="font-size:12px; color:#16231F; font-variant-numeric:tabular-nums">{{ dr.value }}</span></div>
+                            </sc-for>
+                            <sc-if value="{{ pm2.hasDedRows }}" hint-placeholder-val="{{ true }}">
+                              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0 0; border-top:1px solid #F1F4F3"><span style="font-size:12px; color:#16231F">Total deductions</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.dedLabel }}</span></div>
+                            </sc-if>
+                          </div>
                         </div>
                         <div style="display:flex; flex-direction:column; gap:8px">
-                          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid #F1F4F3"><span style="font-size:13px; color:#5D6864">Gross pay</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.grossLabel }}</span></div>
-                          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid #F1F4F3"><span style="font-size:13px; color:#5D6864">Deductions</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.dedLabel }}</span></div>
                           <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:12px 0 0; border-top:1px solid var(--line)"><span style="font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep)">Net pay</span><span style="font-size:19px; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ pm2.netLabel }}</span></div>
                           <span style="font-size:11px; color:#7C8985; font-style:italic">{{ pm2.netWords }}</span>
                         </div>
+                        <sc-if value="{{ pm2.showEmployer }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; gap:24px; padding:10px 12px; background:#F7FAF9; border-radius:2px; flex-wrap:wrap">
+                            <span style="font-size:10px; color:#7C8985">Employer EPF {{ pm2.employerEpf }}</span>
+                            <span style="font-size:10px; color:#7C8985">Employer ESI {{ pm2.employerEsi }}</span>
+                            <span style="font-size:10px; color:#9AA6A2">Not deducted from net — shown so this can be checked against the EPFO record.</span>
+                          </div>
+                        </sc-if>
                         <div style="display:flex; flex-direction:column; gap:4px; padding-top:12px; border-top:1px solid var(--line)">
-                          <span style="font-size:11px; color:#7C8985">{{ pm2.paidLabel }} · Credited to {{ payBankName }} {{ payBankAccount }}</span>
+                          <span style="font-size:11px; color:#7C8985">{{ pm2.paidLabel }} · {{ pm2.payModeLabel }} · Credited to {{ payBankName }} {{ payBankAccount }}</span>
+                          <sc-if value="{{ pm2.hasPayRef }}" hint-placeholder-val="{{ false }}">
+                            <span style="font-size:11px; color:#7C8985">{{ pm2.payRefLabel }}</span>
+                          </sc-if>
                           <sc-if value="{{ pm2.hasNote }}" hint-placeholder-val="{{ false }}">
                             <span style="font-size:11px; color:#7C8985">{{ pm2.note }}</span>
                           </sc-if>
@@ -661,33 +727,121 @@
                 </div>
               </sc-if>
               <sc-if value="{{ payFormOpen }}" hint-placeholder-val="{{ false }}">
-                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end">
-                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Kind
-                    <select value="{{ payKind }}" onChange="{{ onPayKind }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff">
-                      <option value="salary">Payslip</option>
-                      <option value="bonus">Bonus</option>
-                      <option value="reimbursement">Reimbursement</option>
-                    </select>
-                  </label>
-                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ payPeriodFieldLabel }}
-                    <input value="{{ payPeriod }}" onChange="{{ onPayPeriod }}" placeholder="{{ payPeriodPlaceholder }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
-                  </label>
-                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ payAmountLabel }}
-                    <input type="number" min="0" value="{{ payGross }}" onChange="{{ onPayGross }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
-                  </label>
+                <div style="display:flex; flex-direction:column; gap:14px; padding:16px; border:1px solid var(--line); border-radius:3px; background:#FCFDFC">
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end">
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Kind
+                      <select value="{{ payKind }}" onChange="{{ onPayKind }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff">
+                        <option value="salary">Payslip</option>
+                        <option value="bonus">Bonus</option>
+                        <option value="reimbursement">Reimbursement</option>
+                      </select>
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ payPeriodFieldLabel }}
+                      <input value="{{ payPeriod }}" onChange="{{ onPayPeriod }}" placeholder="{{ payPeriodPlaceholder }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Paid on
+                      <input type="date" value="{{ payPaidOn }}" onChange="{{ onPayPaidOn }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Mode
+                      <select value="{{ payMode }}" onChange="{{ onPayMode }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff">
+                        <option value="bank">Bank transfer</option>
+                        <option value="upi">UPI</option>
+                        <option value="cash">Cash</option>
+                      </select>
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Reference
+                      <input placeholder="UTR / cheque no" value="{{ payRef }}" onChange="{{ onPayRef }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Note
+                      <input placeholder="Optional" value="{{ payNote }}" onChange="{{ onPayNote }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                    </label>
+                  </div>
+
                   <sc-if value="{{ payIsSalary }}" hint-placeholder-val="{{ true }}">
-                    <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Deductions (₹)
-                      <input type="number" min="0" value="{{ payDeductions }}" onChange="{{ onPayDeductions }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
+                    <div style="display:flex; flex-direction:column; gap:12px; padding-top:12px; border-top:1px solid var(--line)">
+                      <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                        <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Itemise the slip</span>
+                        <button onClick="{{ suggestStatutory }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Fill EPF &amp; ESI from basic</button>
+                      </div>
+                      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:24px">
+                        <div style="display:flex; flex-direction:column; gap:8px">
+                          <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep)">Earnings</span>
+                          <sc-for list="{{ slipEarnVM }}" as="se" hint-placeholder-count="5">
+                            <label style="display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; color:#5D6864">{{ se.label }}
+                              <input type="number" min="0" placeholder="0" value="{{ se.value }}" onChange="{{ se.onChange }}" style="width:110px; padding:7px 9px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
+                            </label>
+                          </sc-for>
+                          <div style="display:flex; justify-content:space-between; gap:10px; padding-top:8px; border-top:1px solid #F1F4F3"><span style="font-size:12px; color:#16231F">Gross</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ slipGrossLabel }}</span></div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px">
+                          <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep)">Deductions</span>
+                          <sc-for list="{{ slipDedVM }}" as="sd" hint-placeholder-count="6">
+                            <label style="display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; color:#5D6864">{{ sd.label }}
+                              <input type="number" min="0" placeholder="0" value="{{ sd.value }}" onChange="{{ sd.onChange }}" style="width:110px; padding:7px 9px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
+                            </label>
+                          </sc-for>
+                          <div style="display:flex; justify-content:space-between; gap:10px; padding-top:8px; border-top:1px solid #F1F4F3"><span style="font-size:12px; color:#16231F">Total</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ slipDedLabel }}</span></div>
+                        </div>
+                      </div>
+                      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding-top:10px; border-top:1px solid var(--line)">
+                        <span style="font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep)">Net pay</span>
+                        <span style="font-size:18px; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ slipNetLabel }}</span>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ payNotSalary }}" hint-placeholder-val="{{ false }}">
+                    <label style="display:flex; flex-direction:column; gap:4px; max-width:200px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ payAmountLabel }}
+                      <input type="number" min="0" value="{{ payGross }}" onChange="{{ onPayGross }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
                     </label>
                   </sc-if>
-                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Paid on
-                    <input type="date" value="{{ payPaidOn }}" onChange="{{ onPayPaidOn }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+
+                  <div>
+                    <button onClick="{{ addPayment }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Record</button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; padding-top:18px; border-top:1px solid var(--line)">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7C8985">Advances</span>
+                <sc-if value="{{ hasAdvanceOutstanding }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:#8A6D3B">{{ advanceOutstandingLabel }} still to recover</span>
+                </sc-if>
+              </div>
+              <sc-if value="{{ hasAdvances }}" hint-placeholder-val="{{ false }}">
+                <sc-for list="{{ advancesVM }}" as="adv" hint-placeholder-count="0">
+                  <div style="display:flex; align-items:center; gap:12px; padding:11px 13px; border:1px solid var(--line); border-radius:3px; flex-wrap:wrap">
+                    <span style="font-size:14px; color:#16231F; font-variant-numeric:tabular-nums; min-width:90px">{{ adv.amountLabel }}</span>
+                    <span style="font-size:11px; color:#9AA6A2; min-width:90px">{{ adv.dateLabel }}</span>
+                    <span style="font-size:12px; color:{{ adv.statusColor }}">{{ adv.statusLabel }}</span>
+                    <sc-if value="{{ adv.hasNote }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:11px; color:#7C8985">{{ adv.note }}</span>
+                    </sc-if>
+                    <div style="display:flex; gap:8px; margin-left:auto">
+                      <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ adv.recover }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Record recovery</button>
+                        <button onClick="{{ adv.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </sc-if>
+              <sc-if value="{{ canPeopleEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end">
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Advance ₹
+                    <input type="number" min="0" value="{{ advAmount }}" onChange="{{ onAdvAmount }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; text-align:right; outline:none">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Given on
+                    <input type="date" value="{{ advOn }}" onChange="{{ onAdvOn }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
                   </label>
                   <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Note
-                    <input placeholder="Optional" value="{{ payNote }}" onChange="{{ onPayNote }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                    <input placeholder="Optional" value="{{ advNote }}" onChange="{{ onAdvNote }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
                   </label>
-                  <button onClick="{{ addPayment }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Add</button>
+                  <button onClick="{{ addAdvance }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Add advance</button>
                 </div>
+                <span style="font-size:11px; color:#9AA6A2">Recover an advance by putting it in the payslip's <em>Advance recovery</em> line, then recording the recovery here so the outstanding balance moves.</span>
               </sc-if>
             </div>
           </div>
@@ -906,6 +1060,13 @@
             <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#7C8985">Paid out</span>
             <span style="font-size:26px; font-weight:400; color:var(--green-deep)">{{ paidTotal }}</span>
           </div>
+          <sc-if value="{{ hasTdsTotal }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:6px; padding:20px 22px; border:1px solid var(--line); border-radius:4px; background:#FAF7F0">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#7C8985">TDS to deposit</span>
+              <span style="font-size:26px; font-weight:400; color:#8A6D3B">{{ tdsTotal }}</span>
+              <span style="font-size:10px; color:#9AA6A2">Withheld from crew, owed to the department</span>
+            </div>
+          </sc-if>
         </div>
 
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
@@ -938,6 +1099,19 @@
               <div style="display:flex; flex-direction:column; gap:3px; margin-left:auto; text-align:right">
                 <span style="font-size:15px; color:#16231F">{{ po.amountFmt }}</span>
                 <span style="font-size:11px; color:#9AA6A2">{{ po.basisLabel }}</span>
+                <sc-if value="{{ po.hasOt }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px; color:#8A6D3B">{{ po.otLabel }}</span>
+                </sc-if>
+                <sc-if value="{{ po.hasExtras }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px; color:#7C8985">{{ po.extrasLabel }}</span>
+                </sc-if>
+                <sc-if value="{{ po.hasTds }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px; color:#8A6D3B">{{ po.tdsLabel }} −{{ po.tdsAmountFmt }}</span>
+                  <span style="font-size:12px; color:var(--green-deep)">Net {{ po.netPayableFmt }}</span>
+                </sc-if>
+                <sc-if value="{{ po.hasPaidRef }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px; color:#9AA6A2">{{ po.paidRefLabel }}</span>
+                </sc-if>
               </div>
               <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ po.statusBg }}; color:{{ po.statusColor }}; letter-spacing:.06em; text-transform:uppercase">{{ po.statusLabel }}</span>
               <sc-if value="{{ canPayoutsEdit }}" hint-placeholder-val="{{ false }}">
@@ -945,13 +1119,15 @@
                   <button onClick="{{ po.markPaid }}" style="padding:7px 14px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Mark paid</button>
                 </sc-if>
                 <sc-if value="{{ po.isPaid }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ po.markOwed }}" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#7C8985; cursor:pointer">Undo</button>
+                  <sc-if value="{{ po.canReopen }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ po.markOwed }}" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#7C8985; cursor:pointer">Reopen</button>
+                  </sc-if>
                 </sc-if>
               </sc-if>
             </div>
           </sc-for>
         </div>
-        <span style="font-size:11px; color:#9AA6A2">Payouts are marked by hand once the transfer is actually made — nothing is deducted automatically.</span>
+        <span style="font-size:11px; color:#9AA6A2">Payouts are marked by hand once the transfer is actually made. The amount is snapshotted at that moment — a later rate edit cannot move it. TDS, where set on the crew row, is withheld from the crew member and owed to the department.</span>
       </div>
       </sc-if>
 
@@ -1079,11 +1255,41 @@
                   <div style="display:flex; flex-direction:column; gap:2px; min-width:88px">
                     <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Hours</span>
                     <span style="font-size:13px; color:{{ ag.hoursColor }}">{{ ag.hoursLabel }}</span>
+                    <sc-if value="{{ ag.hasOt }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:10px; color:#8A6D3B">{{ ag.otLabel }}</span>
+                    </sc-if>
                   </div>
-                  <span style="font-size:14px; color:#16231F; margin-left:auto">{{ ag.amountFmt }}</span>
+                  <div style="display:flex; flex-direction:column; gap:2px; text-align:right; margin-left:auto">
+                    <span style="font-size:14px; color:#16231F">{{ ag.amountFmt }}</span>
+                    <sc-if value="{{ ag.hasTds }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:10px; color:#8A6D3B">{{ ag.tdsLabel }} · net {{ ag.netPayableFmt }}</span>
+                    </sc-if>
+                  </div>
                   <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ ag.statusBg }}; color:{{ ag.statusColor }}; letter-spacing:.06em; text-transform:uppercase">{{ ag.statusLabel }}</span>
                   <button onClick="{{ ag.remove }}" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">Remove</button>
                 </div>
+
+                <sc-if value="{{ ag.notSalaried }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; align-items:flex-end; gap:14px; padding:10px 14px; border-top:1px solid #F1F4F3; background:#FCFDFC; flex-wrap:wrap">
+                  <sc-if value="{{ ag.isHourly }}" hint-placeholder-val="{{ true }}">
+                    <label style="display:flex; flex-direction:column; gap:3px; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Standard day (hrs)
+                      <input type="number" min="1" max="24" value="{{ ag.stdDayValue }}" onChange="{{ ag.onStdDay }}" onBlur="{{ ag.commitStdDay }}" onKeyDown="{{ ag.onEnter }}" style="width:64px; padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-size:12px; text-align:right; outline:none">
+                    </label>
+                  </sc-if>
+                  <label style="display:flex; flex-direction:column; gap:3px; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Kit rental ₹
+                    <input type="number" min="0" placeholder="0" value="{{ ag.kitValue }}" onChange="{{ ag.onKit }}" onBlur="{{ ag.commitKit }}" onKeyDown="{{ ag.onEnter }}" style="width:84px; padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-size:12px; text-align:right; outline:none">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:3px; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">Per diem ₹/day
+                    <input type="number" min="0" placeholder="0" value="{{ ag.perDiemValue }}" onChange="{{ ag.onPerDiem }}" onBlur="{{ ag.commitPerDiem }}" onKeyDown="{{ ag.onEnter }}" style="width:84px; padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-size:12px; text-align:right; outline:none">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:3px; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">TDS on payout
+                    <select value="{{ ag.tdsValue }}" onChange="{{ ag.onTdsChange }}" style="padding:6px 8px; border:1px solid var(--line); border-radius:2px; font-size:12px; outline:none; background:#fff">
+                      <sc-for list="{{ ag.tdsOptions }}" as="td" hint-placeholder-count="5"><option value="{{ td.value }}">{{ td.label }}</option></sc-for>
+                    </select>
+                  </label>
+                  <span style="font-size:10px; color:#9AA6A2; max-width:260px; line-height:1.6">Kit rental is per engagement, per diem is per day logged, and overtime pays the multiplier on hours past the standard day.</span>
+                </div>
+                </sc-if>
 
                 <sc-if value="{{ ag.isDeliverable }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex; flex-direction:column; gap:10px; padding:14px; border-top:1px solid var(--line); background:#FAFCFB">
@@ -1881,7 +2087,8 @@ const PROD_LABEL = PROD_STATUSES.reduce((m, s) => { m[s[0]] = s[1]; return m; },
 const EMPTY_PERSON = {
   full_name: '', primary_role: 'photographer', engagement: 'freelancer', phone: '', email: '', address: '',
   bank_name: '', bank_account: '', bank_ifsc: '', upi_id: '', pan: '',
-  id_proof_type: 'aadhaar', id_proof_number: '',
+  passport_number: '', passport_expiry: '',
+  id_proof_type: '', id_proof_number: '',
   pay_mode: 'hourly',
   monthly_salary: '', default_hourly_rate: '', notes: '', active: true,
 };
@@ -1890,8 +2097,10 @@ const EMPTY_PERSON = {
 const PERSON_FIELD_LABEL = {
   full_name: 'Full name', primary_role: 'Role', engagement: 'Engagement', phone: 'Phone',
   email: 'Email', address: 'Address', bank_name: 'Bank', bank_account: 'Account number',
-  bank_ifsc: 'IFSC', upi_id: 'UPI ID', pan: 'PAN', id_proof_type: 'ID proof type',
-  id_proof_number: 'ID proof number', pay_mode: 'Paid as', monthly_salary: 'Monthly salary',
+  bank_ifsc: 'IFSC', upi_id: 'UPI ID', pan: 'PAN',
+  passport_number: 'Passport number', passport_expiry: 'Passport expiry',
+  id_proof_type: 'National ID type',
+  id_proof_number: 'National ID number', pay_mode: 'Paid as', monthly_salary: 'Monthly salary',
   default_hourly_rate: 'Default hourly rate', notes: 'Notes', active: 'Active',
 };
 
@@ -1903,10 +2112,38 @@ const PAY_MODES = [
 const PAY_MODE_LABEL = { hourly: 'Hourly', deliverable: 'Per deliverable', salaried: 'Salaried' };
 
 const ID_PROOF_TYPES = [
-  ['aadhaar', 'Aadhaar'], ['passport', 'Passport'],
+  ['', 'National ID — pick one'],
+  ['aadhaar', 'Aadhaar'],
   ['driving_licence', 'Driving licence'], ['voter_id', 'Voter ID'],
+  ['national_id', 'Other national ID'],
 ];
-const ID_PROOF_LABEL = ID_PROOF_TYPES.reduce((m, [k, v]) => { m[k] = v; return m; }, {});
+// The empty first entry is a select placeholder, not a document — keep it out of the
+// label map so a legacy row holding '' never renders "pick one" as its ID type.
+const ID_PROOF_LABEL = ID_PROOF_TYPES.reduce((m, [k, v]) => { if (k) m[k] = v; return m; }, {});
+
+// Module scope, because the class methods format dates too — saveDaySheet and
+// setAvail both name it, and a copy that only existed inside the render function
+// meant those confirmations threw instead of showing a date.
+const fmtDay = d => d
+  ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  : '—';
+
+// What HR still owes on a crew record. A passport that expires inside six months is
+// as good as missing on anything that needs a permit or a flight.
+function identityGaps(p) {
+  if (!p) return [];
+  const out = [];
+  const has = v => !!String(v || '').trim();
+  if (!has(p.passport_number) && !has(p.id_proof_number)) out.push('No passport or national ID on file');
+  else if (!has(p.passport_number)) out.push('No passport — only a national ID');
+  if (!has(p.pan)) out.push('No PAN — TDS is deducted at a higher rate without it');
+  if (p.passport_expiry) {
+    const days = Math.round((new Date(p.passport_expiry + 'T00:00:00') - new Date()) / 86400000);
+    if (days < 0) out.push('Passport expired ' + fmtDay(p.passport_expiry));
+    else if (days <= 180) out.push('Passport expires ' + fmtDay(p.passport_expiry));
+  }
+  return out;
+}
 
 // Real values live in the `settings` table, editable under Billing → Payment details.
 const BANK_PLACEHOLDER = '— not set —';
@@ -1965,6 +2202,19 @@ function numberToWordsINR(amount) {
   return words + ' Only';
 }
 
+// An Indian wage slip has to itemise what was earned against what was withheld —
+// a single "deductions" figure is not a payslip a bank or an inspector accepts.
+const SLIP_EARN = [['basic', 'Basic'], ['hra', 'HRA'], ['allow', 'Allowances'], ['ot', 'Overtime'], ['kit', 'Kit / equipment']];
+const SLIP_DED = [['epf', 'EPF (employee)'], ['esi', 'ESI'], ['pt', 'Professional tax'], ['tds', 'TDS'], ['adv', 'Advance recovery'], ['other', 'Other']];
+const EMPTY_SLIP = { basic: '', hra: '', allow: '', ot: '', kit: '', epf: '', esi: '', pt: '200', tds: '', adv: '', other: '' };
+const TDS_OPTIONS = [
+  ['none:0', 'No TDS'],
+  ['194c:1', '194C @1% — individual contractor'],
+  ['194c:2', '194C @2% — firm / company contractor'],
+  ['194j:2', '194J @2% — technical service'],
+  ['194j:10', '194J @10% — professional fee'],
+];
+
 class Component extends DCLogic {
 // Reading order below, and the order the sections appear in:
 //   boot → auth → events → lifecycle → schedule → media → billing
@@ -2007,6 +2257,8 @@ class Component extends DCLogic {
     photoPath: '', photoUrl: '',
     payments: [], payStatus: '', payOpen: null, payFormOpen: false,
     payKind: 'salary', payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '',
+    payMode: 'bank', payRef: '', slip: { ...EMPTY_SLIP },
+    advances: [], advAmount: '', advOn: '', advNote: '',
     personAvail: [], availDay: '', availStatus: 'busy', availNote: '',
     assignments: [], costing: null, crewStatus: '', agEdits: {},
     eventDays: [], dayDate: '', dayHours: {}, dayStatus: '',
@@ -2510,7 +2762,7 @@ class Component extends DCLogic {
   // whether the booking came from events or projects.
   async loadWorkload() {
     const { data, error } = await this.sb.from('assignments')
-      .select('id, person_id, crew_role, hours, days_logged, amount_owed, payout_status, pay_basis, event_id, project_id, events(couple_names, event_date, production_status), projects(client_name, start_date, production_status)');
+      .select('*, events(couple_names, event_date, production_status), projects(client_name, start_date, production_status)');
     if (error) { this.setState({ workload: [], workloadFailed: true, personStatus: error.message }); return; }
     const norm = (data || []).map(a => ({
       ...a,
@@ -3421,13 +3673,15 @@ class Component extends DCLogic {
       photoPath: '', photoUrl: '',
       payments: [], payStatus: '', payOpen: null, payFormOpen: false,
       payKind: 'salary', payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '',
+      payMode: 'bank', payRef: '', slip: { ...EMPTY_SLIP },
+      advances: [], advAmount: '', advOn: '', advNote: '',
     };
   }
 
   formFromRow(p) {
     const f = {};
     Object.keys(EMPTY_PERSON).forEach(k => {
-      const fallback = k === 'active' ? true : k === 'id_proof_type' ? 'aadhaar' : k === 'pay_mode' ? 'hourly' : '';
+      const fallback = k === 'active' ? true : k === 'pay_mode' ? 'hourly' : '';
       f[k] = p[k] == null ? fallback : p[k];
     });
     return f;
@@ -3460,6 +3714,19 @@ class Component extends DCLogic {
   async savePerson() {
     const f = this.state.personForm;
     if (!f.full_name.trim()) { this.setState({ personStatus: 'Name is required.' }); return; }
+    // A passport is the document we want. Where there isn't one, a national ID has to
+    // stand in — but one of the two has to be on file, because "we'll get it later"
+    // is how a crew member turns up to a shoot nobody can put on a permit.
+    const passport = (f.passport_number || '').trim();
+    const nationalId = (f.id_proof_number || '').trim();
+    if (!passport && !nationalId) {
+      this.setState({ personStatus: 'Record a passport number, or a national ID if they have no passport.' });
+      return;
+    }
+    if (nationalId && !passport && !f.id_proof_type) {
+      this.setState({ personStatus: 'Say which national ID that number belongs to.' });
+      return;
+    }
     this.setState({ personStatus: 'Saving…' });
     const num = v => (v === '' || v == null ? null : Number(v));
     const row = {
@@ -3467,7 +3734,9 @@ class Component extends DCLogic {
       phone: f.phone || null, email: f.email || null, address: f.address || null,
       bank_name: f.bank_name || null, bank_account: f.bank_account || null, bank_ifsc: f.bank_ifsc || null,
       upi_id: f.upi_id || null, pan: f.pan || null,
-      id_proof_type: f.id_proof_type || null, id_proof_number: f.id_proof_number || null,
+      passport_number: passport || null, passport_expiry: f.passport_expiry || null,
+      id_proof_type: nationalId ? (f.id_proof_type || null) : null,
+      id_proof_number: nationalId || null,
       pay_mode: f.pay_mode || 'hourly',
       monthly_salary: num(f.monthly_salary), default_hourly_rate: num(f.default_hourly_rate),
       notes: f.notes || null, active: !!f.active,
@@ -3485,7 +3754,12 @@ class Component extends DCLogic {
     const res = this.state.personId
       ? await this.sb.from('people').update(row).eq('id', this.state.personId).select().single()
       : await this.sb.from('people').insert(row).select().single();
-    if (res.error) { this.setState({ personStatus: res.error.message }); return; }
+    if (res.error) {
+      this.setState({ personStatus: /column .*passport/i.test(res.error.message || '')
+        ? 'Run album-system/people-identity.sql in Supabase — the passport columns do not exist yet.'
+        : res.error.message });
+      return;
+    }
     this.setState({
       personId: res.data.id, personForm: this.formFromRow(res.data), personMode: 'view',
       personStatus: 'Saved — ' + res.data.crew_id,
@@ -3556,7 +3830,22 @@ class Component extends DCLogic {
     let err = null;
     if (r.kind === 'create') err = (await this.sb.from('people').insert(r.payload)).error;
     else if (r.kind === 'update') err = (await this.sb.from('people').update(r.payload).eq('id', r.person_id)).error;
-    else if (r.kind === 'delete') err = (await this.sb.from('people').delete().eq('id', r.person_id)).error;
+    else if (r.kind === 'delete') {
+      err = (await this.sb.from('people').delete().eq('id', r.person_id)).error;
+      // Anyone ever assigned is referenced by payout history, and that history has to
+      // outlive the person record. Retire them instead of erasing the money trail.
+      if (err && /foreign key|violates|still referenced/i.test(err.message || '')) {
+        const res = await this.sb.from('people').update({ active: false }).eq('id', r.person_id);
+        if (!res.error) {
+          await this.markRequestReviewed(r, 'approved');
+          this.setState({ requestStatus: 'They have payout history, so the record was retired rather than deleted — it drops out of every picker but the money trail survives.' });
+          this.loadChangeRequests(); this.loadPeople();
+          setTimeout(() => this.setState({ requestStatus: '' }), 7000);
+          return;
+        }
+        err = res.error;
+      }
+    }
     if (err) { this.setState({ requestStatus: err.message }); return; }
     await this.markRequestReviewed(r, 'approved');
     this.setState({ requestStatus: 'Applied.' });
@@ -3796,33 +4085,146 @@ class Component extends DCLogic {
       return;
     }
     this.setState({ payments: data || [], payStatus: '' });
+    this.loadAdvances(pid);
+  }
+
+  // ---- Advances (money handed over before the work, recovered from later pay) ---
+
+  async loadAdvances(pid) {
+    const { data, error } = await this.sb.from('people_advances').select('*')
+      .eq('person_id', pid).order('given_on', { ascending: false });
+    this.setState({ advances: error ? [] : (data || []) });
+  }
+
+  async addAdvance() {
+    const pid = this.state.personId, amt = Number(this.state.advAmount || 0);
+    if (!pid) { this.setState({ payStatus: 'Save the person first.' }); return; }
+    if (!isFinite(amt) || amt <= 0) { this.setState({ payStatus: 'Enter the advance amount.' }); return; }
+    const { error } = await this.sb.from('people_advances').insert({
+      person_id: pid, amount: amt,
+      given_on: this.state.advOn || new Date().toISOString().slice(0, 10),
+      note: this.state.advNote || null,
+    });
+    if (error) {
+      this.setState({ payStatus: /people_advances/i.test(error.message || '')
+        ? 'Run album-system/payroll-hardening.sql in Supabase to track advances.' : error.message });
+      return;
+    }
+    this.setState({ advAmount: '', advNote: '', advOn: '', payStatus: '' });
+    this.loadAdvances(pid);
+  }
+
+  async recoverAdvance(a) {
+    const left = Number(a.amount) - Number(a.recovered || 0);
+    const raw = window.prompt('How much of the ' + fmtINR(left) + ' outstanding has been recovered?', String(left));
+    if (raw === null) return;
+    const add = Number(raw);
+    if (!isFinite(add) || add <= 0) return;
+    const next = Math.min(Number(a.amount), Number(a.recovered || 0) + add);
+    const { error } = await this.sb.from('people_advances').update({ recovered: next }).eq('id', a.id);
+    if (error) { this.setState({ payStatus: error.message }); return; }
+    this.loadAdvances(this.state.personId);
+  }
+
+  async removeAdvance(a) {
+    if (Number(a.recovered || 0) > 0) { this.setState({ payStatus: 'Part of this advance is already recovered — it stays on record.' }); return; }
+    if (!window.confirm('Remove this advance?')) return;
+    await this.sb.from('people_advances').delete().eq('id', a.id);
+    this.loadAdvances(this.state.personId);
+  }
+
+  // Sum of every earning / deduction line currently typed into the slip form.
+  slipNum(k) { const v = Number((this.state.slip || {})[k] || 0); return isFinite(v) && v > 0 ? v : 0; }
+  slipGross() { return SLIP_EARN.reduce((t, r) => t + this.slipNum(r[0]), 0); }
+  slipDeductions() { return SLIP_DED.reduce((t, r) => t + this.slipNum(r[0]), 0); }
+
+  // EPF is 12% of basic on a ₹15,000 wage ceiling; ESI only applies while gross is
+  // ₹21,000 or under. Filled in as a suggestion — every field stays editable,
+  // because the right structure is a decision about the contract, not a formula.
+  suggestStatutory() {
+    const basic = this.slipNum('basic');
+    if (!basic) { this.setState({ payStatus: 'Enter the basic first.' }); return; }
+    const gross = this.slipGross();
+    const epf = Math.round(0.12 * Math.min(basic, 15000));
+    const esi = gross <= 21000 ? Math.round(gross * 0.0075) : 0;
+    this.setState({
+      slip: { ...this.state.slip, epf: String(epf), esi: String(esi) },
+      payStatus: 'EPF and ESI filled in. Professional tax is state-specific — check the ₹200 default.',
+    });
+    setTimeout(() => this.setState({ payStatus: '' }), 5000);
   }
 
   async addPayment() {
     const s = this.state, pid = s.personId;
     if (!pid) { this.setState({ payStatus: 'Save the person first.' }); return; }
-    const gross = Number(s.payGross || 0), ded = Number(s.payDeductions || 0);
-    if (!isFinite(gross) || gross <= 0) { this.setState({ payStatus: 'Enter the amount first.' }); return; }
-    if (!isFinite(ded) || ded < 0) { this.setState({ payStatus: 'Deductions must be a number.' }); return; }
-    if (s.payKind === 'salary' && !/^\d{4}-\d{2}$/.test(s.payPeriod || '')) {
-      this.setState({ payStatus: 'Month goes in as 2026-09.' }); return;
+    const isSalary = s.payKind === 'salary';
+    let gross, deductions;
+    const components = {};
+    if (isSalary) {
+      if (!/^\d{4}-\d{2}$/.test(s.payPeriod || '')) { this.setState({ payStatus: 'Month goes in as 2026-09.' }); return; }
+      gross = this.slipGross(); deductions = this.slipDeductions();
+      if (gross <= 0) { this.setState({ payStatus: 'A payslip needs at least a basic amount.' }); return; }
+      if (deductions > gross) { this.setState({ payStatus: 'Deductions come to more than the gross — check the figures.' }); return; }
+      SLIP_EARN.concat(SLIP_DED).forEach(r => { const v = this.slipNum(r[0]); if (v) components[r[0]] = v; });
+    } else {
+      gross = Number(s.payGross || 0); deductions = 0;
+      if (!isFinite(gross) || gross <= 0) { this.setState({ payStatus: 'Enter the amount first.' }); return; }
     }
     this.setState({ payStatus: 'Saving…' });
-    const { error } = await this.sb.from('people_payments').insert({
+    const row = {
       person_id: pid, kind: s.payKind, period: s.payPeriod || null,
-      gross, deductions: s.payKind === 'salary' ? ded : 0,
-      net: +(gross - (s.payKind === 'salary' ? ded : 0)).toFixed(2),
+      gross, deductions, components,
       paid_on: s.payPaidOn || null, note: s.payNote || null,
+      paid_mode: s.payPaidOn ? (s.payMode || 'bank') : null,
+      paid_ref: s.payRef || null,
+      net: +(gross - deductions).toFixed(2),
+    };
+    let { error } = await this.sb.from('people_payments').insert(row);
+    // net became a derived column in payroll-hardening.sql. Retry without it so the
+    // same build works either side of that migration.
+    if (error && /generated column/i.test(error.message || '')) {
+      delete row.net;
+      ({ error } = await this.sb.from('people_payments').insert(row));
+    }
+    if (error) {
+      const msg = error.message || '';
+      this.setState({ payStatus:
+        /people_payments_period_uq|duplicate key/i.test(msg)
+          ? 'That month already has a live payslip for this person — void the old one before issuing a correction.'
+        : /column .*(components|payslip_no|paid_mode|paid_ref|status)/i.test(msg)
+          ? 'Run album-system/payroll-hardening.sql in Supabase — the itemised payslip columns do not exist yet.'
+        : msg });
+      return;
+    }
+    this.setState({
+      payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '', payRef: '',
+      slip: { ...EMPTY_SLIP }, payStatus: 'Recorded.',
     });
-    if (error) { this.setState({ payStatus: error.message }); return; }
-    this.setState({ payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '', payStatus: 'Added.' });
     this.loadPayments(pid);
     setTimeout(() => this.setState({ payStatus: '' }), 2500);
   }
 
+  // A paid payslip is a document someone may have shown a bank. It gets voided and
+  // kept, never deleted — only an unpaid draft is actually removable.
+  async voidPayment(x) {
+    const why = window.prompt('Void ' + (x.payslip_no || 'this entry') + '? It stays on record, marked void. Say why:', 'Issued in error');
+    if (why === null) return;
+    const { error } = await this.sb.from('people_payments')
+      .update({ status: 'void', voided_at: new Date().toISOString(), voided_note: why || null })
+      .eq('id', x.id);
+    if (error) {
+      this.setState({ payStatus: /column .*(status|voided)/i.test(error.message || '')
+        ? 'Run album-system/payroll-hardening.sql in Supabase to void payslips.' : error.message });
+      return;
+    }
+    this.loadPayments(this.state.personId);
+  }
+
   async removePayment(x) {
-    if (!window.confirm('Delete this entry?')) return;
-    await this.sb.from('people_payments').delete().eq('id', x.id);
+    if (x.paid_on || x.kind === 'salary') return this.voidPayment(x);
+    if (!window.confirm('Delete this unpaid entry?')) return;
+    const { error } = await this.sb.from('people_payments').delete().eq('id', x.id);
+    if (error) { this.setState({ payStatus: error.message }); return; }
     this.loadPayments(this.state.personId);
   }
 
@@ -3896,6 +4298,19 @@ class Component extends DCLogic {
   async setAvail() {
     const pid = this.state.personId;
     if (!pid || !this.state.availDay) { this.setState({ personStatus: 'Pick a date first.' }); return; }
+    // Marking someone off on a day they already have hours logged against is how a
+    // shoot loses a shooter. Say it out loud before it is saved.
+    if (this.state.availStatus !== 'available') {
+      const { data: mine } = await this.sb.from('assignments').select('id').eq('person_id', pid);
+      const ids = (mine || []).map(a => a.id);
+      if (ids.length) {
+        const { data: booked } = await this.sb.from('assignment_days')
+          .select('id').eq('day', this.state.availDay).in('assignment_id', ids);
+        if (booked && booked.length && !window.confirm(
+          'They already have hours logged on ' + fmtDay(this.state.availDay)
+          + '. Mark them ' + this.state.availStatus + ' anyway?')) return;
+      }
+    }
     const { error } = await this.sb.from('people_availability').upsert(
       { person_id: pid, day: this.state.availDay, status: this.state.availStatus, note: this.state.availNote || null },
       { onConflict: 'person_id,day' });
@@ -3961,12 +4376,37 @@ class Component extends DCLogic {
     const raw = this.state.agEdits[key];
     if (raw === undefined) return;
     const next = { ...this.state.agEdits }; delete next[key];
-    const n = raw === '' ? null : Number(raw);
+    const fail = msg => this.setState({ agEdits: next, crewStatus: msg });
+    // Three things differ per field, and conflating them is how a clamp breaks a
+    // clear: the floor, and what an emptied box is supposed to mean.
+    //   · a rate or fee clears to null — that is how a stale hourly rate is dropped
+    //     after a row switches to fixed fee
+    //   · a kit fee or per diem clears to zero — there simply isn't one
+    //   · a standard day or multiplier has no empty state; it would put every hour
+    //     into overtime and quietly pay the multiplier on the whole shift
+    const FLOOR = { standard_day: 1, ot_multiplier: 1, kit_fee: 0, per_diem: 0, hourly_rate: 0, fixed_fee: 0 };
+    const ON_EMPTY = { hourly_rate: null, fixed_fee: null, kit_fee: 0, per_diem: 0 };
+    const floor = FLOOR[field];
+    let n;
+    if (raw === '') {
+      if (!(field in ON_EMPTY)) return fail('That needs a number of at least ' + floor + ' — nothing saved.');
+      n = ON_EMPTY[field];
+    } else {
+      n = Number(raw);
+    }
     // Number('12k') is NaN, which Postgres stores as null — silently wiping the rate.
-    if (n !== null && !isFinite(n)) { this.setState({ agEdits: next, crewStatus: 'That is not a number — nothing saved.' }); return; }
+    if (n !== null && !isFinite(n)) return fail('That is not a number — nothing saved.');
+    if (n !== null && floor !== undefined && n < floor) return fail('That needs to be at least ' + floor + ' — nothing saved.');
+    if (field === 'standard_day' && n > 24) return fail('A standard day cannot be longer than 24 hours — nothing saved.');
     const patch = {}; patch[field] = n;
     const { error } = await this.sb.from('assignments').update(patch).eq('id', ag.id);
-    this.setState({ agEdits: next, crewStatus: error ? error.message : '' });
+    this.setState({ agEdits: next, crewStatus: error
+      ? (/already marked paid/i.test(error.message || '')
+          ? 'This payout is already marked paid — reopen it before changing the rate.'
+        : /column .*(kit_fee|per_diem|standard_day|ot_multiplier)/i.test(error.message || '')
+          ? 'Run album-system/payroll-hardening.sql in Supabase to add overtime, kit fees and per diem.'
+        : error.message)
+      : '' });
     const pid = this.rowParentId(ag);
     this.loadAssignments(pid); this.loadCosting(pid);
   }
@@ -3977,10 +4417,31 @@ class Component extends DCLogic {
   }
 
   async setAgBasis(ag, basis) {
-    await this.sb.from('assignments').update({ pay_basis: basis }).eq('id', ag.id);
+    const { error } = await this.sb.from('assignments').update({ pay_basis: basis }).eq('id', ag.id);
+    if (error) { this.setState({ crewStatus: error.message }); return; }
     const pid = this.rowParentId(ag);
     this.loadAssignments(pid); this.loadCosting(pid);
   }
+
+  // TDS section and rate travel together — 194J at 10% for a professional fee,
+  // 194C at 1%/2% for contract work. Set once per crew row; every payout deducts it.
+  async setAgTds(ag, value) {
+    const parts = String(value).split(':');
+    const { error } = await this.sb.from('assignments')
+      .update({ tds_section: parts[0], tds_rate: Number(parts[1]) || 0 }).eq('id', ag.id);
+    if (error) {
+      this.setState({ crewStatus: /column .*tds_/i.test(error.message || '')
+        ? 'Run album-system/payroll-hardening.sql in Supabase to deduct TDS on payouts.' : error.message });
+      return;
+    }
+    const pid = this.rowParentId(ag);
+    this.loadAssignments(pid); this.loadCosting(pid);
+  }
+
+  // Kit rental and per diem are separate lines in every crew deal memo, and they are
+  // not multiplied by hours — kit is per engagement, per diem is per day logged.
+  // They edit through agEdits/commitAg like the rate fields, so a half-typed number
+  // is never written and a reload cannot land mid-keystroke.
 
   async removeAssignment(ag) {
     if (!window.confirm('Remove this crew assignment?')) return;
@@ -4055,18 +4516,26 @@ class Component extends DCLogic {
     if (!s.dayDate) { this.setState({ dayStatus: 'Pick a date first.' }); return; }
     if (this.hoursLocked()) { this.setState({ dayStatus: 'Hours are locked for this event.' }); return; }
     const rows = [], clear = [];
+    let overLong = false;
     s.assignments.forEach(ag => {
       const raw = s.dayHours[ag.id];
       if (raw === undefined) return;
       const n = raw === '' ? 0 : Number(raw);
       if (!isFinite(n) || n <= 0) clear.push(ag.id);
+      else if (n > 24) overLong = true;
       else rows.push({ assignment_id: ag.id, day: s.dayDate, hours: n });
     });
+    if (overLong) { this.setState({ dayStatus: 'A day cannot hold more than 24 hours — check that entry.' }); return; }
     if (!rows.length && !clear.length) { this.setState({ dayStatus: 'Nothing entered for this day.' }); return; }
     this.setState({ dayStatus: 'Saving…' });
     if (rows.length) {
       const { error } = await this.sb.from('assignment_days').upsert(rows, { onConflict: 'assignment_id,day' });
-      if (error) { this.setState({ dayStatus: error.message }); return; }
+      if (error) {
+        this.setState({ dayStatus: /already marked paid/i.test(error.message || '')
+          ? 'One of these payouts is already marked paid — an admin has to reopen it before hours change.'
+          : error.message });
+        return;
+      }
     }
     if (clear.length) {
       await this.sb.from('assignment_days').delete().eq('day', s.dayDate).in('assignment_id', clear);
@@ -4091,10 +4560,21 @@ class Component extends DCLogic {
     this.setState({ payouts: norm, payoutStatus: '' });
   }
 
+  // Marking paid records HOW it was paid as well as that it was. The amount itself is
+  // snapshotted by the database, so a later rate edit cannot rewrite what was sent.
   async setPayoutStatus(ag, status) {
-    const { error } = await this.sb.from('assignments')
-      .update({ payout_status: status, paid_at: status === 'paid' ? new Date().toISOString() : null })
-      .eq('id', ag.id);
+    const base = { payout_status: status, paid_at: status === 'paid' ? new Date().toISOString() : null };
+    const patch = { ...base };
+    if (status === 'paid') {
+      const ref = window.prompt('Payment reference — UTR, cheque or transaction id. Leave blank if you have none.', '');
+      if (ref === null) return;
+      patch.paid_ref = ref.trim() || null;
+      patch.paid_mode = (ag.people && ag.people.upi_id) ? 'upi' : 'bank';
+    }
+    let { error } = await this.sb.from('assignments').update(patch).eq('id', ag.id);
+    if (error && /column .*(paid_ref|paid_mode)/i.test(error.message || '')) {
+      ({ error } = await this.sb.from('assignments').update(base).eq('id', ag.id));
+    }
     if (error) { this.setState({ payoutStatus: error.message }); return; }
     if (this.state.view === 'payouts') this.loadPayouts();
     if (this.state.current) this.loadAssignments(this.state.current.id);
@@ -4128,7 +4608,6 @@ class Component extends DCLogic {
     const role = s.role || 'none';
     // No division chosen yet — or an explicit switch — takes over the whole screen.
     const picking = s.view !== 'login' && (!s.division || s.pickingDivision);
-    const fmtDay = d => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
     const crewRoleOptions = CREW_ROLES.map(([value, label]) => ({ value, label }));
     const roleName = r => ROLE_LABEL[r] || r || '—';
     // renderVals runs on every keystroke anywhere in the app, so each list is built
@@ -4209,12 +4688,15 @@ class Component extends DCLogic {
       pfEmail: f.email, pfAddress: f.address, pfBankName: f.bank_name, pfBankAccount: f.bank_account,
       pfBankIfsc: f.bank_ifsc, pfUpi: f.upi_id, pfPan: f.pan, pfSalary: f.monthly_salary,
       pfHourly: f.default_hourly_rate, pfNotes: f.notes, pfActive: !!f.active,
-      pfIdType: f.id_proof_type || 'aadhaar', pfIdNumber: f.id_proof_number,
+      pfIdType: f.id_proof_type || '', pfIdNumber: f.id_proof_number,
+      pfPassport: f.passport_number || '', pfPassportExpiry: f.passport_expiry || '',
+      pfHasPassport: !!(f.passport_number || '').trim(),
       pfIsEmployee: f.engagement === 'employee',
     } : {
       pfName: '', pfRole: 'photographer', pfEngagement: 'freelancer', pfPhone: '', pfEmail: '', pfAddress: '',
       pfBankName: '', pfBankAccount: '', pfBankIfsc: '', pfUpi: '', pfPan: '', pfSalary: '', pfHourly: '',
-      pfIdType: 'aadhaar', pfIdNumber: '', pfNotes: '', pfActive: true, pfIsEmployee: false,
+      pfIdType: '', pfIdNumber: '', pfPassport: '', pfPassportExpiry: '', pfHasPassport: false,
+      pfNotes: '', pfActive: true, pfIsEmployee: false,
     };
 
     const person = s.personId ? s.people.find(p => p.id === s.personId) : null;
@@ -4234,7 +4716,11 @@ class Component extends DCLogic {
       rows.push(
         ['Address', dash(person.address)],
         ['PAN', dash(person.pan)],
-        [ID_PROOF_LABEL[person.id_proof_type] || 'ID proof', dash(person.id_proof_number)],
+        ['Passport', dash(person.passport_number)],
+      );
+      if (person.passport_expiry) rows.push(['Passport expiry', fmtDay(person.passport_expiry)]);
+      if (person.id_proof_number) rows.push([(person.id_proof_type && ID_PROOF_LABEL[person.id_proof_type]) || 'National ID', dash(person.id_proof_number)]);
+      rows.push(
         ['Bank', dash(person.bank_name)],
         ['Account number', dash(person.bank_account)],
         ['IFSC', dash(person.bank_ifsc)],
@@ -4329,18 +4815,44 @@ class Component extends DCLogic {
       color: s.requestFilter === key ? '#FFFFFF' : 'var(--green-deep)',
     }));
 
-    // Everything this person has earned here: payslips and bonuses on record, plus
-    // the event payouts already marked paid.
+    // Everything this person has earned here: live payslips and bonuses on record,
+    // plus the event payouts already marked paid. Voided slips are shown but never
+    // counted, and a paid payout reads its snapshot so a later rate edit cannot move
+    // a historical total.
     const payRows = (onPeople && s.personId) ? s.payments : [];
-    const sumNet = k => payRows.filter(x => x.kind === k).reduce((t, x) => t + Number(x.net || 0), 0);
+    const livePay = payRows.filter(x => x.status !== 'void');
+    const sumNet = k => livePay.filter(x => x.kind === k).reduce((t, x) => t + Number(x.net || 0), 0);
     const salaryTotal = sumNet('salary'), bonusTotal = sumNet('bonus'), reimburseTotal = sumNet('reimbursement');
+    const paidOut = a => Number(a.paid_amount != null ? a.paid_amount : (a.amount_owed || 0));
     const paidPayouts = mineAll.filter(a => a.payout_status === 'paid' && a.pay_basis !== 'salaried')
-      .reduce((t, a) => t + Number(a.amount_owed || 0), 0);
+      .reduce((t, a) => t + paidOut(a), 0);
+    const tdsWithheld = livePay.reduce((t, x) => t + Number((x.components || {}).tds || 0), 0);
+    const epfWithheld = livePay.reduce((t, x) => t + Number((x.components || {}).epf || 0), 0);
+    const advances = (onPeople && s.personId) ? s.advances : [];
+    const advanceOutstanding = advances.reduce((t, a) => t + (Number(a.amount) - Number(a.recovered || 0)), 0);
+    const advancesVM = advances.map(a => {
+      const left = Number(a.amount) - Number(a.recovered || 0);
+      return {
+        amountLabel: fmtINR(a.amount),
+        leftLabel: fmtINR(left),
+        recoveredLabel: fmtINR(a.recovered || 0),
+        dateLabel: fmtDay(a.given_on),
+        note: a.note || '',
+        hasNote: !!a.note,
+        settled: left <= 0,
+        statusLabel: left <= 0 ? 'Recovered' : fmtINR(left) + ' outstanding',
+        statusColor: left <= 0 ? '#0A6E58' : '#8A6D3B',
+        recover: () => this.recoverAdvance(a),
+        remove: () => this.removeAdvance(a),
+      };
+    });
     const payTotalsVM = (!onPeople || !person) ? [] : [
-      { label: 'Payslips', value: fmtINR(salaryTotal) },
+      { label: 'Payslips (net)', value: fmtINR(salaryTotal) },
       { label: 'Bonuses', value: fmtINR(bonusTotal) },
       { label: 'Event payouts paid', value: fmtINR(paidPayouts) },
       { label: 'Reimbursed', value: fmtINR(reimburseTotal) },
+      { label: 'TDS withheld', value: fmtINR(tdsWithheld) },
+      { label: 'EPF withheld', value: fmtINR(epfWithheld) },
     ];
     const payPeriodLabel = p => {
       if (!p) return '—';
@@ -4348,24 +4860,46 @@ class Component extends DCLogic {
       if (!m) return p;
       return new Date(Number(m[1]), Number(m[2]) - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
     };
-    const paymentsVM = payRows.map(x => ({
-      kindLabel: x.kind === 'bonus' ? 'Bonus' : x.kind === 'reimbursement' ? 'Reimbursement' : 'Payslip',
-      kindBg: x.kind === 'bonus' ? '#EFE9DA' : x.kind === 'reimbursement' ? '#E4EEF7' : '#DDEFE8',
-      kindColor: x.kind === 'bonus' ? '#8A6D3B' : x.kind === 'reimbursement' ? '#2C5F8A' : '#0A6E58',
-      periodLabel: x.kind === 'salary' ? payPeriodLabel(x.period) : (x.period || x.note || '—'),
-      grossLabel: fmtINR(x.gross), dedLabel: fmtINR(x.deductions), netLabel: fmtINR(x.net),
-      hasDeductions: Number(x.deductions || 0) > 0,
-      paidLabel: x.paid_on ? 'Paid ' + fmtDay(x.paid_on) : 'Not marked paid',
-      note: x.note || '', hasNote: !!x.note,
-      isSalary: x.kind === 'salary',
-      isOpen: s.payOpen === x.id,
-      slipLabel: s.payOpen === x.id ? 'Hide slip' : 'View slip',
-      toggle: () => this.setState({ payOpen: s.payOpen === x.id ? null : x.id }),
-      netWords: s.payOpen === x.id ? numberToWordsINR(Number(x.net || 0)) : '',
-      setSlipRef: el => { this.payslipRefs = this.payslipRefs || {}; this.payslipRefs[x.id] = el; },
-      download: () => this.downloadPayslip(x),
-      remove: () => this.removePayment(x),
-    }));
+    const paymentsVM = payRows.map(x => {
+      const c = x.components || {};
+      const rows = defs => defs.map(d => ({ label: d[1], value: fmtINR(Number(c[d[0]] || 0)) , raw: Number(c[d[0]] || 0) }))
+        .filter(r => r.raw > 0).map(r => ({ label: r.label, value: r.value }));
+      const earnRows = rows(SLIP_EARN), dedRows = rows(SLIP_DED);
+      const basic = Number(c.basic || 0), gross = Number(x.gross || 0);
+      return {
+        kindLabel: x.kind === 'bonus' ? 'Bonus' : x.kind === 'reimbursement' ? 'Reimbursement' : 'Payslip',
+        kindBg: x.kind === 'bonus' ? '#EFE9DA' : x.kind === 'reimbursement' ? '#E4EEF7' : '#DDEFE8',
+        kindColor: x.kind === 'bonus' ? '#8A6D3B' : x.kind === 'reimbursement' ? '#2C5F8A' : '#0A6E58',
+        periodLabel: x.kind === 'salary' ? payPeriodLabel(x.period) : (x.period || x.note || '—'),
+        grossLabel: fmtINR(x.gross), dedLabel: fmtINR(x.deductions), netLabel: fmtINR(x.net),
+        hasDeductions: Number(x.deductions || 0) > 0,
+        paidLabel: x.paid_on ? 'Paid ' + fmtDay(x.paid_on) : 'Not marked paid',
+        note: x.note || '', hasNote: !!x.note,
+        isSalary: x.kind === 'salary',
+        isVoid: x.status === 'void',
+        voidLabel: x.status === 'void' ? ('Void' + (x.voided_note ? ' — ' + x.voided_note : '')) : '',
+        payslipNo: x.payslip_no || '—',
+        hasPayslipNo: !!x.payslip_no,
+        earnRows, dedRows,
+        hasEarnRows: earnRows.length > 0, hasDedRows: dedRows.length > 0,
+        // Employer-side contributions are not withheld from the net, but a slip that
+        // shows them lets someone reconcile against the EPFO portal themselves.
+        employerEpf: fmtINR(Math.round(0.12 * Math.min(basic, 15000))),
+        employerEsi: fmtINR(gross > 0 && gross <= 21000 ? Math.round(gross * 0.0325) : 0),
+        showEmployer: basic > 0,
+        payModeLabel: x.paid_mode === 'upi' ? 'UPI' : x.paid_mode === 'cash' ? 'Cash' : x.paid_mode ? 'Bank transfer' : '',
+        payRefLabel: x.paid_ref ? 'Ref ' + x.paid_ref : '',
+        hasPayRef: !!x.paid_ref,
+        isOpen: s.payOpen === x.id,
+        slipLabel: s.payOpen === x.id ? 'Hide slip' : 'View slip',
+        toggle: () => this.setState({ payOpen: s.payOpen === x.id ? null : x.id }),
+        netWords: s.payOpen === x.id ? numberToWordsINR(Number(x.net || 0)) : '',
+        setSlipRef: el => { this.payslipRefs = this.payslipRefs || {}; this.payslipRefs[x.id] = el; },
+        download: () => this.downloadPayslip(x),
+        remove: () => this.removePayment(x),
+        removeLabel: (x.paid_on || x.kind === 'salary') ? 'Void' : '✕',
+      };
+    });
 
     const personTabs = [['career', 'Career'], ['pay', 'Pay'], ['avail', 'Availability']];
     if (this.can('docs')) personTabs.push(['documents', 'Documents']);
@@ -4431,12 +4965,34 @@ class Component extends DCLogic {
       togglePayForm: () => this.setState({ payFormOpen: !s.payFormOpen, payStatus: '' }),
       payKind: s.payKind, onPayKind: e => this.setState({ payKind: e.target.value, payStatus: '' }),
       payIsSalary: s.payKind === 'salary',
+      payNotSalary: s.payKind !== 'salary',
       payPeriod: s.payPeriod, onPayPeriod: e => this.setState({ payPeriod: e.target.value }),
       payGross: s.payGross, onPayGross: e => this.setState({ payGross: e.target.value }),
       payDeductions: s.payDeductions, onPayDeductions: e => this.setState({ payDeductions: e.target.value }),
       payPaidOn: s.payPaidOn, onPayPaidOn: e => this.setState({ payPaidOn: e.target.value }),
       payNote: s.payNote, onPayNote: e => this.setState({ payNote: e.target.value }),
       addPayment: () => this.addPayment(),
+      payMode: s.payMode, onPayMode: e => this.setState({ payMode: e.target.value }),
+      payRef: s.payRef, onPayRef: e => this.setState({ payRef: e.target.value }),
+      slipEarnVM: SLIP_EARN.map(d => ({
+        label: d[1], value: s.slip[d[0]] || '',
+        onChange: e => this.setState({ slip: { ...this.state.slip, [d[0]]: e.target.value } }),
+      })),
+      slipDedVM: SLIP_DED.map(d => ({
+        label: d[1], value: s.slip[d[0]] || '',
+        onChange: e => this.setState({ slip: { ...this.state.slip, [d[0]]: e.target.value } }),
+      })),
+      slipGrossLabel: fmtINR(this.slipGross()),
+      slipDedLabel: fmtINR(this.slipDeductions()),
+      slipNetLabel: fmtINR(this.slipGross() - this.slipDeductions()),
+      suggestStatutory: () => this.suggestStatutory(),
+      advancesVM, hasAdvances: advancesVM.length > 0,
+      advanceOutstandingLabel: fmtINR(advanceOutstanding),
+      hasAdvanceOutstanding: advanceOutstanding > 0,
+      advAmount: s.advAmount, onAdvAmount: e => this.setState({ advAmount: e.target.value }),
+      advOn: s.advOn, onAdvOn: e => this.setState({ advOn: e.target.value }),
+      advNote: s.advNote, onAdvNote: e => this.setState({ advNote: e.target.value }),
+      addAdvance: () => this.addAdvance(),
       payAmountLabel: s.payKind === 'salary' ? 'Gross (₹)' : 'Amount (₹)',
       payPeriodFieldLabel: s.payKind === 'salary' ? 'Month' : 'What for',
       payPeriodPlaceholder: s.payKind === 'salary' ? '2026-09' : 'Diwali bonus',
@@ -4470,6 +5026,14 @@ class Component extends DCLogic {
         const k = ag.id + ':' + field;
         return s.agEdits[k] !== undefined ? s.agEdits[k] : (ag[field] == null ? '' : String(ag[field]));
       };
+      // Same, but a stored zero shows as an empty field so every row is not littered
+      // with 0s for the kit fee and per diem nobody set.
+      const editZeroBlank = field => {
+        const k = ag.id + ':' + field;
+        if (s.agEdits[k] !== undefined) return s.agEdits[k];
+        const v = Number(ag[field] || 0);
+        return v ? String(v) : '';
+      };
       return {
         name: p.full_name || '—', crewId: p.crew_id || '',
         roleLabel: roleName(ag.crew_role),
@@ -4477,6 +5041,7 @@ class Component extends DCLogic {
         basisLabel: ag.pay_basis === 'fixed' ? 'Fixed fee' : ag.pay_basis === 'salaried' ? 'Salaried'
           : ag.pay_basis === 'deliverable' ? 'Per deliverable' : 'Hourly',
         isHourly: ag.pay_basis === 'hourly', isFixed: ag.pay_basis === 'fixed', isSalaried: ag.pay_basis === 'salaried',
+        notSalaried: ag.pay_basis !== 'salaried',
         isDeliverable: ag.pay_basis === 'deliverable',
         dlLines: (s.agDeliverables.filter(d => d.assignment_id === ag.id)).map(d => ({
           label: d.label,
@@ -4503,18 +5068,50 @@ class Component extends DCLogic {
           ? Number(ag.hours) + ' hrs · ' + (ag.days_logged || 0) + 'd'
           : (ag.pay_basis === 'hourly' ? 'not logged' : '—'),
         hoursColor: Number(ag.hours) > 0 ? '#16231F' : (ag.pay_basis === 'hourly' ? '#B4433A' : '#9AA6A2'),
+        // Overtime is split per day against the standard day, so the multiplier lands
+        // on the long days only and not on the running total.
+        hasOt: Number(ag.hours_ot || 0) > 0,
+        otLabel: Number(ag.hours_ot || 0) > 0
+          ? Number(ag.hours_normal || 0) + ' straight + ' + Number(ag.hours_ot) + ' OT @' + Number(ag.ot_multiplier || 1.5) + '×'
+          : '',
+        stdDayValue: edit('standard_day') || '10',
+        onStdDay: e => this.onAgEdit(ag, 'standard_day', e.target.value),
+        commitStdDay: () => this.commitAg(ag, 'standard_day'),
+        kitValue: editZeroBlank('kit_fee'),
+        onKit: e => this.onAgEdit(ag, 'kit_fee', e.target.value),
+        commitKit: () => this.commitAg(ag, 'kit_fee'),
+        perDiemValue: editZeroBlank('per_diem'),
+        onPerDiem: e => this.onAgEdit(ag, 'per_diem', e.target.value),
+        commitPerDiem: () => this.commitAg(ag, 'per_diem'),
+        hasExtras: Number(ag.kit_fee || 0) > 0 || Number(ag.per_diem || 0) > 0,
+        extrasLabel: [
+          Number(ag.kit_fee || 0) > 0 ? 'Kit ' + fmtINR(ag.kit_fee) : '',
+          Number(ag.per_diem || 0) > 0 ? 'Per diem ' + fmtINR(ag.per_diem) + ' × ' + (ag.days_logged || 0) + 'd' : '',
+        ].filter(Boolean).join(' · '),
+        tdsValue: (ag.tds_section || 'none') + ':' + Number(ag.tds_rate || 0),
+        tdsOptions: TDS_OPTIONS.map(o => ({ value: o[0], label: o[1] })),
+        onTdsChange: e => this.setAgTds(ag, e.target.value),
+        hasTds: Number(ag.tds_rate || 0) > 0,
+        tdsLabel: 'TDS ' + String(ag.tds_section || '').toUpperCase() + ' @' + Number(ag.tds_rate || 0) + '%',
+        tdsAmountFmt: fmtINR(Number(ag.amount_owed || 0) * Number(ag.tds_rate || 0) / 100),
+        netPayableFmt: fmtINR(Number(ag.amount_owed || 0) * (1 - Number(ag.tds_rate || 0) / 100)),
         onRate: e => this.onAgEdit(ag, 'hourly_rate', e.target.value), commitRate: () => this.commitAg(ag, 'hourly_rate'),
         onFee: e => this.onAgEdit(ag, 'fixed_fee', e.target.value), commitFee: () => this.commitAg(ag, 'fixed_fee'),
         onEnter: e => { if (e.key === 'Enter') e.target.blur(); },
         onRoleChange: e => this.setAgRole(ag, e.target.value),
         onBasisChange: e => this.setAgBasis(ag, e.target.value),
-        amountFmt: fmtINR(ag.amount_owed),
+        // A paid row shows what was actually sent, not what the formula says today.
+        amountFmt: fmtINR(ag.paid_amount != null ? ag.paid_amount : ag.amount_owed),
+        isSnapshot: ag.paid_amount != null,
+        paidRefLabel: ag.paid_ref ? 'Ref ' + ag.paid_ref : '',
+        hasPaidRef: !!ag.paid_ref,
         isPaid: ag.payout_status === 'paid', notPaid: ag.payout_status !== 'paid',
         statusLabel: ag.payout_status === 'paid' ? 'Paid' : 'Owed',
         statusBg: ag.payout_status === 'paid' ? '#DDEFE8' : '#F7EFE0',
         statusColor: ag.payout_status === 'paid' ? '#0A6E58' : '#8A6D3B',
         markPaid: () => this.setPayoutStatus(ag, 'paid'),
         markOwed: () => this.setPayoutStatus(ag, 'owed'),
+        canReopen: this.state.role === 'admin',
         remove: () => this.removeAssignment(ag),
         eventLabel: ag.events ? ag.events.couple_names : '—',
         eventDate: ag.events ? fmtDay(ag.events.event_date) : '',
@@ -4578,7 +5175,7 @@ class Component extends DCLogic {
       ? (a.days_logged || 0) > 0
       : this.isDelivered(a.events);
 
-    let visiblePayouts = [], owedTotal = 0, paidTotal = 0, pendingCount = 0;
+    let visiblePayouts = [], owedTotal = 0, paidTotal = 0, pendingCount = 0, tdsTotal = 0;
     if (onPayouts) {
       s.payouts.forEach(a => {
         if (!payoutReady(a)) { pendingCount += 1; return; }
@@ -4588,8 +5185,13 @@ class Component extends DCLogic {
           : !salaried && a.payout_status === s.payoutFilter;
         if (shown) visiblePayouts.push(a);
         if (salaried) return;
-        if (a.payout_status === 'paid') paidTotal += Number(a.amount_owed || 0);
-        else owedTotal += Number(a.amount_owed || 0);
+        // A paid row counts its snapshot, so the ledger cannot drift when a rate is
+        // edited afterwards. TDS is tracked separately: it is owed to the department,
+        // not to the crew member.
+        const gross = Number(a.paid_amount != null ? a.paid_amount : (a.amount_owed || 0));
+        if (a.payout_status === 'paid') paidTotal += gross;
+        else owedTotal += gross;
+        tdsTotal += gross * Number(a.tds_rate || 0) / 100;
       });
     }
     const payoutFilterVM = [['owed', 'Owed'], ['paid', 'Paid'], ['salaried', 'Salaried crew'], ['all', 'Everything']].map(([key, label]) => ({
@@ -4815,12 +5417,15 @@ class Component extends DCLogic {
       isPersonEdit: !!f && (s.personMode === 'edit' || !s.personId || !person),
       editPerson: () => this.editPerson(), cancelPersonEdit: () => this.cancelPersonEdit(),
       personViewVM, personNotes: person ? (person.notes || '') : '',
+      identityGapsVM: (onPeople && person) ? identityGaps(person).map(g => ({ label: g })) : [],
+      hasIdentityGaps: !!(onPeople && person && identityGaps(person).length),
       personHasNotes: !!(person && person.notes),
       personActiveLabel: person && person.active === false ? 'Inactive' : 'Active',
       personActiveBg: person && person.active === false ? '#F7E9E7' : '#DDEFE8',
       personActiveColor: person && person.active === false ? '#B4433A' : '#0A6E58',
       idProofOptions: ID_PROOF_TYPES.map(t => ({ value: t[0], label: t[1] })),
       onPfIdType: pfSet('id_proof_type'), onPfIdNumber: pfSet('id_proof_number', true),
+      onPfPassport: pfSet('passport_number', true), onPfPassportExpiry: pfSet('passport_expiry'),
       onPfName: pfSet('full_name'), onPfRole: pfSet('primary_role'), onPfEngagement: pfSet('engagement'),
       onPfPhone: pfSet('phone'), onPfEmail: pfSet('email'), onPfAddress: pfSet('address'),
       onPfBankName: pfSet('bank_name'), onPfBankAccount: pfSet('bank_account'), onPfBankIfsc: pfSet('bank_ifsc', true),
@@ -4901,6 +5506,7 @@ class Component extends DCLogic {
       pendingPayoutLabel: pendingCount + (pendingCount === 1 ? ' assignment is' : ' assignments are')
         + ' waiting — hourly crew need their hours logged, fixed-fee and per-deliverable crew need the event marked delivered.',
       owedTotal: fmtINR(owedTotal), paidTotal: fmtINR(paidTotal),
+      tdsTotal: fmtINR(tdsTotal), hasTdsTotal: tdsTotal > 0,
     };
   }
 
