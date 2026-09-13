@@ -362,12 +362,17 @@ class Component extends DCLogic {
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
     const q = new URLSearchParams(window.location.search);
-    const slug = q.get('project');
-    if (!slug || q.get('demo') === '1') {
+    // A bare open is the documented layout preview. A link that carries
+    // ?project= but lost its value is a broken client link, not a preview —
+    // it used to fall through to the demo and show a real client someone
+    // else's sample project.
+    const slug = (q.get('project') || '').trim();
+    if (q.get('demo') === '1' || (!q.has('project') && !slug)) {
       this.setState({ project: DEMO, media: [], loading: false });
       this.loadBrandFonts(DEMO);
       return;
     }
+    if (!slug) { this.setState({ loading: false, notFound: true }); return; }
     this.load(slug);
   }
 

@@ -189,7 +189,7 @@ class Component extends DCLogic {
     this.syncTitle();
     requestAnimationFrame(() => this.syncTitle());
     setTimeout(() => this.syncTitle(), 400);
-    const slug = new URLSearchParams(window.location.search).get('event');
+    const slug = (new URLSearchParams(window.location.search).get('event') || '').trim();
     if (!slug) { this.setState({ loading: false, notFound: true }); return; }
     this.load(slug);
   }
