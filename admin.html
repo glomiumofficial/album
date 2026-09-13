@@ -1313,6 +1313,7 @@
 
         <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap">
           <div style="display:flex; flex-direction:column; gap:4px; margin-right:auto">
+            <button onClick="{{ digBack }}" style="align-self:flex-start; margin-bottom:2px; padding:0; background:none; border:none; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#7C8985; cursor:pointer" style-hover="color:var(--green)">← All projects</button>
             <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Digital &amp; social</span>
             <span style="font-size:12px; color:#7C8985">{{ digScopeLabel }} · {{ digAccountCountLabel }}</span>
           </div>
@@ -1867,6 +1868,15 @@
         </div>
         <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ roleLabel }}</span>
         <div style="display:flex; gap:10px; align-items:center">
+          <sc-if value="{{ isPublished }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ togglePublish }}" style="padding:9px 14px; background:#F3FAF8; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green-deep)">Live · hide</button>
+          </sc-if>
+          <sc-if value="{{ isHidden }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ togglePublish }}" style="padding:9px 14px; background:#FDF9F0; border:1px solid #EFE1C6; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A6D3B; cursor:pointer" style-hover="border-color:#8A6D3B">Hidden · publish</button>
+          </sc-if>
+          <sc-if value="{{ isPublishUnknown }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ togglePublish }}" style="padding:9px 14px; background:none; border:1px dashed var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#9AA6A2; cursor:pointer" style-hover="border-color:#8A6D3B; color:#8A6D3B">Sharing · not set up</button>
+          </sc-if>
           <button onClick="{{ copyPublicLink }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ copyLabel }}</button>
           <a href="{{ previewUrl }}" target="_blank" style="padding:9px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ previewLabel }}</a>
         </div>
@@ -3261,9 +3271,19 @@ class Component extends DCLogic {
 
   chooseDivision(key) {
     try { localStorage.setItem(DIVISION_STORAGE_KEY, key); } catch (e) {}
-    this.setState({ division: key, pickingDivision: false });
+    // Digital is the only view that lives inside a single division. Switching
+    // away took its nav button off the header while the screen itself stayed
+    // up, so the panel sat on Digital & social with nothing on the page — no
+    // active tab, no back — to leave it with.
+    const leaving = this.state.view === 'digital' && key !== 'digital';
+    this.setState({
+      division: key, pickingDivision: false,
+      view: leaving ? 'dashboard' : this.state.view,
+      digProject: leaving ? 'all' : this.state.digProject,
+      current: leaving ? null : this.state.current,
+    });
     this.loadForDivision(key);
-    if (this.state.view === 'schedule') this.loadSchedule();
+    if (!leaving && this.state.view === 'schedule') this.loadSchedule();
   }
 
   openDivisionPicker() { this.setState({ pickingDivision: true }); }
@@ -3365,7 +3385,12 @@ class Component extends DCLogic {
   async doCreateEvent() {
     const couple = this.state.newCouple.trim();
     if (!couple) { this.setState({ createError: 'Couple names are required.' }); return; }
-    const slug = this.slugify(this.state.newSlug || couple);
+    const typed = this.state.newSlug.trim();
+    // A wedding album lived at its couple's names — /a/priya-and-raj — which is
+    // a guessable address for photos in a public bucket. Projects already got a
+    // random suffix at creation; events did not. A typed slug is still honoured.
+    const slug = typed ? this.slugify(typed)
+      : this.slugify(couple) + '-' + Math.random().toString(36).slice(2, 6);
     this.setState({ creating: true, createError: '' });
     const { error } = await this.sb.from('events').insert({
       couple_names: couple, event_date: this.state.newDate || null, venue: this.state.newVenue || null, slug,
@@ -4372,6 +4397,31 @@ class Component extends DCLogic {
   }
 
   // ---- Public album link -------------------------------------------------------
+
+  // An album used to go live the moment the first photo finished uploading —
+  // half-built and unproofed, because the public function served any slug that
+  // existed. Publishing is now a decision someone makes. Staff can always open
+  // the preview link; a client sees nothing until this is on.
+  async togglePublish() {
+    const c = this.state.current;
+    if (!c) return;
+    const table = this.parentTable();
+    const next = !c.published;
+    if (!next && !window.confirm('Hide this from the client?\n\nThe link they already have stops working until you publish it again.')) return;
+    const { error } = await this.sb.from(table).update({ published: next }).eq('id', c.id);
+    if (error) {
+      this.setState({ detailsStatus: /published/i.test(error.message || '')
+        ? 'Run publish-gate-2026-09.sql — this database has no published column yet.'
+        : error.message });
+      return;
+    }
+    this.setState({
+      current: { ...c, published: next },
+      detailsStatus: next ? 'Published — the client link is live.' : 'Hidden — the client link is closed.',
+    });
+    setTimeout(() => this.setState({ detailsStatus: '' }), 3500);
+    if (table === 'events') this.loadEvents(); else this.loadForDivision();
+  }
 
   // The client link has to resolve from wherever admin.html is actually served:
   // the site root on the deployed host, a subfolder anywhere else. Building it
@@ -5494,6 +5544,10 @@ class Component extends DCLogic {
   async loadCosting(eventId, rec) {
     // No costing view for projects yet — the Crew tab still shows individual rows.
     if (this.parentTable(rec) === 'projects') { this.setState({ costing: null }); return; }
+    // event_costing reads invoices through RLS now that the view runs as its
+    // caller rather than its owner. Safe here: Crew & cost sits behind the
+    // people tab (admin, hr), and both pass the invoices policy — so the
+    // numbers are the same ones the owner-rights view used to return.
     const { data } = await this.sb.from('event_costing').select('*').eq('event_id', eventId).maybeSingle();
     this.setState({ costing: data || null });
   }
@@ -6288,6 +6342,7 @@ class Component extends DCLogic {
       digAccTypeOptsVM: [], digFeeTypeOptsVM: [], digDealKindOptsVM: [], digDealStatusOptsVM: [],
       digNoAccounts: false, digNoPosts: false, digNoKeywords: false, digNoDeals: false,
       digNoBills: false, digChartHasData: false, digChartEmpty: false,
+      digBack: () => this.goWorkspace('dashboard'),
     };
     if (!this.can('digital') || s.view !== 'digital') return blank;
 
@@ -6613,6 +6668,7 @@ class Component extends DCLogic {
 
       digStatus: s.digStatus, hasDigStatus: !!s.digStatus,
       digSyncLabel: s.digSyncing ? 'Syncing…' : 'Sync now',
+      digBack: () => this.goWorkspace('dashboard'),
       digSyncing: s.digSyncing,
       syncAll: () => this.syncDigital({}),
 
@@ -8179,6 +8235,13 @@ class Component extends DCLogic {
       sendPreviewEmail: () => this.sendPreviewEmail(),
       copyPublicLink: () => this.copyLink(), copyLabel: s.copyLabel, copiedColor: s.copyLabel === 'Copied!' ? '#10AF8B' : '#7C8985',
       previewUrl: this.clientUrl() || '#',
+      // Three states, not two. Before publish-gate-2026-09.sql runs there is no
+      // `published` column, and calling that "Hidden" would be a security label
+      // saying the opposite of the truth — the album is publicly reachable.
+      isPublished: !!s.current && s.current.published === true,
+      isHidden: !!s.current && s.current.published === false,
+      isPublishUnknown: !!s.current && s.current.published === undefined,
+      togglePublish: () => this.togglePublish(),
       previewLabel: this.parentTable() === 'projects' ? 'Preview project' : 'Preview album',
       backLabel: this.parentTable() === 'projects' ? '← All projects' : '← All events',
 
