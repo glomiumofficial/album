@@ -139,15 +139,38 @@
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Colour</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#9AA6A2">{{ paletteHint }}</span>
       </div>
-      <div style="max-width:1560px; margin:0 auto; padding:clamp(16px,3vh,30px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(8px,1.1vw,14px); grid-template-columns:repeat(auto-fit,minmax(min(100%,132px),1fr))">
-        <sc-for list="{{ paletteVM }}" as="sw" hint-placeholder-count="4">
-          <button onClick="{{ sw.copy }}" style="display:flex; flex-direction:column; padding:0; border:none; background:none; cursor:pointer; text-align:left" style-hover="opacity:.9">
-            <span ref="{{ sw.setSwatchRef }}" style="display:flex; align-items:flex-end; width:100%; aspect-ratio:3 / 4; min-height:140px; padding:13px; border:1px solid rgba(22,35,31,.08)">
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(16px,3vh,30px) clamp(18px,4vw,48px) 0; display:flex; flex-wrap:wrap; align-items:stretch; gap:clamp(6px,.8vw,10px)">
+        <sc-for list="{{ paletteLead }}" as="sw" hint-placeholder-count="1">
+          <button onClick="{{ sw.copy }}" ref="{{ sw.setSwatchRef }}" style="flex:6 1 0; min-width:min(100%,240px); min-height:clamp(260px,44vh,430px); display:flex; flex-direction:column; justify-content:space-between; gap:22px; padding:clamp(16px,1.7vw,24px); border:1px solid rgba(22,35,31,.08); cursor:pointer; text-align:left" style-hover="opacity:.93">
+            <span ref="{{ sw.setInkRef }}" style="font-size:clamp(30px,3.8vw,54px); font-weight:200; line-height:1; letter-spacing:-.02em; font-variant-numeric:tabular-nums">{{ sw.pct }}</span>
+            <span style="display:flex; flex-direction:column; gap:6px">
+              <span ref="{{ sw.setInkRef }}" style="font-size:clamp(15px,1.6vw,19px); font-weight:300">{{ sw.name }}</span>
               <span ref="{{ sw.setInkRef }}" style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; font-variant-numeric:tabular-nums">{{ sw.hexLabel }}</span>
             </span>
-            <span style="padding:11px 1px 0; font-size:12px; font-weight:300; color:var(--ink)">{{ sw.name }}</span>
           </button>
         </sc-for>
+        <sc-for list="{{ paletteSecond }}" as="sw" hint-placeholder-count="1">
+          <button onClick="{{ sw.copy }}" ref="{{ sw.setSwatchRef }}" style="flex:3 1 0; min-width:min(100%,168px); min-height:clamp(260px,44vh,430px); display:flex; flex-direction:column; justify-content:space-between; gap:22px; padding:clamp(14px,1.4vw,20px); border:1px solid rgba(22,35,31,.08); cursor:pointer; text-align:left" style-hover="opacity:.93">
+            <span ref="{{ sw.setInkRef }}" style="font-size:clamp(24px,2.6vw,38px); font-weight:200; line-height:1; letter-spacing:-.02em; font-variant-numeric:tabular-nums">{{ sw.pct }}</span>
+            <span style="display:flex; flex-direction:column; gap:5px">
+              <span ref="{{ sw.setInkRef }}" style="font-size:clamp(13px,1.4vw,16px); font-weight:300">{{ sw.name }}</span>
+              <span ref="{{ sw.setInkRef }}" style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; font-variant-numeric:tabular-nums">{{ sw.hexLabel }}</span>
+            </span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ hasAccents }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1 1 0; min-width:min(100%,110px); display:flex; flex-direction:column; gap:clamp(6px,.8vw,10px)">
+            <sc-for list="{{ paletteAccents }}" as="sw" hint-placeholder-count="2">
+              <button onClick="{{ sw.copy }}" ref="{{ sw.setSwatchRef }}" style="flex:1 1 0; min-height:78px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; padding:12px; border:1px solid rgba(22,35,31,.08); cursor:pointer; text-align:left" style-hover="opacity:.93">
+                <span ref="{{ sw.setInkRef }}" style="font-size:clamp(15px,1.5vw,21px); font-weight:200; line-height:1; font-variant-numeric:tabular-nums">{{ sw.pct }}</span>
+                <span style="display:flex; flex-direction:column; gap:3px">
+                  <span ref="{{ sw.setInkRef }}" style="font-size:11px; font-weight:300; line-height:1.25">{{ sw.name }}</span>
+                  <span ref="{{ sw.setInkRef }}" style="font-size:9px; letter-spacing:.1em; text-transform:uppercase; font-variant-numeric:tabular-nums">{{ sw.hexLabel }}</span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -429,11 +452,32 @@ class Component extends DCLogic {
 
   // A brand's own typefaces are the point of the specimen, so pull the ones
   // that name a Google family. Anything else falls back to the page font.
+  // A row usually names the family in `name` and leaves `google` empty, so
+  // keying the fetch off `google` alone requested nothing and every specimen
+  // silently fell back to the page font.
+  famName(f) {
+    const raw = String((f && (f.google || f.name)) || '').trim();
+    return /^[A-Za-z0-9][A-Za-z0-9 .'-]{1,40}$/.test(raw) ? raw : '';
+  }
+
+  // "Medium" / "Bold" live in the row's descriptive fields; a specimen that
+  // says Bold has to be drawn bold.
+  weightOf(f) {
+    const n = Number(f && f.weight);
+    if (n >= 100 && n <= 900) return Math.round(n / 100) * 100;
+    const hay = String((f && (f.weight || f.line || f.role)) || '').toLowerCase().replace(/[^a-z]/g, '');
+    const order = [['thin',100],['extralight',200],['ultralight',200],['semibold',600],['demibold',600],['extrabold',800],['ultrabold',800],['light',300],['book',400],['normal',400],['regular',400],['medium',500],['bold',700],['black',900],['heavy',900]];
+    for (const [k, v] of order) if (hay.includes(k)) return v;
+    return 400;
+  }
+
   loadBrandFonts(p) {
-    const fams = (this.asList(p.brand_fonts)).map(f => f && f.google).filter(Boolean);
+    const rows = this.asList(p.brand_fonts);
+    const fams = [...new Set(rows.map(f => this.famName(f)).filter(Boolean))];
     if (!fams.length) return;
+    const wts = [...new Set(rows.map(f => this.weightOf(f)).concat([400]))].sort((a, b) => a - b);
     const href = 'https://fonts.googleapis.com/css2?' +
-      fams.map(f => 'family=' + encodeURIComponent(f).replace(/%20/g, '+') + ':wght@300;400;600').join('&') +
+      fams.map(f => 'family=' + encodeURIComponent(f).replace(/%20/g, '+') + ':wght@' + wts.join(';')).join('&') +
       '&display=swap';
     if (document.querySelector('link[data-brand-fonts]')) return;
     const el = document.createElement('link');
@@ -562,13 +606,15 @@ class Component extends DCLogic {
     }).filter(c => c.name);
 
     const fontsVM = this.asList(p.brand_fonts).map(f => {
-      const fam = f.google ? "'" + f.google + "', 'Jost', sans-serif" : "'Jost', sans-serif";
+      const family = this.famName(f);
+      const fam = family ? "'" + family + "', 'Jost', sans-serif" : "'Jost', sans-serif";
+      const w = this.weightOf(f);
       return {
-        name: f.name || f.google || 'Typeface',
+        name: f.name || family || 'Typeface',
         role: f.role || 'Typeface',
         sample: f.sample || 'Aa',
         line: f.line || 'ABCDEFGHIJKLM · abcdefghijklm · 0123456789',
-        setSampleRef: el => { if (el) el.style.fontFamily = fam; },
+        setSampleRef: el => { if (el) { el.style.fontFamily = fam; el.style.fontWeight = w; } },
         setLineRef: el => { if (el) el.style.fontFamily = fam; },
       };
     });
@@ -609,8 +655,16 @@ class Component extends DCLogic {
     const view = this.viewable();
     const cur = view[s.lightboxIndex] || null;
 
+    // 60 / 30 / 10: the lead colour owns the block, the support colour a third
+    // of it, and every accent shares the last tenth.
+    const ratio = paletteVM.length >= 3;
+    const paletteLead = paletteVM.slice(0, 1).map(c => ({ ...c, pct: ratio ? '60' : '' }));
+    const paletteSecond = paletteVM.slice(1, 2).map(c => ({ ...c, pct: ratio ? '30' : '' }));
+    const paletteAccents = paletteVM.slice(2).map((c, i) => ({ ...c, pct: i === 0 ? '10' : '' }));
+
     return {
       loading: s.loading, notFound: s.notFound, hasProject: !!s.project,
+      paletteLead, paletteSecond, paletteAccents, hasAccents: paletteAccents.length > 0,
 
       clientName: p.client_name || '',
       projectTitle: p.project_title || '', hasTitle: !!p.project_title,
