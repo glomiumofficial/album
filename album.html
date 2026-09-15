@@ -15,7 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-  :root { --green:#10AF8B; --green-deep:#0A6E58; }
+  :root { --green:#10AF8B; --green-deep:#0A6E58; --ink:#16231F; }
   * { box-sizing:border-box; }
   body { margin:0; background:#FFFFFF; color:#16231F; font-family:'Jost',Helvetica,sans-serif; overflow-x:hidden; }
   a { color:var(--green); text-decoration:none; }
@@ -34,8 +34,18 @@
   <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
     <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
       <div style="display:flex; flex-direction:column; gap:10px">
-        <span style="font-size:20px; font-weight:300; color:var(--green)">Album not found</span>
-        <span style="font-size:14px; color:#7C8985">Check the link and try again.</span>
+        <span style="font-size:20px; font-weight:300; color:var(--green-deep)">Album not found</span>
+        <span style="font-size:14px; color:var(--ink)">Check the link and try again.</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasLoadError }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px">
+        <span style="font-size:20px; font-weight:300; color:var(--green-deep)">We could not load the album</span>
+        <span style="font-size:14px; color:var(--ink); max-width:34ch; text-wrap:pretty">{{ loadError }}</span>
+        <button onClick="{{ retry }}" style="min-height:44px; margin-top:4px; padding:11px 22px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">Try again</button>
       </div>
     </div>
   </sc-if>
@@ -167,7 +177,7 @@ const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 
 class Component extends DCLogic {
   state = {
-    loading: true, notFound: false, event: null, media: [], shareLabel: 'Share album',
+    loading: true, notFound: false, loadError: '', slug: '', event: null, media: [], shareLabel: 'Share album',
     lightboxOpen: false, lightboxIndex: 0, slideshowPlaying: false,
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
     videoShareId: null, isFullscreen: false,
@@ -232,24 +242,47 @@ class Component extends DCLogic {
     if (e.key === 'ArrowRight') this.step(1);
   };
 
+  // Only an absent function is worth falling back for — that is a database
+  // older than get_album. Every other error is a failure to REACH the data,
+  // and since the hardening migration revoked anon's table grants the direct
+  // read cannot rescue it anyway: it just relabels the failure "not found".
+  rpcMissing(err) {
+    const code = String((err && err.code) || '');
+    const msg = String((err && err.message) || '').toLowerCase();
+    return code === 'PGRST202' || code === '404'
+      || msg.includes('could not find the function') || msg.includes('does not exist');
+  }
+
+  retry = () => { if (this.state.slug) this.load(this.state.slug); };
+
   async load(slug) {
+    const OFFLINE = 'The connection dropped before the album arrived. Your link is fine — try again.';
+    this.setState({ loading: true, notFound: false, loadError: '', slug });
     try {
       // get_album returns only the columns an album page renders, so the client's
       // phone, email and PAN on the events row are never readable from here.
-      // Databases that predate the function fall back to the direct read.
       let ev = null, media = null;
       const rpc = await this.sb.rpc('get_album', { p_slug: slug });
-      if (!rpc.error && rpc.data && rpc.data.event) { ev = rpc.data.event; media = rpc.data.media || []; }
-      else {
+
+      if (rpc.error) {
+        // A client on hotel wifi used to be told their album did not exist.
+        if (!this.rpcMissing(rpc.error)) { this.setState({ loading: false, loadError: OFFLINE }); return; }
         const direct = await this.sb.from('events').select('*').eq('slug', slug).maybeSingle();
-        if (direct.error || !direct.data) { this.setState({ loading: false, notFound: true }); return; }
+        if (direct.error) { this.setState({ loading: false, loadError: OFFLINE }); return; }
+        if (!direct.data) { this.setState({ loading: false, notFound: true }); return; }
         ev = direct.data;
         const m = await this.sb.from('media').select('*').eq('event_id', ev.id).order('sort_order', { ascending: true });
-        if (m.error) { this.setState({ loading: false, notFound: true }); return; }
+        if (m.error) { this.setState({ loading: false, loadError: OFFLINE }); return; }
         media = m.data || [];
+      } else {
+        // The function answered. A null event means either no such slug or an
+        // album that is not published yet — deliberately indistinguishable from
+        // out here, so an unsent album cannot be confirmed to exist by guessing.
+        if (!rpc.data || !rpc.data.event) { this.setState({ loading: false, notFound: true }); return; }
+        ev = rpc.data.event; media = rpc.data.media || [];
       }
       this.setState({ loading: false, event: ev, media: (media || []).filter(x => x.url) });
-    } catch (e) { this.setState({ loading: false, notFound: true }); }
+    } catch (e) { this.setState({ loading: false, loadError: OFFLINE }); }
   }
 
   share() {
@@ -531,6 +564,7 @@ class Component extends DCLogic {
 
     return {
       loading: s.loading, notFound: s.notFound, hasEvent: !!s.event,
+      loadError: s.loadError, hasLoadError: !!s.loadError, retry: this.retry,
       pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
       event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
       footerMeta: [s.event ? fmtDate(s.event.event_date) : '', s.event && s.event.venue].filter(Boolean).join('  ·  '),

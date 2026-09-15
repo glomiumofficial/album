@@ -2328,7 +2328,7 @@
                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
                   <input placeholder="Typeface name" value="{{ fr.name }}" onChange="{{ fr.onName }}" readOnly="{{ albumLocked }}" style="flex:1; min-width:130px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
                   <input placeholder="Role — Display" value="{{ fr.role }}" onChange="{{ fr.onRole }}" readOnly="{{ albumLocked }}" style="flex:1; min-width:120px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
-                  <input placeholder="Google font family" value="{{ fr.google }}" onChange="{{ fr.onGoogle }}" readOnly="{{ albumLocked }}" style="flex:1; min-width:130px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
+                  <input placeholder="Google family — leave blank" value="{{ fr.google }}" onChange="{{ fr.onGoogle }}" readOnly="{{ albumLocked }}" style="flex:1; min-width:130px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
                   <input placeholder="Specimen line" value="{{ fr.line }}" onChange="{{ fr.onLine }}" readOnly="{{ albumLocked }}" style="flex:2; min-width:150px; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none">
                   <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
                     <button onClick="{{ fr.remove }}" style="padding:8px 11px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
@@ -2336,6 +2336,7 @@
                 </div>
               </sc-for>
               <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:11px; color:#5D6864">Leave <em>Google family</em> blank unless the family is spelt differently on Google Fonts. It is not a fallback category — typing <em>sans-serif</em> there stops the real typeface loading.</span>
                 <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
                   <button onClick="{{ addFontRow }}" style="padding:8px 14px; background:none; border:1px dashed var(--line); border-radius:2px; font-size:11px; color:var(--green-deep); cursor:pointer">+ Add typeface</button>
                   <button onClick="{{ saveBrand }}" style="margin-left:auto; padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save brand</button>

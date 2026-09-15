@@ -37,8 +37,18 @@
   <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
     <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
       <div style="display:flex; flex-direction:column; gap:10px">
-        <span style="font-size:20px; font-weight:300; color:var(--green)">Project not found</span>
-        <span style="font-size:14px; color:var(--mute)">Check the link and try again.</span>
+        <span style="font-size:20px; font-weight:300; color:var(--green-deep)">Project not found</span>
+        <span style="font-size:14px; color:var(--ink)">Check the link and try again.</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasLoadError }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px">
+        <span style="font-size:20px; font-weight:300; color:var(--green-deep)">We could not load this project</span>
+        <span style="font-size:14px; color:var(--ink); max-width:34ch; text-wrap:pretty">{{ loadError }}</span>
+        <button onClick="{{ retry }}" style="min-height:44px; margin-top:4px; padding:11px 22px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">Try again</button>
       </div>
     </div>
   </sc-if>
@@ -371,7 +381,7 @@ const DEMO = {
 
 class Component extends DCLogic {
   state = {
-    loading: true, notFound: false,
+    loading: true, notFound: false, loadError: '', slug: '',
     project: null, media: [],
     copied: '',
     lightboxOpen: false, lightboxIndex: 0,
@@ -427,37 +437,86 @@ class Component extends DCLogic {
     if (e.key === 'ArrowLeft') this.step(-1);
   };
 
+  // Only an absent function is worth falling back for — that is a database
+  // older than get_project. Every other error is a failure to REACH the data,
+  // and since the hardening migration revoked anon's table grants the direct
+  // read cannot rescue it anyway: it just relabels the failure "not found".
+  rpcMissing(err) {
+    const code = String((err && err.code) || '');
+    const msg = String((err && err.message) || '').toLowerCase();
+    return code === 'PGRST202' || code === '404'
+      || msg.includes('could not find the function') || msg.includes('does not exist');
+  }
+
+  retry = () => { if (this.state.slug) this.load(this.state.slug); };
+
   async load(slug) {
+    const OFFLINE = 'The connection dropped before the page arrived. Your link is fine — try again.';
+    this.setState({ loading: true, notFound: false, loadError: '', slug });
     try {
       // get_project exposes only the columns this page renders — the client's
-      // billing fields on the projects row stay private. Older databases
-      // without the function fall back to the direct read.
+      // billing fields on the projects row stay private.
       let p = null, media = null;
       const rpc = await this.sb.rpc('get_project', { p_slug: slug });
-      if (!rpc.error && rpc.data && rpc.data.project) { p = rpc.data.project; media = rpc.data.media || []; }
-      else {
+
+      if (rpc.error) {
+        // A client on hotel wifi used to be told their project did not exist.
+        if (!this.rpcMissing(rpc.error)) { this.setState({ loading: false, loadError: OFFLINE }); return; }
         const direct = await this.sb.from('projects').select('*').eq('slug', slug).maybeSingle();
-        if (direct.error || !direct.data) { this.setState({ loading: false, notFound: true }); return; }
+        if (direct.error) { this.setState({ loading: false, loadError: OFFLINE }); return; }
+        if (!direct.data) { this.setState({ loading: false, notFound: true }); return; }
         p = direct.data;
         const m = await this.sb.from('project_media').select('*')
           .eq('project_id', p.id).order('sort_order', { ascending: true });
+        // A refused media read used to pass silently as an empty project page.
+        if (m.error) { this.setState({ loading: false, loadError: OFFLINE }); return; }
         media = m.data || [];
+      } else {
+        // The function answered. A null project means either no such slug or one
+        // that is not published yet — deliberately indistinguishable from here.
+        if (!rpc.data || !rpc.data.project) { this.setState({ loading: false, notFound: true }); return; }
+        p = rpc.data.project; media = rpc.data.media || [];
       }
       this.setState({ project: p, media: media || [], loading: false });
       this.loadBrandFonts(p);
     } catch (e) {
-      this.setState({ loading: false, notFound: true });
+      this.setState({ loading: false, loadError: OFFLINE });
     }
   }
 
   // A brand's own typefaces are the point of the specimen, so pull the ones
-  // that name a Google family. Anything else falls back to the page font.
-  // A row usually names the family in `name` and leaves `google` empty, so
-  // keying the fetch off `google` alone requested nothing and every specimen
-  // silently fell back to the page font.
+  // that name a real family. Two earlier attempts at this both missed:
+  // keying off `google` alone requested nothing when the field was blank, and
+  // then preferring `google` over `name` broke the opposite way — the panel's
+  // third column is a CSS *category*, and people type "sans-serif" into it.
+  // So the row said Lato, the page asked Google Fonts for a family called
+  // "sans-serif", got nothing, and set font-family: 'sans-serif' — a generic
+  // keyword, which is why every specimen rendered in the system sans.
+  //
+  // A generic keyword is a fallback, never a family. It is stripped out of the
+  // fetch and used as the tail of the CSS stack, where it belongs.
+  GENERIC = ['serif','sans-serif','monospace','cursive','fantasy','system-ui',
+             'ui-serif','ui-sans-serif','ui-monospace','ui-rounded','math','emoji',
+             'fangsong','inherit','initial','revert','unset','none','default','auto'];
+
+  isGeneric(s) { return this.GENERIC.indexOf(String(s || '').trim().toLowerCase()) !== -1; }
+
+  // The generic the row asked for, if any — the stack's last resort.
+  genericOf(f) {
+    for (const v of [f && f.google, f && f.category, f && f.stack]) {
+      if (this.isGeneric(v)) return String(v).trim().toLowerCase();
+    }
+    return 'sans-serif';
+  }
+
   famName(f) {
-    const raw = String((f && (f.google || f.name)) || '').trim();
-    return /^[A-Za-z0-9][A-Za-z0-9 .'-]{1,40}$/.test(raw) ? raw : '';
+    const candidates = [f && f.google, f && f.family, f && f.name];
+    for (const v of candidates) {
+      const raw = String(v || '').trim();
+      if (!raw || this.isGeneric(raw)) continue;
+      if (/^[A-Za-z0-9][A-Za-z0-9 .'-]{1,40}$/.test(raw)) return raw;
+    }
+    return '';
   }
 
   // "Medium" / "Bold" live in the row's descriptive fields; a specimen that
@@ -469,6 +528,15 @@ class Component extends DCLogic {
     const order = [['thin',100],['extralight',200],['ultralight',200],['semibold',600],['demibold',600],['extrabold',800],['ultrabold',800],['light',300],['book',400],['normal',400],['regular',400],['medium',500],['bold',700],['black',900],['heavy',900]];
     for (const [k, v] of order) if (hay.includes(k)) return v;
     return 400;
+  }
+
+  // 'Lato', sans-serif — the brand family first, the row's own generic last,
+  // and Jost between them so a failed webfont still lands on the page face
+  // rather than Times.
+  famStack(f) {
+    const family = this.famName(f);
+    const generic = this.genericOf(f);
+    return (family ? "'" + family + "', " : '') + "'Jost', " + generic;
   }
 
   loadBrandFonts(p) {
@@ -607,7 +675,7 @@ class Component extends DCLogic {
 
     const fontsVM = this.asList(p.brand_fonts).map(f => {
       const family = this.famName(f);
-      const fam = family ? "'" + family + "', 'Jost', sans-serif" : "'Jost', sans-serif";
+      const fam = this.famStack(f);
       const w = this.weightOf(f);
       return {
         name: f.name || family || 'Typeface',
@@ -664,6 +732,7 @@ class Component extends DCLogic {
 
     return {
       loading: s.loading, notFound: s.notFound, hasProject: !!s.project,
+      loadError: s.loadError, hasLoadError: !!s.loadError, retry: this.retry,
       paletteLead, paletteSecond, paletteAccents, hasAccents: paletteAccents.length > 0,
 
       clientName: p.client_name || '',

@@ -7,9 +7,16 @@
 <link rel="icon" href="assets/wordmark-green.png">
 <script>
   // A client link is /?event=slug or /?project=slug — hand it to the right page.
+  //
+  // `has` before `get`: a link that kept its parameter but lost its value is
+  // what link-shorteners and chat apps produce, and it is a BROKEN CLIENT LINK,
+  // not a visitor with no link at all. Testing the value alone sent those
+  // clients to the staff sign-in page. The album pages already guard this;
+  // the front door did not, so it is guarded here too — pass the empty slug
+  // through and let the album page say "not found" in the client's own words.
   var q = new URLSearchParams(location.search);
-  if (q.get('event')) location.replace('album.html?event=' + encodeURIComponent(q.get('event')));
-  else if (q.get('project')) location.replace('commercial.html?project=' + encodeURIComponent(q.get('project')));
+  if (q.has('event')) location.replace('album.html?event=' + encodeURIComponent((q.get('event') || '').trim()));
+  else if (q.has('project')) location.replace('commercial.html?project=' + encodeURIComponent((q.get('project') || '').trim()));
   else location.replace('admin.html');
 </script>
 </head>
