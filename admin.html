@@ -1084,12 +1084,50 @@
               </sc-if>
 
               <sc-if value="{{ showPreview }}" hint-placeholder-val="{{ true }}">
-                <div style="display:flex; flex-direction:column; gap:7px">
-                  <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
-                    <span style="font-size:11px; color:#9AA6A2">{{ previewFor }}</span>
-                    <span style="font-size:12px; color:#16231F; margin-left:auto; overflow-wrap:anywhere">{{ previewSubject }}</span>
+                <div style="display:flex; flex-direction:column; gap:10px">
+                  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ previewFor }}</span>
+                    <span style="font-size:10px; color:#9AA6A2">{{ previewScaleNote }}</span>
+                    <div style="display:flex; margin-left:auto; border:1px solid var(--line); border-radius:2px; overflow:hidden">
+                      <sc-for list="{{ previewWidthVM }}" as="pw" hint-placeholder-count="2">
+                        <button onClick="{{ pw.go }}" style="padding:6px 12px; background:{{ pw.bg }}; color:{{ pw.color }}; border:none; font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer">{{ pw.label }}</button>
+                      </sc-for>
+                    </div>
                   </div>
-                  <iframe srcDoc="{{ previewHtml }}" sandbox="" title="Email preview" style="width:100%; height:420px; border:1px solid var(--line); border-radius:2px; background:#fff"></iframe>
+
+                  <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px; overflow:hidden">
+                    <div style="display:grid; grid-template-columns:auto minmax(0,1fr); gap:5px 12px; padding:13px 15px; background:#FBFCFC; border-bottom:1px solid var(--line)">
+                      <sc-for list="{{ previewHeaderVM }}" as="ph" hint-placeholder-count="3">
+                        <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2; padding-top:3px">{{ ph.label }}</span>
+                        <span style="font-size:13px; color:{{ ph.color }}; line-height:1.5; overflow-wrap:anywhere; min-width:0">{{ ph.value }}</span>
+                      </sc-for>
+                    </div>
+                    <div id="bookingPreviewBox" style="padding:20px 12px; background:#EDF1F0; display:flex; justify-content:center; overflow:auto">
+                      <div style="width:100%; height:{{ previewBoxHeight }}; display:flex; justify-content:center">
+                        <iframe srcDoc="{{ previewHtml }}" sandbox="" title="Email preview" style="width:{{ previewFrameWidth }}; height:{{ previewFrameHeight }}; flex:0 0 auto; transform:{{ previewScale }}; transform-origin:top center; border:none; border-radius:2px; background:#fff; box-shadow:0 1px 5px rgba(22,35,31,.15)"></iframe>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:9px; padding:14px 15px; border:1px solid var(--line); border-radius:3px; background:#FBFCFC">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Tokens filled in</span>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap">
+                      <sc-for list="{{ previewTokenVM }}" as="pt" hint-placeholder-count="6">
+                        <span style="display:inline-flex; align-items:baseline; gap:7px; padding:4px 9px; border:1px solid {{ pt.border }}; border-radius:3px; background:#fff; font-size:11px; max-width:100%; min-width:0">
+                          <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#9AA6A2; flex:0 0 auto">{{ pt.token }}</span>
+                          <span style="color:{{ pt.color }}; overflow-wrap:anywhere; min-width:0">{{ pt.value }}</span>
+                        </span>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ hasPreviewNotes }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:7px; padding-top:10px; border-top:1px solid var(--line)">
+                        <sc-for list="{{ previewNoteVM }}" as="pn" hint-placeholder-count="0">
+                          <span style="font-size:11px; color:{{ pn.color }}; line-height:1.6; text-wrap:pretty">{{ pn.text }}</span>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <span style="font-size:11px; color:#7C8985; line-height:1.6; padding-top:2px; border-top:1px solid var(--line)">{{ previewSize }}</span>
+                  </div>
                 </div>
               </sc-if>
 
@@ -3541,6 +3579,8 @@ class Component extends DCLogic {
   // ---- Boot, session & role ----------------------------------------------------
 
   componentDidMount() {
+    this._onPreviewResize = () => this.measurePreviewBox();
+    window.addEventListener('resize', this._onPreviewResize);
     this._onKey = e => {
       if (e.key === 'Escape' && this.state.showInvoicePreview && !this.state.pdfBusy) this.closeInvoicePreview();
     };
@@ -5014,7 +5054,25 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this._onKey);
+    window.removeEventListener('resize', this._onPreviewResize);
   }
+
+  // The preview frame is a real viewport, not a scaled picture: a 700px email
+  // inside a 400px column would be cut off with no scrollbar to tell you. So
+  // measure the column and scale the whole frame down to fit — the email keeps
+  // its true width, the panel just shows it smaller.
+  //
+  // Measured by id rather than a ref: the box only exists while the Preview
+  // tab is open, so the measurement has to run after every render that might
+  // have mounted it, not once at boot.
+  measurePreviewBox() {
+    const el = document.getElementById('bookingPreviewBox');
+    if (!el) return;
+    const w = Math.max(0, Math.round(el.clientWidth) - 24); // its own 12px padding
+    if (w > 0 && w !== this.state.previewBoxW) this.setState({ previewBoxW: w });
+  }
+
+  componentDidUpdate() { this.measurePreviewBox(); }
 
   // The paid flag is derived from the receipts ledger now (see
   // receipts-schema.sql), so there is no button that simply asserts it.
@@ -5242,6 +5300,26 @@ class Component extends DCLogic {
       brief: (d.brief || '').trim(),
       sender: 'Team Glomium',
     };
+    // Aliases. Templates written against EmailJS's variable names use these,
+    // and a name that merges to itself puts literal braces in a sent email —
+    // so they resolve to the same values rather than being a typo you only
+    // notice after the send.
+    map.to_name = map.name;
+    map.first = map.first_name;
+    map.craft_title = map.craft;
+    map.project_name = map.project;
+    map.project_title = map.project;
+    map.project_dates = map.dates;
+    map.shoot_dates = map.dates;
+    map.project_location = map.location;
+    map.shoot_location = map.location;
+    map.project_message = map.brief;
+    map.project_brief = map.brief;
+    map.message = map.brief;
+    map.sender_name = map.sender;
+    // Bookings are not tied to a project row, so there is no client page to
+    // link to. Resolving to empty is right; the preview says so out loud.
+    map.project_link = '';
     let out = String(str || '').replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (m, k) => {
       const key = k.toLowerCase();
       return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : m;
@@ -5250,6 +5328,64 @@ class Component extends DCLogic {
     // a stray gap in the email. Drop the container rather than the token.
     if (isHtml) out = out.replace(/<(p|td|div)([^>]*)>\s*<\/\1>/gi, '');
     return out;
+  }
+
+  // Which tokens this draft actually uses, and what each one resolved to for
+  // the previewed person. Listing the whole token set would bury the one that
+  // came back empty, which is the only row worth looking at.
+  tokensUsed(src, p, d) {
+    if (!p) return [];
+    const seen = [];
+    String(src).replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (m, k) => {
+      const key = k.toLowerCase();
+      if (!seen.includes(key)) seen.push(key);
+      return m;
+    });
+    return seen.map(key => {
+      const out = this.mergeTokens('{{' + key + '}}', p, d, false);
+      // An unknown token merges to itself — that is a typo, not an empty value.
+      const unknown = out === '{{' + key + '}}';
+      return { key, value: unknown ? 'not a token — check the spelling' : out.trim() };
+    });
+  }
+
+  // Things that look fine in this preview but break in a real inbox. Each note
+  // is a rule a mail client actually enforces, not a style opinion.
+  emailNotes(html) {
+    const notes = [];
+    const warn = t => notes.push({ text: t, color: '#8A6D3B' });
+    if (/<style[\s>]/i.test(html))
+      warn('There is a <style> block. Gmail honours one in the <head>, but Outlook on Windows and several Indian webmail clients drop it — anything that must hold its shape needs a style="…" attribute on the element itself.');
+    if (/fonts\.googleapis\.com|@font-face/i.test(html))
+      warn('A web font is linked. Gmail, Outlook and Yahoo ignore it and fall back — make sure every font-family ends in Helvetica, Arial, sans-serif so the fallback is the one you chose.');
+    if (/display\s*:\s*(flex|grid)/i.test(html))
+      warn('display:flex / grid is used. Outlook on Windows ignores both and stacks the cells — nested tables are the only layout it renders.');
+    if (/position\s*:\s*(absolute|fixed)/i.test(html))
+      warn('Absolute positioning is stripped by most clients; the element will land back in the normal flow.');
+    const w = (html.match(/max-width\s*:\s*(\d{3,4})px/i) || html.match(/width\s*=\s*"(\d{3,4})"/i) || [])[1];
+    if (w && Number(w) > 640) warn('The outer table is ' + w + 'px wide. Over 640px means side-scrolling on a phone — 600px is the safe ceiling.');
+    const imgs = (html.match(/<img\b/gi) || []).length;
+    const alts = (html.match(/<img\b[^>]*\salt=/gi) || []).length;
+    if (imgs > alts) warn((imgs - alts) + ' of ' + imgs + ' images have no alt text. Images are blocked by default in Outlook and often in Gmail, so the alt text is what the recipient reads first.');
+    if (/src\s*=\s*"(?!https:)/i.test(html))
+      warn('An image src is not an https:// URL. Local and http paths do not resolve in an inbox — upload the file and point at the live URL.');
+    if (imgs > 0 && !/https:\/\//i.test(html)) warn('No absolute URLs found — links and images both need the full https:// form in an email.');
+    if (/\{\{\s*[a-z_]+\s*\}\}/i.test(html))
+      notes.push({ text: 'A ' + (html.match(/\{\{\s*[a-z_]+\s*\}\}/i) || [])[0] + ' is still in the merged copy, which means the recipient sees those braces. Check it against the token list above.', color: '#B4433A' });
+    if (/href\s*=\s*"\s*"/i.test(html))
+      warn('There is a link with an empty href — bookings have no client page, so {{project_link}} resolves to nothing. Drop the button or point it at a real URL.');
+    return notes;
+  }
+
+  // The draft may be a full document (head, fonts, the lot) or a bare table.
+  // A fragment gets a wrapper so it sits on an inbox-grey background at the
+  // right width instead of hugging the iframe's top-left corner.
+  previewDoc(html) {
+    if (!String(html).trim())
+      return '<!doctype html><meta charset="utf-8"><body style="margin:0;font:14px/1.6 Helvetica,Arial,sans-serif;color:#9AA6A2;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px">Tick someone on the roster and their copy of the email appears here.</body>';
+    if (/^\s*(<!doctype|<html)/i.test(html)) return html;
+    return '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+      + '<body style="margin:0;padding:0;background:#F6F8F7;-webkit-font-smoothing:antialiased">' + html + '</body>';
   }
 
   htmlToText(html) {
@@ -5541,6 +5677,24 @@ class Component extends DCLogic {
     const missingEmail = pickedList.filter(p => !(p.email || '').trim());
     const previewPerson = pickedList[0] || null;
 
+    // Everything the preview shows is derived from the same merge the send
+    // uses, so what is on screen is literally what leaves the building.
+    const mergedHtml = previewPerson ? this.mergeTokens(s.draftHtml || '', previewPerson, d, true) : '';
+    const mergedSubject = previewPerson ? this.mergeTokens(s.draftSubject || '', previewPerson, d, false) : '';
+    const pvWidth = s.previewWidth === 'phone' ? 'phone' : 'desktop';
+    // A phone is 390pt wide; 700 is about the widest reading pane anyone has.
+    const pvFrameW = pvWidth === 'phone' ? 390 : 700;
+    const pvFrameH = pvWidth === 'phone' ? 620 : 660;
+    const pvAvail = s.previewBoxW || 0;
+    const pvScale = pvAvail > 0 ? Math.min(1, Math.round((pvAvail / pvFrameW) * 100) / 100) : 1;
+    const withEmailList = pickedList.filter(p => (p.email || '').trim());
+    const previewToLine = previewPerson
+      ? previewPerson.full_name + ' <' + ((previewPerson.email || '').trim() || 'no email on file') + '>'
+        + (withEmailList.length > 1 ? '  +' + (withEmailList.length - 1) + ' more, each sent separately' : '')
+      : 'Nobody ticked yet';
+    const usedTokens = this.tokensUsed((s.draftSubject || '') + ' ' + (s.draftHtml || ''), previewPerson, d);
+    const previewNotes = previewPerson ? this.emailNotes(mergedHtml) : [];
+
     return {
       isTalent: true,
       canTalentEdit: this.can('talentEdit'),
@@ -5647,11 +5801,40 @@ class Component extends DCLogic {
       showPreview: (s.bodyMode || 'preview') !== 'code',
       // The preview is rendered for the first selected person, so the tokens
       // resolve to a real name rather than showing their own braces.
-      previewFor: previewPerson ? 'As ' + previewPerson.full_name + ' will see it' : '',
-      previewHtml: previewPerson
-        ? this.mergeTokens(s.draftHtml || '', previewPerson, d, true)
-        : '<p style="font-family:Helvetica,Arial,sans-serif;color:#9AA6A2;padding:20px">Select someone to preview this.</p>',
-      previewSubject: previewPerson ? this.mergeTokens(s.draftSubject || '', previewPerson, d, false) : '',
+      previewFor: previewPerson ? 'As ' + previewPerson.full_name + ' will see it' : 'Preview',
+      previewHtml: this.previewDoc(mergedHtml),
+      previewSubject: mergedSubject,
+      previewWidthVM: [['desktop', 'Desktop'], ['phone', 'Phone']].map(pair => {
+        const on = pvWidth === pair[0];
+        return {
+          label: pair[1], go: () => this.setState({ previewWidth: pair[0] }),
+          bg: on ? '#16231F' : '#fff', color: on ? '#fff' : '#7C8985',
+        };
+      }),
+      // A phone is 390pt wide; 700 is roughly the widest reading pane anyone
+      // has. Showing the email at a real width is the only way the padding and
+      // the 600px card read the way they will in an inbox.
+      previewFrameWidth: pvFrameW + 'px',
+      previewFrameHeight: pvFrameH + 'px',
+      previewScale: 'scale(' + pvScale + ')',
+      previewBoxHeight: Math.round(pvFrameH * pvScale) + 'px',
+      previewScaleNote: pvScale < 1 ? 'Shown at ' + Math.round(pvScale * 100) + '% of true size' : '',
+      previewHeaderVM: [
+        { label: 'From', value: 'Glomium — your mail service\u2019s address', color: '#5D6864' },
+        { label: 'To', value: previewToLine, color: '#16231F' },
+        { label: 'Subject', value: mergedSubject || '(no subject)', color: mergedSubject ? '#16231F' : '#B4433A' },
+      ],
+      previewTokenVM: usedTokens.map(t => ({
+        token: '{{' + t.key + '}}',
+        value: t.value || 'empty',
+        color: t.value ? '#16231F' : '#B4433A',
+        border: t.value ? 'var(--line)' : '#E8C4C0',
+      })),
+      previewNoteVM: previewNotes,
+      hasPreviewNotes: previewNotes.length > 0,
+      previewSize: previewPerson
+        ? (Math.round(mergedHtml.length / 102.4) / 10) + ' KB of HTML' + (mergedHtml.length > 102400 ? ' — Gmail clips anything over 102 KB and hides the end behind a “View entire message” link.' : '.')
+        : 'Tick someone on the roster to see their copy of this.',
       tokenHintVM: [
         '{{first_name}}', '{{name}}', '{{craft}}', '{{craft_lower}}',
         '{{project}}', '{{dates}}', '{{location}}', '{{brief}}', '{{sender}}',
