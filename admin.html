@@ -1143,6 +1143,20 @@
               <button onClick="{{ sendBooking }}" disabled="{{ bookingSendDisabled }}" style="padding:11px 20px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:{{ bookingSendCursor }}; opacity:{{ bookingSendOpacity }}" style-hover="background:var(--green-deep)">{{ bookingSendLabel }}</button>
               <span style="font-size:12px; color:var(--green-deep); line-height:1.6; flex:1 1 200px">{{ bookingStatus }}</span>
             </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px; padding:15px 16px; border:1px solid var(--line); border-radius:3px; background:#FBFCFC">
+              <button onClick="{{ toggleMailSetup }}" style="padding:0; background:none; border:none; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; text-align:left">{{ mailSetupLabel }}</button>
+              <sc-if value="{{ mailSetupOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:11px">
+                  <span style="font-size:12px; color:#5D6864; line-height:1.75; text-wrap:pretty">Make one template in EmailJS and leave its design alone. Set its content to exactly <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:#F1F4F3; padding:1px 5px; border-radius:2px; color:#16231F">{{ passThroughToken }}</span>, its subject to <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:#F1F4F3; padding:1px 5px; border-radius:2px; color:#16231F">{{ subjectToken }}</span> and its To field to <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:#F1F4F3; padding:1px 5px; border-radius:2px; color:#16231F">{{ toToken }}</span>. Three braces, not two — two would escape the HTML and mail the tags as visible text. Then paste the template id here.</span>
+                  <div style="display:flex; gap:9px; flex-wrap:wrap">
+                    <input value="{{ bookingTemplateDraft }}" onChange="{{ onBookingTemplateDraft }}" placeholder="template_xxxxxxx" spellcheck="false" style="flex:1 1 200px; min-width:0; padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; outline:none" style-focus="border-color:var(--green)">
+                    <button onClick="{{ saveBookingTemplateId }}" style="padding:9px 17px; background:none; border:1px solid var(--green); border-radius:2px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F1F8F5">Save</button>
+                  </div>
+                  <span style="font-size:11px; color:#7C8985; line-height:1.65; text-wrap:pretty">{{ mailServiceNote }}</span>
+                </div>
+              </sc-if>
+            </div>
           </div>
           </sc-if>
 
@@ -3190,18 +3204,31 @@ const BUCKET = 'event-media';
 const PRIVATE_BUCKET = 'staff-private';
 const EMAILJS_SERVICE_ID = 'service_j9mkj45';
 const EMAILJS_TEMPLATE_ID = 'template_9xph63f';
-// Separate template for invoices — the album template hardcodes the preview-link body.
-// Invoice template vars: to_email, to_name, subject, invoice_number, invoice_date,
-// invoice_amount, invoice_link, and invoice_pdf as the attachment.
+// The second template is a bare pass-through: its content is {{{body_html}}},
+// its subject {{subject}}, its To field {{to_email}}, and it carries no design
+// of its own — both the invoice email and the talent booking enquiry compose
+// their own HTML here and send it through. Do not re-add an EmailJS-side body:
+// it would be ignored at best and would double up at worst.
+//
+// One thing must stay configured on it in EmailJS: the Attachments row bound to
+// invoice_pdf. Without it an invoice still sends, but only as the download link
+// in the body.
 const EMAILJS_INVOICE_TEMPLATE_ID = 'template_lgfvfhb';
 const EMAILJS_PUBLIC_KEY = 'rRmmmx6iCKnvLcEuR';
 
-// Booking enquiries to freelance talent. Create the template in EmailJS and
-// paste its id here — see album-system/TALENT-SETUP.md for the body and the
-// variable names. While this is empty the page still works: the Send button
-// opens the local mail client with the message prefilled, one person at a time,
-// and still logs the booking. Filling it in is what enables batch sending.
-const EMAILJS_BOOKING_TEMPLATE_ID = '';
+// Booking enquiries to freelance talent. There is no EmailJS-side design: the
+// template in EmailJS holds nothing but {{{body_html}}} (triple braces, so the
+// HTML is not escaped), and the panel sends the finished, token-merged HTML
+// through it. That way the email is edited here, previewed here, and what you
+// approve is exactly what is delivered.
+//
+// It is the SAME id as EMAILJS_INVOICE_TEMPLATE_ID above, deliberately: the
+// free EmailJS tier allows two templates, and a pass-through template has no
+// content of its own to clash over. Both senders now supply their own
+// body_html, so one pipe serves invoices and booking enquiries alike.
+//
+// settings.emailjs_booking_template overrides this when set from the panel.
+const EMAILJS_BOOKING_TEMPLATE_ID = 'template_lgfvfhb';
 
 // The crafts Glomium actually books by the day. Keys match the check
 // constraint in talent-schema.sql; changing one means changing both.
@@ -5066,10 +5093,17 @@ class Component extends DCLogic {
   // tab is open, so the measurement has to run after every render that might
   // have mounted it, not once at boot.
   measurePreviewBox() {
+    // Guarded hard: componentDidUpdate fires on every keystroke anywhere in the
+    // app, and reading clientWidth forces a layout. Nothing here runs unless
+    // the roster tab is actually showing a preview.
+    if (this.state.view !== 'talent') return;
+    if ((this.state.bodyMode || 'preview') === 'code') return;
     const el = document.getElementById('bookingPreviewBox');
     if (!el) return;
     const w = Math.max(0, Math.round(el.clientWidth) - 24); // its own 12px padding
-    if (w > 0 && w !== this.state.previewBoxW) this.setState({ previewBoxW: w });
+    // A 2px tolerance: scaling the frame can add or remove a scrollbar, which
+    // changes the width again — without the deadband that oscillates forever.
+    if (w > 0 && Math.abs(w - (this.state.previewBoxW || 0)) > 2) this.setState({ previewBoxW: w });
   }
 
   componentDidUpdate() { this.measurePreviewBox(); }
@@ -5119,6 +5153,37 @@ class Component extends DCLogic {
     await this.emailInvoicePreview();
   }
 
+  // The invoice email body, composed here because the EmailJS template is a
+  // bare pass-through. Tables and inline styles only — same rules as the
+  // booking email.
+  invoiceEmailHtml({ name, label, inv, invoiceDate, pdfUrl }) {
+    const F = "Helvetica,Arial,sans-serif";
+    const row = (k, v) => '<tr>'
+      + '<td align="left" valign="top" width="120" style="width:120px;padding:13px 0;border-top:1px solid #E4E9E7;font-family:' + F + ';font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#9AA6A2">' + k + '</td>'
+      + '<td align="left" valign="top" style="padding:13px 0;border-top:1px solid #E4E9E7;font-family:' + F + ';font-size:15px;line-height:1.5;color:#16231F">' + v + '</td></tr>';
+    const button = pdfUrl
+      ? '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>'
+        + '<td align="center" style="padding:26px 0 0"><a href="' + pdfUrl + '" style="display:inline-block;padding:14px 26px;background:#10AF8B;border-radius:2px;font-family:' + F + ';font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:#ffffff;text-decoration:none">Download the ' + label.toLowerCase() + '</a></td>'
+        + '</tr></table>'
+      : '';
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#F6F8F7">'
+      + '<tr><td align="center" style="padding:32px 12px">'
+      + '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:600px;max-width:600px;background:#ffffff;border:1px solid #E4E9E7;border-radius:4px">'
+      + '<tr><td align="left" style="padding:30px 36px 0;font-family:' + F + ';font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#10AF8B">Glomium</td></tr>'
+      + '<tr><td align="left" style="padding:20px 36px 0;font-family:' + F + ';font-size:21px;line-height:1.35;color:#16231F">' + label + ' ' + inv.number + '</td></tr>'
+      + '<tr><td align="left" style="padding:16px 36px 0;font-family:' + F + ';font-size:15px;line-height:1.7;color:#3E4A46">'
+      + (pdfUrl
+        ? 'Hi ' + name + ', your ' + label.toLowerCase() + ' is ready — download it with the button below. It may also be attached to this email.'
+        : 'Hi ' + name + ', your ' + label.toLowerCase() + ' is attached to this email. If you cannot see the attachment, reply and we will send it straight away.')
+      + '</td></tr>'
+      + '<tr><td style="padding:22px 36px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">'
+      + row('Number', inv.number) + row('Date', invoiceDate) + row('Amount', fmtINR(inv.total))
+      + '</table></td></tr>'
+      + '<tr><td align="center" style="padding:0 36px">' + button + '</td></tr>'
+      + '<tr><td align="left" style="padding:26px 36px 34px;font-family:' + F + ';font-size:15px;line-height:1.7;color:#3E4A46">Reply to this email with any questions.<br>Team Glomium</td></tr>'
+      + '</table></td></tr></table>';
+  }
+
   async emailInvoicePreview() {
     const inv = this.state.previewInvoice, s = this.state, ev = s.current;
     const clientEmail = s.editClientEmail || ev.client_email;
@@ -5163,16 +5228,27 @@ class Component extends DCLogic {
       this.setState({ invStatus: 'Sending… (PDF ' + sizeMB.toFixed(1) + ' MB)' });
       const mailer = await this.waitForGlobal('emailjs', 8000);
       if (!mailer) throw new Error('Email service did not load — check your connection and try again.');
+      // The template is a bare {{{body_html}}} pipe shared with booking
+      // enquiries, so the invoice email is composed here rather than in
+      // EmailJS. The invoice_* variables are still sent for an installation
+      // whose template is pointed at them.
+      const bodyHtml = this.invoiceEmailHtml({ name, label, inv, invoiceDate, pdfUrl });
       await mailer.send(EMAILJS_SERVICE_ID, EMAILJS_INVOICE_TEMPLATE_ID, {
         to_email: clientEmail, email: clientEmail, user_email: clientEmail, reply_to: clientEmail,
         to_name: name, subject,
+        body_html: bodyHtml, message: this.htmlToText(bodyHtml),
         invoice_number: inv.number, invoice_date: invoiceDate, invoice_amount: fmtINR(inv.total),
         invoice_link: pdfUrl, invoice_pdf: file, invoice_pdf_b64: base64, invoice_pdf_uri: dataUri,
         invoice_filename: inv.number + '.pdf',
       }, { publicKey: EMAILJS_PUBLIC_KEY });
       stage = 'updating the invoice record';
       await this.sb.from('invoices').update({ status: 'sent', pdf_url: pdfUrl || null, sent_at: new Date().toISOString() }).eq('id', inv.id);
-      this.setState({ invStatus: 'Sent ' + inv.number + '.', showInvoicePreview: false, previewInvoice: null });
+      this.setState({
+        invStatus: pdfUrl
+          ? 'Sent ' + inv.number + '.'
+          : 'Sent ' + inv.number + ', but the PDF did not reach storage, so the email carries no download link — check the client got the attachment, or send again.',
+        showInvoicePreview: false, previewInvoice: null,
+      });
       this.loadInvoices(ev.id);
       this.setState({ pdfBusy: false });
       setTimeout(() => this.setState({ invStatus: '' }), 3000);
@@ -5296,7 +5372,7 @@ class Component extends DCLogic {
       craft_lower: craftLabel(p.craft).toLowerCase(),
       project: (d.project_title || '').trim() || '[shoot name]',
       dates: this.bookingDates(d),
-      location: (d.location || '').trim() || 'To be confirmed',
+      location: (d.location || '').trim() || 'to be confirmed',
       brief: (d.brief || '').trim(),
       sender: 'Team Glomium',
     };
@@ -5542,6 +5618,34 @@ class Component extends DCLogic {
     };
   }
 
+  // The EmailJS template id lives in settings, not in the source, because the
+  // person who creates the template in EmailJS is not the person who deploys
+  // this file.
+  async saveBookingTemplateId() {
+    const id = (this.state.bookingTemplateDraft || '').trim();
+    if (id && !/^[A-Za-z0-9_-]{4,}$/.test(id)) {
+      this.setState({ bookingStatus: 'That does not look like an EmailJS template id — they read template_xxxxxxx, with no spaces. Copy it from the template’s page in EmailJS.' });
+      return;
+    }
+    this.setState({ bookingStatus: id ? 'Saving…' : 'Clearing…' });
+    const { error } = await this.sb.from('settings')
+      .upsert({ id: 1, emailjs_booking_template: id || null });
+    if (error) {
+      this.setState({ bookingStatus: /column .* does not exist/i.test(error.message)
+        ? 'The settings table has no emailjs_booking_template column yet — run album-system/emailjs-booking.sql in Supabase first.'
+        : error.message });
+      return;
+    }
+    this.setState({
+      bookingTemplateId: id,
+      bookingStatus: id ? 'Saved. Sending now goes straight from this page.' : 'Cleared. The Send button will open your mail app instead.',
+    });
+  }
+
+  bookingTemplate() {
+    return (this.state.bookingTemplateId || '').trim() || EMAILJS_BOOKING_TEMPLATE_ID;
+  }
+
   async sendBookingEnquiry() {
     const s = this.state;
     const d = s.bookingDraft || {};
@@ -5562,17 +5666,19 @@ class Component extends DCLogic {
     const rows = [];
     const failed = [];
     let sent = 0;
+    const templateId = this.bookingTemplate();
 
-    if (!EMAILJS_BOOKING_TEMPLATE_ID) {
+    if (!templateId) {
       // No EmailJS template configured, so fall back to the mail client. HTML
       // cannot travel through a mailto, so the body is flattened to text — the
       // layout is lost but the words are not. A browser honours one mailto per
       // gesture, so a batch genuinely cannot work this way.
       if (withEmail.length > 1) {
-        this.setState({ bookingStatus: 'Sending to several people at once needs the EmailJS booking template — see TALENT-SETUP.md. Select one person and this will open your mail app instead.' });
+        this.setState({ bookingStatus: 'Sending to several people at once needs the EmailJS template id below. Select one person and this will open your mail app instead.' });
         return;
       }
       const p = withEmail[0];
+      this.setState({ bookingSending: true, bookingStatus: 'Opening your mail app…' });
       window.open('mailto:' + encodeURIComponent(p.email)
         + '?subject=' + encodeURIComponent(this.mergeTokens(s.draftSubject, p, d, false))
         + '&body=' + encodeURIComponent(this.htmlToText(this.mergeTokens(s.draftHtml, p, d, true))), '_blank');
@@ -5581,12 +5687,13 @@ class Component extends DCLogic {
     } else {
       const mailer = await this.waitForGlobal('emailjs', 8000);
       if (!mailer) { this.setState({ bookingStatus: 'Email service did not load — check your connection and try again.' }); return; }
-      this.setState({ bookingSending: true, bookingStatus: 'Sending…' });
+      this.setState({ bookingSending: true, bookingStatus: 'Sending to ' + withEmail.length + (withEmail.length === 1 ? ' person…' : ' people…') });
       for (const p of withEmail) {
         const html = this.mergeTokens(s.draftHtml, p, d, true);
         try {
-          await mailer.send(EMAILJS_SERVICE_ID, EMAILJS_BOOKING_TEMPLATE_ID, {
-            to_email: p.email, email: p.email, to_name: p.full_name,
+          await mailer.send(EMAILJS_SERVICE_ID, templateId, {
+            to_email: p.email, email: p.email, user_email: p.email, reply_to: p.email,
+            to_name: p.full_name,
             subject: this.mergeTokens(s.draftSubject, p, d, false),
             body_html: html,
             message: this.htmlToText(html),
@@ -5601,23 +5708,44 @@ class Component extends DCLogic {
       }
     }
 
+    let dupSkipped = 0;
     if (rows.length) {
-      const { error } = await this.sb.from('talent_bookings').insert(rows);
-      if (error) {
-        this.setState({ bookingSending: false, bookingStatus: 'The emails went out, but the booking log failed: ' + error.message });
-        return;
+      // Guard against a double send: a retry after a partial failure, or two
+      // clicks on a slow connection, must not log the same invitation twice.
+      const already = this.state.talentBookings || [];
+      const fresh = rows.filter(r => !already.some(b =>
+        b.talent_id === r.talent_id
+        && (b.project_title || '') === (r.project_title || '')
+        && (b.shoot_from || null) === (r.shoot_from || null)
+        && b.status === 'invited'));
+      dupSkipped = rows.length - fresh.length;
+      if (fresh.length) {
+        const { error } = await this.sb.from('talent_bookings').insert(fresh);
+        if (error) {
+          this.setState({ bookingSending: false, bookingStatus: 'The emails went out, but the booking log failed: ' + error.message });
+          return;
+        }
       }
     }
 
     const parts = [];
     if (sent) parts.push('Invited ' + sent + (sent === 1 ? ' person.' : ' people.'));
     if (failed.length) parts.push('Failed for ' + failed.join('; ') + '.');
+    // The email went out but nothing new was logged — say so, or the empty
+    // Bookings list reads as a lost send.
+    if (dupSkipped) parts.push(dupSkipped === 1
+      ? 'One of them already had an identical invitation logged for these dates, so no second row was added.'
+      : dupSkipped + ' of them already had an identical invitation logged for these dates, so no second row was added.');
     if (noEmail) parts.push(noEmail + (noEmail === 1 ? ' person has' : ' people have') + ' no email on file and ' + (noEmail === 1 ? 'was' : 'were') + ' skipped.');
     const clean = sent > 0 && !failed.length;
+    // On a partial failure the people who did receive it are unticked, so
+    // hitting Send again retries only the ones that failed.
+    const nextPicked = clean ? {} : Object.assign({}, this.state.talentPicked);
+    if (!clean) rows.forEach(r => { delete nextPicked[r.talent_id]; });
     this.setState({
       bookingSending: false,
       bookingStatus: parts.join(' '),
-      talentPicked: clean ? {} : this.state.talentPicked,
+      talentPicked: nextPicked,
       bookingDraft: clean ? {} : this.state.bookingDraft,
     });
     this.loadTalentBookings();
@@ -5682,11 +5810,15 @@ class Component extends DCLogic {
     const mergedHtml = previewPerson ? this.mergeTokens(s.draftHtml || '', previewPerson, d, true) : '';
     const mergedSubject = previewPerson ? this.mergeTokens(s.draftSubject || '', previewPerson, d, false) : '';
     const pvWidth = s.previewWidth === 'phone' ? 'phone' : 'desktop';
-    // A phone is 390pt wide; 700 is about the widest reading pane anyone has.
-    const pvFrameW = pvWidth === 'phone' ? 390 : 700;
-    const pvFrameH = pvWidth === 'phone' ? 620 : 660;
+    // Both modes lay the email out at its real 600px width — a phone inbox does
+    // not reflow a fixed-width email, it lays it out wide and scales the page
+    // down to the screen. So phone mode is the same frame painted at 390/600.
+    const pvFrameW = 600;
+    const pvFrameH = pvWidth === 'phone' ? 940 : 680;
+    const pvModeScale = pvWidth === 'phone' ? 0.65 : 1;
     const pvAvail = s.previewBoxW || 0;
-    const pvScale = pvAvail > 0 ? Math.min(1, Math.round((pvAvail / pvFrameW) * 100) / 100) : 1;
+    const pvFit = pvAvail > 0 ? Math.min(1, Math.round((pvAvail / (pvFrameW * pvModeScale)) * 100) / 100) : 1;
+    const pvScale = Math.round(pvModeScale * pvFit * 1000) / 1000;
     const withEmailList = pickedList.filter(p => (p.email || '').trim());
     const previewToLine = previewPerson
       ? previewPerson.full_name + ' <' + ((previewPerson.email || '').trim() || 'no email on file') + '>'
@@ -5768,14 +5900,29 @@ class Component extends DCLogic {
       bookingSendCursor: s.bookingSending ? 'not-allowed' : 'pointer',
       bookingSendOpacity: s.bookingSending ? '.55' : '1',
       bookingSendLabel: s.bookingSending ? 'Sending…'
-        : EMAILJS_BOOKING_TEMPLATE_ID ? 'Send booking enquiry' : 'Open in mail app',
+        : this.bookingTemplate()
+          ? (withEmailList.length > 1 ? 'Send to ' + withEmailList.length + ' people' : 'Send booking enquiry')
+          : 'Open in mail app',
       bookingStatus: s.bookingStatus || '',
+      // The setup row only earns its space until it is filled in.
+      mailSetupOpen: !this.bookingTemplate() || !!s.showMailSetup,
+      toggleMailSetup: () => this.setState({ showMailSetup: !s.showMailSetup }),
+      mailSetupLabel: this.bookingTemplate()
+        ? 'Sending from this page — EmailJS template ' + this.bookingTemplate()
+        : 'Set up direct sending',
+      passThroughToken: '{{{body_html}}}',
+      subjectToken: '{{subject}}',
+      toToken: '{{to_email}}',
+      mailServiceNote: 'Service ' + EMAILJS_SERVICE_ID + ' is already connected — this is the only thing missing. Nothing about the email itself lives in EmailJS: it only relays what you wrote here.',
+      bookingTemplateDraft: s.bookingTemplateDraft || '',
+      onBookingTemplateDraft: e => this.setState({ bookingTemplateDraft: e.target.value }),
+      saveBookingTemplateId: () => this.saveBookingTemplateId(),
       hasBookingWarn: missingEmail.length > 0,
       bookingNoEmailWarn: missingEmail.length === 1
         ? missingEmail[0].full_name + ' has no email address on file and will be skipped.'
         : missingEmail.length + ' of the selected people have no email address and will be skipped.',
-      hasMailFallbackNote: !EMAILJS_BOOKING_TEMPLATE_ID,
-      mailFallbackNote: 'No EmailJS booking template is configured yet, so this opens your mail app with the message prefilled — one person at a time. The booking is still logged. Paste a template id into EMAILJS_BOOKING_TEMPLATE_ID to send a batch straight from here.',
+      hasMailFallbackNote: !this.bookingTemplate(),
+      mailFallbackNote: 'Direct sending is not set up yet, so the button opens your mail app with the message prefilled — one person at a time. The booking is still logged either way.',
       hasBookingClash: clashes.length > 0,
       bookingClashVM: clashes,
       templateOptionsVM: (s.emailTemplates || []).map(t => ({ value: t.id, label: t.name })),
@@ -8058,6 +8205,8 @@ class Component extends DCLogic {
     if (data) this.setState({
       bankName: data.bank_name || '', bankAccount: data.bank_account || '',
       bankIfsc: data.bank_ifsc || '', upiId: data.upi_id || '',
+      bookingTemplateId: data.emailjs_booking_template || '',
+      bookingTemplateDraft: data.emailjs_booking_template || '',
     });
   }
 
