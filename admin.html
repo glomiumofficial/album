@@ -1189,11 +1189,106 @@
                 <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">City</span>
                 <input value="{{ formCity }}" onChange="{{ onFormCity }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
               </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Gender</span>
+                <select value="{{ formGender }}" onChange="{{ onFormGender }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                  <option value="">Not recorded</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Date of birth</span>
+                <input type="date" value="{{ formDob }}" onChange="{{ onFormDob }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                <span style="font-size:10px; color:#9AA6A2; line-height:1.5">{{ formAgeHint }}</span>
+              </div>
               <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
                 <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Notes</span>
                 <textarea value="{{ formNotes }}" onChange="{{ onFormNotes }}" rows="3" placeholder="Agency, languages, what they are good for — whatever you want to remember" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; font-family:inherit; resize:vertical" style-focus="border-color:var(--green)"></textarea>
               </div>
             </div>
+            <sc-if value="{{ showBodyFields }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; gap:14px; padding-top:18px; border-top:1px solid var(--line)">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep)">Body &amp; features</span>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:14px">
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Height (cm)</span>
+                    <input type="number" min="90" max="230" value="{{ formHeight }}" onChange="{{ onFormHeight }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    <span style="font-size:10px; color:#9AA6A2; line-height:1.5">{{ formHeightHint }}</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Weight (kg)</span>
+                    <input type="number" min="25" max="250" step="0.5" value="{{ formWeight }}" onChange="{{ onFormWeight }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Chest (cm)</span>
+                    <input type="number" value="{{ formChest }}" onChange="{{ onFormChest }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Waist (cm)</span>
+                    <input type="number" value="{{ formWaist }}" onChange="{{ onFormWaist }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Hips (cm)</span>
+                    <input type="number" value="{{ formHips }}" onChange="{{ onFormHips }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Dress size</span>
+                    <input value="{{ formDress }}" onChange="{{ onFormDress }}" placeholder="S, M, 32" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Shoe size</span>
+                    <input value="{{ formShoe }}" onChange="{{ onFormShoe }}" placeholder="UK 7" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Hair</span>
+                    <input value="{{ formHair }}" onChange="{{ onFormHair }}" placeholder="Black, long" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Eyes</span>
+                    <input value="{{ formEyes }}" onChange="{{ onFormEyes }}" placeholder="Brown" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Complexion</span>
+                    <input value="{{ formComplexion }}" onChange="{{ onFormComplexion }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="display:flex; flex-direction:column; gap:14px; padding-top:18px; border-top:1px solid var(--line)">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep)">Skills &amp; engagement</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px">
+                <div style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Experience (years)</span>
+                  <input type="number" min="0" max="60" step="0.5" value="{{ formExperience }}" onChange="{{ onFormExperience }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Day rate (₹)</span>
+                  <input type="number" min="0" step="500" value="{{ formRate }}" onChange="{{ onFormRate }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  <span style="font-size:10px; color:#9AA6A2; line-height:1.5">What they quoted. Not a payout — that stays in Payouts.</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Instagram</span>
+                  <input value="{{ formInstagram }}" onChange="{{ onFormInstagram }}" placeholder="@handle" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Portfolio link</span>
+                  <input value="{{ formPortfolio }}" onChange="{{ onFormPortfolio }}" placeholder="https://" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Languages</span>
+                  <input value="{{ formLanguages }}" onChange="{{ onFormLanguages }}" placeholder="Malayalam, English, Hindi" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Skills</span>
+                  <textarea value="{{ formSkills }}" onChange="{{ onFormSkills }}" rows="2" placeholder="Ramp, editorial, classical dance, on-camera hosting — comma separated" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; font-family:inherit; resize:vertical" style-focus="border-color:var(--green)"></textarea>
+                  <span style="font-size:10px; color:#9AA6A2; line-height:1.5">Searchable — typing a skill in the roster search finds everyone who has it.</span>
+                </div>
+              </div>
+            </div>
+
             <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
               <button onClick="{{ saveTalent }}" style="padding:11px 20px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save</button>
               <button onClick="{{ cancelTalentForm }}" style="padding:11px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#7C8985; cursor:pointer">Cancel</button>
@@ -1225,8 +1320,96 @@
                 <button onClick="{{ pickThisTalent }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ pickThisLabel }}</button>
               </div>
             </sc-if>
-            <sc-if value="{{ hasTalentBookings }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; flex-direction:column; gap:10px; padding-top:18px; border-top:1px solid var(--line)">
+            <div style="display:flex; flex-direction:column; gap:14px; padding-top:20px; border-top:1px solid var(--line)">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Work log</span>
+                <span style="font-size:11px; color:var(--green-deep); margin-left:auto">{{ workStatus }}</span>
+              </div>
+
+              <sc-if value="{{ hasWorkLoadError }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:11px 13px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC; font-size:12px; color:#8A6D3B; line-height:1.6; text-wrap:pretty">{{ workLoadError }}</div>
+              </sc-if>
+
+              <sc-if value="{{ hasWorkRows }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px 20px; padding:14px 16px; border:1px solid var(--line); border-radius:3px; background:#FBFCFC">
+                  <sc-for list="{{ workTotalsVM }}" as="wt" hint-placeholder-count="4">
+                    <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ wt.label }}</span>
+                      <span style="font-size:15px; color:#16231F">{{ wt.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="display:flex; flex-direction:column; gap:7px">
+                <sc-for list="{{ workRowsVM }}" as="wr" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; gap:7px; padding:12px 14px; border:1px solid var(--line); border-radius:3px">
+                    <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
+                      <span style="font-size:13px; color:#16231F">{{ wr.date }}</span>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ wr.kindBg }}; color:{{ wr.kindColor }}; letter-spacing:.08em; text-transform:uppercase">{{ wr.kindLabel }}</span>
+                      <span style="font-size:13px; color:#5D6864; min-width:0; overflow-wrap:anywhere">{{ wr.project }}</span>
+                      <span style="font-size:13px; color:#16231F; margin-left:auto">{{ wr.amount }}</span>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ wr.paidBg }}; color:{{ wr.paidColor }}; letter-spacing:.06em">{{ wr.paidLabel }}</span>
+                    </div>
+                    <sc-if value="{{ wr.hasMeta }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:11px; color:#7C8985; line-height:1.6">{{ wr.meta }}</span>
+                    </sc-if>
+                    <sc-if value="{{ canTalentEdit }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; gap:8px; flex-wrap:wrap">
+                        <button onClick="{{ wr.togglePaid }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ wr.togglePaidLabel }}</button>
+                        <button onClick="{{ wr.remove }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#B4433A; cursor:pointer">Remove</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ canTalentEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px dashed var(--line); border-radius:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Log a day</span>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px">
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Date worked</span>
+                      <input type="date" value="{{ workDate }}" onChange="{{ onWorkDate }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Trial or shoot</span>
+                      <select value="{{ workKind }}" onChange="{{ onWorkKind }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                        <sc-for list="{{ workKindOptionsVM }}" as="wk" hint-placeholder-count="3">
+                          <option value="{{ wk.value }}">{{ wk.label }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Pay for the day (₹)</span>
+                      <input type="number" min="0" step="500" value="{{ workAmount }}" onChange="{{ onWorkAmount }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Shoot</span>
+                      <input value="{{ workProject }}" onChange="{{ onWorkProject }}" placeholder="Which shoot was this day for" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Location</span>
+                      <input value="{{ workLocation }}" onChange="{{ onWorkLocation }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Note</span>
+                      <input value="{{ workNote }}" onChange="{{ onWorkNote }}" placeholder="Half day, travel included, wardrobe change — whatever matters later" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                      <input type="checkbox" checked="{{ workPaid }}" onChange="{{ onWorkPaid }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                      Already paid
+                    </label>
+                    <button onClick="{{ addWorkDay }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Add day</button>
+                    <span style="font-size:11px; color:#7C8985; line-height:1.6; flex:1 1 200px">The shoot, kind and location stay filled in, so a three-day shoot is three dates.</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ hasTalentBookings }}" hint-placeholder-val="{{ false }}">              <div style="display:flex; flex-direction:column; gap:10px; padding-top:18px; border-top:1px solid var(--line)">
                 <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Bookings</span>
                 <sc-for list="{{ talentBookingsVM }}" as="bk" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; gap:8px; padding:13px 15px; border:1px solid var(--line); border-radius:3px">
@@ -3247,8 +3430,15 @@ const TALENT_CRAFTS = [
 ];
 const craftLabel = k => (TALENT_CRAFTS.find(c => c[0] === k) || [k, k])[1];
 
-const BOOKING_STATUSES = {
-  invited:   ['Invited',   '#FDF9F0', '#8A6D3B'],
+// A trial is the look/test day, an actual day is the real shoot, a reshoot is
+// the argument nobody wants to have from a note field.
+const WORK_KINDS = [
+  ['trial', 'Trial', '#F1F4F3', '#5D6864'],
+  ['actual', 'Shoot', '#E7F4EF', '#1C6B52'],
+  ['reshoot', 'Reshoot', '#FDF9F0', '#8A6D3B'],
+];
+
+const BOOKING_STATUSES = {  invited:   ['Invited',   '#FDF9F0', '#8A6D3B'],
   confirmed: ['Confirmed', '#E7F4EF', '#1C6B52'],
   declined:  ['Declined',  '#F9EFED', '#B4433A'],
   cancelled: ['Cancelled', '#F4F6F5', '#7C8985'],
@@ -5321,7 +5511,85 @@ class Component extends DCLogic {
     }
     this.setState({ talent: data || [], talentLoadError: '' });
     this.loadTalentBookings();
+    this.loadTalentWork();
     this.loadEmailTemplates();
+  }
+
+  // The work log is loaded for the whole roster, not per person: the roster
+  // list shows days and dues against each name, so one query is right.
+  async loadTalentWork() {
+    const { data, error } = await this.sb.from('talent_work').select('*')
+      .order('work_date', { ascending: false }).limit(2000);
+    if (error) {
+      const missing = error.code === 'PGRST205' || /schema cache/i.test(error.message || '');
+      this.setState({
+        talentWork: [],
+        workLoadError: missing
+          ? 'The work log table is not in the database yet — run album-system/talent-work.sql in the Supabase SQL editor.'
+          : 'Could not load the work log: ' + error.message,
+      });
+      return;
+    }
+    this.setState({ talentWork: data || [], workLoadError: '' });
+  }
+
+  setWorkField(k, v) {
+    this.setState({ workForm: Object.assign({}, this.state.workForm || {}, { [k]: v }), workStatus: '' });
+  }
+
+  async addWorkDay() {
+    const open = (this.state.talent || []).find(x => x.id === this.state.talentId);
+    if (!open) return;
+    const f = this.state.workForm || {};
+    const title = (f.project_title || '').trim();
+    const date = (f.work_date || '').trim();
+    if (!title) { this.setState({ workStatus: 'Which shoot was this day for?' }); return; }
+    if (!date) { this.setState({ workStatus: 'A worked day needs its date.' }); return; }
+    const amount = String(f.amount == null ? '' : f.amount).trim();
+    const paid = !!f.paid;
+    const row = {
+      talent_id: open.id, project_title: title, work_date: date,
+      kind: f.kind || 'actual',
+      amount: amount === '' ? null : Number(amount),
+      paid, paid_on: paid ? (f.paid_on || new Date().toISOString().slice(0, 10)) : null,
+      location: (f.location || '').trim() || null,
+      note: (f.note || '').trim() || null,
+    };
+    this.setState({ workStatus: 'Saving…' });
+    const { error } = await this.sb.from('talent_work').insert(row);
+    if (error) {
+      // The unique index is the double-entry guard, and it is worth naming in
+      // plain words rather than showing a constraint name.
+      this.setState({ workStatus: /talent_work_unique_day|duplicate key/i.test(error.message)
+        ? 'That day is already logged for this shoot. Edit the existing row instead of adding a second one.'
+        : /does not exist/i.test(error.message)
+          ? 'The work log table is not in the database yet — run album-system/talent-work.sql in Supabase.'
+          : error.message });
+      return;
+    }
+    // The project, kind and location carry over: logging three days of the same
+    // shoot should be three dates, not three re-typings.
+    this.setState({
+      workStatus: 'Logged.',
+      workForm: { project_title: title, kind: row.kind, location: f.location || '', work_date: '', amount: amount, paid: false, note: '' },
+    });
+    setTimeout(() => this.setState({ workStatus: '' }), 2500);
+    this.loadTalentWork();
+  }
+
+  async toggleWorkPaid(w) {
+    const paid = !w.paid;
+    const { error } = await this.sb.from('talent_work')
+      .update({ paid, paid_on: paid ? new Date().toISOString().slice(0, 10) : null })
+      .eq('id', w.id);
+    if (error) { this.setState({ workStatus: error.message }); return; }
+    this.loadTalentWork();
+  }
+
+  async deleteWorkDay(w) {
+    const { error } = await this.sb.from('talent_work').delete().eq('id', w.id);
+    if (error) { this.setState({ workStatus: error.message }); return; }
+    this.loadTalentWork();
   }
 
   async loadEmailTemplates() {
@@ -5514,13 +5782,43 @@ class Component extends DCLogic {
     if (!error) this.setState({ talentBookings: data || [] });
   }
 
+  // Crafts that are cast on appearance. A drone operator's dress size is not a
+  // field anyone needs, so the block is not shown for them at all.
+  static get BODY_CRAFTS() { return ['model', 'anchor', 'choreographer']; }
+
+  fmtWorkDate(d) {
+    if (!d) return '';
+    const dt = new Date(d + 'T00:00:00');
+    if (isNaN(dt)) return d;
+    return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  talentAge(dob) {    if (!dob) return null;
+    const d = new Date(dob + 'T00:00:00');
+    if (isNaN(d)) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age >= 0 && age < 120 ? age : null;
+  }
+
+  // 178 -> 5'10". Indian casting briefs are written in feet even when the
+  // measurement is taken in centimetres, so both are shown.
+  heightFeet(cm) {
+    if (!cm) return '';
+    const inches = Math.round(Number(cm) / 2.54);
+    return Math.floor(inches / 12) + "'" + (inches % 12) + '"';
+  }
+
   filteredTalent() {
     const q = (this.state.talentQuery || '').toLowerCase().trim();
     const craft = this.state.craftFilter || 'all';
     return (this.state.talent || []).filter(t => {
       if (craft !== 'all' && t.craft !== craft) return false;
       if (!q) return true;
-      return [t.full_name, craftLabel(t.craft), t.city, t.phone, t.email, t.notes]
+      return [t.full_name, craftLabel(t.craft), t.city, t.phone, t.email, t.notes,
+              t.skills, t.languages, t.gender, t.hair_color, t.eye_color]
         .some(v => String(v || '').toLowerCase().indexOf(q) !== -1);
     });
   }
@@ -5562,19 +5860,40 @@ class Component extends DCLogic {
     const name = (f.full_name || '').trim();
     if (!name) { this.setState({ talentStatus: 'A name is the one thing this record cannot do without.' }); return; }
     const email = (f.email || '').trim();
+    // '' from an emptied number input must become null, not 0 — a 0 cm height
+    // would read as a real measurement and would fail the check constraint.
+    const num = v => {
+      const s = String(v == null ? '' : v).trim();
+      if (!s) return null;
+      const n = Number(s);
+      return isFinite(n) ? n : null;
+    };
+    const txt = v => (String(v == null ? '' : v).trim() || null);
     const row = {
       full_name: name, craft: f.craft || 'model',
       phone: (f.phone || '').trim() || null, email: email || null,
       city: (f.city || '').trim() || null, notes: (f.notes || '').trim() || null,
       active: f.active !== false,
+      gender: txt(f.gender), dob: txt(f.dob),
+      height_cm: num(f.height_cm), weight_kg: num(f.weight_kg),
+      chest_cm: num(f.chest_cm), waist_cm: num(f.waist_cm), hips_cm: num(f.hips_cm),
+      dress_size: txt(f.dress_size), shoe_size: txt(f.shoe_size),
+      hair_color: txt(f.hair_color), eye_color: txt(f.eye_color),
+      complexion: txt(f.complexion),
+      languages: txt(f.languages), skills: txt(f.skills),
+      experience_years: num(f.experience_years), day_rate: num(f.day_rate),
+      instagram: txt(f.instagram), portfolio_url: txt(f.portfolio_url),
     };
     this.setState({ talentStatus: 'Saving…' });
     const res = f.id
       ? await this.sb.from('talent').update(row).eq('id', f.id).select('id').maybeSingle()
       : await this.sb.from('talent').insert(row).select('id').maybeSingle();
-    if (res.error) { this.setState({ talentStatus: res.error.message }); return; }
-    // Say this now rather than at send time: an email address is the whole
-    // reason this page has a button on it.
+    if (res.error) {
+      this.setState({ talentStatus: /column .* does not exist/i.test(res.error.message)
+        ? 'The roster is missing the new profile columns — run album-system/talent-attributes.sql in Supabase, then save again.'
+        : res.error.message });
+      return;
+    }
     this.setState({
       talentForm: null, talentMode: 'view',
       talentId: (res.data && res.data.id) || this.state.talentId,
@@ -5805,6 +6124,14 @@ class Component extends DCLogic {
     const missingEmail = pickedList.filter(p => !(p.email || '').trim());
     const previewPerson = pickedList[0] || null;
 
+    const work = s.talentWork || [];
+    const wf = s.workForm || {};
+    const myWork = open ? work.filter(w => w.talent_id === open.id) : [];
+    const workAgreed = myWork.reduce((a, w) => a + Number(w.amount || 0), 0);
+    const workDue = myWork.filter(w => !w.paid).reduce((a, w) => a + Number(w.amount || 0), 0);
+    const workTrial = myWork.filter(w => w.kind === 'trial').length;
+    const workActual = myWork.filter(w => w.kind !== 'trial').length;
+
     // Everything the preview shows is derived from the same merge the send
     // uses, so what is on screen is literally what leaves the building.
     const mergedHtml = previewPerson ? this.mergeTokens(s.draftHtml || '', previewPerson, d, true) : '';
@@ -6004,6 +6331,27 @@ class Component extends DCLogic {
       formEmail: f.email || '', onFormEmail: e => this.setTalentField('email', e.target.value),
       formCity: f.city || '', onFormCity: e => this.setTalentField('city', e.target.value),
       formNotes: f.notes || '', onFormNotes: e => this.setTalentField('notes', e.target.value),
+      showBodyFields: Component.BODY_CRAFTS.indexOf(f.craft || 'model') !== -1,
+      formGender: f.gender || '', onFormGender: e => this.setTalentField('gender', e.target.value),
+      formDob: f.dob || '', onFormDob: e => this.setTalentField('dob', e.target.value),
+      formAgeHint: this.talentAge(f.dob) != null ? this.talentAge(f.dob) + ' years old' : 'Age is worked out from this',
+      formHeight: f.height_cm || '', onFormHeight: e => this.setTalentField('height_cm', e.target.value),
+      formHeightHint: f.height_cm ? this.heightFeet(f.height_cm) : 'cm',
+      formWeight: f.weight_kg || '', onFormWeight: e => this.setTalentField('weight_kg', e.target.value),
+      formChest: f.chest_cm || '', onFormChest: e => this.setTalentField('chest_cm', e.target.value),
+      formWaist: f.waist_cm || '', onFormWaist: e => this.setTalentField('waist_cm', e.target.value),
+      formHips: f.hips_cm || '', onFormHips: e => this.setTalentField('hips_cm', e.target.value),
+      formDress: f.dress_size || '', onFormDress: e => this.setTalentField('dress_size', e.target.value),
+      formShoe: f.shoe_size || '', onFormShoe: e => this.setTalentField('shoe_size', e.target.value),
+      formHair: f.hair_color || '', onFormHair: e => this.setTalentField('hair_color', e.target.value),
+      formEyes: f.eye_color || '', onFormEyes: e => this.setTalentField('eye_color', e.target.value),
+      formComplexion: f.complexion || '', onFormComplexion: e => this.setTalentField('complexion', e.target.value),
+      formSkills: f.skills || '', onFormSkills: e => this.setTalentField('skills', e.target.value),
+      formLanguages: f.languages || '', onFormLanguages: e => this.setTalentField('languages', e.target.value),
+      formExperience: f.experience_years || '', onFormExperience: e => this.setTalentField('experience_years', e.target.value),
+      formRate: f.day_rate || '', onFormRate: e => this.setTalentField('day_rate', e.target.value),
+      formInstagram: f.instagram || '', onFormInstagram: e => this.setTalentField('instagram', e.target.value),
+      formPortfolio: f.portfolio_url || '', onFormPortfolio: e => this.setTalentField('portfolio_url', e.target.value),
       saveTalent: () => this.saveTalent(),
       cancelTalentForm: () => this.cancelTalentForm(),
 
@@ -6013,21 +6361,84 @@ class Component extends DCLogic {
       talentActiveLabel: open ? (open.active ? 'Active' : 'Inactive') : '',
       talentActiveBg: open && open.active ? '#E7F4EF' : '#F4F6F5',
       talentActiveColor: open && open.active ? '#1C6B52' : '#7C8985',
-      talentViewVM: !open ? [] : [
-        ['Craft', craftLabel(open.craft)],
-        ['Phone', open.phone || '—'],
-        ['Email', open.email || 'none on file'],
-        ['City', open.city || '—'],
-        ['Notes', open.notes || '—'],
-      ].map(pair => ({ label: pair[0], value: pair[1] })),
+      talentViewVM: !open ? [] : (() => {
+        const age = this.talentAge(open.dob);
+        const measurements = [open.chest_cm, open.waist_cm, open.hips_cm].some(v => v)
+          ? [open.chest_cm, open.waist_cm, open.hips_cm].map(v => v || '–').join(' / ') + ' cm' : '';
+        // Only filled fields are printed. A card of twenty em dashes tells you
+        // nothing; a card of six real values is a casting decision.
+        return [
+          ['Craft', craftLabel(open.craft)],
+          ['Phone', open.phone || '—'],
+          ['Email', open.email || 'none on file'],
+          ['City', open.city || '—'],
+          ['Gender', open.gender],
+          ['Age', age != null ? age + ' years' : ''],
+          ['Height', open.height_cm ? open.height_cm + ' cm · ' + this.heightFeet(open.height_cm) : ''],
+          ['Weight', open.weight_kg ? open.weight_kg + ' kg' : ''],
+          ['Chest / waist / hips', measurements],
+          ['Dress size', open.dress_size],
+          ['Shoe size', open.shoe_size],
+          ['Hair', open.hair_color],
+          ['Eyes', open.eye_color],
+          ['Complexion', open.complexion],
+          ['Experience', open.experience_years ? open.experience_years + ' years' : ''],
+          ['Day rate', open.day_rate ? fmtINR(open.day_rate) : ''],
+          ['Languages', open.languages],
+          ['Skills', open.skills],
+          ['Instagram', open.instagram],
+          ['Portfolio', open.portfolio_url],
+          ['Notes', open.notes],
+        ].filter(pair => String(pair[1] || '').trim() !== '')
+         .map(pair => ({ label: pair[0], value: pair[1] }));
+      })(),
       editTalent: () => this.editTalent(),
       toggleTalentActive: () => this.toggleTalentActive(),
       talentActiveBtnLabel: open && open.active ? 'Mark inactive' : 'Mark active',
       pickThisTalent: () => { if (open) this.toggleTalentPick(open); },
       pickThisLabel: open && picked[open.id] ? 'Unselect' : 'Add to enquiry',
 
-      hasTalentBookings: !!open && bookings.some(b => b.talent_id === open.id),
-      talentBookingsVM: !open ? [] : bookings.filter(b => b.talent_id === open.id).map(b => {
+      // ---- Work log ----
+      hasWorkLoadError: !!s.workLoadError,
+      workLoadError: s.workLoadError || '',
+      workStatus: s.workStatus || '',
+      workProject: wf.project_title || '', onWorkProject: e => this.setWorkField('project_title', e.target.value),
+      workDate: wf.work_date || '', onWorkDate: e => this.setWorkField('work_date', e.target.value),
+      workKind: wf.kind || 'actual', onWorkKind: e => this.setWorkField('kind', e.target.value),
+      workAmount: wf.amount || '', onWorkAmount: e => this.setWorkField('amount', e.target.value),
+      workLocation: wf.location || '', onWorkLocation: e => this.setWorkField('location', e.target.value),
+      workNote: wf.note || '', onWorkNote: e => this.setWorkField('note', e.target.value),
+      workPaid: !!wf.paid, onWorkPaid: e => this.setWorkField('paid', e.target.checked),
+      addWorkDay: () => this.addWorkDay(),
+      workKindOptionsVM: WORK_KINDS.map(k => ({ value: k[0], label: k[1] })),
+      hasWorkRows: myWork.length > 0,
+      workRowsVM: myWork.map(w => {
+        const kind = WORK_KINDS.find(k => k[0] === w.kind) || [w.kind, w.kind, '#F4F6F5', '#7C8985'];
+        return {
+          id: w.id,
+          date: this.fmtWorkDate(w.work_date),
+          project: w.project_title,
+          kindLabel: kind[1], kindBg: kind[2], kindColor: kind[3],
+          amount: w.amount != null ? fmtINR(w.amount) : 'no amount set',
+          paidLabel: w.paid ? 'Paid' + (w.paid_on ? ' · ' + this.fmtWorkDate(w.paid_on) : '') : 'Unpaid',
+          paidBg: w.paid ? '#E7F4EF' : '#FDF9F0',
+          paidColor: w.paid ? '#1C6B52' : '#8A6D3B',
+          togglePaidLabel: w.paid ? 'Mark unpaid' : 'Mark paid',
+          togglePaid: () => this.toggleWorkPaid(w),
+          remove: () => this.deleteWorkDay(w),
+          meta: [w.location, w.note].filter(Boolean).join(' · '),
+          hasMeta: !!(w.location || w.note),
+        };
+      }),
+      workTotalsVM: [
+        ['Days worked', String(myWork.length)],
+        ['Trial / shoot', workTrial + ' / ' + workActual],
+        ['Agreed', fmtINR(workAgreed)],
+        ['Outstanding', fmtINR(workDue)],
+      ].map(pair => ({ label: pair[0], value: pair[1] })),
+      workDueHighlight: workDue > 0 ? '#8A6D3B' : '#1C6B52',
+
+      hasTalentBookings: !!open && bookings.some(b => b.talent_id === open.id),      talentBookingsVM: !open ? [] : bookings.filter(b => b.talent_id === open.id).map(b => {
         const meta = BOOKING_STATUSES[b.status] || [b.status, '#F4F6F5', '#7C8985'];
         return {
           project: b.project_title,
