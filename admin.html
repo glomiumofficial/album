@@ -212,6 +212,12 @@
       <sc-if value="{{ isPeople }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
 
+        <div style="flex:1 1 100%; display:flex; gap:28px; border-bottom:1px solid var(--line)">
+          <sc-for list="{{ crewTabsVM }}" as="tb" hint-placeholder-count="2">
+            <button onClick="{{ tb.go }}" style="padding:0 0 12px; background:none; border:none; border-bottom:2px solid {{ tb.line }}; color:{{ tb.color }}; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; margin-bottom:-1px" style-hover="color:var(--green-deep)">{{ tb.label }}</button>
+          </sc-for>
+        </div>
+
         <sc-if value="{{ hasRequestStatus }}" hint-placeholder-val="{{ false }}">
           <div style="flex:1 1 100%; padding:12px 16px; border:1px solid #E3D8BC; border-left:3px solid #C9A227; border-radius:3px; background:#FDFBF4; font-size:12px; color:#8A6D3B; line-height:1.6">{{ requestStatus }}</div>
         </sc-if>
@@ -930,6 +936,281 @@
 
         </div>
         </sc-if>
+
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isTalent }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start">
+
+        <div style="flex:1 1 100%; display:flex; gap:28px; border-bottom:1px solid var(--line)">
+          <sc-for list="{{ crewTabsVM }}" as="tb" hint-placeholder-count="2">
+            <button onClick="{{ tb.go }}" style="padding:0 0 12px; background:none; border:none; border-bottom:2px solid {{ tb.line }}; color:{{ tb.color }}; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer; margin-bottom:-1px" style-hover="color:var(--green-deep)">{{ tb.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="flex:0 1 300px; min-width:250px; display:flex; flex-direction:column; gap:10px">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Roster ({{ talentCount }})</span>
+            <sc-if value="{{ canTalentEdit }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ newTalent }}" style="padding:8px 13px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">+ Add</button>
+            </sc-if>
+          </div>
+          <input placeholder="Search name, craft or city" value="{{ talentQuery }}" onChange="{{ onTalentQueryChange }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+          <div style="display:flex; gap:6px; flex-wrap:wrap">
+            <sc-for list="{{ craftFilterVM }}" as="cf" hint-placeholder-count="5">
+              <button onClick="{{ cf.go }}" style="padding:5px 10px; background:{{ cf.bg }}; border:1px solid {{ cf.border }}; border-radius:11px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:{{ cf.color }}; cursor:pointer">{{ cf.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ hasTalentLoadError }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:12px 14px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC; font-size:12px; color:#8A6D3B; line-height:1.6; text-wrap:pretty">{{ talentLoadError }}</div>
+          </sc-if>
+          <sc-if value="{{ hasNoTalent }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size:13px; color:#7C8985; line-height:1.6; text-wrap:pretty">Nobody on the roster yet. This is for the models, artists and day-rate crew you book per shoot — separate from payroll, so they stay out of assignments and payout runs.</span>
+          </sc-if>
+          <sc-if value="{{ hasTalentSearchMiss }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:13px; color:#7C8985; line-height:1.6">Nobody matches that.</span>
+          </sc-if>
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <sc-for list="{{ talentListVM }}" as="tl" hint-placeholder-count="0">
+              <div style="display:flex; align-items:stretch; border:1px solid {{ tl.border }}; border-radius:3px; background:{{ tl.bg }}; overflow:hidden">
+                <button onClick="{{ tl.toggle }}" aria-label="{{ tl.toggleLabel }}" style="flex:0 0 36px; background:{{ tl.checkBg }}; border:none; border-right:1px solid {{ tl.border }}; color:{{ tl.checkColor }}; font-size:13px; cursor:pointer" style-hover="background:#E7F4EF">{{ tl.checkMark }}</button>
+                <button onClick="{{ tl.open }}" style="flex:1 1 auto; min-width:0; text-align:left; padding:10px 12px; background:none; border:none; cursor:pointer; display:flex; flex-direction:column; gap:3px">
+                  <span style="font-size:13px; color:{{ tl.nameColor }}">{{ tl.full_name }}</span>
+                  <span style="font-size:11px; color:#7C8985; overflow-wrap:anywhere">{{ tl.meta }}</span>
+                  <sc-if value="{{ tl.hasLive }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10px; padding:2px 8px; border-radius:9px; background:{{ tl.liveBg }}; color:{{ tl.liveColor }}; letter-spacing:.06em; text-transform:uppercase; align-self:flex-start; margin-top:3px">{{ tl.liveLabel }}</span>
+                  </sc-if>
+                </button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex:1 1 430px; min-width:0; display:flex; flex-direction:column; gap:22px">
+
+          <sc-if value="{{ hasTalentSelection }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--green); border-radius:4px; background:#FBFDFC">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:16px; color:#16231F">Booking enquiry</span>
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep)">{{ selectionLabel }}</span>
+              <button onClick="{{ clearTalentPicks }}" style="margin-left:auto; padding:6px 11px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7C8985; cursor:pointer">Clear</button>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <sc-for list="{{ selectionChipsVM }}" as="sc" hint-placeholder-count="1">
+                <div style="display:flex; align-items:center; gap:8px; padding:6px 8px 6px 11px; border:1px solid var(--line); border-radius:14px; background:#fff">
+                  <div style="display:flex; flex-direction:column; gap:1px">
+                    <span style="font-size:12px; color:#16231F">{{ sc.label }}</span>
+                    <span style="font-size:10px; color:{{ sc.subColor }}">{{ sc.sub }}</span>
+                  </div>
+                  <button onClick="{{ sc.drop }}" aria-label="Remove" style="width:18px; height:18px; padding:0; background:none; border:none; color:#9AA6A2; font-size:12px; cursor:pointer">✕</button>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px">
+              <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Project or shoot</span>
+                <input value="{{ bookingTitle }}" onChange="{{ onBookingTitle }}" placeholder="Mr Fone — festive campaign" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">From</span>
+                <input type="date" value="{{ bookingFrom }}" onChange="{{ onBookingFrom }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">To</span>
+                <input type="date" value="{{ bookingTo }}" onChange="{{ onBookingTo }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Location</span>
+                <input value="{{ bookingLocation }}" onChange="{{ onBookingLocation }}" placeholder="Studio, Kochi" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Anything else they should know</span>
+                <textarea value="{{ bookingBrief }}" onChange="{{ onBookingBrief }}" rows="3" placeholder="Two looks, ethnic and casual. Wardrobe provided." style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; font-family:inherit; resize:vertical" style-focus="border-color:var(--green)"></textarea>
+              </div>
+            </div>
+            <sc-if value="{{ hasBookingClash }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:5px; padding:12px 14px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#8A6D3B">Already committed on these dates</span>
+                <sc-for list="{{ bookingClashVM }}" as="bc" hint-placeholder-count="0">
+                  <span style="font-size:12px; color:#6E5526; line-height:1.6">{{ bc.label }}</span>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasBookingWarn }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12px; color:#B4433A; line-height:1.6">{{ bookingNoEmailWarn }}</span>
+            </sc-if>
+            <sc-if value="{{ hasMailFallbackNote }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px; color:#8A6D3B; line-height:1.6; text-wrap:pretty">{{ mailFallbackNote }}</span>
+            </sc-if>
+
+            <div style="display:flex; flex-direction:column; gap:13px; padding:18px; border:1px solid var(--line); border-radius:3px; background:#fff">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Message</span>
+                <sc-if value="{{ hasTemplates }}" hint-placeholder-val="{{ false }}">
+                  <select value="{{ templateId }}" onChange="{{ onSelectTemplate }}" style="padding:7px 10px; border:1px solid var(--line); border-radius:2px; font-size:12px; outline:none; background:#fff; color:#16231F">
+                    <sc-for list="{{ templateOptionsVM }}" as="to" hint-placeholder-count="1">
+                      <option value="{{ to.value }}">{{ to.label }}</option>
+                    </sc-for>
+                  </select>
+                </sc-if>
+                <div style="display:flex; gap:0; margin-left:auto; border:1px solid var(--line); border-radius:2px; overflow:hidden">
+                  <sc-for list="{{ bodyModeVM }}" as="bm" hint-placeholder-count="2">
+                    <button onClick="{{ bm.go }}" style="padding:7px 14px; background:{{ bm.bg }}; color:{{ bm.color }}; border:none; font-size:10px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer">{{ bm.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <sc-if value="{{ hasTemplateLoadError }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:11px 13px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC; font-size:12px; color:#8A6D3B; line-height:1.6; text-wrap:pretty">{{ templateLoadError }}</div>
+              </sc-if>
+
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Subject</span>
+                <input value="{{ draftSubject }}" onChange="{{ onDraftSubject }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+
+              <sc-if value="{{ showCode }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:7px">
+                  <textarea value="{{ draftHtml }}" onChange="{{ onDraftHtml }}" rows="16" spellcheck="false" style="padding:14px; border:1px solid var(--line); border-radius:2px; font-size:12px; line-height:1.65; outline:none; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; resize:vertical; background:#FBFCFC; color:#16231F; tab-size:2" style-focus="border-color:var(--green)"></textarea>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Tokens</span>
+                    <sc-for list="{{ tokenHintVM }}" as="tk" hint-placeholder-count="9">
+                      <span style="padding:3px 8px; border:1px solid var(--line); border-radius:3px; font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#5D6864; background:#F7F9F8">{{ tk.label }}</span>
+                    </sc-for>
+                  </div>
+                  <span style="font-size:11px; color:#7C8985; line-height:1.6; text-wrap:pretty">Write ordinary email HTML — tables and inline styles, no stylesheet, since mail clients strip one. Each person gets their own copy with the tokens filled in.</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ showPreview }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:7px">
+                  <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
+                    <span style="font-size:11px; color:#9AA6A2">{{ previewFor }}</span>
+                    <span style="font-size:12px; color:#16231F; margin-left:auto; overflow-wrap:anywhere">{{ previewSubject }}</span>
+                  </div>
+                  <iframe srcDoc="{{ previewHtml }}" sandbox="" title="Email preview" style="width:100%; height:420px; border:1px solid var(--line); border-radius:2px; background:#fff"></iframe>
+                </div>
+              </sc-if>
+
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-top:4px; border-top:1px solid var(--line)">
+                <button onClick="{{ saveTemplate }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ templateSaveLabel }}</button>
+                <input value="{{ templateName }}" onChange="{{ onTemplateName }}" placeholder="Save as a new template…" style="flex:1 1 150px; min-width:0; padding:8px 11px; border:1px solid var(--line); border-radius:2px; font-size:12px; outline:none" style-focus="border-color:var(--green)">
+                <button onClick="{{ saveTemplateAsNew }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#5D6864; cursor:pointer">Save as new</button>
+                <button onClick="{{ deleteTemplate }}" style="padding:8px 11px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; color:#B4433A; cursor:pointer">Delete</button>
+                <span style="font-size:11px; color:var(--green-deep); flex:1 1 100%; line-height:1.6">{{ templateStatus }}</span>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+              <button onClick="{{ sendBooking }}" disabled="{{ bookingSendDisabled }}" style="padding:11px 20px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:{{ bookingSendCursor }}; opacity:{{ bookingSendOpacity }}" style-hover="background:var(--green-deep)">{{ bookingSendLabel }}</button>
+              <span style="font-size:12px; color:var(--green-deep); line-height:1.6; flex:1 1 200px">{{ bookingStatus }}</span>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isTalentEdit }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <span style="font-size:16px; color:#16231F">{{ talentFormTitle }}</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px">
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Full name</span>
+                <input value="{{ formName }}" onChange="{{ onFormName }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Craft</span>
+                <select value="{{ formCraft }}" onChange="{{ onFormCraft }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff">
+                  <sc-for list="{{ craftOptionsVM }}" as="co" hint-placeholder-count="11">
+                    <option value="{{ co.value }}">{{ co.label }}</option>
+                  </sc-for>
+                </select>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Phone</span>
+                <input value="{{ formPhone }}" onChange="{{ onFormPhone }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Email</span>
+                <input value="{{ formEmail }}" onChange="{{ onFormEmail }}" placeholder="name@example.com" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                <span style="font-size:10px; color:#9AA6A2; line-height:1.5">Their own address — this is where the booking enquiry goes.</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">City</span>
+                <input value="{{ formCity }}" onChange="{{ onFormCity }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Notes</span>
+                <textarea value="{{ formNotes }}" onChange="{{ onFormNotes }}" rows="3" placeholder="Agency, languages, what they are good for — whatever you want to remember" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; font-family:inherit; resize:vertical" style-focus="border-color:var(--green)"></textarea>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+              <button onClick="{{ saveTalent }}" style="padding:11px 20px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save</button>
+              <button onClick="{{ cancelTalentForm }}" style="padding:11px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#7C8985; cursor:pointer">Cancel</button>
+              <span style="font-size:12px; color:var(--green-deep); flex:1 1 180px; line-height:1.6">{{ talentStatus }}</span>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isTalentView }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:20px; padding:26px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:20px; color:#16231F">{{ talentName }}</span>
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#9AA6A2">{{ talentCraftLabel }}</span>
+              <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ talentActiveBg }}; color:{{ talentActiveColor }}; letter-spacing:.06em; text-transform:uppercase">{{ talentActiveLabel }}</span>
+              <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ talentStatus }}</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:18px 24px">
+              <sc-for list="{{ talentViewVM }}" as="tv" hint-placeholder-count="4">
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:0">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ tv.label }}</span>
+                  <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ tv.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ canTalentEdit }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:4px">
+                <button onClick="{{ editTalent }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit</button>
+                <button onClick="{{ toggleTalentActive }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#7C8985; cursor:pointer">{{ talentActiveBtnLabel }}</button>
+                <button onClick="{{ pickThisTalent }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ pickThisLabel }}</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasTalentBookings }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:10px; padding-top:18px; border-top:1px solid var(--line)">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Bookings</span>
+                <sc-for list="{{ talentBookingsVM }}" as="bk" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; gap:8px; padding:13px 15px; border:1px solid var(--line); border-radius:3px">
+                    <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
+                      <span style="font-size:14px; color:#16231F">{{ bk.project }}</span>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ bk.statusBg }}; color:{{ bk.statusColor }}; letter-spacing:.06em; text-transform:uppercase; margin-left:auto">{{ bk.statusLabel }}</span>
+                    </div>
+                    <span style="font-size:11px; color:#7C8985; line-height:1.6">{{ bk.meta }}</span>
+                    <sc-if value="{{ bk.showActions }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; gap:8px; flex-wrap:wrap">
+                        <button onClick="{{ bk.confirm }}" style="padding:7px 13px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">They confirmed</button>
+                        <button onClick="{{ bk.decline }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#B4433A; cursor:pointer">They declined</button>
+                        <button onClick="{{ bk.cancel }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7C8985; cursor:pointer">We cancelled</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ bk.showReopen }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; gap:8px; flex-wrap:wrap">
+                        <button onClick="{{ bk.reopen }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#7C8985; cursor:pointer">Back to invited</button>
+                        <button onClick="{{ bk.remove }}" style="padding:7px 11px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; color:#B4433A; cursor:pointer">✕</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ talentEmptyPanel }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; flex-direction:column; gap:10px; padding:30px 26px; border:1px dashed var(--line); border-radius:4px">
+              <span style="font-size:15px; color:#16231F">Pick someone, or tick a few</span>
+              <span style="font-size:13px; color:#7C8985; line-height:1.7; text-wrap:pretty">Click a name to see their details and booking history. Tick the boxes down the left to build a booking enquiry — each person gets their own email, so nobody sees who else you asked.</span>
+            </div>
+          </sc-if>
+
+        </div>
 
       </div>
       </sc-if>
@@ -2877,6 +3158,38 @@ const EMAILJS_TEMPLATE_ID = 'template_9xph63f';
 const EMAILJS_INVOICE_TEMPLATE_ID = 'template_lgfvfhb';
 const EMAILJS_PUBLIC_KEY = 'rRmmmx6iCKnvLcEuR';
 
+// Booking enquiries to freelance talent. Create the template in EmailJS and
+// paste its id here — see album-system/TALENT-SETUP.md for the body and the
+// variable names. While this is empty the page still works: the Send button
+// opens the local mail client with the message prefilled, one person at a time,
+// and still logs the booking. Filling it in is what enables batch sending.
+const EMAILJS_BOOKING_TEMPLATE_ID = '';
+
+// The crafts Glomium actually books by the day. Keys match the check
+// constraint in talent-schema.sql; changing one means changing both.
+const TALENT_CRAFTS = [
+  ['model', 'Model'],
+  ['makeup', 'Makeup artist'],
+  ['hair', 'Hair stylist'],
+  ['stylist', 'Stylist / wardrobe'],
+  ['photographer', 'Photographer'],
+  ['videographer', 'Videographer'],
+  ['drone', 'Drone operator'],
+  ['editor', 'Editor'],
+  ['voice', 'Voice artist'],
+  ['anchor', 'Anchor / host'],
+  ['choreographer', 'Choreographer'],
+];
+const craftLabel = k => (TALENT_CRAFTS.find(c => c[0] === k) || [k, k])[1];
+
+const BOOKING_STATUSES = {
+  invited:   ['Invited',   '#FDF9F0', '#8A6D3B'],
+  confirmed: ['Confirmed', '#E7F4EF', '#1C6B52'],
+  declined:  ['Declined',  '#F9EFED', '#B4433A'],
+  cancelled: ['Cancelled', '#F4F6F5', '#7C8985'],
+};
+const bookingStatusLabel = k => (BOOKING_STATUSES[k] || [k])[0];
+
 const PACKAGE_DESC = 'Photography & Videography';
 
 const CREW_ROLES = [
@@ -2905,6 +3218,11 @@ const CAPS = {
   billing:     ['admin', 'accounts', 'hr'],
   people:      ['admin', 'hr'],
   peopleEdit:  ['admin', 'hr'],
+  // The freelance roster is contact details for people who do not work here.
+  // Same two roles as crew, and nothing wider — creative reads crew because
+  // they work alongside them; a model's phone number is not theirs to hold.
+  talent:      ['admin', 'hr'],
+  talentEdit:  ['admin', 'hr'],
   // Adding, editing or removing a crew member is an admin decision; HR proposes.
   peopleApprove: ['admin'],
   payouts:     ['admin', 'accounts', 'hr'],
@@ -2986,6 +3304,10 @@ const DIG_FEE_TYPES = [
   ['flat', 'Flat fee per cycle'], ['percent_spend', 'Percentage of ad spend'],
   ['flat_plus_percent', 'Flat, plus a percentage above a ceiling'], ['none', 'No management fee'],
 ];
+// Our own accounts, kept out of the client register without inventing a fake
+// client row for ourselves.
+const HOUSE = 'house';
+const HOUSE_LABEL = 'Glomium (house)';
 const DIG_TABS = [
   ['overview', 'Overview'], ['accounts', 'Accounts'], ['content', 'Content'],
   ['seo', 'SEO'], ['deals', 'Brand deals'], ['recharge', 'Recharge'],
@@ -3327,6 +3649,7 @@ class Component extends DCLogic {
     if (view === 'dashboard') this.loadForDivision();
     if (view === 'schedule') this.loadSchedule();
     if (view === 'people') { this.loadPeople(); this.loadWorkload(); this.loadChangeRequests(); }
+    if (view === 'talent') this.loadTalent();
     if (view === 'digital') this.loadDigital();
     if (view === 'approvals') { this.loadChangeRequests(); if (!this.state.people.length) this.loadPeople(); }
     if (view === 'payouts') { this.loadPayouts(); }
@@ -4839,6 +5162,561 @@ class Component extends DCLogic {
   // Raw XHR PUT so we get upload.onprogress — the SDK's upload() has no progress
   // event. Bytes go up verbatim: no transcode, no re-encode, no quality change.
 
+  // ---- Freelance & talent ------------------------------------------------------
+  //
+  // A separate roster from `people` on purpose — see the header of
+  // talent-schema.sql. Everything here is contact details plus a log of who was
+  // asked to work on what, and what they said.
+
+  async loadTalent() {
+    const { data, error } = await this.sb.from('talent').select('*').order('full_name', { ascending: true }).limit(600);
+    if (error) {
+      // A failed fetch must not read as an empty roster. This is the same bug
+      // class as the sync's silent skip: the friendly empty state is a claim
+      // about the data, and it has no business being made when the query never
+      // answered. PGRST205 is the one everybody hits first — the tables are
+      // not in the database yet — so it gets told what to do about it.
+      const missing = error.code === 'PGRST205' || /schema cache/i.test(error.message || '');
+      this.setState({
+        talent: [],
+        talentLoadError: missing
+          ? 'The roster tables are not in the database yet — run album-system/talent-schema.sql in the Supabase SQL editor, then reload this page.'
+          : 'Could not load the roster: ' + error.message,
+      });
+      return;
+    }
+    this.setState({ talent: data || [], talentLoadError: '' });
+    this.loadTalentBookings();
+    this.loadEmailTemplates();
+  }
+
+  async loadEmailTemplates() {
+    const { data, error } = await this.sb.from('email_templates').select('*').eq('kind', 'booking').order('name');
+    if (error) {
+      const missing = error.code === 'PGRST205' || /schema cache/i.test(error.message || '');
+      this.setState({
+        emailTemplates: [],
+        templateLoadError: missing
+          ? 'The email template table is not in the database yet — run album-system/email-templates.sql in the Supabase SQL editor.'
+          : 'Could not load email templates: ' + error.message,
+      });
+      return;
+    }
+    const list = data || [];
+    const s = this.state;
+    const pick = list.find(t => t.id === s.templateId) || list.find(t => t.is_default) || list[0] || null;
+    // Only seed the draft on a first load. Re-seeding on every refresh would
+    // throw away edits made in the HTML box while a send was being composed.
+    const seed = !s.draftHtml && !!pick;
+    this.setState({
+      emailTemplates: list, templateLoadError: '',
+      templateId: pick ? pick.id : null,
+      draftSubject: seed ? pick.subject : (s.draftSubject || ''),
+      draftHtml: seed ? pick.body_html : (s.draftHtml || ''),
+      templateDirty: seed ? false : !!s.templateDirty,
+    });
+  }
+
+  selectEmailTemplate(id) {
+    const t = (this.state.emailTemplates || []).find(x => x.id === id);
+    if (!t) return;
+    this.setState({
+      templateId: t.id, draftSubject: t.subject, draftHtml: t.body_html,
+      templateDirty: false, templateStatus: '',
+    });
+  }
+
+  // Tokens are merged here rather than in EmailJS so the preview is the
+  // literal string that gets sent — no second templating layer to disagree
+  // with. An unknown token is left verbatim instead of blanked: a visible
+  // {{whatever}} in the preview is a bug you can see.
+  mergeTokens(str, p, d, isHtml) {
+    const map = {
+      name: p.full_name || '',
+      first_name: String(p.full_name || '').trim().split(/\s+/)[0] || 'there',
+      craft: craftLabel(p.craft),
+      craft_lower: craftLabel(p.craft).toLowerCase(),
+      project: (d.project_title || '').trim() || '[shoot name]',
+      dates: this.bookingDates(d),
+      location: (d.location || '').trim() || 'To be confirmed',
+      brief: (d.brief || '').trim(),
+      sender: 'Team Glomium',
+    };
+    let out = String(str || '').replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (m, k) => {
+      const key = k.toLowerCase();
+      return Object.prototype.hasOwnProperty.call(map, key) ? map[key] : m;
+    });
+    // An empty brief leaves an empty cell or paragraph behind, which prints as
+    // a stray gap in the email. Drop the container rather than the token.
+    if (isHtml) out = out.replace(/<(p|td|div)([^>]*)>\s*<\/\1>/gi, '');
+    return out;
+  }
+
+  htmlToText(html) {
+    return String(html || '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(p|div|tr|h[1-6]|td)>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'")
+      .split('\n').map(l => l.trim()).join('\n')
+      .replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  async saveEmailTemplate(asNew) {
+    const s = this.state;
+    const name = asNew ? (s.templateName || '').trim() : ((s.emailTemplates || []).find(t => t.id === s.templateId) || {}).name;
+    if (asNew && !name) { this.setState({ templateStatus: 'Give the new template a name.' }); return; }
+    const row = {
+      name, kind: 'booking',
+      subject: s.draftSubject || '', body_html: s.draftHtml || '',
+      updated_at: new Date().toISOString(),
+    };
+    this.setState({ templateStatus: 'Saving…' });
+    const res = asNew
+      ? await this.sb.from('email_templates').insert(row).select('id').maybeSingle()
+      : await this.sb.from('email_templates').update(row).eq('id', s.templateId).select('id').maybeSingle();
+    if (res.error) { this.setState({ templateStatus: res.error.message }); return; }
+    this.setState({
+      templateStatus: asNew ? 'Saved as “' + name + '”.' : 'Template saved.',
+      templateDirty: false, templateName: '',
+      templateId: (res.data && res.data.id) || s.templateId,
+    });
+    setTimeout(() => this.setState({ templateStatus: '' }), 3000);
+    this.loadEmailTemplates();
+  }
+
+  async deleteEmailTemplate() {
+    const s = this.state;
+    const list = s.emailTemplates || [];
+    if (list.length < 2) { this.setState({ templateStatus: 'This is the only template — edit it rather than deleting it.' }); return; }
+    const { error } = await this.sb.from('email_templates').delete().eq('id', s.templateId);
+    if (error) { this.setState({ templateStatus: error.message }); return; }
+    this.setState({ templateId: null, draftHtml: '', draftSubject: '', templateDirty: false });
+    this.loadEmailTemplates();
+  }
+
+  async loadTalentBookings() {
+    const { data, error } = await this.sb.from('talent_bookings').select('*')
+      .order('invited_at', { ascending: false }).limit(600);
+    if (!error) this.setState({ talentBookings: data || [] });
+  }
+
+  filteredTalent() {
+    const q = (this.state.talentQuery || '').toLowerCase().trim();
+    const craft = this.state.craftFilter || 'all';
+    return (this.state.talent || []).filter(t => {
+      if (craft !== 'all' && t.craft !== craft) return false;
+      if (!q) return true;
+      return [t.full_name, craftLabel(t.craft), t.city, t.phone, t.email, t.notes]
+        .some(v => String(v || '').toLowerCase().indexOf(q) !== -1);
+    });
+  }
+
+  toggleTalentPick(t) {
+    const picked = Object.assign({}, this.state.talentPicked || {});
+    if (picked[t.id]) delete picked[t.id]; else picked[t.id] = true;
+    this.setState({ talentPicked: picked, bookingStatus: '' });
+  }
+
+  clearTalentPicks() { this.setState({ talentPicked: {}, bookingStatus: '' }); }
+
+  openTalent(t) {
+    this.setState({ talentId: t.id, talentForm: null, talentMode: 'view', talentStatus: '' });
+  }
+
+  newTalent() {
+    this.setState({
+      talentId: null, talentMode: 'edit', talentStatus: '',
+      talentForm: { full_name: '', craft: 'model', phone: '', email: '', city: '', notes: '', active: true },
+    });
+  }
+
+  editTalent() {
+    const t = (this.state.talent || []).find(x => x.id === this.state.talentId);
+    if (t) this.setState({ talentMode: 'edit', talentForm: Object.assign({}, t), talentStatus: '' });
+  }
+
+  setTalentField(k, v) {
+    this.setState({ talentForm: Object.assign({}, this.state.talentForm || {}, { [k]: v }) });
+  }
+
+  cancelTalentForm() {
+    this.setState({ talentForm: null, talentMode: this.state.talentId ? 'view' : 'none', talentStatus: '' });
+  }
+
+  async saveTalent() {
+    const f = this.state.talentForm || {};
+    const name = (f.full_name || '').trim();
+    if (!name) { this.setState({ talentStatus: 'A name is the one thing this record cannot do without.' }); return; }
+    const email = (f.email || '').trim();
+    const row = {
+      full_name: name, craft: f.craft || 'model',
+      phone: (f.phone || '').trim() || null, email: email || null,
+      city: (f.city || '').trim() || null, notes: (f.notes || '').trim() || null,
+      active: f.active !== false,
+    };
+    this.setState({ talentStatus: 'Saving…' });
+    const res = f.id
+      ? await this.sb.from('talent').update(row).eq('id', f.id).select('id').maybeSingle()
+      : await this.sb.from('talent').insert(row).select('id').maybeSingle();
+    if (res.error) { this.setState({ talentStatus: res.error.message }); return; }
+    // Say this now rather than at send time: an email address is the whole
+    // reason this page has a button on it.
+    this.setState({
+      talentForm: null, talentMode: 'view',
+      talentId: (res.data && res.data.id) || this.state.talentId,
+      talentStatus: email ? 'Saved.' : 'Saved — but with no email address, no booking enquiry can be sent to them.',
+    });
+    setTimeout(() => this.setState({ talentStatus: '' }), email ? 2500 : 6000);
+    this.loadTalent();
+  }
+
+  async toggleTalentActive() {
+    const t = (this.state.talent || []).find(x => x.id === this.state.talentId);
+    if (!t) return;
+    // Deactivated rather than deleted: the bookings reference this row, and
+    // losing the record that you emailed someone is worse than a long list.
+    const { error } = await this.sb.from('talent').update({ active: !t.active }).eq('id', t.id);
+    if (error) { this.setState({ talentStatus: error.message }); return; }
+    this.loadTalent();
+  }
+
+  // ---- Booking enquiries -------------------------------------------------------
+
+  setBookingField(k, v) {
+    this.setState({ bookingDraft: Object.assign({}, this.state.bookingDraft || {}, { [k]: v }), bookingStatus: '' });
+  }
+
+  bookingDates(d) {
+    const fmt = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const a = fmt(d.shoot_from), b = fmt(d.shoot_to);
+    if (a && b && a !== b) return a + ' to ' + b;
+    return a || b || 'dates to be confirmed';
+  }
+
+  bookingRowFor(p, d, title) {
+    return {
+      talent_id: p.id, project_title: title,
+      shoot_from: d.shoot_from || null,
+      shoot_to: d.shoot_to || d.shoot_from || null,
+      location: (d.location || '').trim() || null,
+      brief: (d.brief || '').trim() || null,
+      status: 'invited', invited_at: new Date().toISOString(),
+    };
+  }
+
+  async sendBookingEnquiry() {
+    const s = this.state;
+    const d = s.bookingDraft || {};
+    const picked = s.talentPicked || {};
+    const people = (s.talent || []).filter(t => picked[t.id]);
+    const title = (d.project_title || '').trim();
+    if (!title) { this.setState({ bookingStatus: 'Give the shoot a name — the subject line uses it.' }); return; }
+    if (!people.length) { this.setState({ bookingStatus: 'Nobody selected.' }); return; }
+    if (!(s.draftHtml || '').trim()) { this.setState({ bookingStatus: 'The message body is empty.' }); return; }
+
+    const withEmail = people.filter(p => (p.email || '').trim());
+    const noEmail = people.length - withEmail.length;
+    if (!withEmail.length) {
+      this.setState({ bookingStatus: 'None of the selected people have an email address on file. Add one on their record first.' });
+      return;
+    }
+
+    const rows = [];
+    const failed = [];
+    let sent = 0;
+
+    if (!EMAILJS_BOOKING_TEMPLATE_ID) {
+      // No EmailJS template configured, so fall back to the mail client. HTML
+      // cannot travel through a mailto, so the body is flattened to text — the
+      // layout is lost but the words are not. A browser honours one mailto per
+      // gesture, so a batch genuinely cannot work this way.
+      if (withEmail.length > 1) {
+        this.setState({ bookingStatus: 'Sending to several people at once needs the EmailJS booking template — see TALENT-SETUP.md. Select one person and this will open your mail app instead.' });
+        return;
+      }
+      const p = withEmail[0];
+      window.open('mailto:' + encodeURIComponent(p.email)
+        + '?subject=' + encodeURIComponent(this.mergeTokens(s.draftSubject, p, d, false))
+        + '&body=' + encodeURIComponent(this.htmlToText(this.mergeTokens(s.draftHtml, p, d, true))), '_blank');
+      rows.push(this.bookingRowFor(p, d, title));
+      sent = 1;
+    } else {
+      const mailer = await this.waitForGlobal('emailjs', 8000);
+      if (!mailer) { this.setState({ bookingStatus: 'Email service did not load — check your connection and try again.' }); return; }
+      this.setState({ bookingSending: true, bookingStatus: 'Sending…' });
+      for (const p of withEmail) {
+        const html = this.mergeTokens(s.draftHtml, p, d, true);
+        try {
+          await mailer.send(EMAILJS_SERVICE_ID, EMAILJS_BOOKING_TEMPLATE_ID, {
+            to_email: p.email, email: p.email, to_name: p.full_name,
+            subject: this.mergeTokens(s.draftSubject, p, d, false),
+            body_html: html,
+            message: this.htmlToText(html),
+          }, { publicKey: EMAILJS_PUBLIC_KEY });
+          rows.push(this.bookingRowFor(p, d, title));
+          sent++;
+        } catch (e) {
+          // One bad address must not cost the others their invitation, and a
+          // booking row for an email that never left would read as a lie.
+          failed.push((p.full_name || 'someone') + ' (' + String((e && e.text) || (e && e.message) || e) + ')');
+        }
+      }
+    }
+
+    if (rows.length) {
+      const { error } = await this.sb.from('talent_bookings').insert(rows);
+      if (error) {
+        this.setState({ bookingSending: false, bookingStatus: 'The emails went out, but the booking log failed: ' + error.message });
+        return;
+      }
+    }
+
+    const parts = [];
+    if (sent) parts.push('Invited ' + sent + (sent === 1 ? ' person.' : ' people.'));
+    if (failed.length) parts.push('Failed for ' + failed.join('; ') + '.');
+    if (noEmail) parts.push(noEmail + (noEmail === 1 ? ' person has' : ' people have') + ' no email on file and ' + (noEmail === 1 ? 'was' : 'were') + ' skipped.');
+    const clean = sent > 0 && !failed.length;
+    this.setState({
+      bookingSending: false,
+      bookingStatus: parts.join(' '),
+      talentPicked: clean ? {} : this.state.talentPicked,
+      bookingDraft: clean ? {} : this.state.bookingDraft,
+    });
+    this.loadTalentBookings();
+  }
+
+  async setBookingStatus(b, status) {
+    const { error } = await this.sb.from('talent_bookings')
+      .update({ status, responded_at: status === 'invited' ? null : new Date().toISOString() })
+      .eq('id', b.id);
+    if (error) { this.setState({ talentStatus: error.message }); return; }
+    this.loadTalentBookings();
+  }
+
+  async deleteBooking(b) {
+    const { error } = await this.sb.from('talent_bookings').delete().eq('id', b.id);
+    if (error) { this.setState({ talentStatus: error.message }); return; }
+    this.loadTalentBookings();
+  }
+
+  talentVM() {
+    const s = this.state;
+    // renderVals runs on every keystroke anywhere in the app; build this only
+    // while the tab that shows it is open.
+    if (s.view !== 'talent') return { isTalent: false };
+
+    const all = s.talent || [];
+    const list = this.filteredTalent();
+    const picked = s.talentPicked || {};
+    const pickedList = all.filter(t => picked[t.id]);
+    const open = all.find(t => t.id === s.talentId) || null;
+    const bookings = s.talentBookings || [];
+    const today = new Date().toISOString().slice(0, 10);
+    const editing = s.talentMode === 'edit' && !!s.talentForm;
+    const f = s.talentForm || {};
+    const d = s.bookingDraft || {};
+
+    const liveFor = id => bookings.filter(b => b.talent_id === id
+      && (b.status === 'invited' || b.status === 'confirmed')
+      && (!b.shoot_to || b.shoot_to >= today));
+
+    // A clash is only worth showing once dates are actually set.
+    const from = d.shoot_from || d.shoot_to || '';
+    const to = d.shoot_to || d.shoot_from || '';
+    const clashes = !from ? [] : pickedList.reduce((acc, p) => {
+      bookings.forEach(b => {
+        if (b.talent_id !== p.id) return;
+        if (b.status !== 'invited' && b.status !== 'confirmed') return;
+        const bf = b.shoot_from || b.shoot_to, bt = b.shoot_to || b.shoot_from;
+        if (!bf) return;
+        if (bf <= to && bt >= from) {
+          acc.push({ label: p.full_name + ' — ' + b.project_title + ', ' + this.bookingDates(b) + ' (' + bookingStatusLabel(b.status).toLowerCase() + ')' });
+        }
+      });
+      return acc;
+    }, []);
+
+    const missingEmail = pickedList.filter(p => !(p.email || '').trim());
+    const previewPerson = pickedList[0] || null;
+
+    return {
+      isTalent: true,
+      canTalentEdit: this.can('talentEdit'),
+      talentCount: list.length,
+      talentQuery: s.talentQuery || '',
+      onTalentQueryChange: e => this.setState({ talentQuery: e.target.value }),
+      hasNoTalent: !all.length && !s.talentLoadError,
+      hasTalentLoadError: !!s.talentLoadError,
+      talentLoadError: s.talentLoadError || '',
+      hasTalentSearchMiss: all.length > 0 && list.length === 0,
+      newTalent: () => this.newTalent(),
+      talentStatus: s.talentStatus || '',
+
+      craftFilterVM: [['all', 'All']].concat(TALENT_CRAFTS).map(pair => {
+        const on = (s.craftFilter || 'all') === pair[0];
+        return {
+          label: pair[1], go: () => this.setState({ craftFilter: pair[0] }),
+          bg: on ? 'var(--green)' : 'none',
+          border: on ? 'var(--green)' : 'var(--line)',
+          color: on ? '#fff' : '#5D6864',
+        };
+      }),
+
+      talentListVM: list.map(t => {
+        const on = !!picked[t.id];
+        const live = liveFor(t.id);
+        const isOpen = t.id === s.talentId;
+        const confirmed = live.some(b => b.status === 'confirmed');
+        return {
+          full_name: t.full_name,
+          nameColor: t.active ? '#16231F' : '#9AA6A2',
+          meta: [craftLabel(t.craft), t.city, t.active ? '' : 'inactive'].filter(Boolean).join(' · '),
+          open: () => this.openTalent(t),
+          toggle: () => this.toggleTalentPick(t),
+          toggleLabel: (on ? 'Unselect ' : 'Select ') + t.full_name + ' for a booking enquiry',
+          checkMark: on ? '✓' : '',
+          checkBg: on ? 'var(--green)' : '#F4F6F5',
+          checkColor: on ? '#fff' : '#9AA6A2',
+          bg: isOpen ? '#F4F6F5' : '#fff',
+          border: isOpen ? 'var(--green)' : 'var(--line)',
+          hasLive: live.length > 0,
+          liveLabel: live.length === 1
+            ? bookingStatusLabel(live[0].status) + ' · ' + live[0].project_title
+            : live.length + ' open bookings',
+          liveBg: confirmed ? '#E7F4EF' : '#FDF9F0',
+          liveColor: confirmed ? '#1C6B52' : '#8A6D3B',
+        };
+      }),
+
+      hasTalentSelection: pickedList.length > 0,
+      selectionLabel: pickedList.length + (pickedList.length === 1 ? ' person' : ' people'),
+      selectionChipsVM: pickedList.map(p => ({
+        label: p.full_name,
+        sub: (p.email || '').trim() || 'no email on file',
+        subColor: (p.email || '').trim() ? '#7C8985' : '#B4433A',
+        drop: () => this.toggleTalentPick(p),
+      })),
+      clearTalentPicks: () => this.clearTalentPicks(),
+      bookingTitle: d.project_title || '',
+      onBookingTitle: e => this.setBookingField('project_title', e.target.value),
+      bookingFrom: d.shoot_from || '',
+      onBookingFrom: e => this.setBookingField('shoot_from', e.target.value),
+      bookingTo: d.shoot_to || '',
+      onBookingTo: e => this.setBookingField('shoot_to', e.target.value),
+      bookingLocation: d.location || '',
+      onBookingLocation: e => this.setBookingField('location', e.target.value),
+      bookingBrief: d.brief || '',
+      onBookingBrief: e => this.setBookingField('brief', e.target.value),
+      sendBooking: () => this.sendBookingEnquiry(),
+      bookingSendDisabled: !!s.bookingSending,
+      bookingSendCursor: s.bookingSending ? 'not-allowed' : 'pointer',
+      bookingSendOpacity: s.bookingSending ? '.55' : '1',
+      bookingSendLabel: s.bookingSending ? 'Sending…'
+        : EMAILJS_BOOKING_TEMPLATE_ID ? 'Send booking enquiry' : 'Open in mail app',
+      bookingStatus: s.bookingStatus || '',
+      hasBookingWarn: missingEmail.length > 0,
+      bookingNoEmailWarn: missingEmail.length === 1
+        ? missingEmail[0].full_name + ' has no email address on file and will be skipped.'
+        : missingEmail.length + ' of the selected people have no email address and will be skipped.',
+      hasMailFallbackNote: !EMAILJS_BOOKING_TEMPLATE_ID,
+      mailFallbackNote: 'No EmailJS booking template is configured yet, so this opens your mail app with the message prefilled — one person at a time. The booking is still logged. Paste a template id into EMAILJS_BOOKING_TEMPLATE_ID to send a batch straight from here.',
+      hasBookingClash: clashes.length > 0,
+      bookingClashVM: clashes,
+      templateOptionsVM: (s.emailTemplates || []).map(t => ({ value: t.id, label: t.name })),
+      templateId: s.templateId || '',
+      onSelectTemplate: e => this.selectEmailTemplate(e.target.value),
+      hasTemplates: (s.emailTemplates || []).length > 0,
+      hasTemplateLoadError: !!s.templateLoadError,
+      templateLoadError: s.templateLoadError || '',
+      draftSubject: s.draftSubject || '',
+      onDraftSubject: e => this.setState({ draftSubject: e.target.value, templateDirty: true, bookingStatus: '' }),
+      draftHtml: s.draftHtml || '',
+      onDraftHtml: e => this.setState({ draftHtml: e.target.value, templateDirty: true, bookingStatus: '' }),
+      bodyMode: s.bodyMode || 'preview',
+      bodyModeVM: [['preview', 'Preview'], ['code', 'HTML']].map(pair => {
+        const on = (s.bodyMode || 'preview') === pair[0];
+        return {
+          label: pair[1], go: () => this.setState({ bodyMode: pair[0] }),
+          bg: on ? '#16231F' : 'none', color: on ? '#fff' : '#7C8985',
+          border: on ? '#16231F' : 'var(--line)',
+        };
+      }),
+      showCode: (s.bodyMode || 'preview') === 'code',
+      showPreview: (s.bodyMode || 'preview') !== 'code',
+      // The preview is rendered for the first selected person, so the tokens
+      // resolve to a real name rather than showing their own braces.
+      previewFor: previewPerson ? 'As ' + previewPerson.full_name + ' will see it' : '',
+      previewHtml: previewPerson
+        ? this.mergeTokens(s.draftHtml || '', previewPerson, d, true)
+        : '<p style="font-family:Helvetica,Arial,sans-serif;color:#9AA6A2;padding:20px">Select someone to preview this.</p>',
+      previewSubject: previewPerson ? this.mergeTokens(s.draftSubject || '', previewPerson, d, false) : '',
+      tokenHintVM: [
+        '{{first_name}}', '{{name}}', '{{craft}}', '{{craft_lower}}',
+        '{{project}}', '{{dates}}', '{{location}}', '{{brief}}', '{{sender}}',
+      ].map(t => ({ label: t })),
+      templateDirty: !!s.templateDirty,
+      templateSaveLabel: s.templateDirty ? 'Save changes to template' : 'Template saved',
+      saveTemplate: () => this.saveEmailTemplate(false),
+      saveTemplateAsNew: () => this.saveEmailTemplate(true),
+      deleteTemplate: () => this.deleteEmailTemplate(),
+      templateName: s.templateName || '',
+      onTemplateName: e => this.setState({ templateName: e.target.value }),
+      templateStatus: s.templateStatus || '',
+
+      isTalentEdit: editing,
+      talentFormTitle: f.id ? 'Edit ' + (f.full_name || 'record') : 'New roster entry',
+      formName: f.full_name || '', onFormName: e => this.setTalentField('full_name', e.target.value),
+      formCraft: f.craft || 'model', onFormCraft: e => this.setTalentField('craft', e.target.value),
+      craftOptionsVM: TALENT_CRAFTS.map(pair => ({ value: pair[0], label: pair[1] })),
+      formPhone: f.phone || '', onFormPhone: e => this.setTalentField('phone', e.target.value),
+      formEmail: f.email || '', onFormEmail: e => this.setTalentField('email', e.target.value),
+      formCity: f.city || '', onFormCity: e => this.setTalentField('city', e.target.value),
+      formNotes: f.notes || '', onFormNotes: e => this.setTalentField('notes', e.target.value),
+      saveTalent: () => this.saveTalent(),
+      cancelTalentForm: () => this.cancelTalentForm(),
+
+      isTalentView: !!open && !editing,
+      talentName: open ? open.full_name : '',
+      talentCraftLabel: open ? craftLabel(open.craft) : '',
+      talentActiveLabel: open ? (open.active ? 'Active' : 'Inactive') : '',
+      talentActiveBg: open && open.active ? '#E7F4EF' : '#F4F6F5',
+      talentActiveColor: open && open.active ? '#1C6B52' : '#7C8985',
+      talentViewVM: !open ? [] : [
+        ['Craft', craftLabel(open.craft)],
+        ['Phone', open.phone || '—'],
+        ['Email', open.email || 'none on file'],
+        ['City', open.city || '—'],
+        ['Notes', open.notes || '—'],
+      ].map(pair => ({ label: pair[0], value: pair[1] })),
+      editTalent: () => this.editTalent(),
+      toggleTalentActive: () => this.toggleTalentActive(),
+      talentActiveBtnLabel: open && open.active ? 'Mark inactive' : 'Mark active',
+      pickThisTalent: () => { if (open) this.toggleTalentPick(open); },
+      pickThisLabel: open && picked[open.id] ? 'Unselect' : 'Add to enquiry',
+
+      hasTalentBookings: !!open && bookings.some(b => b.talent_id === open.id),
+      talentBookingsVM: !open ? [] : bookings.filter(b => b.talent_id === open.id).map(b => {
+        const meta = BOOKING_STATUSES[b.status] || [b.status, '#F4F6F5', '#7C8985'];
+        return {
+          project: b.project_title,
+          meta: [this.bookingDates(b), b.location].filter(Boolean).join(' · '),
+          statusLabel: meta[0], statusBg: meta[1], statusColor: meta[2],
+          showActions: b.status === 'invited',
+          showReopen: b.status !== 'invited',
+          confirm: () => this.setBookingStatus(b, 'confirmed'),
+          decline: () => this.setBookingStatus(b, 'declined'),
+          cancel: () => this.setBookingStatus(b, 'cancelled'),
+          reopen: () => this.setBookingStatus(b, 'invited'),
+          remove: () => this.deleteBooking(b),
+        };
+      }),
+
+      talentEmptyPanel: !open && !editing && !pickedList.length,
+    };
+  }
+
   // ---- People ------------------------------------------------------------------
 
   async loadPeople() {
@@ -5979,7 +6857,9 @@ class Component extends DCLogic {
     // made a quiet client look empty whenever a busier one filled the window.
     const scope = s.digProject;
     const ids = s.digAccounts
-      .filter(a => scope === 'all' || a.project_id === scope).map(a => a.id);
+      .filter(a => scope === HOUSE ? a.project_id == null
+        : scope === 'all' ? a.project_id != null : a.project_id === scope)
+      .map(a => a.id);
 
     if (tab === 'accounts' && this.can('digitalSecret')) this.loadSecretStatus();
 
@@ -6056,10 +6936,17 @@ class Component extends DCLogic {
     this.setState({ digSyncing: true, digStatus: 'Asking the platforms…' });
     const { data, error } = await this.sb.functions.invoke('digital-sync', { body });
     if (error) {
+      // supabase-js reports a function that does not exist and a function that
+      // refuses the calling origin with the same "Failed to send a request"
+      // string — the browser will not tell it which. Asserting "deploy it" sent
+      // someone in a circle re-deploying a function that was already live and
+      // was only rejecting the page's address, so say both and name the origin.
       this.setState({
         digSyncing: false,
-        digStatus: 'Could not reach the sync function (' + error.message
-          + '). Deploy it with: supabase functions deploy digital-sync',
+        digStatus: 'The sync function did not answer (' + error.message + '). Either it is not '
+          + 'deployed, or it is deployed and refusing this page — check that Edge Functions '
+          + 'lists digital-sync, then that its ALLOWED_ORIGIN secret matches '
+          + window.location.origin,
       });
       return;
     }
@@ -6090,7 +6977,15 @@ class Component extends DCLogic {
   }
 
   editAccount(a) {
-    this.setState({ acctForm: { ...a }, digStatus: '', secretValue: '', secretShown: null, secretReason: '' });
+    // A house row carries project_id = null, and the form has to carry HOUSE
+    // instead. Holding the raw null meant the client select displayed
+    // "Glomium (house)" while the form still held a falsy value, so saveAccount's
+    // `if (!f.project_id)` guard rejected every edit of one of our own accounts
+    // — Save looked dead, with the refusal explaining itself off-screen.
+    this.setState({
+      acctForm: { ...a, project_id: a.project_id || HOUSE },
+      digStatus: '', secretValue: '', secretShown: null, secretReason: '',
+    });
   }
 
   closeAccountForm() {
@@ -6104,10 +6999,14 @@ class Component extends DCLogic {
   async saveAccount() {
     const f = this.state.acctForm;
     if (!f) return;
-    if (!f.project_id) { this.setState({ digStatus: 'Which client does this account belong to?' }); return; }
+    if (!f.project_id) {
+      this.setState({ digStatus: 'Pick a client for this account — or Glomium (house) if it is one of ours.' });
+      return;
+    }
     this.setState({ digStatus: 'Saving…' });
     const row = {
-      project_id: f.project_id, platform: f.platform,
+      // HOUSE is a picker sentinel, not an id — our own accounts carry no project.
+      project_id: f.project_id === HOUSE ? null : f.project_id, platform: f.platform,
       label: f.label || null, handle: f.handle || null, external_id: f.external_id || null,
       login_email: f.login_email || null, recovery_phone: f.recovery_phone || null,
       access_route: f.access_route, vault_ref: f.vault_ref || null,
@@ -6266,7 +7165,8 @@ class Component extends DCLogic {
     this.setState({
       digStatus: '',
       dealForm: {
-        project_id: s.digProject !== 'all' ? s.digProject : '', brand: '', kind: 'paid',
+        project_id: (s.digProject !== 'all' && s.digProject !== HOUSE) ? s.digProject : '',
+      brand: '', kind: 'paid',
         fee: '', barter_value: '', deliverables: '', agreed_on: '', live_from: '', live_to: '',
         status: 'pitched', disclosure_ok: false, notes: '',
       },
@@ -6358,7 +7258,12 @@ class Component extends DCLogic {
     // The digital client list is this page's own (see loadDigital); the old
     // read of s.projects showed whichever division was browsed last.
     const clients = (s.digClients && s.digClients.length) ? s.digClients : (s.projects || []);
+    // Glomium's own accounts are not a client. `project_id` is null on those rows
+    // and HOUSE is the sentinel the picker uses for them — the database column was
+    // already nullable and the sync already reads `project_id: string | null`;
+    // only this screen insisted on a client, so our own portfolio had nowhere to go.
     const clientName = id => {
+      if (id == null || id === HOUSE) return HOUSE_LABEL;
       const p = clients.find(c => c.id === id);
       return p ? (p.client_name || p.project_title || 'Client') : '—';
     };
@@ -6366,7 +7271,11 @@ class Component extends DCLogic {
     // but never in the numbers.
     const accounts = s.digAccounts.filter(a => a.active !== false || s.digitalTab === 'accounts');
     const scope = s.digProject;
-    const scoped = accounts.filter(a => scope === 'all' || a.project_id === scope);
+    const isHouse = scope === HOUSE;
+    // "All clients" means clients. House accounts are read on their own, never
+    // folded into a client total — our own reach is not agency output.
+    const scoped = accounts.filter(a => isHouse ? a.project_id == null
+      : scope === 'all' ? a.project_id != null : a.project_id === scope);
     const scopedIds = scoped.map(a => a.id);
     const inScope = id => scopedIds.indexOf(id) !== -1;
 
@@ -6384,8 +7293,10 @@ class Component extends DCLogic {
       return t + (seen.length ? Number(seen[seen.length - 1].followers) : 0);
     }, 0);
 
-    const terms = scope === 'all' ? null : s.digTerms.find(t => t.project_id === scope);
-    const isCelebrity = !!terms && terms.account_type === 'celebrity';
+    const terms = (scope === 'all' || isHouse) ? null : s.digTerms.find(t => t.project_id === scope);
+    // Our own page and search property have no spend and no retainer, so the
+    // commercial KPI set reads as four zeroes. Growth is the honest question.
+    const isCelebrity = isHouse || (!!terms && terms.account_type === 'celebrity');
     const ctr = impressions ? clicks * 100 / impressions : null;
     const cpc = clicks ? spend / clicks : null;
     const roas = spend ? convValue / spend : null;
@@ -6645,12 +7556,19 @@ class Component extends DCLogic {
     return {
       isDigital: true,
       digTabsVM: chip(
-        DIG_TABS.filter(t => (t[0] !== 'deals' && t[0] !== 'recharge') || this.can('digitalMoney')),
+        DIG_TABS.filter(t => (t[0] !== 'deals' && t[0] !== 'recharge')
+          || (this.can('digitalMoney') && !isHouse)),
         s.digitalTab, k => this.setDigitalTab(k)),
       digClientChipsVM: chip(
-        [['all', 'All clients']].concat(clients.map(c => [c.id, c.client_name || c.project_title || 'Client'])),
+        [['all', 'All clients'], [HOUSE, HOUSE_LABEL]]
+          .concat(clients.map(c => [c.id, c.client_name || c.project_title || 'Client'])),
         s.digProject, k => this.setState(
-          { digProject: k, acctForm: null, dealForm: null, termsForm: null },
+          // Brand deals and recharge are client-money screens. Landing on one
+          // with the house scope selected would strand the user on a tab that
+          // can never have a row.
+          { digProject: k, acctForm: null, dealForm: null, termsForm: null,
+            digitalTab: k === HOUSE && (s.digitalTab === 'deals' || s.digitalTab === 'recharge')
+              ? 'overview' : s.digitalTab },
           // Content and SEO query by account id, so a client change is a refetch,
           // not just a filter.
           () => this.loadDigitalTab())),
@@ -6661,8 +7579,8 @@ class Component extends DCLogic {
       digIsAccounts: s.digitalTab === 'accounts',
       digIsContent: s.digitalTab === 'content',
       digIsSeo: s.digitalTab === 'seo',
-      digIsDeals: s.digitalTab === 'deals' && this.can('digitalMoney'),
-      digIsRecharge: s.digitalTab === 'recharge' && this.can('digitalMoney'),
+      digIsDeals: s.digitalTab === 'deals' && this.can('digitalMoney') && !isHouse,
+      digIsRecharge: s.digitalTab === 'recharge' && this.can('digitalMoney') && !isHouse,
       digCanEdit: this.can('digitalEdit'),
       digCanMoney: this.can('digitalMoney'),
       digCanSecret: this.can('digitalSecret'),
@@ -6682,7 +7600,8 @@ class Component extends DCLogic {
       digChartEmpty: peak <= 0, digChartHasData: peak > 0,
       digChartMetricLabel: (DIG_CHART_METRICS.find(x => x[0] === metric) || [, metric])[1],
       digChartPeakLabel: 'peak ' + axisLabel(peak),
-      digScopeLabel: scope === 'all' ? 'All digital clients' : clientName(scope),
+      digScopeLabel: scope === 'all' ? 'All digital clients'
+        : isHouse ? 'Glomium — our own accounts' : clientName(scope),
       digAccountCountLabel: scoped.length + (scoped.length === 1 ? ' account' : ' accounts')
         + ' · ' + scoped.filter(a => a.connected).length + ' connected',
 
@@ -6714,7 +7633,8 @@ class Component extends DCLogic {
       digFeeTypeOptsVM: opts(DIG_FEE_TYPES),
       digDealKindOptsVM: opts(DEAL_KINDS),
       digDealStatusOptsVM: opts(DEAL_STATUSES),
-      digClientOptsVM: [{ value: '', label: 'Pick a client…' }]
+      digClientOptsVM: [{ value: '', label: 'Pick a client…' },
+        { value: HOUSE, label: HOUSE_LABEL + ' — our own account' }]
         .concat(clients.map(c => ({ value: c.id, label: c.client_name || c.project_title || 'Client' }))),
       digHolderOptsVM: [{ value: '', label: 'Nobody named' }]
         .concat(((s.digHolders && s.digHolders.length) ? s.digHolders : (s.people || []))
@@ -7006,11 +7926,15 @@ class Component extends DCLogic {
     if (this.can('digital') && s.division === 'digital') nav.push({ key: 'digital', label: 'Digital' });
     const pendingRequests = s.changeRequests.filter(r => r.status === 'pending').length;
     if (this.can('peopleApprove')) nav.push({ key: 'approvals', label: 'Approvals' + (pendingRequests ? ' (' + pendingRequests + ')' : '') });
+    // The freelance roster is a tab inside People, not its own nav item, so the
+    // People button has to stay lit while that tab is open — otherwise nothing
+    // in the nav looks selected and the page reads as orphaned.
+    const navKey = s.view === 'talent' ? 'people' : s.view;
     const navVM = nav.map(n => ({
       label: n.label, go: () => this.goWorkspace(n.key),
-      bg: s.view === n.key ? 'var(--green)' : 'none',
-      border: s.view === n.key ? 'var(--green)' : 'var(--line)',
-      color: s.view === n.key ? '#FFFFFF' : 'var(--green-deep)',
+      bg: navKey === n.key ? 'var(--green)' : 'none',
+      border: navKey === n.key ? 'var(--green)' : 'var(--line)',
+      color: navKey === n.key ? '#FFFFFF' : 'var(--green-deep)',
     }));
 
     const tabs = [];
@@ -7822,8 +8746,15 @@ class Component extends DCLogic {
       }),
 
       ...this.digitalVM(),
+      ...this.talentVM(),
 
-      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'digital'),
+      crewTabsVM: [['people', 'Crew'], ['talent', 'Freelance & talent']].map(pair => ({
+        label: pair[1], go: () => this.goWorkspace(pair[0]),
+        line: s.view === pair[0] ? 'var(--green)' : 'transparent',
+        color: s.view === pair[0] ? 'var(--green-deep)' : '#9AA6A2',
+      })),
+
+      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'digital'),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       isMoney: onMoney,
       isApprovals: s.view === 'approvals',
