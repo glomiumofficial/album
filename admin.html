@@ -1341,6 +1341,21 @@
                 </div>
               </sc-if>
 
+              <sc-if value="{{ hasWorkProjects }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:6px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">By project</span>
+                  <sc-for list="{{ workProjectsVM }}" as="wp" hint-placeholder-count="0">
+                    <div style="display:flex; align-items:baseline; gap:10px 14px; flex-wrap:wrap; padding:11px 14px; border:1px solid var(--line); border-radius:3px">
+                      <span style="font-size:14px; color:#16231F; flex:1 1 150px; min-width:0; overflow-wrap:anywhere">{{ wp.project }}</span>
+                      <span style="font-size:12px; color:#7C8985">{{ wp.days }}</span>
+                      <span style="font-size:12px; color:#7C8985">{{ wp.span }}</span>
+                      <span style="font-size:14px; color:#16231F">{{ wp.paid }}</span>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ wp.stateBg }}; color:{{ wp.stateColor }}; letter-spacing:.06em">{{ wp.stateLabel }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
               <div style="display:flex; flex-direction:column; gap:7px">
                 <sc-for list="{{ workRowsVM }}" as="wr" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; gap:7px; padding:12px 14px; border:1px solid var(--line); border-radius:3px">
@@ -1405,6 +1420,87 @@
                     <button onClick="{{ addWorkDay }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Add day</button>
                     <span style="font-size:11px; color:#7C8985; line-height:1.6; flex:1 1 200px">The shoot, kind and location stay filled in, so a three-day shoot is three dates.</span>
                   </div>
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:14px; padding-top:20px; border-top:1px solid var(--line)">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Feedback</span>
+                <span style="font-size:11px; color:#B4433A; letter-spacing:.06em">Admin eyes only</span>
+                <span style="font-size:11px; color:var(--green-deep); margin-left:auto">{{ feedbackStatus }}</span>
+              </div>
+
+              <sc-if value="{{ hasFeedbackError }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:11px 13px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC; font-size:12px; color:#8A6D3B; line-height:1.6; text-wrap:pretty">{{ feedbackError }}</div>
+              </sc-if>
+
+              <div style="display:flex; flex-direction:column; gap:7px">
+                <sc-for list="{{ feedbackRowsVM }}" as="fb" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; gap:10px; padding:13px 15px; border:1px solid var(--line); border-radius:3px">
+                    <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
+                      <span style="font-size:13px; color:#16231F; min-width:0; overflow-wrap:anywhere">{{ fb.project }}</span>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ fb.statusBg }}; color:{{ fb.statusColor }}; letter-spacing:.06em; text-transform:uppercase; margin-left:auto">{{ fb.statusLabel }}</span>
+                      <span style="font-size:11px; color:#7C8985">{{ fb.when }}</span>
+                    </div>
+
+                    <sc-if value="{{ fb.hasScores }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px 18px; padding:11px 13px; border-radius:3px; background:#FBFCFC">
+                        <sc-for list="{{ fb.scoresVM }}" as="sv" hint-placeholder-count="3">
+                          <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                            <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ sv.label }}</span>
+                            <span style="font-size:14px; color:{{ sv.color }}">{{ sv.value }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+
+                    <sc-for list="{{ fb.textsVM }}" as="tv" hint-placeholder-count="0">
+                      <div style="display:flex; flex-direction:column; gap:4px">
+                        <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:{{ tv.labelColor }}">{{ tv.label }}</span>
+                        <span style="font-size:13px; line-height:1.7; color:#3E4A46; white-space:pre-wrap; overflow-wrap:anywhere">{{ tv.value }}</span>
+                      </div>
+                    </sc-for>
+
+                    <sc-if value="{{ canTalentEdit }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; gap:8px; flex-wrap:wrap">
+                        <sc-if value="{{ fb.pending }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ fb.copyLink }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Copy link</button>
+                          <button onClick="{{ fb.resend }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ fb.resendLabel }}</button>
+                        </sc-if>
+                        <button onClick="{{ fb.remove }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#B4433A; cursor:pointer">Remove</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ canTalentEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px dashed var(--line); border-radius:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Ask how it went</span>
+                  <div style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Which shoot</span>
+                    <input value="{{ fbProject }}" onChange="{{ onFbProject }}" placeholder="The shoot they just finished" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  </div>
+                  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                    <button onClick="{{ sendFeedbackRequest }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ sendFeedbackLabel }}</button>
+                    <button onClick="{{ toggleFbPreview }}" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ fbPreviewLabel }}</button>
+                    <button onClick="{{ createFeedbackLink }}" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Just make a link</button>
+                    <span style="font-size:11px; color:#7C8985; line-height:1.6; flex:1 1 220px; text-wrap:pretty">{{ feedbackNote }}</span>
+                  </div>
+
+                  <sc-if value="{{ fbPreviewOpen }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px; overflow:hidden">
+                      <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:11px 14px; background:#FBFCFC; border-bottom:1px solid var(--line)">
+                        <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Subject</span>
+                        <span style="font-size:13px; color:#16231F; min-width:0; overflow-wrap:anywhere">{{ fbPreviewSubject }}</span>
+                      </div>
+                      <div style="padding:14px 10px; background:#EDF1F0">
+                        <iframe srcDoc="{{ fbPreviewHtml }}" sandbox="" title="Feedback email preview" style="width:100%; height:520px; border:none; background:#fff; display:block"></iframe>
+                      </div>
+                      <span style="padding:10px 14px; font-size:11px; color:#7C8985; line-height:1.6; text-wrap:pretty">This is exactly what sends — the button in it carries their private link. Nothing is created until you press Email the form or Just make a link.</span>
+                    </div>
+                  </sc-if>
                 </div>
               </sc-if>
             </div>
@@ -1821,6 +1917,415 @@
         </div>
 
         <span style="font-size:11px; color:#9AA6A2; line-height:1.6">Every payment is logged against the invoice it settles, and the invoice's paid state follows the ledger — no button asserts it. Proforma invoices never appear here; they are quotes, not money owed. Ageing counts from the invoice date.</span>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSpend }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <button onClick="{{ spendBack }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#7C8985; cursor:pointer" style-hover="border-color:var(--green); color:var(--green-deep)">← Back</button>
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Accounts</span>
+          <span style="font-size:12px; color:#7C8985">Sub-shoots and what they cost us</span>
+          <button onClick="{{ downloadSpendExcel }}" style="margin-left:auto; padding:9px 16px; background:none; border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Download Excel</button>
+        </div>
+
+        <div style="display:flex; gap:20px; border-bottom:1px solid var(--line)">
+          <sc-for list="{{ spendTabsVM }}" as="st" hint-placeholder-count="2">
+            <button onClick="{{ st.go }}" style="padding:0 0 10px; background:none; border:none; border-bottom:2px solid {{ st.line }}; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:{{ st.color }}; cursor:pointer">{{ st.label }}</button>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{ hasSpendError }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px 14px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC; font-size:12px; color:#8A6D3B; line-height:1.6; text-wrap:pretty">{{ spendError }}</div>
+        </sc-if>
+
+        <sc-if value="{{ isSpendLedger }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:16px">
+          <div style="display:flex; gap:12px; flex-wrap:wrap">
+            <div style="flex:1 1 170px; display:flex; flex-direction:column; gap:5px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Division</span>
+              <select value="{{ lgDivision }}" onChange="{{ onLgDivision }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                <sc-for list="{{ lgDivisionOptsVM }}" as="ld" hint-placeholder-count="6">
+                  <option value="{{ ld.value }}">{{ ld.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="flex:1 1 190px; display:flex; flex-direction:column; gap:5px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Job</span>
+              <select value="{{ lgJob }}" onChange="{{ onLgJob }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                <sc-for list="{{ lgJobOptsVM }}" as="lj" hint-placeholder-count="1">
+                  <option value="{{ lj.value }}">{{ lj.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="flex:1 1 160px; display:flex; flex-direction:column; gap:5px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Category</span>
+              <select value="{{ lgCategory }}" onChange="{{ onLgCategory }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                <sc-for list="{{ lgCatOptsVM }}" as="lc" hint-placeholder-count="6">
+                  <option value="{{ lc.value }}">{{ lc.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="flex:1 1 130px; display:flex; flex-direction:column; gap:5px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">From</span>
+              <input type="date" value="{{ lgFrom }}" onChange="{{ onLgFrom }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+            </div>
+            <div style="flex:1 1 130px; display:flex; flex-direction:column; gap:5px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">To</span>
+              <input type="date" value="{{ lgTo }}" onChange="{{ onLgTo }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+            <sc-for list="{{ lgBearerChipsVM }}" as="lb" hint-placeholder-count="5">
+              <button onClick="{{ lb.go }}" style="padding:7px 13px; background:{{ lb.bg }}; border:1px solid {{ lb.border }}; border-radius:2px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:{{ lb.color }}; cursor:pointer">{{ lb.label }}</button>
+            </sc-for>
+            <input value="{{ lgQuery }}" onChange="{{ onLgQuery }}" placeholder="Search vendor, note, shoot" style="flex:1 1 180px; min-width:0; padding:9px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+            <button onClick="{{ clearLedger }}" style="padding:8px 13px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#7C8985; cursor:pointer">Clear</button>
+          </div>
+
+          <div style="display:flex; gap:14px; flex-wrap:wrap; padding:16px 18px; border:1px solid var(--line); border-radius:4px; background:#FBFCFC">
+            <sc-for list="{{ ledgerTotalsVM }}" as="lt" hint-placeholder-count="4">
+              <div style="flex:1 1 130px; display:flex; flex-direction:column; gap:4px">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ lt.label }}</span>
+                <span style="font-size:19px; color:{{ lt.color }}; font-variant-numeric:tabular-nums">{{ lt.value }}</span>
+              </div>
+            </sc-for>
+            <div style="flex:1 1 110px; display:flex; flex-direction:column; gap:4px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Showing</span>
+              <span style="font-size:19px; color:#5D6864">{{ ledgerCountLabel }}</span>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasLedgerRows }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column">
+              <sc-for list="{{ ledgerRowsVM }}" as="lr" hint-placeholder-count="0">
+                <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:12px 2px; border-top:1px solid var(--line)">
+                  <span style="font-size:12px; color:#7C8985; min-width:88px">{{ lr.date }}</span>
+                  <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                    <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ lr.job }}</span>
+                    <span style="font-size:11px; color:#9AA6A2; overflow-wrap:anywhere">{{ lr.shoot }}</span>
+                  </div>
+                  <span style="font-size:13px; color:#5D6864; min-width:110px">{{ lr.category }}</span>
+                  <sc-if value="{{ lr.hasNote }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex:1 1 150px; font-size:12px; color:#7C8985; min-width:0; overflow-wrap:anywhere">{{ lr.note }}</span>
+                  </sc-if>
+                  <span style="font-size:15px; color:#16231F; margin-left:auto; font-variant-numeric:tabular-nums">{{ lr.amount }}</span>
+                  <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ lr.bearerBg }}; color:{{ lr.bearerColor }}; letter-spacing:.06em; min-width:92px; text-align:center">{{ lr.bearerLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isSpendLog }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; gap:16px; flex-wrap:wrap">
+          <sc-for list="{{ spendCardsVM }}" as="sc" hint-placeholder-count="4">
+            <div style="flex:1 1 190px; display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#7C8985">{{ sc.label }}</span>
+              <span style="font-size:24px; font-weight:400; color:{{ sc.color }}; font-variant-numeric:tabular-nums">{{ sc.value }}</span>
+              <span style="font-size:10px; color:#9AA6A2; line-height:1.5">{{ sc.note }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px">
+          <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Jobs with spend</span>
+          <sc-for list="{{ spendJobsVM }}" as="sj" hint-placeholder-count="0">
+            <div onClick="{{ sj.go }}" style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:13px 16px; border:1px solid {{ sj.border }}; border-radius:3px; background:{{ sj.bg }}; cursor:pointer">
+              <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ sj.label }}</span>
+                <span style="font-size:11px; color:#9AA6A2">{{ sj.meta }}</span>
+              </div>
+              <span style="font-size:15px; color:#16231F; font-variant-numeric:tabular-nums">{{ sj.spent }}</span>
+              <span style="font-size:11px; color:#B4433A; min-width:110px; text-align:right">{{ sj.absorbed }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+            <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Where the spend goes</span>
+            <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ spendStatus }}</span>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap">
+            <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:5px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Division</span>
+              <select value="{{ spendDivision }}" onChange="{{ onSpendDivision }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                <sc-for list="{{ spendDivisionOptsVM }}" as="dv" hint-placeholder-count="6">
+                  <option value="{{ dv.value }}">{{ dv.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+            <div style="flex:1 1 240px; display:flex; flex-direction:column; gap:5px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Project</span>
+              <select value="{{ spendParent }}" onChange="{{ onSpendParent }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                <sc-for list="{{ spendParentOptsVM }}" as="po" hint-placeholder-count="1">
+                  <option value="{{ po.value }}">{{ po.label }}</option>
+                </sc-for>
+              </select>
+            </div>
+          </div>
+          <span style="font-size:11px; color:#9AA6A2; line-height:1.6; text-wrap:pretty">{{ spendDivisionNote }}</span>
+
+          <sc-if value="{{ hasSpendParent }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:16px">
+              <div style="display:flex; flex-direction:column; gap:4px">
+                <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ spendParentLabel }}</span>
+                <span style="font-size:12px; color:#5D6864; line-height:1.6">{{ spendParentTotals }}</span>
+              </div>
+
+              <sc-for list="{{ spendShootsVM }}" as="sh" hint-placeholder-count="0">
+                <div style="display:flex; flex-direction:column; gap:10px; padding:15px 16px; border:1px solid var(--line); border-radius:3px">
+                  <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
+                    <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ sh.title }}</span>
+                    <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ sh.kindBg }}; color:{{ sh.kindColor }}; letter-spacing:.08em; text-transform:uppercase">{{ sh.kindLabel }}</span>
+                    <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ sh.bearerBg }}; color:{{ sh.bearerColor }}; letter-spacing:.06em">{{ sh.bearer }}</span>
+                    <span style="font-size:15px; color:#16231F; margin-left:auto; font-variant-numeric:tabular-nums">{{ sh.spent }}</span>
+                  </div>
+                  <sc-if value="{{ sh.hasMeta }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11px; color:#7C8985; line-height:1.6">{{ sh.meta }}</span>
+                  </sc-if>
+
+                  <sc-for list="{{ sh.rowsVM }}" as="ex" hint-placeholder-count="0">
+                    <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:9px 0; border-top:1px solid var(--line)">
+                      <span style="font-size:12px; color:#7C8985; min-width:86px">{{ ex.date }}</span>
+                      <span style="font-size:13px; color:#16231F">{{ ex.category }}</span>
+                      <sc-if value="{{ ex.hasNote }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:12px; color:#7C8985; min-width:0; overflow-wrap:anywhere">{{ ex.note }}</span>
+                      </sc-if>
+                      <span style="font-size:14px; color:#16231F; margin-left:auto; font-variant-numeric:tabular-nums">{{ ex.amount }}</span>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ ex.bearerBg }}; color:{{ ex.bearerColor }}; letter-spacing:.06em">{{ ex.bearerLabel }}</span>
+                      <sc-if value="{{ ex.canEdit }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap">
+                          <button onClick="{{ ex.startEdit }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Edit</button>
+                          <button onClick="{{ ex.toggleBillable }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">{{ ex.billableLabel }}</button>
+                          <sc-if value="{{ ex.showRecover }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ ex.toggleRecovered }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">{{ ex.recoveredLabel }}</button>
+                          </sc-if>
+                          <button onClick="{{ ex.remove }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#B4433A; cursor:pointer">Remove</button>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ ex.isEditing }}" hint-placeholder-val="{{ false }}">
+                        <div style="flex:1 1 100%; display:flex; flex-direction:column; gap:10px; margin-top:8px; padding:14px; border:1px solid var(--green); border-radius:3px; background:#FBFEFD">
+                          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px">
+                            <input type="date" value="{{ ex.edDate }}" onChange="{{ ex.onEdDate }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                            <select value="{{ ex.edCategory }}" onChange="{{ ex.onEdCategory }}" style="padding:10px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                              <sc-for list="{{ spendCatOptsVM }}" as="ec" hint-placeholder-count="6">
+                                <option value="{{ ec.value }}">{{ ec.label }}</option>
+                              </sc-for>
+                            </select>
+                            <input type="number" min="0" step="10" value="{{ ex.edAmount }}" onChange="{{ ex.onEdAmount }}" placeholder="Amount" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                            <input value="{{ ex.edVendor }}" onChange="{{ ex.onEdVendor }}" placeholder="Paid to" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                            <select value="{{ ex.edShoot }}" onChange="{{ ex.onEdShoot }}" style="padding:10px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                              <sc-for list="{{ spendShootOptsVM }}" as="es" hint-placeholder-count="1">
+                                <option value="{{ es.value }}">{{ es.label }}</option>
+                              </sc-for>
+                            </select>
+                            <input value="{{ ex.edNote }}" onChange="{{ ex.onEdNote }}" placeholder="Note" style="grid-column:1/-1; padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                          </div>
+                          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                            <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                              <input type="checkbox" checked="{{ ex.edBillable }}" onChange="{{ ex.onEdBillable }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                              Billable
+                            </label>
+                            <sc-if value="{{ ex.edShowRecovered }}" hint-placeholder-val="{{ false }}">
+                              <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                                <input type="checkbox" checked="{{ ex.edRecovered }}" onChange="{{ ex.onEdRecovered }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                                Recovered
+                              </label>
+                            </sc-if>
+                            <button onClick="{{ ex.saveEdit }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save</button>
+                            <button onClick="{{ ex.cancelEdit }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#7C8985; cursor:pointer">Cancel</button>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+
+                  <sc-if value="{{ sh.canShoot }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ sh.remove }}" style="align-self:flex-start; padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#B4433A; cursor:pointer">Delete shoot</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+
+              <sc-if value="{{ hasLoose }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:8px; padding:15px 16px; border:1px solid var(--line); border-radius:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Job level — no sub-shoot</span>
+                  <sc-for list="{{ spendLooseVM }}" as="lx" hint-placeholder-count="0">
+                    <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:9px 0; border-top:1px solid var(--line)">
+                      <span style="font-size:12px; color:#7C8985; min-width:86px">{{ lx.date }}</span>
+                      <span style="font-size:13px; color:#16231F">{{ lx.category }}</span>
+                      <sc-if value="{{ lx.hasNote }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:12px; color:#7C8985; min-width:0; overflow-wrap:anywhere">{{ lx.note }}</span>
+                      </sc-if>
+                      <span style="font-size:14px; color:#16231F; margin-left:auto; font-variant-numeric:tabular-nums">{{ lx.amount }}</span>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ lx.bearerBg }}; color:{{ lx.bearerColor }}; letter-spacing:.06em">{{ lx.bearerLabel }}</span>
+                      <sc-if value="{{ lx.canEdit }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap">
+                          <button onClick="{{ lx.startEdit }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Edit</button>
+                          <button onClick="{{ lx.toggleBillable }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">{{ lx.billableLabel }}</button>
+                          <sc-if value="{{ lx.showRecover }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ lx.toggleRecovered }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">{{ lx.recoveredLabel }}</button>
+                          </sc-if>
+                          <button onClick="{{ lx.remove }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:2px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#B4433A; cursor:pointer">Remove</button>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ lx.isEditing }}" hint-placeholder-val="{{ false }}">
+                        <div style="flex:1 1 100%; display:flex; flex-direction:column; gap:10px; margin-top:8px; padding:14px; border:1px solid var(--green); border-radius:3px; background:#FBFEFD">
+                          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px">
+                            <input type="date" value="{{ lx.edDate }}" onChange="{{ lx.onEdDate }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                            <select value="{{ lx.edCategory }}" onChange="{{ lx.onEdCategory }}" style="padding:10px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                              <sc-for list="{{ spendCatOptsVM }}" as="lc2" hint-placeholder-count="6">
+                                <option value="{{ lc2.value }}">{{ lc2.label }}</option>
+                              </sc-for>
+                            </select>
+                            <input type="number" min="0" step="10" value="{{ lx.edAmount }}" onChange="{{ lx.onEdAmount }}" placeholder="Amount" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                            <input value="{{ lx.edVendor }}" onChange="{{ lx.onEdVendor }}" placeholder="Paid to" style="padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                            <select value="{{ lx.edShoot }}" onChange="{{ lx.onEdShoot }}" style="padding:10px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                              <sc-for list="{{ spendShootOptsVM }}" as="ls2" hint-placeholder-count="1">
+                                <option value="{{ ls2.value }}">{{ ls2.label }}</option>
+                              </sc-for>
+                            </select>
+                            <input value="{{ lx.edNote }}" onChange="{{ lx.onEdNote }}" placeholder="Note" style="grid-column:1/-1; padding:9px 11px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                          </div>
+                          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                            <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                              <input type="checkbox" checked="{{ lx.edBillable }}" onChange="{{ lx.onEdBillable }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                              Billable
+                            </label>
+                            <sc-if value="{{ lx.edShowRecovered }}" hint-placeholder-val="{{ false }}">
+                              <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                                <input type="checkbox" checked="{{ lx.edRecovered }}" onChange="{{ lx.onEdRecovered }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                                Recovered
+                              </label>
+                            </sc-if>
+                            <button onClick="{{ lx.saveEdit }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save</button>
+                            <button onClick="{{ lx.cancelEdit }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#7C8985; cursor:pointer">Cancel</button>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ hasOwed }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:8px; padding:15px 16px; border:1px dashed var(--line); border-radius:3px; background:#FBFCFC">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Owed, not counted yet</span>
+                  <sc-for list="{{ spendOwedVM }}" as="ow" hint-placeholder-count="0">
+                    <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:8px 0; border-top:1px solid var(--line)">
+                      <span style="font-size:12px; color:#7C8985; min-width:86px">{{ ow.date }}</span>
+                      <span style="font-size:13px; color:#16231F">{{ ow.who }}</span>
+                      <span style="font-size:12px; color:#7C8985">{{ ow.note }}</span>
+                      <span style="font-size:14px; color:#8A6D3B; margin-left:auto; font-variant-numeric:tabular-nums">{{ ow.amount }}</span>
+                    </div>
+                  </sc-for>
+                  <span style="font-size:11px; color:#7C8985; line-height:1.65; text-wrap:pretty">{{ owedNote }}</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ spendCanShoot }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px dashed var(--line); border-radius:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Add a sub-shoot</span>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
+                    <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Name it</span>
+                      <input value="{{ shootTitle }}" onChange="{{ onShootTitle }}" placeholder="Trial · look test" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Kind</span>
+                      <select value="{{ shootKind }}" onChange="{{ onShootKind }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                        <sc-for list="{{ spendKindOptsVM }}" as="ko" hint-placeholder-count="4">
+                          <option value="{{ ko.value }}">{{ ko.label }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Date</span>
+                      <input type="date" value="{{ shootDate }}" onChange="{{ onShootDate }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Location</span>
+                      <input value="{{ shootLocation }}" onChange="{{ onShootLocation }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">What it was for</span>
+                      <input value="{{ shootBrief }}" onChange="{{ onShootBrief }}" placeholder="Western dance looks, two models" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                      <input type="checkbox" checked="{{ shootBillable }}" onChange="{{ onShootBillable }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                      The client is paying for this shoot
+                    </label>
+                    <button onClick="{{ addShoot }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Add shoot</button>
+                    <span style="font-size:11px; color:#7C8985; line-height:1.6; flex:1 1 200px; text-wrap:pretty">Leave it unticked for a trial — that is spend we carry.</span>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ spendCanEdit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px dashed var(--line); border-radius:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Log a spend</span>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
+                    <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Against which shoot</span>
+                      <select value="{{ expShoot }}" onChange="{{ onExpShoot }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                        <sc-for list="{{ spendShootOptsVM }}" as="so" hint-placeholder-count="1">
+                          <option value="{{ so.value }}">{{ so.label }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Date</span>
+                      <input type="date" value="{{ expDate }}" onChange="{{ onExpDate }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Category</span>
+                      <select value="{{ expCategory }}" onChange="{{ onExpCategory }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                        <sc-for list="{{ spendCatOptsVM }}" as="co" hint-placeholder-count="6">
+                          <option value="{{ co.value }}">{{ co.label }}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Amount (₹)</span>
+                      <input type="number" min="0" step="10" value="{{ expAmount }}" onChange="{{ onExpAmount }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Paid to</span>
+                      <input value="{{ expVendor }}" onChange="{{ onExpVendor }}" placeholder="Who took the money" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Note</span>
+                      <input value="{{ expNote }}" onChange="{{ onExpNote }}" placeholder="Two cabs, Kozhikode to the resort" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                      <input type="checkbox" checked="{{ expBillable }}" onChange="{{ onExpBillable }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                      Billable to the client
+                    </label>
+                    <sc-if value="{{ expShowRecovered }}" hint-placeholder-val="{{ false }}">
+                      <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                        <input type="checkbox" checked="{{ expRecovered }}" onChange="{{ onExpRecovered }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                        Already recovered
+                      </label>
+                    </sc-if>
+                    <button onClick="{{ addExpense }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Add spend</button>
+                    <span style="font-size:11px; color:#7C8985; line-height:1.6; flex:1 1 200px; text-wrap:pretty">Shoot, date and category stay put, so a day of small costs is a run of amounts.</span>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+        </div>
+        </sc-if>
       </div>
       </sc-if>
 
@@ -3438,6 +3943,29 @@ const WORK_KINDS = [
   ['reshoot', 'Reshoot', '#FDF9F0', '#8A6D3B'],
 ];
 
+// The five scored questions on the feedback form, in the order the freelancer
+// sees them. Kept in sync with album-system/feedback.html by hand: two short
+// lists that must agree beat one shared file neither page can load offline.
+// A sub-shoot is a day of work under a job: the trial we shot for Mr Fone is
+// not the campaign, and its cost is not the campaign's cost.
+const SHOOT_KINDS = [
+  ['trial', 'Trial', '#F1F4F3', '#5D6864'],
+  ['main', 'Main shoot', '#E7F4EF', '#1C6B52'],
+  ['reshoot', 'Reshoot', '#FDF9F0', '#8A6D3B'],
+  ['recce', 'Recce', '#F4F6F5', '#7C8985'],
+];
+
+const EXPENSE_CATS = ['Travel', 'Food', 'Location', 'Props & wardrobe',
+  'Equipment rental', 'Makeup & hair', 'Talent & crew', 'Printing', 'Fuel', 'Misc'];
+
+const FEEDBACK_SCORES = [
+  ['overall', 'Overall'],
+  ['communication', 'Communication'],
+  ['organisation', 'Organisation'],
+  ['payment', 'Payment'],
+  ['treatment', 'Treatment'],
+];
+
 const BOOKING_STATUSES = {  invited:   ['Invited',   '#FDF9F0', '#8A6D3B'],
   confirmed: ['Confirmed', '#E7F4EF', '#1C6B52'],
   declined:  ['Declined',  '#F9EFED', '#B4433A'],
@@ -3495,6 +4023,11 @@ const CAPS = {
   digitalMoney:  ['admin', 'accounts'],
   digitalSecret: ['admin'],
   docs:        ['admin', 'hr'],
+  // Sub-shoots and what they cost. Creative can add a shoot because they are
+  // the ones who know a trial happened; only admin and accounts touch money.
+  spend:       ['admin', 'accounts', 'hr', 'creative'],
+  spendEdit:   ['admin', 'accounts'],
+  shootEdit:   ['admin', 'accounts', 'creative'],
   hoursUnlock: ['admin'],
   albumUnlock: ['admin'],
 };
@@ -3911,6 +4444,7 @@ class Component extends DCLogic {
     if (view === 'approvals') { this.loadChangeRequests(); if (!this.state.people.length) this.loadPeople(); }
     if (view === 'payouts') { this.loadPayouts(); }
     if (view === 'money') { this.loadMoney(); }
+    if (view === 'spend') { this.loadSpend(); if (!(this.state.talent || []).length) this.loadTalent(); }
   }
 
   // ---- Sign in / out -----------------------------------------------------------
@@ -5343,35 +5877,68 @@ class Component extends DCLogic {
     await this.emailInvoicePreview();
   }
 
+  // The house email. One composer for every message the panel sends, because
+  // the design in booking-template-v3.sql is approved and settled: 540px card
+  // in a 600px frame, 452px inner tables, lowercase, minimal. Anything that
+  // needs to send mail builds its parts and passes them here rather than
+  // writing its own table and drifting.
+  mailShell({ preheader, headline, greeting, body, rows, button, closing }) {
+    const F = "'Jost','Helvetica Neue',Helvetica,Arial,sans-serif";
+    const para = (text, top) => '<div style="padding-top:' + top + 'px;font-family:' + F
+      + ';font-size:16px;line-height:1.8;font-weight:300;color:#4A524F">' + text + '</div>';
+    const detail = (rows || []).filter(r => r && r[1]);
+    const detailTable = !detail.length ? '' :
+      '<table role="presentation" width="452" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:452px;max-width:452px;table-layout:fixed">'
+      + '<tr><td colspan="2" height="36" style="height:36px;font-size:0;line-height:0">&nbsp;</td></tr>'
+      + detail.map((r, i) => {
+        const last = i === detail.length - 1;
+        const edge = 'border-top:1px solid #E2E6E4;' + (last ? 'border-bottom:1px solid #E2E6E4;' : '');
+        return '<tr>'
+          + '<td width="42%" align="left" valign="middle" style="width:42%;padding:16px 0;' + edge + 'font-family:' + F + ';font-size:10px;line-height:1.4;letter-spacing:2.6px;text-transform:uppercase;color:#8A9390">' + r[0] + '</td>'
+          + '<td width="58%" align="right" valign="middle" style="width:58%;padding:16px 0;' + edge + 'font-family:' + F + ';font-size:15px;line-height:1.5;font-weight:400;color:#1B1D1E">' + r[1] + '</td>'
+          + '</tr>';
+      }).join('')
+      + '</table>';
+    const btn = !button ? '' :
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">'
+      + '<tr><td height="40" style="height:40px;font-size:0;line-height:0">&nbsp;</td></tr>'
+      + '<tr><td align="center" style="border:1px solid #0E8E72;background:#FFFFFF">'
+      + '<a href="' + button.href + '" target="_blank" style="display:block;padding:15px 30px;font-family:' + F + ';font-size:10px;line-height:1;font-weight:400;letter-spacing:3.4px;text-transform:uppercase;color:#0E8E72;text-decoration:none;white-space:nowrap">' + button.label + '</a>'
+      + '</td></tr></table>';
+    return (preheader ? '<div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">' + preheader + '</div>' : '')
+      + '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0;padding:0;background:#F2F4F3">'
+      + '<tr><td align="center" style="padding:30px;background:#F2F4F3">'
+      + '<table role="presentation" width="540" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:540px;max-width:540px;background:#FFFFFF">'
+      + '<tr><td align="left" style="padding:56px 44px 52px 44px;background:#FFFFFF">'
+      + '<div style="font-family:' + F + ';font-size:31px;line-height:1.28;font-weight:300;letter-spacing:-.2px;color:#1B1D1E">' + headline + '</div>'
+      + (greeting ? '<div style="padding-top:44px;font-family:' + F + ';font-size:16px;line-height:1.6;font-weight:400;color:#1B1D1E">' + greeting + '</div>' : '')
+      + (body || []).map((t, i) => para(t, i === 0 ? (greeting ? 24 : 44) : 20)).join('')
+      + detailTable + btn
+      + '<div style="padding-top:48px;font-family:' + F + ';font-size:16px;line-height:1.7;font-weight:300;color:#4A524F">' + (closing || 'with love,') + '</div>'
+      + '<div style="padding-top:4px;font-family:' + F + ';font-size:17px;line-height:1.7;font-weight:300;color:#1B1D1E">team glomium.</div>'
+      + '<table role="presentation" width="452" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:452px;max-width:452px">'
+      + '<tr><td height="42" style="height:42px;font-size:0;line-height:0">&nbsp;</td></tr>'
+      + '<tr><td height="1" style="height:1px;font-size:0;line-height:0;background:#E2E6E4">&nbsp;</td></tr></table>'
+      + '<div style="padding-top:26px;font-family:' + F + ';font-size:11px;line-height:1.5;letter-spacing:4.5px;color:#0E8E72">creative INFINITELY</div>'
+      + '</td></tr></table></td></tr></table>';
+  }
+
   // The invoice email body, composed here because the EmailJS template is a
   // bare pass-through. Tables and inline styles only — same rules as the
   // booking email.
   invoiceEmailHtml({ name, label, inv, invoiceDate, pdfUrl }) {
-    const F = "Helvetica,Arial,sans-serif";
-    const row = (k, v) => '<tr>'
-      + '<td align="left" valign="top" width="120" style="width:120px;padding:13px 0;border-top:1px solid #E4E9E7;font-family:' + F + ';font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#9AA6A2">' + k + '</td>'
-      + '<td align="left" valign="top" style="padding:13px 0;border-top:1px solid #E4E9E7;font-family:' + F + ';font-size:15px;line-height:1.5;color:#16231F">' + v + '</td></tr>';
-    const button = pdfUrl
-      ? '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>'
-        + '<td align="center" style="padding:26px 0 0"><a href="' + pdfUrl + '" style="display:inline-block;padding:14px 26px;background:#10AF8B;border-radius:2px;font-family:' + F + ';font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:#ffffff;text-decoration:none">Download the ' + label.toLowerCase() + '</a></td>'
-        + '</tr></table>'
-      : '';
-    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#F6F8F7">'
-      + '<tr><td align="center" style="padding:32px 12px">'
-      + '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;width:600px;max-width:600px;background:#ffffff;border:1px solid #E4E9E7;border-radius:4px">'
-      + '<tr><td align="left" style="padding:30px 36px 0;font-family:' + F + ';font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#10AF8B">Glomium</td></tr>'
-      + '<tr><td align="left" style="padding:20px 36px 0;font-family:' + F + ';font-size:21px;line-height:1.35;color:#16231F">' + label + ' ' + inv.number + '</td></tr>'
-      + '<tr><td align="left" style="padding:16px 36px 0;font-family:' + F + ';font-size:15px;line-height:1.7;color:#3E4A46">'
-      + (pdfUrl
-        ? 'Hi ' + name + ', your ' + label.toLowerCase() + ' is ready — download it with the button below. It may also be attached to this email.'
-        : 'Hi ' + name + ', your ' + label.toLowerCase() + ' is attached to this email. If you cannot see the attachment, reply and we will send it straight away.')
-      + '</td></tr>'
-      + '<tr><td style="padding:22px 36px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">'
-      + row('Number', inv.number) + row('Date', invoiceDate) + row('Amount', fmtINR(inv.total))
-      + '</table></td></tr>'
-      + '<tr><td align="center" style="padding:0 36px">' + button + '</td></tr>'
-      + '<tr><td align="left" style="padding:26px 36px 34px;font-family:' + F + ';font-size:15px;line-height:1.7;color:#3E4A46">Reply to this email with any questions.<br>Team Glomium</td></tr>'
-      + '</table></td></tr></table>';
+    const low = label.toLowerCase();
+    return this.mailShell({
+      preheader: low + ' ' + inv.number + ' — ' + fmtINR(inv.total),
+      headline: 'your ' + low + '<br>is ready.',
+      greeting: 'dear ' + String(name || 'there').toLowerCase() + ',',
+      body: [pdfUrl
+        ? 'the ' + low + ' for your project is below, and attached to this email. any question at all, simply reply here.'
+        : 'the ' + low + ' for your project is attached to this email. if you cannot see the attachment, reply and we will send it straight away.'],
+      rows: [['number', inv.number], ['date', invoiceDate], ['amount', fmtINR(inv.total)]],
+      button: pdfUrl ? { href: pdfUrl, label: 'download the ' + low } : null,
+      closing: 'with thanks,',
+    });
   }
 
   async emailInvoicePreview() {
@@ -5400,7 +5967,7 @@ class Component extends DCLogic {
 
       const name = s.editClientName || 'there';
       const label = inv.type === 'proforma' ? 'Proforma Invoice' : 'Tax Invoice';
-      const subject = label + ' ' + inv.number + ' — ' + ev.couple_names;
+      const subject = (label + ' ' + inv.number + ' — ' + ev.couple_names).toLowerCase();
       const invoiceDate = inv.issue_date
         ? new Date(inv.issue_date + 'T00:00:00').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
         : '—';
@@ -5512,6 +6079,7 @@ class Component extends DCLogic {
     this.setState({ talent: data || [], talentLoadError: '' });
     this.loadTalentBookings();
     this.loadTalentWork();
+    this.loadTalentFeedback();
     this.loadEmailTemplates();
   }
 
@@ -5590,6 +6158,131 @@ class Component extends DCLogic {
     const { error } = await this.sb.from('talent_work').delete().eq('id', w.id);
     if (error) { this.setState({ workStatus: error.message }); return; }
     this.loadTalentWork();
+  }
+
+  // ---- Feedback (internal) -----------------------------------------------
+  // Loaded for the whole roster in one query, same as the work log. RLS keeps
+  // it to admin/hr; a viewer role gets an empty list rather than an error.
+  async loadTalentFeedback() {
+    const { data, error } = await this.sb.from('talent_feedback').select('*')
+      .order('created_at', { ascending: false }).limit(1000);
+    if (error) {
+      const missing = error.code === 'PGRST205' || /schema cache/i.test(error.message || '');
+      this.setState({
+        talentFeedback: [],
+        feedbackLoadError: missing
+          ? 'The feedback table is not in the database yet — run album-system/talent-feedback.sql in the Supabase SQL editor.'
+          : 'Could not load feedback: ' + error.message,
+      });
+      return;
+    }
+    this.setState({ talentFeedback: data || [], feedbackLoadError: '' });
+  }
+
+  // The link is built from where this panel is served, not from a hard-coded
+  // host, so a staging copy hands out staging links. Same rule as copyLink().
+  feedbackUrl(row) {
+    const dir = window.location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+    return dir + 'feedback.html?t=' + encodeURIComponent(row.token);
+  }
+
+  async copyText(str, okMsg) {
+    try {
+      await navigator.clipboard.writeText(str);
+      this.setState({ feedbackStatus: okMsg });
+    } catch (e) {
+      window.prompt('Copy this link', str);
+      this.setState({ feedbackStatus: '' });
+      return;
+    }
+    setTimeout(() => this.setState({ feedbackStatus: '' }), 3000);
+  }
+
+  // One open request per person per shoot is a database rule, so asking twice
+  // returns the link that already exists instead of failing.
+  async ensureFeedbackRow() {
+    const open = (this.state.talent || []).find(x => x.id === this.state.talentId);
+    if (!open) return null;
+    const title = (this.state.fbProject || '').trim();
+    const match = f => f.talent_id === open.id && !f.submitted_at && (f.project_title || '') === title;
+    const existing = (this.state.talentFeedback || []).find(match);
+    if (existing) return existing;
+    const { data, error } = await this.sb.from('talent_feedback')
+      .insert({ talent_id: open.id, project_title: title || null, sent_to: open.email || null })
+      .select().single();
+    if (error) {
+      if (/duplicate key|talent_feedback_one_open/i.test(error.message)) {
+        await this.loadTalentFeedback();
+        return (this.state.talentFeedback || []).find(match) || null;
+      }
+      this.setState({ feedbackStatus: /does not exist|schema cache/i.test(error.message)
+        ? 'Run album-system/talent-feedback.sql in Supabase first.'
+        : error.message });
+      return null;
+    }
+    this.setState({ talentFeedback: [data].concat(this.state.talentFeedback || []) });
+    return data;
+  }
+
+  async createFeedbackLink() {
+    const row = await this.ensureFeedbackRow();
+    if (!row) return;
+    await this.copyText(this.feedbackUrl(row), 'Link copied — it opens their form and nothing else.');
+  }
+
+  // Same house design as the booking enquiry — composed through mailShell so
+  // there is one email in this system, not four that drifted apart.
+  feedbackEmailHtml({ name, project, link }) {
+    return this.mailShell({
+      preheader: 'a minute of your time on ' + (project || 'the shoot') + '.',
+      headline: 'how did<br>we do?',
+      greeting: 'dear ' + String(name || 'there').toLowerCase() + ',',
+      body: [
+        'thank you for the work' + (project ? ' on ' + project.toLowerCase() : ' with us') + '.',
+        'we would like to hear how it went from your side — how clearly we communicated, how the day was run, how payment was handled, and how you were treated. it takes about a minute, and you can skip anything.',
+        'the link is yours alone and can be sent once. only we read it — never the crew you worked with, never the client.',
+      ],
+      rows: project ? [['project', project]] : [],
+      button: { href: link, label: 'share your experience' },
+      closing: 'with love,',
+    });
+  }
+
+  async sendFeedbackRequest(given) {
+    const open = (this.state.talent || []).find(x => x.id === this.state.talentId);
+    if (!open) return;
+    if (!open.email) {
+      this.setState({ feedbackStatus: 'No email on this person — use “Just make a link” and send it however you reach them.' });
+      return;
+    }
+    const row = given || await this.ensureFeedbackRow();
+    if (!row) return;
+    this.setState({ feedbackSending: true, feedbackStatus: 'Sending…' });
+    try {
+      const mailer = await this.waitForGlobal('emailjs', 8000);
+      if (!mailer) throw new Error('Email service did not load — check your connection and try again.');
+      const name = String(open.full_name || '').trim().split(/\s+/)[0] || 'there';
+      const project = (row.project_title || '').trim();
+      const html = this.feedbackEmailHtml({ name, project, link: this.feedbackUrl(row) });
+      const subject = project ? 'how was ' + project.toLowerCase() + '?' : 'how was working with us?';
+      await mailer.send(EMAILJS_SERVICE_ID, this.bookingTemplate(), {
+        to_email: open.email, email: open.email, user_email: open.email, reply_to: open.email,
+        to_name: open.full_name, subject, body_html: html, message: this.htmlToText(html),
+      }, { publicKey: EMAILJS_PUBLIC_KEY });
+      await this.sb.from('talent_feedback')
+        .update({ sent_at: new Date().toISOString(), sent_to: open.email }).eq('id', row.id);
+      this.setState({ feedbackSending: false, feedbackStatus: 'Sent to ' + open.email + '.' });
+      setTimeout(() => this.setState({ feedbackStatus: '' }), 4000);
+      this.loadTalentFeedback();
+    } catch (e) {
+      this.setState({ feedbackSending: false, feedbackStatus: 'Could not send: ' + (e && e.text || e && e.message || 'unknown error') + ' — the link still works, copy it instead.' });
+    }
+  }
+
+  async deleteFeedback(f) {
+    const { error } = await this.sb.from('talent_feedback').delete().eq('id', f.id);
+    if (error) { this.setState({ feedbackStatus: error.message }); return; }
+    this.loadTalentFeedback();
   }
 
   async loadEmailTemplates() {
@@ -6127,6 +6820,29 @@ class Component extends DCLogic {
     const work = s.talentWork || [];
     const wf = s.workForm || {};
     const myWork = open ? work.filter(w => w.talent_id === open.id) : [];
+    const myFeedback = open ? (s.talentFeedback || []).filter(f => f.talent_id === open.id) : [];
+    // The shoot they most recently worked is almost always the one being asked
+    // about, so the request box starts there rather than empty.
+    const lastWorkProject = (myWork[0] && myWork[0].project_title) || '';
+    // Days roll up into projects here rather than in SQL: the rows are already
+    // loaded, and a view would go stale the moment a day is edited.
+    const workProjects = (() => {
+      const by = new Map();
+      myWork.forEach(w => {
+        const key = (w.project_title || '').trim() || 'Untitled';
+        const g = by.get(key) || { project: key, days: 0, agreed: 0, paid: 0, due: 0, first: w.work_date, last: w.work_date };
+        const amt = Number(w.amount || 0);
+        g.days += 1;
+        g.agreed += amt;
+        if (w.paid) g.paid += amt; else g.due += amt;
+        if (w.work_date < g.first) g.first = w.work_date;
+        if (w.work_date > g.last) g.last = w.work_date;
+        by.set(key, g);
+      });
+      return Array.from(by.values()).sort((a, b) => String(b.last).localeCompare(String(a.last)));
+    })();
+    const fbTitle = String(s.fbProject == null ? lastWorkProject : s.fbProject).trim();
+    const fbPending = myFeedback.find(f => !f.submitted_at && (f.project_title || '') === fbTitle) || null;
     const workAgreed = myWork.reduce((a, w) => a + Number(w.amount || 0), 0);
     const workDue = myWork.filter(w => !w.paid).reduce((a, w) => a + Number(w.amount || 0), 0);
     const workTrial = myWork.filter(w => w.kind === 'trial').length;
@@ -6437,6 +7153,87 @@ class Component extends DCLogic {
         ['Outstanding', fmtINR(workDue)],
       ].map(pair => ({ label: pair[0], value: pair[1] })),
       workDueHighlight: workDue > 0 ? '#8A6D3B' : '#1C6B52',
+
+      // Every project this person has finished, newest last-day first, with
+      // what was actually paid against each. The day rows below are the
+      // ledger; this is the answer to “what have we done together, and did we
+      // settle it” without adding the days up by eye.
+      // With a single day logged the roll-up would just restate the row below
+      // it, so it only appears once there is something to actually add up.
+      hasWorkProjects: workProjects.length > 0 && myWork.length > 1,
+      workProjectsVM: workProjects.map(p => ({
+        project: p.project,
+        days: p.days + (p.days === 1 ? ' day' : ' days'),
+        span: p.first === p.last ? this.fmtWorkDate(p.last)
+          : this.fmtWorkDate(p.first) + ' – ' + this.fmtWorkDate(p.last),
+        paid: fmtINR(p.paid) + (p.due > 0 ? ' of ' + fmtINR(p.agreed) : ''),
+        stateLabel: p.due > 0 ? fmtINR(p.due) + ' due' : 'Settled',
+        stateBg: p.due > 0 ? '#FDF9F0' : '#E7F4EF',
+        stateColor: p.due > 0 ? '#8A6D3B' : '#1C6B52',
+      })),
+
+      // ---- Feedback (internal) ----
+      hasFeedbackError: !!s.feedbackLoadError,
+      feedbackError: s.feedbackLoadError || '',
+      feedbackStatus: s.feedbackStatus || '',
+      fbProject: s.fbProject == null ? lastWorkProject : s.fbProject,
+      onFbProject: e => this.setState({ fbProject: e.target.value, feedbackStatus: '' }),
+      sendFeedbackRequest: () => this.sendFeedbackRequest(),
+      sendFeedbackLabel: s.feedbackSending ? 'Sending…' : 'Email the form',
+      createFeedbackLink: () => this.createFeedbackLink(),
+      // The preview composes the same HTML the sender does, against the row
+      // that already exists for this shoot if there is one — so the button in
+      // the preview is the real link, not a stand-in.
+      fbPreviewOpen: !!s.fbPreviewOpen,
+      fbPreviewLabel: s.fbPreviewOpen ? 'Hide preview' : 'Preview email',
+      toggleFbPreview: () => this.setState({ fbPreviewOpen: !s.fbPreviewOpen }),
+      fbPreviewSubject: fbTitle ? 'how was ' + fbTitle.toLowerCase() + '?' : 'how was working with us?',
+      fbPreviewHtml: !open ? '' : this.previewDoc(this.feedbackEmailHtml({
+        name: String(open.full_name || '').trim().split(/\s+/)[0] || 'there',
+        project: fbTitle,
+        link: fbPending ? this.feedbackUrl(fbPending) : '#',
+      })),
+      feedbackNote: !open ? '' : (open.email
+        ? 'Goes to ' + open.email + '. They answer once; only admin and HR ever see it.'
+        : 'No email on file — make a link and send it yourself.'),
+      feedbackRowsVM: myFeedback.map(f => {
+        const done = !!f.submitted_at;
+        const scores = FEEDBACK_SCORES
+          .filter(q => f[q[0]] != null)
+          .map(q => ({
+            label: q[1],
+            value: f[q[0]] + ' / 5',
+            color: f[q[0]] <= 2 ? '#B4433A' : f[q[0]] >= 4 ? '#1C6B52' : '#8A6D3B',
+          }));
+        if (done && f.would_return != null) {
+          scores.push({
+            label: 'Work again',
+            value: f.would_return ? 'Yes' : 'No',
+            color: f.would_return ? '#1C6B52' : '#B4433A',
+          });
+        }
+        const texts = [
+          ['What worked', f.liked, '#9AA6A2'],
+          ['Do differently', f.improve, '#9AA6A2'],
+          ['Reported', f.complaint, '#B4433A'],
+        ].filter(t => !!t[1]).map(t => ({ label: t[0], value: t[1], labelColor: t[2] }));
+        return {
+          id: f.id,
+          project: (f.project_title || '').trim() || 'General',
+          pending: !done,
+          statusLabel: done ? (f.complaint ? 'Answered · reported' : 'Answered') : (f.sent_at ? 'Sent' : 'Link made'),
+          statusBg: done ? (f.complaint ? '#F9EFED' : '#E7F4EF') : '#FDF9F0',
+          statusColor: done ? (f.complaint ? '#B4433A' : '#1C6B52') : '#8A6D3B',
+          when: this.fmtWorkDate((f.submitted_at || f.sent_at || f.created_at || '').slice(0, 10)),
+          hasScores: scores.length > 0,
+          scoresVM: scores,
+          textsVM: texts,
+          copyLink: () => this.copyText(this.feedbackUrl(f), 'Link copied.'),
+          resend: () => this.sendFeedbackRequest(f),
+          resendLabel: f.sent_at ? 'Send again' : 'Email it',
+          remove: () => this.deleteFeedback(f),
+        };
+      }),
 
       hasTalentBookings: !!open && bookings.some(b => b.talent_id === open.id),      talentBookingsVM: !open ? [] : bookings.filter(b => b.talent_id === open.id).map(b => {
         const meta = BOOKING_STATUSES[b.status] || [b.status, '#F4F6F5', '#7C8985'];
@@ -7972,6 +8769,713 @@ class Component extends DCLogic {
     this.loadDigitalTab();
   }
 
+  // ---- Accounts: sub-shoots and spend ------------------------------------
+  //
+  // One load for the whole page. The parent lists are read here rather than
+  // reused from `works` because that list is filtered to the division you are
+  // browsing, and money is not.
+  async loadSpend() {
+    const [pr, ev, sh, ex] = await Promise.all([
+      this.sb.from('projects').select('id,project_title,client_name,division,divisions').limit(500),
+      this.sb.from('events').select('id,couple_names,event_date').limit(500),
+      this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).limit(1000),
+      this.sb.from('expenses').select('*').order('spend_date', { ascending: false }).limit(3000),
+    ]);
+    const missing = e => e && (e.code === 'PGRST205' || /schema cache|does not exist/i.test(e.message || ''));
+    if (missing(sh.error) || missing(ex.error)) {
+      this.setState({ spendLoadError: 'The shoots and expenses tables are not in the database yet — run album-system/spend-schema.sql in the Supabase SQL editor.' });
+      return;
+    }
+    const err = sh.error || ex.error || pr.error || ev.error;
+    this.setState({
+      spendProjects: pr.data || [],
+      spendEvents: ev.data || [],
+      spendShoots: sh.data || [],
+      spendExpenses: ex.data || [],
+      spendLoadError: err ? 'Could not load accounts: ' + err.message : '',
+    });
+    // The work log supplies the talent lines, so it has to be here too. RLS
+    // may return nothing for an accounts login; an empty list is the right
+    // outcome, not an error.
+    if (!(this.state.talentWork || []).length) this.loadTalentWork();
+  }
+
+  // After a mutation only the two tables that changed are re-read. The job
+  // and event lists cannot have moved, and refetching them was two extra
+  // round trips on every tick of a checkbox.
+  async loadSpendRows() {
+    const [sh, ex] = await Promise.all([
+      this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).limit(1000),
+      this.sb.from('expenses').select('*').order('spend_date', { ascending: false }).limit(3000),
+    ]);
+    const err = sh.error || ex.error;
+    if (err) { this.setState({ spendStatus: err.message }); return; }
+    this.setState({ spendShoots: sh.data || [], spendExpenses: ex.data || [] });
+  }
+
+  // 'project:<uuid>' / 'event:<uuid>'. One string keeps the picker, the forms
+  // and the grouping from each needing their own pair of fields.
+  //
+  // A client filed in two divisions is still ONE project row, so it appears
+  // under either division's filter and carries one set of expenses. Keying on
+  // the record id rather than on division is what makes that true — spend on
+  // Mr Fone cannot be entered twice by arriving from Commercial and again
+  // from Digital.
+  spendParents() {
+    const s = this.state;
+    const pr = s.spendProjects || [], ev = s.spendEvents || [];
+    // Rebuilt only when a source list actually changes: this is called by the
+    // ledger, the totals and the export on every render.
+    if (this._parentsFor === pr && this._parentsForEv === ev && this._parents) return this._parents;
+    const out = pr.map(p => {
+      const divs = Array.isArray(p.divisions) && p.divisions.length
+        ? p.divisions : (p.division ? [p.division] : []);
+      const name = (p.client_name || '').trim() || (p.project_title || '').trim() || 'Untitled project';
+      const work = (p.project_title || '').trim();
+      return {
+        key: 'project:' + p.id, kind: 'project', id: p.id,
+        label: name,
+        work: work && work.toLowerCase() !== name.toLowerCase() ? work : '',
+        names: [name, work].filter(Boolean),
+        divisions: divs,
+        divisionLabel: divs.map(d => DIVISION_LABEL[d] || d).join(' · '),
+      };
+    }).concat(ev.map(e => ({
+      key: 'event:' + e.id, kind: 'event', id: e.id,
+      label: e.couple_names || 'Wedding', work: '',
+      names: [e.couple_names].filter(Boolean),
+      divisions: ['wedding'], divisionLabel: DIVISION_LABEL.wedding,
+    })));
+    this._parentsFor = pr; this._parentsForEv = ev; this._parents = out;
+    return out;
+  }
+
+  spendParentCols(key) {
+    const [kind, id] = String(key || '').split(':');
+    return kind === 'event' ? { event_id: id, project_id: null } : { project_id: id, event_id: null };
+  }
+
+  spendBelongs(row, parent) {
+    return parent.kind === 'event' ? row.event_id === parent.id : row.project_id === parent.id;
+  }
+
+  // Talent day rates flow in instead of being retyped. Cash basis: an unpaid
+  // day is a commitment, shown as such, and kept out of the spent total.
+  // talent_work stores the shoot as free text, so the join is on the name —
+  // the only link that exists without making people pick from a dropdown they
+  // did not have when they logged the day.
+  talentSpendFor(parent) {
+    // The work log stores the shoot as free text, typed on the day: "Mr Fone
+    // Campaign" against a client called "Mr Fone". So the match is fuzzy in
+    // both directions against every name the job answers to — client name,
+    // project title, couple names. Containment only counts from four
+    // characters up, or a two-letter client would swallow the whole log.
+    //
+    // The log is indexed by distinct title once and reused: there are a
+    // handful of shoot names against thousands of day rows, so matching per
+    // title instead of per row is the difference that keeps this cheap.
+    const norm = v => String(v || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const names = (parent.names || [parent.label]).map(norm).filter(Boolean);
+    if (!names.length) return [];
+    const work = this.state.talentWork || [];
+    if (this._workIndexFor !== work) {
+      const idx = new Map();
+      work.forEach(w => {
+        const t = norm(w.project_title);
+        if (!t) return;
+        if (!idx.has(t)) idx.set(t, []);
+        idx.get(t).push(w);
+      });
+      this._workIndexFor = work;
+      this._workIndex = idx;
+    }
+    const hit = title => names.some(n =>
+      n === title || (n.length >= 4 && (title.indexOf(n) !== -1 || n.indexOf(title) !== -1)));
+    const who = {};
+    (this.state.talent || []).forEach(t => { who[t.id] = t.full_name; });
+    const cols = this.spendParentCols(parent.key);
+    const out = [];
+    this._workIndex.forEach((rows, title) => {
+      if (!hit(title)) return;
+      rows.forEach(w => out.push(Object.assign({
+        id: 'tw:' + w.id,
+        spend_date: w.work_date,
+        category: 'Talent & crew',
+        vendor: who[w.talent_id] || 'Talent',
+        note: (WORK_KINDS.find(k => k[0] === w.kind) || ['', w.kind])[1] + ' day'
+          + (w.project_title ? ' · ' + w.project_title : '')
+          + (w.location ? ' · ' + w.location : ''),
+        amount: Number(w.amount || 0),
+        shoot_id: null, workKind: w.kind,
+        billable: false, recovered: false, paid: !!w.paid, fromWorkLog: true,
+      }, cols)));
+    });
+    return out;
+  }
+
+  // A talent day belongs to the sub-shoot it was worked on. Matched on the
+  // date first — that is what a shoot is — then on kind, so a trial day logged
+  // a day either side of the trial still lands on it. Unmatched days stay at
+  // job level rather than being invented onto a shoot.
+  attachShoots(lines, shoots) {
+    return lines.map(t => {
+      if (!shoots.length) return t;
+      const byDate = shoots.find(sh => sh.shoot_date && sh.shoot_date === t.spend_date);
+      const byKind = !byDate && t.workKind
+        ? shoots.find(sh => sh.kind === (t.workKind === 'actual' ? 'main' : t.workKind)) : null;
+      const hit = byDate || byKind;
+      return hit ? Object.assign({}, t, { shoot_id: hit.id }) : t;
+    });
+  }
+
+  // Every paid talent day across every job, shaped like an expense row. Cash
+  // basis, so unpaid days stay out: they are a commitment, not spend. Totals
+  // and the Excel export both read this — which is what stops the model's
+  // ₹4,000 from being a footnote on one screen and missing from the sheet the
+  // month is reconciled with.
+  //
+  // Memoised, because it is called several times per render and the naive
+  // shape is every project against every work-log row — 500 × 2000 string
+  // comparisons on each keystroke. Keyed on array IDENTITY, not length: every
+  // loader sets a freshly-fetched array, so a corrected amount or a flipped
+  // paid flag invalidates the cache even though nothing got longer.
+  paidTalentRows() {
+    const s = this.state;
+    const keys = [s.spendProjects, s.spendEvents, s.spendShoots, s.talentWork, s.talent];
+    const same = this._talentRowsKeys
+      && keys.every((k, i) => k === this._talentRowsKeys[i]);
+    if (same && this._talentRows) return this._talentRows;
+    const shoots = s.spendShoots || [];
+    const rows = this.spendParents().reduce((acc, p) => acc.concat(
+      this.attachShoots(
+        this.talentSpendFor(p).filter(t => t.paid),
+        shoots.filter(sh => this.spendBelongs(sh, p)))), []);
+    this._talentRowsKeys = keys;
+    this._talentRows = rows;
+    return rows;
+  }
+
+  setSpendField(form, k, v) {
+    this.setState({ [form]: Object.assign({}, this.state[form] || {}, { [k]: v }), spendStatus: '' });
+  }
+
+  async addShoot() {
+    const key = this.state.spendParent;
+    if (!key) { this.setState({ spendStatus: 'Pick the job this shoot belongs to first.' }); return; }
+    const f = this.state.shootForm || {};
+    const title = (f.title || '').trim();
+    if (!title) { this.setState({ spendStatus: 'Give the shoot a name — “Trial · look test” is enough.' }); return; }
+    const row = Object.assign({
+      title, kind: f.kind || 'trial',
+      shoot_date: (f.shoot_date || '').trim() || null,
+      location: (f.location || '').trim() || null,
+      brief: (f.brief || '').trim() || null,
+      billable: !!f.billable,
+      status: f.status || 'done',
+    }, this.spendParentCols(key));
+    this.setState({ spendStatus: 'Saving…' });
+    const { error } = await this.sb.from('shoots').insert(row);
+    if (error) { this.setState({ spendStatus: error.message }); return; }
+    this.setState({ spendStatus: 'Shoot added.', shootForm: { kind: row.kind } });
+    setTimeout(() => this.setState({ spendStatus: '' }), 2500);
+    this.loadSpendRows();
+  }
+
+  async deleteShoot(sh) {
+    const { error } = await this.sb.from('shoots').delete().eq('id', sh.id);
+    if (error) { this.setState({ spendStatus: error.message }); return; }
+    this.loadSpendRows();
+  }
+
+  async addExpense() {
+    const key = this.state.spendParent;
+    if (!key) { this.setState({ spendStatus: 'Pick the job this spend belongs to first.' }); return; }
+    const f = this.state.expenseForm || {};
+    const amount = String(f.amount == null ? '' : f.amount).trim();
+    if (amount === '' || isNaN(Number(amount))) { this.setState({ spendStatus: 'How much was it?' }); return; }
+    const billable = !!f.billable;
+    const row = Object.assign({
+      shoot_id: f.shoot_id || null,
+      spend_date: (f.spend_date || '').trim() || new Date().toISOString().slice(0, 10),
+      category: f.category || 'Misc',
+      vendor: (f.vendor || '').trim() || null,
+      note: (f.note || '').trim() || null,
+      amount: Number(amount),
+      billable,
+      // Guarded here as well as in the database: recovered without billable is
+      // a state the totals cannot represent.
+      recovered: billable && !!f.recovered,
+    }, this.spendParentCols(key));
+    this.setState({ spendStatus: 'Saving…' });
+    const { error } = await this.sb.from('expenses').insert(row);
+    if (error) { this.setState({ spendStatus: error.message }); return; }
+    // Shoot, date and category carry over: a shoot day is entered as a run of
+    // small costs, not one at a time from a blank form.
+    this.setState({
+      spendStatus: 'Added.',
+      expenseForm: { shoot_id: row.shoot_id, spend_date: row.spend_date, category: row.category, billable },
+    });
+    setTimeout(() => this.setState({ spendStatus: '' }), 2000);
+    this.loadSpendRows();
+  }
+
+  async updateExpense(e, patch) {
+    const { error } = await this.sb.from('expenses').update(patch).eq('id', e.id);
+    if (error) { this.setState({ spendStatus: error.message }); return; }
+    this.loadSpendRows();
+  }
+
+  startEditExpense(e) {
+    this.setState({
+      editExpenseId: e.id,
+      editExpenseForm: {
+        spend_date: e.spend_date || '', category: e.category || 'Misc',
+        vendor: e.vendor || '', amount: e.amount == null ? '' : String(e.amount),
+        note: e.note || '', shoot_id: e.shoot_id || '',
+        billable: !!e.billable, recovered: !!e.recovered,
+      },
+      spendStatus: '',
+    });
+  }
+
+  async saveEditExpense() {
+    const id = this.state.editExpenseId;
+    const f = this.state.editExpenseForm || {};
+    if (!id) return;
+    const amount = String(f.amount == null ? '' : f.amount).trim();
+    if (amount === '' || isNaN(Number(amount))) { this.setState({ spendStatus: 'How much was it?' }); return; }
+    const billable = !!f.billable;
+    this.setState({ spendStatus: 'Saving…' });
+    const { error } = await this.sb.from('expenses').update({
+      spend_date: (f.spend_date || '').trim() || new Date().toISOString().slice(0, 10),
+      category: f.category || 'Misc',
+      vendor: (f.vendor || '').trim() || null,
+      note: (f.note || '').trim() || null,
+      amount: Number(amount),
+      shoot_id: f.shoot_id || null,
+      billable,
+      recovered: billable && !!f.recovered,
+    }).eq('id', id);
+    if (error) { this.setState({ spendStatus: error.message }); return; }
+    this.setState({ editExpenseId: null, editExpenseForm: null, spendStatus: 'Saved.' });
+    setTimeout(() => this.setState({ spendStatus: '' }), 2000);
+    this.loadSpendRows();
+  }
+
+  async deleteExpense(e) {
+    const { error } = await this.sb.from('expenses').delete().eq('id', e.id);
+    if (error) { this.setState({ spendStatus: error.message }); return; }
+    this.loadSpendRows();
+  }
+
+  // One flat ledger: typed expenses plus paid talent days, each already
+  // carrying the job and the sub-shoot it belongs to. The view, the totals
+  // and the Excel all read this one function, so they cannot disagree.
+  spendLedger(filters) {
+    const f = filters || {};
+    const byKey = {};
+    this.spendParents().forEach(p => { byKey[p.key] = p; });
+    const shootById = {};
+    (this.state.spendShoots || []).forEach(sh => { shootById[sh.id] = sh; });
+    const keyOf = r => (r.project_id ? 'project:' + r.project_id : 'event:' + r.event_id);
+    const q = String(f.q || '').trim().toLowerCase();
+    return (this.state.spendExpenses || []).concat(this.paidTalentRows())
+      .map(e => {
+        const p = byKey[keyOf(e)] || null;
+        const sh = e.shoot_id ? (shootById[e.shoot_id] || null) : null;
+        const kind = sh ? (SHOOT_KINDS.find(k => k[0] === sh.kind) || ['', sh.kind]) : null;
+        return {
+          e,
+          job: p ? p.label : 'Unfiled', jobKey: p ? p.key : '',
+          work: p ? p.work : '', divisions: p ? p.divisions : [],
+          shootLabel: sh ? sh.title : 'Job level',
+          kindLabel: kind ? kind[1] : '—',
+        };
+      })
+      .filter(r => {
+        const e = r.e;
+        if (f.division && r.divisions.indexOf(f.division) === -1) return false;
+        if (f.job && r.jobKey !== f.job) return false;
+        if (f.from && String(e.spend_date || '') < f.from) return false;
+        if (f.to && String(e.spend_date || '') > f.to) return false;
+        if (f.category && (e.category || '') !== f.category) return false;
+        if (f.bearer === 'ours' && e.billable) return false;
+        if (f.bearer === 'billable' && !e.billable) return false;
+        if (f.bearer === 'torecover' && !(e.billable && !e.recovered)) return false;
+        if (f.bearer === 'recovered' && !(e.billable && e.recovered)) return false;
+        if (q && [r.job, r.shootLabel, e.category, e.vendor, e.note]
+          .join(' ').toLowerCase().indexOf(q) === -1) return false;
+        return true;
+      })
+      .sort((a, b) => String(b.e.spend_date).localeCompare(String(a.e.spend_date)));
+  }
+
+  ledgerFilters() {
+    const s = this.state;
+    return {
+      division: s.lgDivision || '', job: s.lgJob || '',
+      from: s.lgFrom || '', to: s.lgTo || '',
+      category: s.lgCategory || '', bearer: s.lgBearer || 'all', q: s.lgQuery || '',
+    };
+  }
+
+  // ---- Excel ---------------------------------------------------------------
+  // SpreadsheetML 2003: plain XML, opens natively in Excel, Numbers and
+  // Sheets, and gives real sheets — which a CSV cannot. No library, so the
+  // export cannot break because a CDN is down on the day you need the file.
+  xmlEsc(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+  }
+
+  xlSheet(name, rows) {
+    const cell = v => {
+      const num = typeof v === 'number' && isFinite(v);
+      return '<Cell><Data ss:Type="' + (num ? 'Number' : 'String') + '">'
+        + this.xmlEsc(num ? v : (v == null ? '' : v)) + '</Data></Cell>';
+    };
+    return '<Worksheet ss:Name="' + this.xmlEsc(String(name).slice(0, 31)) + '"><Table>'
+      + rows.map(r => '<Row>' + r.map(cell).join('') + '</Row>').join('')
+      + '</Table></Worksheet>';
+  }
+
+  downloadSpendExcel() {
+    // Whatever the ledger is filtered to is what downloads — the file matches
+    // the screen it was asked for.
+    const view = this.spendLedger(this.state.spendTab === 'ledger' ? this.ledgerFilters() : {})
+      .slice().sort((a, b) => String(a.e.spend_date).localeCompare(String(b.e.spend_date)));
+
+    const all = [['Date', 'Job', 'Sub-shoot', 'Kind', 'Category', 'Paid to', 'Note', 'Amount', 'Billable', 'Recovered', 'Borne by', 'Source']];
+    view.forEach(r => {
+      const e = r.e;
+      all.push([
+        e.spend_date || '', r.job, r.shootLabel, r.kindLabel,
+        e.category || '', e.vendor || '', e.note || '',
+        Number(e.amount || 0),
+        e.billable ? 'Yes' : 'No', e.recovered ? 'Yes' : 'No',
+        e.billable ? (e.recovered ? 'Client (recovered)' : 'Client (pending)') : 'Company',
+        e.fromWorkLog ? 'Work log' : 'Entered here',
+      ]);
+    });
+    const spent = view.reduce((a, r) => a + Number(r.e.amount || 0), 0);
+    all.push([]);
+    all.push(['', '', '', '', '', '', 'Total', spent]);
+    all.push(['', '', '', '', '', '', 'Of which the company bore',
+      view.filter(r => !r.e.billable).reduce((a, r) => a + Number(r.e.amount || 0), 0)]);
+
+    // Sheet 2 — job × category.
+    const cats = {}, jobs = {};
+    view.forEach(r => {
+      const c = r.e.category || 'Misc';
+      cats[c] = true;
+      jobs[r.job] = jobs[r.job] || {};
+      jobs[r.job][c] = (jobs[r.job][c] || 0) + Number(r.e.amount || 0);
+    });
+    const catList = Object.keys(cats).sort();
+    const byCat = [['Job'].concat(catList).concat(['Total'])];
+    Object.keys(jobs).sort().forEach(label => {
+      const line = [label];
+      let t = 0;
+      catList.forEach(c => { const v = jobs[label][c] || 0; t += v; line.push(v); });
+      line.push(t);
+      byCat.push(line);
+    });
+
+    // Sheet 3 — per sub-shoot, with what was absorbed against each.
+    const shKey = r => r.job + ' \u0000 ' + r.shootLabel;
+    const grouped = {};
+    view.forEach(r => {
+      const k = shKey(r);
+      grouped[k] = grouped[k] || { job: r.job, shoot: r.shootLabel, kind: r.kindLabel, rows: [] };
+      grouped[k].rows.push(r.e);
+    });
+    const bySh = [['Job', 'Sub-shoot', 'Kind', 'Entries', 'Spent', 'Company bore', 'Billable', 'Recovered', 'Still to recover']];
+    Object.keys(grouped).sort().forEach(k => {
+      const g = grouped[k];
+      const s2 = f => g.rows.filter(f).reduce((a, e) => a + Number(e.amount || 0), 0);
+      bySh.push([g.job, g.shoot, g.kind, g.rows.length,
+        s2(() => true), s2(e => !e.billable), s2(e => e.billable),
+        s2(e => e.billable && e.recovered), s2(e => e.billable && !e.recovered)]);
+    });
+
+    const xml = '<?xml version="1.0"?>'
+      + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+      + this.xlSheet('All expenses', all)
+      + this.xlSheet('Job x category', byCat)
+      + this.xlSheet('By sub-shoot', bySh)
+      + '</Workbook>';
+    const blob = new Blob(['\ufeff' + xml], { type: 'application/vnd.ms-excel' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'glomium-accounts-' + new Date().toISOString().slice(0, 10) + '.xls';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    this.setState({ spendStatus: 'Downloaded ' + view.length + ' lines — three sheets: every expense, job × category, and per sub-shoot.' });
+    setTimeout(() => this.setState({ spendStatus: '' }), 5000);
+  }
+
+  spendVM() {
+    const s = this.state;
+    const blank = {
+      isSpend: false, spendParentOptsVM: [], spendJobsVM: [], spendShootsVM: [],
+      spendLooseVM: [], spendOwedVM: [], spendCardsVM: [], spendCatOptsVM: [],
+      spendKindOptsVM: [], spendShootOptsVM: [], spendDivisionOptsVM: [],
+      spendTabsVM: [], ledgerRowsVM: [], ledgerTotalsVM: [], lgDivisionOptsVM: [],
+      lgJobOptsVM: [], lgCatOptsVM: [], lgBearerChipsVM: [],
+    };
+    if (!this.can('spend') || s.view !== 'spend') return blank;
+
+    const parents = this.spendParents();
+    const divFilter = s.spendDivision || '';
+    // The filter narrows which jobs you see, never which record you write to.
+    const inDiv = p => !divFilter || p.divisions.indexOf(divFilter) !== -1;
+    const expenses = s.spendExpenses || [];
+    const shoots = s.spendShoots || [];
+    const canEdit = this.can('spendEdit');
+    const canShoot = this.can('shootEdit');
+    const parentKey = s.spendParent || '';
+    const parent = parents.find(p => p.key === parentKey) || null;
+
+    const sum = (list, f) => list.filter(f || (() => true)).reduce((a, e) => a + Number(e.amount || 0), 0);
+    // Paid talent days are spend like any other. They are merged in for every
+    // total on this page so the cards, the job rows and the Excel all agree.
+    const talentRows = this.paidTalentRows();
+    const ledger = expenses.concat(talentRows);
+    const spent = sum(ledger);
+    const absorbed = sum(ledger, e => !e.billable);
+    const billable = sum(ledger, e => e.billable);
+    const recovered = sum(ledger, e => e.billable && e.recovered);
+
+    // Jobs that have any spend or any shoot. A job with neither is noise here
+    // — it is still in the picker, so nothing is unreachable.
+    const touched = parents.filter(p => inDiv(p) &&
+      (ledger.some(e => this.spendBelongs(e, p)) || shoots.some(sh => this.spendBelongs(sh, p))));
+
+    const mine = parent ? expenses.filter(e => this.spendBelongs(e, parent)) : [];
+    const myShoots = parent ? shoots.filter(sh => this.spendBelongs(sh, parent)) : [];
+    const talentLines = parent ? this.attachShoots(this.talentSpendFor(parent), myShoots) : [];
+    const talentPaid = talentLines.filter(t => t.paid).reduce((a, t) => a + t.amount, 0);
+    const talentDue = talentLines.filter(t => !t.paid).reduce((a, t) => a + t.amount, 0);
+    // One ledger for the job: typed expenses and paid talent days together,
+    // each line appearing exactly once, under the sub-shoot it belongs to.
+    const mineAll = mine.concat(talentLines.filter(t => t.paid));
+
+    const ef = s.expenseForm || {};
+    const sf = s.shootForm || {};
+    const xf = s.editExpenseForm || {};
+    const money = n => fmtINR(n);
+    const ledgerView = this.spendLedger(this.ledgerFilters());
+    const lgSum = f => ledgerView.filter(f || (() => true)).reduce((a, r) => a + Number(r.e.amount || 0), 0);
+
+    const expenseRow = e => ({
+      id: e.id,
+      date: this.fmtWorkDate(e.spend_date),
+      category: e.category || 'Misc',
+      vendor: e.vendor || '',
+      note: [e.vendor, e.note].filter(Boolean).join(' · '),
+      hasNote: !!(e.vendor || e.note),
+      amount: money(e.amount),
+      bearerLabel: e.fromWorkLog ? 'Work log' : (e.billable ? (e.recovered ? 'Recovered' : 'To recover') : 'We bore it'),
+      bearerBg: e.fromWorkLog ? '#F1F4F3' : (e.billable ? (e.recovered ? '#E7F4EF' : '#FDF9F0') : '#F4F6F5'),
+      bearerColor: e.fromWorkLog ? '#5D6864' : (e.billable ? (e.recovered ? '#1C6B52' : '#8A6D3B') : '#5D6864'),
+      // A pulled-in day is edited on the person's profile, never here — two
+      // places to change one number is how the two stop agreeing.
+      canEdit: canEdit && !e.fromWorkLog,
+      // Editing happens in place: the row becomes its own small form rather
+      // than opening a dialog that hides the line you are correcting.
+      isEditing: canEdit && !e.fromWorkLog && s.editExpenseId === e.id,
+      startEdit: () => this.startEditExpense(e),
+      saveEdit: () => this.saveEditExpense(),
+      cancelEdit: () => this.setState({ editExpenseId: null, editExpenseForm: null, spendStatus: '' }),
+      edDate: xf.spend_date || '', onEdDate: ev => this.setSpendField('editExpenseForm', 'spend_date', ev.target.value),
+      edCategory: xf.category || 'Misc', onEdCategory: ev => this.setSpendField('editExpenseForm', 'category', ev.target.value),
+      edVendor: xf.vendor || '', onEdVendor: ev => this.setSpendField('editExpenseForm', 'vendor', ev.target.value),
+      edAmount: xf.amount || '', onEdAmount: ev => this.setSpendField('editExpenseForm', 'amount', ev.target.value),
+      edNote: xf.note || '', onEdNote: ev => this.setSpendField('editExpenseForm', 'note', ev.target.value),
+      edShoot: xf.shoot_id || '', onEdShoot: ev => this.setSpendField('editExpenseForm', 'shoot_id', ev.target.value),
+      edBillable: !!xf.billable, onEdBillable: ev => this.setSpendField('editExpenseForm', 'billable', ev.target.checked),
+      edRecovered: !!xf.recovered, onEdRecovered: ev => this.setSpendField('editExpenseForm', 'recovered', ev.target.checked),
+      edShowRecovered: !!xf.billable,
+      toggleBillable: () => this.updateExpense(e, { billable: !e.billable, recovered: false }),
+      billableLabel: e.billable ? 'Mark ours' : 'Mark billable',
+      showRecover: !!e.billable,
+      toggleRecovered: () => this.updateExpense(e, { recovered: !e.recovered }),
+      recoveredLabel: e.recovered ? 'Not recovered' : 'Mark recovered',
+      remove: () => this.deleteExpense(e),
+    });
+
+    return {
+      isSpend: true,
+      spendBack: () => this.goWorkspace('dashboard'),
+      spendTabsVM: [['log', 'Log spend'], ['ledger', 'All expenses']].map(t => ({
+        label: t[1], go: () => this.setState({ spendTab: t[0], spendStatus: '' }),
+        line: (s.spendTab || 'log') === t[0] ? 'var(--green)' : 'transparent',
+        color: (s.spendTab || 'log') === t[0] ? 'var(--green-deep)' : '#9AA6A2',
+      })),
+      isSpendLog: (s.spendTab || 'log') === 'log',
+      isSpendLedger: s.spendTab === 'ledger',
+      spendStatus: s.spendStatus || '',
+      hasSpendError: !!s.spendLoadError,
+      spendError: s.spendLoadError || '',
+      spendCanEdit: canEdit,
+      spendCanShoot: canShoot,
+      downloadSpendExcel: () => this.downloadSpendExcel(),
+
+      spendCardsVM: [
+        ['Spent', money(spent), '#16231F', 'Everything logged, cash out'],
+        ['We bore it', money(absorbed), '#B4433A', 'Never going on an invoice'],
+        ['Billable', money(billable), '#8A6D3B', 'Meant to reach a client'],
+        ['Still to recover', money(billable - recovered), '#8A6D3B', 'Billable and not yet back'],
+      ].map(c => ({ label: c[0], value: c[1], color: c[2], note: c[3] })),
+
+      spendDivisionOptsVM: [{ value: '', label: 'Choose a division…' }]
+        .concat(DIVISIONS.map(d => ({ value: d[0], label: d[1] }))),
+      spendDivision: divFilter,
+      onSpendDivision: e => this.setState({ spendDivision: e.target.value, spendParent: '', spendStatus: '' }),
+      spendDivisionNote: 'A client filed in two divisions is one record — pick it from either, and the spend stays in one place.',
+
+      spendJobsVM: touched.map(p => {
+        const list = ledger.filter(e => this.spendBelongs(e, p));
+        const open = parentKey === p.key;
+        const n = shoots.filter(sh => this.spendBelongs(sh, p)).length;
+        return {
+          label: p.label,
+          meta: [p.work, n + (n === 1 ? ' shoot' : ' shoots')].filter(Boolean).join(' · '),
+          spent: money(sum(list)),
+          absorbed: money(sum(list, e => !e.billable)) + ' ours',
+          bg: open ? '#F4FAF8' : 'transparent',
+          border: open ? 'var(--green)' : 'var(--line)',
+          go: () => this.setState({ spendParent: p.key, spendStatus: '' }),
+        };
+      }),
+
+      // Genuinely gated: no projects until a division is chosen, because that
+      // is the order the work is thought about.
+      spendParentOptsVM: [{ value: '', label: divFilter ? 'Choose a project…' : 'Choose a division first…' }]
+        .concat(divFilter ? parents.filter(inDiv).map(p => ({
+          value: p.key,
+          label: p.label + (p.work ? ' — ' + p.work : ''),
+        })) : []),
+      spendParent: parentKey,
+      onSpendParent: e => this.setState({ spendParent: e.target.value, spendStatus: '' }),
+      hasSpendParent: !!parent,
+      spendParentLabel: parent ? parent.label + (parent.work ? ' — ' + parent.work : '') : '',
+      spendParentTotals: !parent ? '' : [
+        money(sum(mineAll)) + ' spent',
+        money(sum(mineAll, e => !e.billable)) + ' ours',
+        talentPaid ? money(talentPaid) + ' of it to talent' : '',
+        talentDue ? money(talentDue) + ' still owed to talent' : '',
+      ].filter(Boolean).join('  ·  '),
+
+      spendKindOptsVM: SHOOT_KINDS.map(k => ({ value: k[0], label: k[1] })),
+      spendCatOptsVM: EXPENSE_CATS.map(c => ({ value: c, label: c })),
+      spendShootOptsVM: [{ value: '', label: 'No sub-shoot — job level' }]
+        .concat(myShoots.map(sh => ({ value: sh.id, label: sh.title }))),
+
+      shootTitle: sf.title || '', onShootTitle: e => this.setSpendField('shootForm', 'title', e.target.value),
+      shootKind: sf.kind || 'trial', onShootKind: e => this.setSpendField('shootForm', 'kind', e.target.value),
+      shootDate: sf.shoot_date || '', onShootDate: e => this.setSpendField('shootForm', 'shoot_date', e.target.value),
+      shootLocation: sf.location || '', onShootLocation: e => this.setSpendField('shootForm', 'location', e.target.value),
+      shootBrief: sf.brief || '', onShootBrief: e => this.setSpendField('shootForm', 'brief', e.target.value),
+      shootBillable: !!sf.billable, onShootBillable: e => this.setSpendField('shootForm', 'billable', e.target.checked),
+      addShoot: () => this.addShoot(),
+
+      expDate: ef.spend_date || '', onExpDate: e => this.setSpendField('expenseForm', 'spend_date', e.target.value),
+      expShoot: ef.shoot_id || '', onExpShoot: e => this.setSpendField('expenseForm', 'shoot_id', e.target.value),
+      expCategory: ef.category || 'Travel', onExpCategory: e => this.setSpendField('expenseForm', 'category', e.target.value),
+      expVendor: ef.vendor || '', onExpVendor: e => this.setSpendField('expenseForm', 'vendor', e.target.value),
+      expAmount: ef.amount || '', onExpAmount: e => this.setSpendField('expenseForm', 'amount', e.target.value),
+      expNote: ef.note || '', onExpNote: e => this.setSpendField('expenseForm', 'note', e.target.value),
+      expBillable: !!ef.billable, onExpBillable: e => this.setSpendField('expenseForm', 'billable', e.target.checked),
+      expRecovered: !!ef.recovered, onExpRecovered: e => this.setSpendField('expenseForm', 'recovered', e.target.checked),
+      expShowRecovered: !!ef.billable,
+      addExpense: () => this.addExpense(),
+
+      spendShootsVM: myShoots.map(sh => {
+        const kind = SHOOT_KINDS.find(k => k[0] === sh.kind) || [sh.kind, sh.kind, '#F4F6F5', '#7C8985'];
+        const list = mineAll.filter(e => e.shoot_id === sh.id);
+        return {
+          id: sh.id,
+          title: sh.title,
+          kindLabel: kind[1], kindBg: kind[2], kindColor: kind[3],
+          meta: [sh.shoot_date ? this.fmtWorkDate(sh.shoot_date) : '', sh.location, sh.brief].filter(Boolean).join(' · '),
+          hasMeta: !!(sh.shoot_date || sh.location || sh.brief),
+          spent: money(sum(list)),
+          bearer: sh.billable ? 'Billable shoot' : 'On us',
+          bearerBg: sh.billable ? '#FDF9F0' : '#F4F6F5',
+          bearerColor: sh.billable ? '#8A6D3B' : '#5D6864',
+          canShoot,
+          remove: () => this.deleteShoot(sh),
+          hasRows: list.length > 0,
+          rowsVM: list.map(expenseRow),
+          emptyNote: 'Nothing logged against this shoot yet.',
+        };
+      }),
+
+      hasLoose: mineAll.some(e => !e.shoot_id),
+      spendLooseVM: mineAll.filter(e => !e.shoot_id).map(expenseRow),
+
+      // Unpaid days are not spend yet, so they are listed apart and left out
+      // of every total — visible, but not counted twice when they are paid.
+      hasOwed: talentLines.some(t => !t.paid),
+      spendOwedVM: talentLines.filter(t => !t.paid).map(t => ({
+        date: this.fmtWorkDate(t.spend_date),
+        who: t.vendor, note: t.note, amount: money(t.amount),
+      })),
+      owedNote: 'Owed to talent from the work log — not counted as spend until the day is marked paid on their profile.',
+
+      // ---- The ledger view ----
+      lgDivisionOptsVM: [{ value: '', label: 'Every division' }]
+        .concat(DIVISIONS.map(d => ({ value: d[0], label: d[1] }))),
+      lgDivision: s.lgDivision || '',
+      onLgDivision: e => this.setState({ lgDivision: e.target.value, lgJob: '' }),
+      lgJobOptsVM: [{ value: '', label: 'Every job' }].concat(
+        parents.filter(p => !s.lgDivision || p.divisions.indexOf(s.lgDivision) !== -1)
+          .map(p => ({ value: p.key, label: p.label }))),
+      lgJob: s.lgJob || '', onLgJob: e => this.setState({ lgJob: e.target.value }),
+      lgCatOptsVM: [{ value: '', label: 'Every category' }]
+        .concat(EXPENSE_CATS.map(c => ({ value: c, label: c }))),
+      lgCategory: s.lgCategory || '', onLgCategory: e => this.setState({ lgCategory: e.target.value }),
+      lgBearerChipsVM: [['all', 'Everything'], ['ours', 'We bore it'], ['billable', 'Billable'],
+        ['torecover', 'Still to recover'], ['recovered', 'Recovered']].map(b => ({
+        label: b[1], go: () => this.setState({ lgBearer: b[0] }),
+        bg: (s.lgBearer || 'all') === b[0] ? 'var(--green)' : 'none',
+        border: (s.lgBearer || 'all') === b[0] ? 'var(--green)' : 'var(--line)',
+        color: (s.lgBearer || 'all') === b[0] ? '#fff' : 'var(--green-deep)',
+      })),
+      lgFrom: s.lgFrom || '', onLgFrom: e => this.setState({ lgFrom: e.target.value }),
+      lgTo: s.lgTo || '', onLgTo: e => this.setState({ lgTo: e.target.value }),
+      lgQuery: s.lgQuery || '', onLgQuery: e => this.setState({ lgQuery: e.target.value }),
+      clearLedger: () => this.setState({
+        lgDivision: '', lgJob: '', lgCategory: '', lgBearer: 'all', lgFrom: '', lgTo: '', lgQuery: '',
+      }),
+      ledgerCountLabel: ledgerView.length + (ledgerView.length === 1 ? ' line' : ' lines'),
+      ledgerTotalsVM: [
+        ['Spent', money(lgSum()), '#16231F'],
+        ['We bore it', money(lgSum(r => !r.e.billable)), '#B4433A'],
+        ['Billable', money(lgSum(r => r.e.billable)), '#8A6D3B'],
+        ['To recover', money(lgSum(r => r.e.billable && !r.e.recovered)), '#8A6D3B'],
+      ].map(t => ({ label: t[0], value: t[1], color: t[2] })),
+      hasLedgerRows: ledgerView.length > 0,
+      ledgerRowsVM: ledgerView.map(r => ({
+        date: this.fmtWorkDate(r.e.spend_date),
+        job: r.job,
+        shoot: r.shootLabel + (r.kindLabel && r.kindLabel !== '—' ? ' · ' + r.kindLabel : ''),
+        category: r.e.category || 'Misc',
+        note: [r.e.vendor, r.e.note].filter(Boolean).join(' · '),
+        hasNote: !!(r.e.vendor || r.e.note),
+        amount: money(r.e.amount),
+        bearerLabel: r.e.fromWorkLog ? 'Work log'
+          : (r.e.billable ? (r.e.recovered ? 'Recovered' : 'To recover') : 'We bore it'),
+        bearerBg: r.e.fromWorkLog ? '#F1F4F3'
+          : (r.e.billable ? (r.e.recovered ? '#E7F4EF' : '#FDF9F0') : '#F4F6F5'),
+        bearerColor: r.e.fromWorkLog ? '#5D6864'
+          : (r.e.billable ? (r.e.recovered ? '#1C6B52' : '#8A6D3B') : '#5D6864'),
+      })),
+    };
+  }
+
   // Everything the Digital view renders. Kept as one method so the giant
   // renderVals return can spread it in a single line.
   digitalVM() {
@@ -8664,6 +10168,7 @@ class Component extends DCLogic {
     if (this.can('people')) nav.push({ key: 'people', label: 'People' });
     if (this.can('payouts')) nav.push({ key: 'payouts', label: 'Payouts' });
     if (this.can('money')) nav.push({ key: 'money', label: 'Money in' });
+    if (this.can('spend')) nav.push({ key: 'spend', label: 'Accounts' });
     // Only inside the division it belongs to — the other four divisions have no
     // ad accounts, and a permanently empty tab is worse than no tab.
     if (this.can('digital') && s.division === 'digital') nav.push({ key: 'digital', label: 'Digital' });
@@ -9489,6 +10994,7 @@ class Component extends DCLogic {
       }),
 
       ...this.digitalVM(),
+      ...this.spendVM(),
       ...this.talentVM(),
 
       crewTabsVM: [['people', 'Crew'], ['talent', 'Freelance & talent']].map(pair => ({
@@ -9497,7 +11003,7 @@ class Component extends DCLogic {
         color: s.view === pair[0] ? 'var(--green-deep)' : '#9AA6A2',
       })),
 
-      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'digital'),
+      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital'),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       isMoney: onMoney,
       isApprovals: s.view === 'approvals',
