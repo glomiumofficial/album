@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Your experience — Glomium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root { --green:#10AF8B; --green-deep:#0A6E58; --ink:#16231F; --line:rgba(16,175,139,.2); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#F7F9F8; color:#16231F; font-family:'Jost',Helvetica,sans-serif; }
+  a { color:var(--green); text-decoration:none; }
+  a:hover { color:var(--green-deep); }
+  textarea, input, button, select { font-family:inherit; }
+  ::selection { background:var(--green); color:#fff; }
+</style>
+</helmet>
+
+<div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:clamp(20px,5vw,56px) clamp(14px,4vw,24px) 64px">
+
+  <div style="width:100%; max-width:640px; display:flex; flex-direction:column; gap:clamp(20px,4vw,30px)">
+
+    <div style="display:flex; flex-direction:column; gap:7px">
+      <span style="font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--green)">Glomium</span>
+      <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5D6864">Confidential feedback</span>
+    </div>
+
+    <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:40px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep)">Loading…</div>
+    </sc-if>
+
+    <sc-if value="{{ dead }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:12px; padding:clamp(24px,5vw,36px); background:#fff; border:1px solid var(--line); border-radius:4px">
+        <span style="font-size:clamp(20px,4vw,26px); font-weight:300; color:var(--green-deep); text-wrap:balance">{{ deadTitle }}</span>
+        <span style="font-size:15px; line-height:1.7; color:#3E4A46; text-wrap:pretty">{{ deadNote }}</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:12px; padding:clamp(26px,5vw,40px); background:#fff; border:1px solid var(--line); border-radius:4px">
+        <span style="font-size:clamp(22px,4.4vw,30px); font-weight:300; color:var(--green-deep); text-wrap:balance">Thank you.</span>
+        <span style="font-size:15px; line-height:1.75; color:#3E4A46; text-wrap:pretty">That goes straight to the people who can act on it, and nobody on the crew sees it. If something needs a reply, we will write to you.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showForm }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:clamp(20px,4vw,28px)">
+
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <h1 style="margin:0; font-size:clamp(24px,5.4vw,36px); font-weight:200; line-height:1.25; color:#16231F; text-wrap:balance">{{ heading }}</h1>
+          <span style="font-size:15px; line-height:1.75; color:#3E4A46; text-wrap:pretty">This is read only by Glomium's management, and only to fix how we work. It is never shown to the crew, the client, or anyone you worked beside. Answer what you want to and leave the rest.</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px">
+          <sc-for list="{{ questionsVM }}" as="q" hint-placeholder-count="5">
+            <div style="display:flex; flex-direction:column; gap:11px; padding:clamp(16px,3.4vw,20px); background:#fff; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:15px; line-height:1.5; color:#16231F; text-wrap:pretty">{{ q.label }}</span>
+              <div style="display:flex; gap:7px; flex-wrap:wrap">
+                <sc-for list="{{ q.options }}" as="o" hint-placeholder-count="5">
+                  <button onClick="{{ o.pick }}" style="flex:1 1 52px; min-width:52px; min-height:46px; padding:8px 4px; border-radius:3px; font-size:15px; cursor:pointer; transition:.15s; background:{{ o.bg }}; color:{{ o.color }}; border:1px solid {{ o.border }}">{{ o.value }}</button>
+                </sc-for>
+              </div>
+              <div style="display:flex; justify-content:space-between; gap:10px">
+                <span style="font-size:11px; letter-spacing:.06em; color:#5D6864">{{ q.low }}</span>
+                <span style="font-size:11px; letter-spacing:.06em; color:#5D6864">{{ q.high }}</span>
+              </div>
+            </div>
+          </sc-for>
+
+          <div style="display:flex; flex-direction:column; gap:11px; padding:clamp(16px,3.4vw,20px); background:#fff; border:1px solid var(--line); border-radius:4px">
+            <span style="font-size:15px; line-height:1.5; color:#16231F; text-wrap:pretty">Would you work with us again?</span>
+            <div style="display:flex; gap:7px">
+              <sc-for list="{{ returnOptionsVM }}" as="r" hint-placeholder-count="2">
+                <button onClick="{{ r.pick }}" style="flex:1 1 0; min-height:46px; padding:8px 12px; border-radius:3px; font-size:14px; letter-spacing:.04em; cursor:pointer; transition:.15s; background:{{ r.bg }}; color:{{ r.color }}; border:1px solid {{ r.border }}">{{ r.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-for list="{{ textFieldsVM }}" as="t" hint-placeholder-count="3">
+            <div style="display:flex; flex-direction:column; gap:9px; padding:clamp(16px,3.4vw,20px); background:#fff; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:15px; line-height:1.5; color:#16231F; text-wrap:pretty">{{ t.label }}</span>
+              <sc-if value="{{ t.hasHint }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px; line-height:1.65; color:#4A524F; text-wrap:pretty">{{ t.hint }}</span>
+              </sc-if>
+              <textarea value="{{ t.value }}" onChange="{{ t.onChange }}" rows="4" placeholder="{{ t.placeholder }}" style="width:100%; padding:13px 14px; border:1px solid var(--line); border-radius:3px; font-size:15px; line-height:1.6; color:#16231F; background:#FDFEFE; outline:none; resize:vertical" style-focus="border-color:var(--green)"></textarea>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px; align-items:flex-start">
+          <button onClick="{{ submit }}" disabled="{{ sending }}" style="min-height:52px; padding:15px 34px; background:var(--green-deep); color:#fff; border:none; border-radius:3px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer" style-hover="background:#085847">{{ submitLabel }}</button>
+          <sc-if value="{{ hasStatus }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:13px; line-height:1.6; color:#B4433A; text-wrap:pretty">{{ status }}</span>
+          </sc-if>
+          <span style="font-size:12px; line-height:1.7; color:#5D6864; text-wrap:pretty">You can send this once. Nothing is saved until you tap submit.</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="padding-top:8px; font-size:11px; letter-spacing:.1em; color:#5D6864">Glomium</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
+
+// The five scored questions. Each is a thing we could actually change next
+// month — "were you happy" is not on the list because the answer is never
+// actionable. The low/high words are printed under the row so a 3 means the
+// same thing to everyone answering.
+const SCORES = [
+  ['overall',       'The experience overall',                         'Bad',        'Excellent'],
+  ['communication', 'How clearly we told you what was happening',      'Left guessing', 'Always knew'],
+  ['organisation',  'How well the day itself was run',                 'Chaotic',    'Tight'],
+  ['payment',       'Payment — the amount, and how long it took',      'A struggle', 'No issue'],
+  ['treatment',     'How you were treated on set',                     'Poorly',     'With respect'],
+];
+
+const TEXTS = [
+  ['liked',    'What worked well?', '', 'Anything worth keeping — a person, a call sheet, how a day was scheduled.'],
+  ['improve',  'What should we do differently?', '', 'The one change that would have made the day better.'],
+  ['complaint','Anything you want to report?',
+    'Behaviour, safety, money, or anything you did not feel able to say on the day. This reaches management directly.',
+    'Leave blank if there is nothing.'],
+];
+
+class Component extends DCLogic {
+  state = {
+    loading: true, found: false, already: false, done: false, sending: false,
+    firstName: '', project: '', status: '', scores: {}, wouldReturn: null, texts: {},
+  };
+
+  componentDidMount() {
+    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    this.load();
+  }
+
+  token() {
+    const p = new URLSearchParams(window.location.search);
+    return (p.get('t') || p.get('token') || '').trim();
+  }
+
+  async load() {
+    const t = this.token();
+    if (!t) { this.setState({ loading: false, found: false }); return; }
+    const { data, error } = await this.sb.rpc('feedback_form', { p_token: t });
+    if (error) {
+      this.setState({ loading: false, found: false, status: error.message });
+      return;
+    }
+    const d = data || {};
+    this.setState({
+      loading: false,
+      found: !!d.found,
+      already: !!d.submitted,
+      firstName: d.first_name || '',
+      project: d.project || '',
+    });
+  }
+
+  setScore(k, v) {
+    // Tapping the same number again clears it — a misread question should be
+    // answerable with "no answer", not with a wrong number.
+    const cur = this.state.scores || {};
+    this.setState({ scores: Object.assign({}, cur, { [k]: cur[k] === v ? null : v }), status: '' });
+  }
+
+  async submit() {
+    if (this.state.sending) return;
+    const s = this.state, sc = s.scores || {}, tx = s.texts || {};
+    const anything = SCORES.some(q => sc[q[0]]) || s.wouldReturn !== null
+      || TEXTS.some(f => (tx[f[0]] || '').trim());
+    if (!anything) { this.setState({ status: 'Answer at least one thing before sending.' }); return; }
+    this.setState({ sending: true, status: '' });
+    const { data, error } = await this.sb.rpc('submit_feedback', {
+      p_token: this.token(),
+      p_overall: sc.overall || null,
+      p_communication: sc.communication || null,
+      p_organisation: sc.organisation || null,
+      p_payment: sc.payment || null,
+      p_treatment: sc.treatment || null,
+      p_would_return: s.wouldReturn,
+      p_liked: (tx.liked || '').trim() || null,
+      p_improve: (tx.improve || '').trim() || null,
+      p_complaint: (tx.complaint || '').trim() || null,
+    });
+    if (error) {
+      this.setState({ sending: false, status: 'That did not send — ' + error.message });
+      return;
+    }
+    if (data && data.ok === false) {
+      this.setState({ sending: false, done: false, already: data.reason === 'already',
+        found: data.reason === 'already',
+        status: data.reason === 'already' ? '' : 'This link is no longer valid.' });
+      return;
+    }
+    this.setState({ sending: false, done: true });
+  }
+
+  renderVals() {
+    const s = this.state, sc = s.scores || {}, tx = s.texts || {};
+    const pill = on => on
+      ? { bg: '#0A6E58', color: '#ffffff', border: '#0A6E58' }
+      : { bg: '#FDFEFE', color: '#3E4A46', border: 'rgba(16,175,139,.28)' };
+    const dead = !s.loading && !s.done && (!s.found || s.already);
+    return {
+      loading: s.loading,
+      done: s.done,
+      dead,
+      deadTitle: s.already ? 'Already received' : 'This link is not valid',
+      deadNote: s.already
+        ? 'Your feedback is in — thank you. The form can only be sent once, so there is nothing more to do here.'
+        : 'The link may have been mistyped, or it belongs to a request that has since been closed. Reply to the email we sent and we will send a fresh one.',
+      showForm: !s.loading && !dead && !s.done,
+
+      heading: (s.firstName ? s.firstName + ', how was ' : 'How was ')
+        + (s.project ? s.project : 'working with us') + '?',
+
+      questionsVM: SCORES.map(q => ({
+        key: q[0], label: q[1], low: q[2], high: q[3],
+        options: [1, 2, 3, 4, 5].map(v => Object.assign(
+          { value: String(v), pick: () => this.setScore(q[0], v) },
+          pill(sc[q[0]] === v))),
+      })),
+
+      returnOptionsVM: [[true, 'Yes'], [false, 'No']].map(o => Object.assign(
+        { label: o[1], pick: () => this.setState({ wouldReturn: s.wouldReturn === o[0] ? null : o[0], status: '' }) },
+        pill(s.wouldReturn === o[0]))),
+
+      textFieldsVM: TEXTS.map(f => ({
+        label: f[1], hint: f[2], hasHint: !!f[2], placeholder: f[3],
+        value: tx[f[0]] || '',
+        onChange: e => this.setState({ texts: Object.assign({}, tx, { [f[0]]: e.target.value }), status: '' }),
+      })),
+
+      sending: s.sending,
+      submitLabel: s.sending ? 'Sending…' : 'Send feedback',
+      status: s.status || '',
+      hasStatus: !!s.status,
+      submit: () => this.submit(),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -6180,10 +6180,17 @@ class Component extends DCLogic {
   }
 
   // The link is built from where this panel is served, not from a hard-coded
-  // host, so a staging copy hands out staging links. Same rule as copyLink().
+  // host, so a staging copy hands out staging links.
+  //
+  // The panel answers to three URLs — /admin.html, /admin and /admin/ — and a
+  // naive "strip the last segment" turns the third into /admin/feedback.html,
+  // which 404s. So the admin segment itself is removed, whatever shape it
+  // arrived in, and the form is addressed from the directory that actually
+  // holds it.
   feedbackUrl(row) {
-    const dir = window.location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
-    return dir + 'feedback.html?t=' + encodeURIComponent(row.token);
+    const u = new URL(window.location.href);
+    const dir = u.pathname.replace(/\/(admin(\.html)?\/?)$/i, '/').replace(/[^/]*$/, '');
+    return u.origin + dir + 'feedback.html?t=' + encodeURIComponent(row.token);
   }
 
   async copyText(str, okMsg) {
