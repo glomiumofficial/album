@@ -4073,12 +4073,12 @@ const CAPS = {
   // mark a day paid and send invitations.
   talent:      ['admin', 'hr', 'creative'],
   talentEdit:  ['admin', 'hr', 'creative'],
-  // Feedback is the exception, and deliberately narrower than the roster it sits
-  // in: it is where a freelancer says how the shoot was run, which often means
-  // how the person running it behaved. Creative must not read, request or delete
-  // the answers about their own set — admin and HR only, same as the table's own
-  // row-level policy.
-  talentFeedback: ['admin', 'hr'],
+  // Feedback is the exception, and deliberately the narrowest capability in this
+  // list: admin alone. It is where a freelancer says how a shoot was run, which
+  // often means how the people running it behaved — HR included. Nobody but
+  // admin reads, requests or deletes it, and the table's row-level policy says
+  // the same thing again server-side.
+  talentFeedback: ['admin'],
   // Adding, editing or removing a crew member is an admin decision; HR proposes.
   peopleApprove: ['admin'],
   payouts:     ['admin', 'accounts', 'hr'],
@@ -4102,7 +4102,9 @@ const CAPS = {
   // Sub-shoots and what they cost. Creative can add a shoot because they are
   // the ones who know a trial happened; only admin and accounts touch money.
   spend:       ['admin', 'accounts', 'hr', 'creative'],
-  spendEdit:   ['admin', 'accounts', 'creative'],
+  // HR books the crew and the freelancers, so they are the ones who know a per
+  // diem was wrong — editing a logged expense is theirs too.
+  spendEdit:   ['admin', 'accounts', 'hr', 'creative'],
   shootEdit:   ['admin', 'accounts', 'creative'],
   hoursUnlock: ['admin'],
   albumUnlock: ['admin'],
