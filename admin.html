@@ -1933,7 +1933,7 @@
           <sc-for list="{{ moneyFilterVM }}" as="mf" hint-placeholder-count="4">
             <button onClick="{{ mf.go }}" style="padding:8px 14px; background:{{ mf.bg }}; border:1px solid {{ mf.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ mf.color }}; cursor:pointer">{{ mf.label }}</button>
           </sc-for>
-          <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ moneyStatus }}</span>
+          <span style="font-size:12px; color:{{ moneyStatusColor }}; margin-left:auto">{{ moneyStatus }}</span>
         </div>
 
         <sc-if value="{{ hasNoMoney }}" hint-placeholder-val="{{ true }}">
@@ -2047,7 +2047,7 @@
       <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
 
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
-          <button onClick="{{ spendBack }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer" style-hover="border-color:var(--green); color:var(--green-deep)">← Back</button>
+          <button onClick="{{ spendBack }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer" style-hover="border-color:var(--green); color:var(--green-deep)">{{ spendBackLabel }}</button>
           <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Accounts</span>
           <span style="font-size:12px; color:#5C6864">Sub-shoots and what they cost us</span>
           <button onClick="{{ downloadSpendExcel }}" style="margin-left:auto; padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Download Excel</button>
@@ -2156,7 +2156,10 @@
         </div>
 
         <div style="display:flex; flex-direction:column; gap:10px">
-          <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Jobs with spend</span>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Jobs with spend</span>
+            <input value="{{ spendSearch }}" onChange="{{ onSpendSearch }}" placeholder="Search client or job" style="margin-left:auto; padding:8px 12px; border:1px solid var(--line); border-radius:3px; font-size:12px; outline:none; min-width:200px; flex:0 1 240px" style-focus="border-color:var(--green)">
+          </div>
           <sc-for list="{{ spendJobsVM }}" as="sj" hint-placeholder-count="0">
             <div onClick="{{ sj.go }}" style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:13px 16px; border:1px solid {{ sj.border }}; border-radius:3px; background:{{ sj.bg }}; cursor:pointer">
               <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:3px; min-width:0">
@@ -2172,7 +2175,7 @@
         <div style="display:flex; flex-direction:column; gap:14px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
           <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
             <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Where the spend goes</span>
-            <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ spendStatus }}</span>
+            <span style="font-size:12px; color:{{ spendStatusColor }}; margin-left:auto">{{ spendStatus }}</span>
           </div>
           <div style="display:flex; gap:12px; flex-wrap:wrap">
             <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:5px">
@@ -2199,6 +2202,12 @@
               <div style="display:flex; flex-direction:column; gap:4px">
                 <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ spendParentLabel }}</span>
                 <span style="font-size:12px; color:#5D6864; line-height:1.6">{{ spendParentTotals }}</span>
+              </div>
+
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <sc-for list="{{ spendPanelTabsVM }}" as="sp" hint-placeholder-count="2">
+                  <button onClick="{{ sp.go }}" style="padding:8px 14px; background:{{ sp.bg }}; border:1px solid {{ sp.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ sp.color }}; cursor:pointer">{{ sp.label }}</button>
+                </sc-for>
               </div>
 
               <sc-for list="{{ spendShootsVM }}" as="sh" hint-placeholder-count="0">
@@ -2270,14 +2279,41 @@
                   </sc-for>
 
                   <sc-if value="{{ sh.canShoot }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ sh.remove }}" style="align-self:flex-start; padding:5px 10px; background:none; border:1px solid var(--line); border-radius:3px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#B4433A; cursor:pointer">Delete shoot</button>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap">
+                      <button onClick="{{ sh.startEdit }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:3px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit shoot</button>
+                      <button onClick="{{ sh.remove }}" style="padding:5px 10px; background:none; border:1px solid var(--line); border-radius:3px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:#B4433A; cursor:pointer">Delete shoot</button>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ sh.isEditing }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; gap:10px; padding:14px; border:1px solid var(--green); border-radius:3px; background:#FBFEFD">
+                      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px">
+                        <input value="{{ sh.edTitle }}" onChange="{{ sh.onEdTitle }}" placeholder="Name it" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                        <select value="{{ sh.edKind }}" onChange="{{ sh.onEdKind }}" style="padding:10px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                          <sc-for list="{{ spendKindOptsVM }}" as="ko" hint-placeholder-count="4">
+                            <option value="{{ ko.value }}">{{ ko.label }}</option>
+                          </sc-for>
+                        </select>
+                        <input type="date" value="{{ sh.edDate }}" onChange="{{ sh.onEdDate }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                        <input value="{{ sh.edLocation }}" onChange="{{ sh.onEdLocation }}" placeholder="Location" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                        <input value="{{ sh.edBrief }}" onChange="{{ sh.onEdBrief }}" placeholder="What it was for" style="grid-column:1/-1; padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                      </div>
+                      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                          <input type="checkbox" checked="{{ sh.edBillable }}" onChange="{{ sh.onEdBillable }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                          The client is paying for this shoot
+                        </label>
+                        <button onClick="{{ sh.saveEdit }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save shoot</button>
+                        <button onClick="{{ sh.cancelEdit }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer">Cancel</button>
+                      </div>
+                    </div>
                   </sc-if>
                 </div>
               </sc-for>
 
               <sc-if value="{{ hasLoose }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex; flex-direction:column; gap:8px; padding:15px 16px; border:1px solid var(--line); border-radius:3px">
-                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Job level — no sub-shoot</span>
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">{{ looseHeading }}</span>
                   <sc-for list="{{ spendLooseVM }}" as="lx" hint-placeholder-count="0">
                     <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding:9px 0; border-top:1px solid var(--line)">
                       <span style="font-size:12px; color:#5C6864; min-width:86px">{{ lx.date }}</span>
@@ -2351,8 +2387,8 @@
                 </div>
               </sc-if>
 
-              <sc-if value="{{ spendCanShoot }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px dashed var(--line); border-radius:3px">
+              <sc-if value="{{ showShootForm }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid var(--line); border-radius:3px; background:#FCFDFC">
                   <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Add a sub-shoot</span>
                   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
                     <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
@@ -2391,8 +2427,8 @@
                 </div>
               </sc-if>
 
-              <sc-if value="{{ spendCanEdit }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px dashed var(--line); border-radius:3px">
+              <sc-if value="{{ showSpendForm }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid var(--line); border-radius:3px; background:#FCFDFC">
                   <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Log a spend</span>
                   <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
                     <div style="display:flex; flex-direction:column; gap:5px; grid-column:1/-1">
@@ -2457,7 +2493,7 @@
 
         <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap">
           <div style="display:flex; flex-direction:column; gap:4px; margin-right:auto">
-            <button onClick="{{ digBack }}" style="align-self:flex-start; margin-bottom:2px; padding:0; background:none; border:none; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer" style-hover="color:var(--green-deep)">← All projects</button>
+            <button onClick="{{ digBack }}" style="align-self:flex-start; margin-bottom:2px; padding:0; background:none; border:none; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer" style-hover="color:var(--green-deep)">{{ digBackLabel }}</button>
             <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Digital &amp; social</span>
             <span style="font-size:12px; color:#5C6864">{{ digScopeLabel }} · {{ digAccountCountLabel }}</span>
           </div>
@@ -4435,7 +4471,7 @@ class Component extends DCLogic {
     newInvType: 'tax', newInvDiscount: '0', newInvAdvancePct: '30', newInvGstOverride: 'auto',
     newInvAddons: [], newInvNotes: DEFAULT_INVOICE_NOTES,
     showInvoicePreview: false, previewInvoice: null, pdfBusy: false,
-    editorTab: 'album',
+    editorTab: 'album', editorFrom: null,
     role: null,
     people: [], peopleQuery: '', personId: null, personForm: null, personStatus: '', personMode: 'view',
     changeRequests: [], requestStatus: '', requestFilter: 'pending', requestOpen: null,
@@ -4469,11 +4505,13 @@ class Component extends DCLogic {
     assignments: [], costing: null, crewStatus: '', agEdits: {},
     eventDays: [], dayDate: '', dayHours: {}, dayStatus: '',
     afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
+    editShootId: null, editShootForm: null,
     payouts: [], payoutFilter: 'owed', payoutStatus: '', payoutStatusOk: false,
     payoutSearch: '', poOpen: null, poAmount: '', poOn: '', poMode: 'bank',
     poRef: '', poNote: '',
     moneyInvoices: [], receipts: [], invoiceReceipts: [], moneyFilter: 'open', moneySearch: '',
-    moneyStatus: '', moneyOpen: null, receiptPreview: null,
+    moneyStatus: '', moneyStatusOk: false, moneyOpen: null, receiptPreview: null,
+    spendStatusOk: false, spendSearch: '', spendPanel: 'spend',
     rcAmount: '', rcOn: '', rcMode: 'bank', rcRef: '', rcNote: '', rcEditId: null,
     bootError: '',
   };
@@ -4683,7 +4721,8 @@ class Component extends DCLogic {
 
   openEvent(ev) {
     this.setState({
-      view: 'editor', current: { ...ev, _table: 'events' },
+      view: 'editor', editorFrom: this.state.view === 'editor' ? this.state.editorFrom : this.state.view,
+      current: { ...ev, _table: 'events' },
       editCouple: ev.couple_names, editDate: ev.event_date || '', editTaken: ev.taken_date || '', editDelivered: ev.delivered_date || '', editVenue: ev.venue || '', editSlug: ev.slug,
       editClientName: ev.client_name || '', editClientPhone: ev.client_phone || '', editClientEmail: ev.client_email || '', editClientPan: ev.client_pan || '',
       editPackagePrice: ev.package_price != null ? String(ev.package_price) : '', editClientGstin: ev.client_gstin || '', editClientState: ev.client_state || '',
@@ -4715,9 +4754,14 @@ class Component extends DCLogic {
     return '';
   }
 
+  // A job opened from the Schedule belongs to the Schedule. Sending everyone
+  // back to Albums regardless was how the panel lost people's place.
   backToDashboard() {
     const wasProject = this.parentTable() === 'projects';
-    this.setState({ view: 'dashboard', current: null, media: [], assignments: [], costing: null, agEdits: {} });
+    const from = this.state.editorFrom;
+    const to = from && from !== 'editor' && from !== 'login' ? from : 'dashboard';
+    this.setState({ view: to, editorFrom: null, current: null, media: [], assignments: [], costing: null, agEdits: {} });
+    if (to !== 'dashboard') return;
     this.loadForDivision();
     if (!wasProject) this.loadEvents();
   }
@@ -5001,7 +5045,8 @@ class Component extends DCLogic {
 
   openProject(pr) {
     this.setState({
-      view: 'editor', current: { ...pr, _table: 'projects', couple_names: pr.client_name, venue: pr.sector || '' },
+      view: 'editor', editorFrom: this.state.view === 'editor' ? this.state.editorFrom : this.state.view,
+      current: { ...pr, _table: 'projects', couple_names: pr.client_name, venue: pr.sector || '' },
       editProjClient: pr.client_name || '', editProjTitle: pr.project_title || '', editSector: pr.sector || '',
       editBillingType: pr.billing_type || 'one_time', editContractStart: pr.contract_start || '',
       editContractMonths: pr.contract_months == null ? '12' : String(pr.contract_months),
@@ -9355,15 +9400,69 @@ class Component extends DCLogic {
     }, this.spendParentCols(key));
     this.setState({ spendStatus: 'Saving…' });
     const { error } = await this.sb.from('shoots').insert(row);
-    if (error) { this.setState({ spendStatus: error.message }); return; }
-    this.setState({ spendStatus: 'Shoot added.', shootForm: { kind: row.kind } });
+    if (error) { this.setState({ spendStatus: this.spendSay(error.message), spendStatusOk: false }); return; }
+    this.setState({ spendStatus: 'Shoot added.', spendStatusOk: true, shootForm: { kind: row.kind } });
     setTimeout(() => this.setState({ spendStatus: '' }), 2500);
     this.loadSpendRows();
   }
 
+  startEditShoot(sh) {
+    this.setState({
+      editShootId: sh.id, spendStatus: '',
+      editShootForm: {
+        title: sh.title || '', kind: sh.kind || 'trial', shoot_date: sh.shoot_date || '',
+        location: sh.location || '', brief: sh.brief || '', billable: !!sh.billable,
+      },
+    });
+  }
+
+  async saveEditShoot() {
+    const id = this.state.editShootId;
+    const f = this.state.editShootForm || {};
+    if (!id) return;
+    const title = (f.title || '').trim();
+    if (!title) { this.setState({ spendStatus: 'Give the shoot a name — “Trial · look test” is enough.' }); return; }
+    this.setState({ spendStatus: 'Saving…' });
+    const { error } = await this.sb.from('shoots').update({
+      title, kind: f.kind || 'trial',
+      shoot_date: f.shoot_date || null,
+      location: (f.location || '').trim() || null,
+      brief: (f.brief || '').trim() || null,
+      billable: !!f.billable,
+    }).eq('id', id);
+    if (error) { this.setState({ spendStatus: this.spendSay(error.message), spendStatusOk: false }); return; }
+    this.setState({ editShootId: null, editShootForm: null, spendStatus: 'Shoot updated.', spendStatusOk: true });
+    setTimeout(() => this.setState({ spendStatus: '' }), 2500);
+    this.loadSpendRows();
+  }
+
+  // A refusal from the database reads as a sentence about the panel, not as
+  // Postgres. Payouts, Money in and Accounts all speak through this one, so a
+  // permissions problem never reads three different ways.
+  dbSay(msg, what) {
+    const m = String(msg || '');
+    if (/row-level security|permission denied|not authorized/i.test(m)) {
+      return 'Your role cannot change ' + (what || 'this') + ' — admin or accounts only.';
+    }
+    if (/duplicate key/i.test(m)) return 'That record already exists.';
+    if (/violates check constraint/i.test(m)) return 'Some value on this line is out of range — check the amount and the dates.';
+    if (/schema cache|does not exist/i.test(m)) return 'The database is missing a column this panel expects — run the pending SQL in Supabase.';
+    if (/fetch|network/i.test(m)) return 'The connection dropped before it saved. Try again.';
+    return m;
+  }
+
+  spendSay(msg) { return this.dbSay(msg, 'shoots'); }
+
   async deleteShoot(sh) {
+    const spent = (this.state.spendExpenses || []).filter(e => e.shoot_id === sh.id).length;
+    if (!window.confirm(spent
+      ? 'Delete “' + sh.title + '”? Its ' + spent + ' logged ' + (spent === 1 ? 'spend stays' : 'spends stay')
+        + ' on the job, at job level — nothing is lost.'
+      : 'Delete “' + sh.title + '”?')) return;
     const { error } = await this.sb.from('shoots').delete().eq('id', sh.id);
-    if (error) { this.setState({ spendStatus: error.message }); return; }
+    if (error) { this.setState({ spendStatus: this.spendSay(error.message), spendStatusOk: false }); return; }
+    this.setState({ spendStatus: 'Shoot deleted.', spendStatusOk: true });
+    setTimeout(() => this.setState({ spendStatus: '' }), 2500);
     this.loadSpendRows();
   }
 
@@ -9372,7 +9471,8 @@ class Component extends DCLogic {
     if (!key) { this.setState({ spendStatus: 'Pick the job this spend belongs to first.' }); return; }
     const f = this.state.expenseForm || {};
     const amount = String(f.amount == null ? '' : f.amount).trim();
-    if (amount === '' || isNaN(Number(amount))) { this.setState({ spendStatus: 'How much was it?' }); return; }
+    if (amount === '' || isNaN(Number(amount))) { this.setState({ spendStatus: 'How much was it?', spendStatusOk: false }); return; }
+    if (Number(amount) < 0) { this.setState({ spendStatus: 'A spend cannot be negative — log the refund as its own line.', spendStatusOk: false }); return; }
     const billable = !!f.billable;
     const row = Object.assign({
       shoot_id: f.shoot_id || null,
@@ -9386,13 +9486,13 @@ class Component extends DCLogic {
       // a state the totals cannot represent.
       recovered: billable && !!f.recovered,
     }, this.spendParentCols(key));
-    this.setState({ spendStatus: 'Saving…' });
+    this.setState({ spendStatus: 'Saving…', spendStatusOk: true });
     const { error } = await this.sb.from('expenses').insert(row);
-    if (error) { this.setState({ spendStatus: error.message }); return; }
+    if (error) { this.setState({ spendStatus: this.dbSay(error.message, 'spend'), spendStatusOk: false }); return; }
     // Shoot, date and category carry over: a shoot day is entered as a run of
     // small costs, not one at a time from a blank form.
     this.setState({
-      spendStatus: 'Added.',
+      spendStatus: 'Added.', spendStatusOk: true,
       expenseForm: { shoot_id: row.shoot_id, spend_date: row.spend_date, category: row.category, billable },
     });
     setTimeout(() => this.setState({ spendStatus: '' }), 2000);
@@ -9401,7 +9501,7 @@ class Component extends DCLogic {
 
   async updateExpense(e, patch) {
     const { error } = await this.sb.from('expenses').update(patch).eq('id', e.id);
-    if (error) { this.setState({ spendStatus: error.message }); return; }
+    if (error) { this.setState({ spendStatus: this.dbSay(error.message, 'spend'), spendStatusOk: false }); return; }
     this.loadSpendRows();
   }
 
@@ -9414,7 +9514,7 @@ class Component extends DCLogic {
         note: e.note || '', shoot_id: e.shoot_id || '',
         billable: !!e.billable, recovered: !!e.recovered,
       },
-      spendStatus: '',
+      spendStatus: '', spendStatusOk: false,
     });
   }
 
@@ -9423,9 +9523,10 @@ class Component extends DCLogic {
     const f = this.state.editExpenseForm || {};
     if (!id) return;
     const amount = String(f.amount == null ? '' : f.amount).trim();
-    if (amount === '' || isNaN(Number(amount))) { this.setState({ spendStatus: 'How much was it?' }); return; }
+    if (amount === '' || isNaN(Number(amount))) { this.setState({ spendStatus: 'How much was it?', spendStatusOk: false }); return; }
+    if (Number(amount) < 0) { this.setState({ spendStatus: 'A spend cannot be negative — log the refund as its own line.', spendStatusOk: false }); return; }
     const billable = !!f.billable;
-    this.setState({ spendStatus: 'Saving…' });
+    this.setState({ spendStatus: 'Saving…', spendStatusOk: true });
     const { error } = await this.sb.from('expenses').update({
       spend_date: (f.spend_date || '').trim() || new Date().toISOString().slice(0, 10),
       category: f.category || 'Misc',
@@ -9436,15 +9537,24 @@ class Component extends DCLogic {
       billable,
       recovered: billable && !!f.recovered,
     }).eq('id', id);
-    if (error) { this.setState({ spendStatus: error.message }); return; }
-    this.setState({ editExpenseId: null, editExpenseForm: null, spendStatus: 'Saved.' });
+    if (error) { this.setState({ spendStatus: this.dbSay(error.message, 'spend'), spendStatusOk: false }); return; }
+    this.setState({ editExpenseId: null, editExpenseForm: null, spendStatus: 'Saved.', spendStatusOk: true });
     setTimeout(() => this.setState({ spendStatus: '' }), 2000);
     this.loadSpendRows();
   }
 
   async deleteExpense(e) {
+    if (!window.confirm('Remove this ' + fmtINR(e.amount) + ' ' + String(e.category || 'spend').toLowerCase()
+      + ' line? It comes straight out of the job total.')) return;
     const { error } = await this.sb.from('expenses').delete().eq('id', e.id);
-    if (error) { this.setState({ spendStatus: error.message }); return; }
+    if (error) { this.setState({ spendStatus: this.dbSay(error.message, 'spend'), spendStatusOk: false }); return; }
+    const pinned = this.state.editExpenseId === e.id;
+    this.setState({
+      spendStatus: 'Removed.', spendStatusOk: true,
+      editExpenseId: pinned ? null : this.state.editExpenseId,
+      editExpenseForm: pinned ? null : this.state.editExpenseForm,
+    });
+    setTimeout(() => this.setState({ spendStatus: '' }), 2500);
     this.loadSpendRows();
   }
 
@@ -9629,7 +9739,9 @@ class Component extends DCLogic {
 
     // Jobs that have any spend or any shoot. A job with neither is noise here
     // — it is still in the picker, so nothing is unreachable.
+    const spendQ = (s.spendSearch || '').trim().toLowerCase();
     const touched = parents.filter(p => inDiv(p) &&
+      (!spendQ || [p.label, p.work].filter(Boolean).join(' ').toLowerCase().includes(spendQ)) &&
       (ledger.some(e => this.spendBelongs(e, p)) || shoots.some(sh => this.spendBelongs(sh, p))));
 
     const mine = parent ? expenses.filter(e => this.spendBelongs(e, parent)) : [];
@@ -9640,9 +9752,23 @@ class Component extends DCLogic {
     // One ledger for the job: typed expenses and paid talent days together,
     // each line appearing exactly once, under the sub-shoot it belongs to.
     const mineAll = mine.concat(talentLines.filter(t => t.paid));
+    // A line can name a sub-shoot that is not on this job any more — the shoot
+    // was deleted, or was filed against the other half of a client booked in two
+    // divisions. It still counted in the total but belonged to no list on screen,
+    // so the money showed and could not be opened. Anything that does not resolve
+    // is shown at job level, which is also where it can be edited.
+    // Every list on this page reads newest first. Typed expenses arrive sorted,
+    // paid talent days are merged in afterwards, so without this the two streams
+    // interleave by accident of fetch order rather than by date.
+    const byDate = list => list.slice().sort((a, b) =>
+      String(b.spend_date || '').localeCompare(String(a.spend_date || '')));
+    const myShootIds = {};
+    myShoots.forEach(sh => { myShootIds[sh.id] = true; });
+    const atJobLevel = e => !e.shoot_id || !myShootIds[e.shoot_id];
 
     const ef = s.expenseForm || {};
     const sf = s.shootForm || {};
+    const shf = s.editShootForm || {};
     const xf = s.editExpenseForm || {};
     const money = n => fmtINR(n);
     const ledgerView = this.spendLedger(this.ledgerFilters());
@@ -9687,7 +9813,22 @@ class Component extends DCLogic {
 
     return {
       isSpend: true,
-      spendBack: () => this.goWorkspace('dashboard'),
+      // Back walks the page it is on before it leaves it: an open job closes to
+      // the jobs list, an open edit closes to the job. Only from the top does it
+      // go to the workspace — landing in Albums from three levels deep was the
+      // one place this section forgot where you were.
+      spendBack: () => {
+        if (s.editExpenseId || s.editShootId) {
+          this.setState({ editExpenseId: null, editExpenseForm: null, editShootId: null, editShootForm: null, spendStatus: '' });
+          return;
+        }
+        if (parentKey) { this.setState({ spendParent: '', spendStatus: '' }); return; }
+        if (s.spendSearch || divFilter) { this.setState({ spendSearch: '', spendDivision: '', spendStatus: '' }); return; }
+        this.goWorkspace('dashboard');
+      },
+      spendBackLabel: (s.editExpenseId || s.editShootId) ? '← Close editor'
+        : parentKey ? '← All jobs'
+        : (s.spendSearch || divFilter) ? '← Clear filters' : '← Back',
       spendTabsVM: [['log', 'Log spend'], ['ledger', 'All expenses']].map(t => ({
         label: t[1], go: () => this.setState({ spendTab: t[0], spendStatus: '' }),
         line: (s.spendTab || 'log') === t[0] ? 'var(--green)' : 'transparent',
@@ -9696,6 +9837,24 @@ class Component extends DCLogic {
       isSpendLog: (s.spendTab || 'log') === 'log',
       isSpendLedger: s.spendTab === 'ledger',
       spendStatus: s.spendStatus || '',
+      spendStatusColor: s.spendStatusOk ? 'var(--green-deep)' : '#B4433A',
+      spendSearch: s.spendSearch || '',
+      onSpendSearch: e => this.setState({ spendSearch: e.target.value }),
+      // Two full forms standing open under every job was the bulk of this page.
+      // They are the same disclosure the payout and receipt panels use now: one
+      // open at a time, spend first because that is the hourly job.
+      showSpendForm: canEdit && (s.spendPanel || 'spend') === 'spend',
+      showShootForm: canShoot && s.spendPanel === 'shoot',
+      spendPanelTabsVM: [
+        canEdit ? ['spend', 'Log a spend'] : null,
+        canShoot ? ['shoot', 'Add a sub-shoot'] : null,
+      ].filter(Boolean).map(t => ({
+        label: t[1],
+        go: () => this.setState({ spendPanel: (s.spendPanel || 'spend') === t[0] ? '' : t[0], spendStatus: '' }),
+        bg: (s.spendPanel || 'spend') === t[0] ? 'var(--green)' : 'none',
+        border: (s.spendPanel || 'spend') === t[0] ? 'var(--green)' : 'var(--line)',
+        color: (s.spendPanel || 'spend') === t[0] ? '#FFFFFF' : 'var(--green-deep)',
+      })),
       hasSpendError: !!s.spendLoadError,
       spendError: s.spendLoadError || '',
       spendCanEdit: canEdit,
@@ -9719,14 +9878,28 @@ class Component extends DCLogic {
         const list = ledger.filter(e => this.spendBelongs(e, p));
         const open = parentKey === p.key;
         const n = shoots.filter(sh => this.spendBelongs(sh, p)).length;
+        const lines = list.length;
+        // No sub-shoots is normal — the spend simply sits at job level. Saying
+        // "0 shoots" next to a real total reads like the money is lost.
+        const shootLabel = [
+          n > 0 ? n + (n === 1 ? ' shoot' : ' shoots') : '',
+          lines + (lines === 1 ? ' spend logged' : ' spends logged'),
+        ].filter(Boolean).join(' · ');
         return {
           label: p.label,
-          meta: [p.work, n + (n === 1 ? ' shoot' : ' shoots')].filter(Boolean).join(' · '),
+          meta: [p.work, shootLabel].filter(Boolean).join(' · '),
           spent: money(sum(list)),
           absorbed: money(sum(list, e => !e.billable)) + ' ours',
           bg: open ? '#F4FAF8' : 'transparent',
           border: open ? 'var(--green)' : 'var(--line)',
-          go: () => this.setState({ spendParent: p.key, spendStatus: '' }),
+          // Opening a job from the card also moves the division and project
+          // pickers onto it, so the form above never reads "choose a division"
+          // while a job is open underneath it.
+          go: () => this.setState({
+            spendParent: p.key, spendStatus: '',
+            spendDivision: divFilter && p.divisions.indexOf(divFilter) !== -1
+              ? divFilter : (p.divisions[0] || divFilter),
+          }),
         };
       }),
 
@@ -9787,19 +9960,32 @@ class Component extends DCLogic {
           bearerColor: sh.billable ? '#8A6D3B' : '#5D6864',
           canShoot,
           remove: () => this.deleteShoot(sh),
+          isEditing: s.editShootId === sh.id,
+          startEdit: () => this.startEditShoot(sh),
+          saveEdit: () => this.saveEditShoot(),
+          cancelEdit: () => this.setState({ editShootId: null, editShootForm: null, spendStatus: '' }),
+          edTitle: shf.title || '', onEdTitle: ev => this.setSpendField('editShootForm', 'title', ev.target.value),
+          edKind: shf.kind || 'trial', onEdKind: ev => this.setSpendField('editShootForm', 'kind', ev.target.value),
+          edDate: shf.shoot_date || '', onEdDate: ev => this.setSpendField('editShootForm', 'shoot_date', ev.target.value),
+          edLocation: shf.location || '', onEdLocation: ev => this.setSpendField('editShootForm', 'location', ev.target.value),
+          edBrief: shf.brief || '', onEdBrief: ev => this.setSpendField('editShootForm', 'brief', ev.target.value),
+          edBillable: !!shf.billable, onEdBillable: ev => this.setSpendField('editShootForm', 'billable', ev.target.checked),
           hasRows: list.length > 0,
-          rowsVM: list.map(expenseRow),
+          rowsVM: byDate(list).map(expenseRow),
           emptyNote: 'Nothing logged against this shoot yet.',
         };
       }),
 
-      hasLoose: mineAll.some(e => !e.shoot_id),
-      spendLooseVM: mineAll.filter(e => !e.shoot_id).map(expenseRow),
+      hasLoose: mineAll.some(atJobLevel),
+      spendLooseVM: byDate(mineAll.filter(atJobLevel)).map(expenseRow),
+      looseHeading: mineAll.some(e => e.shoot_id && !myShootIds[e.shoot_id])
+        ? 'Job level — includes lines whose sub-shoot is gone'
+        : 'Job level — no sub-shoot',
 
       // Unpaid days are not spend yet, so they are listed apart and left out
       // of every total — visible, but not counted twice when they are paid.
       hasOwed: talentLines.some(t => !t.paid),
-      spendOwedVM: talentLines.filter(t => !t.paid).map(t => ({
+      spendOwedVM: byDate(talentLines.filter(t => !t.paid)).map(t => ({
         date: this.fmtWorkDate(t.spend_date),
         who: t.vendor, note: t.note, amount: money(t.amount),
       })),
@@ -9868,7 +10054,7 @@ class Component extends DCLogic {
       digAccTypeOptsVM: [], digFeeTypeOptsVM: [], digDealKindOptsVM: [], digDealStatusOptsVM: [],
       digNoAccounts: false, digNoPosts: false, digNoKeywords: false, digNoDeals: false,
       digNoBills: false, digChartHasData: false, digChartEmpty: false,
-      digBack: () => this.goWorkspace('dashboard'),
+      digBack: () => this.goWorkspace('dashboard'), digBackLabel: '← Back',
     };
     if (!this.can('digital') || s.view !== 'digital') return blank;
 
@@ -10210,9 +10396,20 @@ class Component extends DCLogic {
       digCanMoney: this.can('digitalMoney'),
       digCanSecret: this.can('digitalSecret'),
 
+      digBackLabel: (s.acctForm || s.dealForm || s.termsForm) ? '← Close form'
+        : (s.digitalTab && s.digitalTab !== 'overview') ? '← Overview'
+        : (s.digProject && s.digProject !== 'all') ? '← All clients' : '← Back',
       digStatus: s.digStatus, hasDigStatus: !!s.digStatus,
       digSyncLabel: s.digSyncing ? 'Syncing…' : 'Sync now',
-      digBack: () => this.goWorkspace('dashboard'),
+      digBack: () => {
+        if (s.acctForm || s.dealForm || s.termsForm) {
+          this.setState({ acctForm: null, dealForm: null, termsForm: null, digStatus: '', secretValue: '', secretShown: null, secretReason: '' });
+          return;
+        }
+        if (s.digitalTab && s.digitalTab !== 'overview') { this.setDigitalTab('overview'); return; }
+        if (s.digProject && s.digProject !== 'all') { this.setState({ digProject: 'all', digStatus: '' }, () => this.loadDigitalTab()); return; }
+        this.goWorkspace('dashboard');
+      },
       digSyncing: s.digSyncing,
       syncAll: () => this.syncDigital({}),
 
@@ -10431,7 +10628,7 @@ class Component extends DCLogic {
     const open = this.state.moneyOpen === inv.id ? null : inv.id;
     const bal = +(Number(inv.total || 0) - this.receivedFor(inv.id)).toFixed(2);
     this.setState({
-      moneyOpen: open, rcEditId: null, moneyStatus: '',
+      moneyOpen: open, rcEditId: null, moneyStatus: '', moneyStatusOk: false,
       rcAmount: open && bal > 0 ? String(bal) : '',
       rcOn: new Date().toISOString().slice(0, 10),
       rcMode: 'bank', rcRef: '', rcNote: '',
@@ -10440,7 +10637,7 @@ class Component extends DCLogic {
 
   startEditReceipt(r) {
     this.setState({
-      moneyOpen: r.invoice_id, rcEditId: r.id, moneyStatus: '',
+      moneyOpen: r.invoice_id, rcEditId: r.id, moneyStatus: '', moneyStatusOk: false,
       rcAmount: String(r.amount), rcOn: r.received_on || '',
       rcMode: r.mode || 'bank', rcRef: r.ref || '', rcNote: r.note || '',
     });
@@ -10449,9 +10646,25 @@ class Component extends DCLogic {
   async saveReceipt(invoiceId) {
     const s = this.state;
     const amount = parseFloat(s.rcAmount);
-    if (!amount || amount <= 0) { this.setState({ moneyStatus: 'Enter the amount received.' }); return; }
-    if (!s.rcOn) { this.setState({ moneyStatus: 'Enter the date it was received.' }); return; }
-    this.setState({ moneyStatus: 'Saving…' });
+    if (!amount || amount <= 0) { this.setState({ moneyStatus: 'Enter the amount received.', moneyStatusOk: false }); return; }
+    if (!s.rcOn) { this.setState({ moneyStatus: 'Enter the date it was received.', moneyStatusOk: false }); return; }
+    // The form has always said a receipt cannot exceed what the invoice still
+    // has open. Nothing enforced it, so an over-payment could be recorded and
+    // the invoice would read as more-than-paid. Editing a receipt counts its own
+    // amount as still available, or every edit would fail against itself.
+    const inv = (s.moneyInvoices || []).find(i => i.id === invoiceId);
+    if (inv) {
+      const mine = s.rcEditId ? Number(((s.receipts || []).find(r => r.id === s.rcEditId) || {}).amount || 0) : 0;
+      const open = +(Number(inv.total || 0) - this.receivedFor(invoiceId) + mine).toFixed(2);
+      if (amount - open > 0.5) {
+        this.setState({
+          moneyStatus: 'That is more than the ' + fmtINR(open) + ' still open on this invoice.',
+          moneyStatusOk: false,
+        });
+        return;
+      }
+    }
+    this.setState({ moneyStatus: 'Saving…', moneyStatusOk: true });
     const { data: u } = await this.sb.auth.getUser();
     const row = {
       invoice_id: invoiceId, amount, received_on: s.rcOn,
@@ -10460,8 +10673,8 @@ class Component extends DCLogic {
     const { error } = s.rcEditId
       ? await this.sb.from('payments_received').update(row).eq('id', s.rcEditId)
       : await this.sb.from('payments_received').insert({ ...row, created_by: u && u.user ? u.user.id : null });
-    if (error) { this.setState({ moneyStatus: error.message }); return; }
-    this.setState({ rcEditId: null, rcAmount: '', rcRef: '', rcNote: '', moneyStatus: 'Recorded.' });
+    if (error) { this.setState({ moneyStatus: this.dbSay(error.message, 'receipts'), moneyStatusOk: false }); return; }
+    this.setState({ rcEditId: null, rcAmount: '', rcRef: '', rcNote: '', moneyStatus: 'Recorded.', moneyStatusOk: true });
     setTimeout(() => this.setState({ moneyStatus: '' }), 2500);
     this.loadMoney();
   }
@@ -10469,7 +10682,9 @@ class Component extends DCLogic {
   async deleteReceipt(r) {
     if (!window.confirm('Delete receipt ' + (r.receipt_no || '') + '? The invoice goes back to outstanding by that amount.')) return;
     const { error } = await this.sb.from('payments_received').delete().eq('id', r.id);
-    if (error) { this.setState({ moneyStatus: error.message }); return; }
+    if (error) { this.setState({ moneyStatus: this.dbSay(error.message, 'receipts'), moneyStatusOk: false }); return; }
+    this.setState({ moneyStatus: 'Receipt deleted.', moneyStatusOk: true });
+    setTimeout(() => this.setState({ moneyStatus: '' }), 2500);
     this.loadMoney();
   }
 
@@ -11646,6 +11861,7 @@ class Component extends DCLogic {
       moneyVM, moneyFilterVM, divisionMoneyVM, parentMoneyVM, bucketVM,
       moneySearch: s.moneySearch, onMoneySearch: e => this.setState({ moneySearch: e.target.value, moneyOpen: null }),
       canMoneyEdit, moneyStatus: s.moneyStatus,
+      moneyStatusColor: s.moneyStatusOk ? 'var(--green-deep)' : '#B4433A',
       hasNoMoney: moneyVM.length === 0,
       receivableFmt: fmtINR(receivableTotal),
       receivedMonthFmt: fmtINR(receivedMonth),
@@ -11889,7 +12105,12 @@ class Component extends DCLogic {
       isPublishUnknown: !!s.current && s.current.published === undefined,
       togglePublish: () => this.togglePublish(),
       previewLabel: this.parentTable() === 'projects' ? 'Preview project' : 'Preview album',
-      backLabel: this.parentTable() === 'projects' ? '← All projects' : '← All events',
+      backLabel: s.editorFrom === 'schedule' ? '← Schedule'
+        : s.editorFrom === 'money' ? '← Money in'
+        : s.editorFrom === 'spend' ? '← Accounts'
+        : s.editorFrom === 'payouts' ? '← Payouts'
+        : s.editorFrom === 'people' || s.editorFrom === 'talent' ? '← People'
+        : this.parentTable() === 'projects' ? '← All projects' : '← All events',
 
       setCoverInputRef: el => { this.coverInputEl = el; },
       triggerCoverPicker: () => this.coverInputEl && this.coverInputEl.click(),
