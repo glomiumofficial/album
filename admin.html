@@ -1320,7 +1320,20 @@
                 <button onClick="{{ pickThisTalent }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ pickThisLabel }}</button>
               </div>
             </sc-if>
-            <div style="display:flex; flex-direction:column; gap:14px; padding-top:20px; border-top:1px solid var(--line)">
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap; padding-top:18px; border-top:1px solid var(--line)">
+              <sc-for list="{{ talentTabsVM }}" as="tb" hint-placeholder-count="3">
+                <button onClick="{{ tb.go }}" style="display:flex; align-items:center; gap:7px; padding:8px 15px; background:{{ tb.bg }}; border:1px solid {{ tb.border }}; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ tb.color }}; cursor:pointer">
+                  <span>{{ tb.label }}</span>
+                  <sc-if value="{{ tb.hasCount }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10px; padding:1px 6px; border-radius:8px; background:{{ tb.countBg }}; color:{{ tb.countColor }}; letter-spacing:.04em">{{ tb.count }}</span>
+                  </sc-if>
+                </button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ tabWork }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; flex-direction:column; gap:14px">
               <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
                 <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Work log</span>
                 <span style="font-size:11px; color:var(--green-deep); margin-left:auto">{{ workStatus }}</span>
@@ -1423,8 +1436,10 @@
                 </div>
               </sc-if>
             </div>
+            </sc-if>
 
-            <div style="display:flex; flex-direction:column; gap:14px; padding-top:20px; border-top:1px solid var(--line)">
+            <sc-if value="{{ tabFeedback }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:14px">
               <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
                 <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Feedback</span>
                 <span style="font-size:11px; color:#B4433A; letter-spacing:.06em">Admin eyes only</span>
@@ -1435,13 +1450,30 @@
                 <div style="padding:11px 13px; border:1px solid #E8D9B8; border-radius:3px; background:#FAF6EC; font-size:12px; color:#8A6D3B; line-height:1.6; text-wrap:pretty">{{ feedbackError }}</div>
               </sc-if>
 
+              <sc-if value="{{ hasFeedbackRows }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px 20px; padding:14px 16px; border:1px solid var(--line); border-radius:3px; background:#FBFCFC">
+                  <sc-for list="{{ feedbackTotalsVM }}" as="ft" hint-placeholder-count="3">
+                    <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">{{ ft.label }}</span>
+                      <span style="font-size:15px; color:{{ ft.color }}">{{ ft.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ noFeedbackRows }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:13px; color:#7C8985; line-height:1.7; text-wrap:pretty">Nothing asked yet. Send a link below and their answers land here — one row per day worked.</span>
+              </sc-if>
+
               <div style="display:flex; flex-direction:column; gap:7px">
                 <sc-for list="{{ feedbackRowsVM }}" as="fb" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; gap:10px; padding:13px 15px; border:1px solid var(--line); border-radius:3px">
-                    <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
-                      <span style="font-size:13px; color:#16231F; min-width:0; overflow-wrap:anywhere">{{ fb.project }}</span>
-                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ fb.statusBg }}; color:{{ fb.statusColor }}; letter-spacing:.06em; text-transform:uppercase; margin-left:auto">{{ fb.statusLabel }}</span>
-                      <span style="font-size:11px; color:#7C8985">{{ fb.when }}</span>
+                    <div style="display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap">
+                      <div style="display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 150px">
+                        <span style="font-size:13px; color:#16231F; overflow-wrap:anywhere">{{ fb.project }}</span>
+                        <span style="font-size:11px; line-height:1.6; color:#7C8985; overflow-wrap:anywhere">{{ fb.meta }}</span>
+                      </div>
+                      <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ fb.statusBg }}; color:{{ fb.statusColor }}; letter-spacing:.06em; text-transform:uppercase">{{ fb.statusLabel }}</span>
                     </div>
 
                     <sc-if value="{{ fb.hasScores }}" hint-placeholder-val="{{ false }}">
@@ -1478,10 +1510,17 @@
               <sc-if value="{{ canTalentEdit }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px dashed var(--line); border-radius:3px">
                   <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Ask how it went</span>
-                  <div style="display:flex; flex-direction:column; gap:5px">
-                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Which shoot</span>
-                    <input value="{{ fbProject }}" onChange="{{ onFbProject }}" placeholder="The shoot they just finished" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px">
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Which shoot</span>
+                      <input value="{{ fbProject }}" onChange="{{ onFbProject }}" placeholder="The shoot they just finished" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Day worked</span>
+                      <input type="date" value="{{ fbWorkDate }}" onChange="{{ onFbWorkDate }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:2px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                    </div>
                   </div>
+                  <span style="font-size:11px; color:#9AA6A2; line-height:1.6; text-wrap:pretty">{{ fbAskNote }}</span>
                   <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
                     <button onClick="{{ sendFeedbackRequest }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ sendFeedbackLabel }}</button>
                     <button onClick="{{ toggleFbPreview }}" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ fbPreviewLabel }}</button>
@@ -1504,9 +1543,13 @@
                 </div>
               </sc-if>
             </div>
+            </sc-if>
 
-            <sc-if value="{{ hasTalentBookings }}" hint-placeholder-val="{{ false }}">              <div style="display:flex; flex-direction:column; gap:10px; padding-top:18px; border-top:1px solid var(--line)">
-                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Bookings</span>
+            <sc-if value="{{ tabBookings }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:14px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2">Bookings</span>
+              <sc-if value="{{ hasTalentBookings }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:10px">
                 <sc-for list="{{ talentBookingsVM }}" as="bk" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; gap:8px; padding:13px 15px; border:1px solid var(--line); border-radius:3px">
                     <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
@@ -1530,6 +1573,11 @@
                   </div>
                 </sc-for>
               </div>
+              </sc-if>
+              <sc-if value="{{ noTalentBookings }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size:13px; color:#7C8985; line-height:1.7; text-wrap:pretty">No bookings for this person yet. Tick them in the list on the left to build an enquiry.</span>
+              </sc-if>
+            </div>
             </sc-if>
           </div>
           </sc-if>
@@ -6207,15 +6255,21 @@ class Component extends DCLogic {
 
   // One open request per person per shoot is a database rule, so asking twice
   // returns the link that already exists instead of failing.
-  async ensureFeedbackRow() {
+  // `ask` carries the shoot and day resolved in renderVals — the box prefills
+  // from the last day worked, and reading raw state here would insert a null
+  // title whenever nobody retyped what was already on screen. That is how a
+  // submitted card ended up reading "General".
+  async ensureFeedbackRow(ask) {
     const open = (this.state.talent || []).find(x => x.id === this.state.talentId);
     if (!open) return null;
-    const title = (this.state.fbProject || '').trim();
-    const match = f => f.talent_id === open.id && !f.submitted_at && (f.project_title || '') === title;
+    const title = String((ask && ask.title) || this.state.fbProject || '').trim();
+    const date = String((ask && ask.date) || this.state.fbWorkDate || '').trim();
+    const match = f => f.talent_id === open.id && !f.submitted_at
+      && (f.project_title || '') === title && (f.work_date || '') === date;
     const existing = (this.state.talentFeedback || []).find(match);
     if (existing) return existing;
     const { data, error } = await this.sb.from('talent_feedback')
-      .insert({ talent_id: open.id, project_title: title || null, sent_to: open.email || null })
+      .insert({ talent_id: open.id, project_title: title || null, work_date: date || null, sent_to: open.email || null })
       .select().single();
     if (error) {
       if (/duplicate key|talent_feedback_one_open/i.test(error.message)) {
@@ -6231,15 +6285,15 @@ class Component extends DCLogic {
     return data;
   }
 
-  async createFeedbackLink() {
-    const row = await this.ensureFeedbackRow();
+  async createFeedbackLink(ask) {
+    const row = await this.ensureFeedbackRow(ask);
     if (!row) return;
     await this.copyText(this.feedbackUrl(row), 'Link copied — it opens their form and nothing else.');
   }
 
   // Same house design as the booking enquiry — composed through mailShell so
   // there is one email in this system, not four that drifted apart.
-  feedbackEmailHtml({ name, project, link }) {
+  feedbackEmailHtml({ name, project, day, link }) {
     return this.mailShell({
       preheader: 'a minute of your time on ' + (project || 'the shoot') + '.',
       headline: 'how did<br>we do?',
@@ -6249,20 +6303,22 @@ class Component extends DCLogic {
         'we would like to hear how it went from your side — how clearly we communicated, how the day was run, how payment was handled, and how you were treated. it takes about a minute, and you can skip anything.',
         'the link is yours alone and can be sent once. only we read it — never the crew you worked with, never the client.',
       ],
-      rows: project ? [['project', project]] : [],
+      rows: [['project', project], ['day worked', day]]
+        .filter(r => !!r[1])
+        .map(r => [r[0], String(r[1]).toLowerCase()]),
       button: { href: link, label: 'share your experience' },
       closing: 'with love,',
     });
   }
 
-  async sendFeedbackRequest(given) {
+  async sendFeedbackRequest(given, ask) {
     const open = (this.state.talent || []).find(x => x.id === this.state.talentId);
     if (!open) return;
     if (!open.email) {
       this.setState({ feedbackStatus: 'No email on this person — use “Just make a link” and send it however you reach them.' });
       return;
     }
-    const row = given || await this.ensureFeedbackRow();
+    const row = given || await this.ensureFeedbackRow(ask);
     if (!row) return;
     this.setState({ feedbackSending: true, feedbackStatus: 'Sending…' });
     try {
@@ -6270,7 +6326,11 @@ class Component extends DCLogic {
       if (!mailer) throw new Error('Email service did not load — check your connection and try again.');
       const name = String(open.full_name || '').trim().split(/\s+/)[0] || 'there';
       const project = (row.project_title || '').trim();
-      const html = this.feedbackEmailHtml({ name, project, link: this.feedbackUrl(row) });
+      const html = this.feedbackEmailHtml({
+        name, project,
+        day: this.fmtWorkDate((row.work_date || '').slice(0, 10)),
+        link: this.feedbackUrl(row),
+      });
       const subject = project ? 'how was ' + project.toLowerCase() + '?' : 'how was working with us?';
       await mailer.send(EMAILJS_SERVICE_ID, this.bookingTemplate(), {
         to_email: open.email, email: open.email, user_email: open.email, reply_to: open.email,
@@ -6532,7 +6592,10 @@ class Component extends DCLogic {
   clearTalentPicks() { this.setState({ talentPicked: {}, bookingStatus: '' }); }
 
   openTalent(t) {
-    this.setState({ talentId: t.id, talentForm: null, talentMode: 'view', talentStatus: '' });
+    // A new person opens on their work log, not on whatever tab the last person
+    // was left on — landing in someone's complaints because that is where you
+    // were reading before is a bad way to meet a profile.
+    this.setState({ talentId: t.id, talentForm: null, talentMode: 'view', talentStatus: '', talentTab: 'work', fbProject: null, fbWorkDate: null });
   }
 
   newTalent() {
@@ -6849,7 +6912,22 @@ class Component extends DCLogic {
       return Array.from(by.values()).sort((a, b) => String(b.last).localeCompare(String(a.last)));
     })();
     const fbTitle = String(s.fbProject == null ? lastWorkProject : s.fbProject).trim();
-    const fbPending = myFeedback.find(f => !f.submitted_at && (f.project_title || '') === fbTitle) || null;
+    // The day defaults to the most recent day logged against that shoot, so a
+    // person who worked three shoots this month gets three separate requests
+    // rather than one that silently overwrites the last.
+    const fbDateAuto = ((myWork.find(w => String(w.project_title || '').trim() === fbTitle) || myWork[0] || {}).work_date || '').slice(0, 10);
+    const fbDate = s.fbWorkDate == null ? fbDateAuto : s.fbWorkDate;
+    const fbPending = myFeedback.find(f => !f.submitted_at
+      && (f.project_title || '') === fbTitle
+      && (f.work_date || '') === (fbDate || '')) || null;
+    const talentTab = s.talentTab || 'work';
+    const myBookings = !open ? [] : bookings.filter(b => b.talent_id === open.id);
+    const fbDone = myFeedback.filter(f => f.submitted_at);
+    const fbAvg = (() => {
+      const vals = fbDone.map(f => f.overall).filter(v => v != null);
+      if (!vals.length) return '';
+      return (vals.reduce((x, y) => x + Number(y), 0) / vals.length).toFixed(1) + ' / 5';
+    })();
     const workAgreed = myWork.reduce((a, w) => a + Number(w.amount || 0), 0);
     const workDue = myWork.filter(w => !w.paid).reduce((a, w) => a + Number(w.amount || 0), 0);
     const workTrial = myWork.filter(w => w.kind === 'trial').length;
@@ -7179,15 +7257,46 @@ class Component extends DCLogic {
         stateColor: p.due > 0 ? '#8A6D3B' : '#1C6B52',
       })),
 
+      // ---- Profile tabs ----
+      // A profile is three unrelated jobs — what we owe them, what they told us
+      // about us, and what we have asked them to do. Stacked, the feedback got
+      // lost between a work log and a booking list, so each is its own panel.
+      tabWork: talentTab === 'work',
+      tabFeedback: talentTab === 'feedback',
+      tabBookings: talentTab === 'bookings',
+      talentTabsVM: [
+        ['work', 'Work log', myWork.length],
+        ['feedback', 'Feedback', myFeedback.length],
+        ['bookings', 'Bookings', myBookings.length],
+      ].map(t => {
+        const on = talentTab === t[0];
+        return {
+          label: t[1],
+          count: String(t[2]),
+          hasCount: t[2] > 0,
+          bg: on ? '#E7F4EF' : 'none',
+          border: on ? 'var(--green)' : 'var(--line)',
+          color: on ? '#0A6E58' : '#7C8985',
+          countBg: on ? '#fff' : '#F1F4F3',
+          countColor: on ? '#0A6E58' : '#7C8985',
+          go: () => this.setState({ talentTab: t[0] }),
+        };
+      }),
+
       // ---- Feedback (internal) ----
       hasFeedbackError: !!s.feedbackLoadError,
       feedbackError: s.feedbackLoadError || '',
       feedbackStatus: s.feedbackStatus || '',
       fbProject: s.fbProject == null ? lastWorkProject : s.fbProject,
-      onFbProject: e => this.setState({ fbProject: e.target.value, feedbackStatus: '' }),
-      sendFeedbackRequest: () => this.sendFeedbackRequest(),
+      onFbProject: e => this.setState({ fbProject: e.target.value, fbWorkDate: null, feedbackStatus: '' }),
+      fbWorkDate: fbDate,
+      onFbWorkDate: e => this.setState({ fbWorkDate: e.target.value, feedbackStatus: '' }),
+      fbAskNote: fbPending
+        ? 'A link for this shoot and day already exists — sending again re-sends that same one.'
+        : 'One link asks about one day. For a three-day shoot, send a link per day you want answered.',
+      sendFeedbackRequest: () => this.sendFeedbackRequest(null, { title: fbTitle, date: fbDate }),
       sendFeedbackLabel: s.feedbackSending ? 'Sending…' : 'Email the form',
-      createFeedbackLink: () => this.createFeedbackLink(),
+      createFeedbackLink: () => this.createFeedbackLink({ title: fbTitle, date: fbDate }),
       // The preview composes the same HTML the sender does, against the row
       // that already exists for this shoot if there is one — so the button in
       // the preview is the real link, not a stand-in.
@@ -7198,12 +7307,26 @@ class Component extends DCLogic {
       fbPreviewHtml: !open ? '' : this.previewDoc(this.feedbackEmailHtml({
         name: String(open.full_name || '').trim().split(/\s+/)[0] || 'there',
         project: fbTitle,
+        day: this.fmtWorkDate(fbDate),
         link: fbPending ? this.feedbackUrl(fbPending) : '#',
       })),
       feedbackNote: !open ? '' : (open.email
         ? 'Goes to ' + open.email + '. They answer once; only admin and HR ever see it.'
         : 'No email on file — make a link and send it yourself.'),
-      feedbackRowsVM: myFeedback.map(f => {
+      // Newest day worked first — a person builds up a row per shoot over the
+      // years, and the one they just answered is the one being looked for.
+      hasFeedbackRows: myFeedback.length > 0,
+      noFeedbackRows: myFeedback.length === 0,
+      feedbackTotalsVM: [
+        { label: 'Answered', value: String(fbDone.length), color: '#16231F' },
+        { label: 'Waiting', value: String(myFeedback.length - fbDone.length), color: '#16231F' },
+        { label: 'Average overall', value: fbAvg || '—', color: '#16231F' },
+        { label: 'Reported', value: String(fbDone.filter(f => f.complaint).length),
+          color: fbDone.some(f => f.complaint) ? '#B4433A' : '#16231F' },
+      ],
+      feedbackRowsVM: myFeedback.slice().sort((a, b) =>
+        String(b.work_date || (b.created_at || '').slice(0, 10)).localeCompare(
+        String(a.work_date || (a.created_at || '').slice(0, 10)))).map(f => {
         const done = !!f.submitted_at;
         const scores = FEEDBACK_SCORES
           .filter(q => f[q[0]] != null)
@@ -7224,14 +7347,19 @@ class Component extends DCLogic {
           ['Do differently', f.improve, '#9AA6A2'],
           ['Reported', f.complaint, '#B4433A'],
         ].filter(t => !!t[1]).map(t => ({ label: t[0], value: t[1], labelColor: t[2] }));
+        const shotOn = this.fmtWorkDate((f.work_date || '').slice(0, 10));
+        const when = this.fmtWorkDate((f.submitted_at || f.sent_at || f.created_at || '').slice(0, 10));
         return {
           id: f.id,
-          project: (f.project_title || '').trim() || 'General',
+          project: (f.project_title || '').trim() || 'Shoot not named',
+          meta: [
+            shotOn ? 'Worked ' + shotOn : 'Day not recorded',
+            (done ? 'answered ' : f.sent_at ? 'sent ' : 'link made ') + when,
+          ].join(' · '),
           pending: !done,
           statusLabel: done ? (f.complaint ? 'Answered · reported' : 'Answered') : (f.sent_at ? 'Sent' : 'Link made'),
           statusBg: done ? (f.complaint ? '#F9EFED' : '#E7F4EF') : '#FDF9F0',
           statusColor: done ? (f.complaint ? '#B4433A' : '#1C6B52') : '#8A6D3B',
-          when: this.fmtWorkDate((f.submitted_at || f.sent_at || f.created_at || '').slice(0, 10)),
           hasScores: scores.length > 0,
           scoresVM: scores,
           textsVM: texts,
@@ -7242,7 +7370,9 @@ class Component extends DCLogic {
         };
       }),
 
-      hasTalentBookings: !!open && bookings.some(b => b.talent_id === open.id),      talentBookingsVM: !open ? [] : bookings.filter(b => b.talent_id === open.id).map(b => {
+      hasTalentBookings: myBookings.length > 0,
+      noTalentBookings: myBookings.length === 0,
+      talentBookingsVM: myBookings.map(b => {
         const meta = BOOKING_STATUSES[b.status] || [b.status, '#F4F6F5', '#7C8985'];
         return {
           project: b.project_title,

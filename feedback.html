@@ -58,6 +58,16 @@
 
         <div style="display:flex; flex-direction:column; gap:12px">
           <h1 style="margin:0; font-size:clamp(24px,5.4vw,36px); font-weight:200; line-height:1.25; color:#16231F; text-wrap:balance">{{ heading }}</h1>
+          <sc-if value="{{ hasSubject }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-wrap:wrap; gap:6px 14px; padding:11px 14px; background:#fff; border:1px solid var(--line); border-radius:4px">
+              <sc-for list="{{ subjectVM }}" as="sj" hint-placeholder-count="2">
+                <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                  <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#8A9390">{{ sj.label }}</span>
+                  <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ sj.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
           <span style="font-size:15px; line-height:1.75; color:#3E4A46; text-wrap:pretty">This is read only by Glomium's management, and only to fix how we work. It is never shown to the crew, the client, or anyone you worked beside. Answer what you want to and leave the rest.</span>
         </div>
 
@@ -138,7 +148,7 @@ const TEXTS = [
 class Component extends DCLogic {
   state = {
     loading: true, found: false, already: false, done: false, sending: false,
-    firstName: '', project: '', status: '', scores: {}, wouldReturn: null, texts: {},
+    firstName: '', project: '', shootDate: '', status: '', scores: {}, wouldReturn: null, texts: {},
   };
 
   componentDidMount() {
@@ -166,7 +176,18 @@ class Component extends DCLogic {
       already: !!d.submitted,
       firstName: d.first_name || '',
       project: d.project || '',
+      shootDate: d.shoot_date || '',
     });
+  }
+
+  // Freelancers work with us repeatedly, so the form states which shoot and
+  // which day it is asking about — otherwise three links in one inbox are
+  // indistinguishable, and the answers get attached to the wrong day.
+  prettyDay(d) {
+    if (!d) return '';
+    const dt = new Date(String(d).slice(0, 10) + 'T00:00:00');
+    if (isNaN(dt)) return '';
+    return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   setScore(k, v) {
@@ -226,6 +247,10 @@ class Component extends DCLogic {
 
       heading: (s.firstName ? s.firstName + ', how was ' : 'How was ')
         + (s.project ? s.project : 'working with us') + '?',
+
+      hasSubject: !!(s.project || s.shootDate),
+      subjectVM: [['Shoot', s.project], ['Day worked', this.prettyDay(s.shootDate)]]
+        .filter(r => !!r[1]).map(r => ({ label: r[0], value: r[1] })),
 
       questionsVM: SCORES.map(q => ({
         key: q[0], label: q[1], low: q[2], high: q[3],
