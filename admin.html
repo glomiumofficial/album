@@ -382,9 +382,14 @@
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px">
               <input placeholder="Full name" value="{{ pfName }}" onChange="{{ onPfName }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:3px; font-size:14px; outline:none">
-              <select value="{{ pfRole }}" onChange="{{ onPfRole }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:3px; font-size:14px; outline:none; background:#fff">
-                <sc-for list="{{ crewRoleOptions }}" as="ro" hint-placeholder-count="9"><option value="{{ ro.value }}">{{ ro.label }}</option></sc-for>
-              </select>
+              <div style="display:flex; flex-direction:column; gap:8px">
+                <select value="{{ pfRole }}" onChange="{{ onPfRole }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:3px; font-size:14px; outline:none; background:#fff">
+                  <sc-for list="{{ crewRoleFormOptions }}" as="ro" hint-placeholder-count="10"><option value="{{ ro.value }}">{{ ro.label }}</option></sc-for>
+                </select>
+                <sc-if value="{{ isCustomRole }}" hint-placeholder-val="{{ false }}">
+                  <input value="{{ pfRoleCustom }}" onChange="{{ onPfRoleCustom }}" placeholder="Type the role, e.g. Line producer" style="padding:12px 14px; border:1px solid var(--line); border-radius:3px; font-size:14px; outline:none" style-focus="border-color:var(--green)">
+                </sc-if>
+              </div>
               <select value="{{ pfEngagement }}" onChange="{{ onPfEngagement }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:3px; font-size:14px; outline:none; background:#fff">
                 <option value="freelancer">Freelancer — paid per event</option>
                 <option value="employee">Employee — monthly salary</option>
@@ -1190,6 +1195,9 @@
                     <option value="{{ co.value }}">{{ co.label }}</option>
                   </sc-for>
                 </select>
+                <sc-if value="{{ isCustomCraft }}" hint-placeholder-val="{{ false }}">
+                  <input value="{{ formCraftCustom }}" onChange="{{ onFormCraftCustom }}" placeholder="Type the craft, e.g. Light assistant" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </sc-if>
               </div>
               <div style="display:flex; flex-direction:column; gap:5px">
                 <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Phone</span>
@@ -1765,11 +1773,19 @@
         </div>
 
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+          <input value="{{ payoutSearch }}" onChange="{{ onPayoutSearch }}" placeholder="Search crew, ID or event" style="padding:8px 12px; border:1px solid var(--line); border-radius:3px; font-size:12px; outline:none; min-width:200px; flex:0 1 240px">
           <sc-for list="{{ payoutFilterVM }}" as="pf" hint-placeholder-count="4">
             <button onClick="{{ pf.go }}" style="padding:8px 14px; background:{{ pf.bg }}; border:1px solid {{ pf.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ pf.color }}; cursor:pointer">{{ pf.label }}</button>
           </sc-for>
-          <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ payoutStatus }}</span>
+          <span style="font-size:12px; color:{{ payoutStatusColor }}; margin-left:auto">{{ payoutStatus }}</span>
         </div>
+
+        <sc-if value="{{ canBulkPay }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px 16px; border:1px solid var(--line); border-radius:3px; background:#FAFCFB">
+            <span style="font-size:12px; color:#5C6864">{{ bulkPayLabel }}</span>
+            <button onClick="{{ bulkMarkPaid }}" style="margin-left:auto; padding:8px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Mark all shown paid</button>
+          </div>
+        </sc-if>
 
         <sc-if value="{{ hasNoPayouts }}" hint-placeholder-val="{{ true }}">
           <span style="font-size:13px; color:#5C6864">{{ emptyPayoutsHint }}</span>
@@ -1781,48 +1797,81 @@
 
         <div style="display:flex; flex-direction:column; gap:10px">
           <sc-for list="{{ payoutsVM }}" as="po" hint-placeholder-count="0">
-            <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; border:1px solid var(--line); border-radius:3px; flex-wrap:wrap">
-              <div style="display:flex; flex-direction:column; gap:3px; min-width:150px">
-                <span style="font-size:14px; color:#16231F">{{ po.name }}</span>
-                <span style="font-size:11px; color:#5C6864">{{ po.crewId }} · {{ po.roleLabel }}</span>
+            <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px">
+              <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; flex-wrap:wrap">
+                <div style="display:flex; flex-direction:column; gap:3px; min-width:160px">
+                  <span style="font-size:14px; color:#16231F">{{ po.name }}</span>
+                  <span style="font-size:11px; color:#5C6864">{{ po.crewId }} · {{ po.roleLabel }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:3px; min-width:150px">
+                  <span style="font-size:12px; color:#5D6864">{{ po.eventLabel }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ po.eventDate }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:2px; margin-left:auto; text-align:right">
+                  <span style="font-size:15px; color:#16231F; font-variant-numeric:tabular-nums">{{ po.amountFmt }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ po.summaryLabel }}</span>
+                </div>
+                <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ po.statusBg }}; color:{{ po.statusColor }}; letter-spacing:.06em; text-transform:uppercase">{{ po.statusLabel }}</span>
+                <button onClick="{{ po.togglePay }}" style="padding:8px 14px; background:{{ po.payBtnBg }}; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ po.payBtnColor }}; cursor:pointer">{{ po.payToggleLabel }}</button>
               </div>
-              <div style="display:flex; flex-direction:column; gap:3px; min-width:140px">
-                <span style="font-size:12px; color:#5D6864">{{ po.eventLabel }}</span>
-                <span style="font-size:11px; color:#67746F">{{ po.eventDate }}</span>
-              </div>
-              <span style="font-size:11px; color:#67746F; min-width:130px">{{ po.payTo }}</span>
-              <div style="display:flex; flex-direction:column; gap:3px; margin-left:auto; text-align:right">
-                <span style="font-size:15px; color:#16231F">{{ po.amountFmt }}</span>
-                <span style="font-size:11px; color:#67746F">{{ po.basisLabel }}</span>
-                <sc-if value="{{ po.hasOt }}" hint-placeholder-val="{{ false }}">
-                  <span style="font-size:10px; color:#8A6D3B">{{ po.otLabel }}</span>
-                </sc-if>
-                <sc-if value="{{ po.hasExtras }}" hint-placeholder-val="{{ false }}">
-                  <span style="font-size:10px; color:#5C6864">{{ po.extrasLabel }}</span>
-                </sc-if>
-                <sc-if value="{{ po.hasTds }}" hint-placeholder-val="{{ false }}">
-                  <span style="font-size:10px; color:#8A6D3B">{{ po.tdsLabel }} −{{ po.tdsAmountFmt }}</span>
-                  <span style="font-size:12px; color:var(--green-deep)">Net {{ po.netPayableFmt }}</span>
-                </sc-if>
-                <sc-if value="{{ po.hasPaidRef }}" hint-placeholder-val="{{ false }}">
-                  <span style="font-size:10px; color:#67746F">{{ po.paidRefLabel }}</span>
-                </sc-if>
-              </div>
-              <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ po.statusBg }}; color:{{ po.statusColor }}; letter-spacing:.06em; text-transform:uppercase">{{ po.statusLabel }}</span>
-              <sc-if value="{{ canPayoutsEdit }}" hint-placeholder-val="{{ false }}">
-                <sc-if value="{{ po.notPaid }}" hint-placeholder-val="{{ true }}">
-                  <button onClick="{{ po.markPaid }}" style="padding:7px 14px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Mark paid</button>
-                </sc-if>
-                <sc-if value="{{ po.isPaid }}" hint-placeholder-val="{{ false }}">
-                  <sc-if value="{{ po.canReopen }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ po.markOwed }}" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#5C6864; cursor:pointer">Reopen</button>
+
+              <sc-if value="{{ po.payOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:14px; padding:16px; border-top:1px solid var(--line); background:#FCFDFC">
+
+                  <div style="display:flex; gap:26px; flex-wrap:wrap">
+                    <sc-for list="{{ po.breakdownVM }}" as="bd" hint-placeholder-count="3">
+                      <div style="display:flex; flex-direction:column; gap:3px; min-width:110px">
+                        <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">{{ bd.label }}</span>
+                        <span style="font-size:13px; color:{{ bd.color }}; font-variant-numeric:tabular-nums">{{ bd.value }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--line)">
+                    <span style="font-size:11px; color:#5C6864">{{ po.payTo }}</span>
+                    <button onClick="{{ po.copyPayTo }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#5D6864; cursor:pointer" style-hover="border-color:var(--green); color:var(--green-deep)">Copy details</button>
+                  </div>
+
+                  <sc-if value="{{ canPayoutsEdit }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid var(--line); border-radius:3px; background:#fff">
+                      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; align-items:end">
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Amount sent
+                          <input value="{{ poAmount }}" onChange="{{ onPoAmount }}" inputmode="decimal" placeholder="0" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                        </label>
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Paid on
+                          <input type="date" value="{{ poOn }}" onChange="{{ onPoOn }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                        </label>
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Mode
+                          <select value="{{ poMode }}" onChange="{{ onPoMode }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                            <sc-for list="{{ poModeOptions }}" as="pm" hint-placeholder-count="4">
+                              <option value="{{ pm.value }}">{{ pm.label }}</option>
+                            </sc-for>
+                          </select>
+                        </label>
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Reference
+                          <input value="{{ poRef }}" onChange="{{ onPoRef }}" placeholder="UTR / cheque no." style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                        </label>
+                        <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Note
+                          <input value="{{ poNote }}" onChange="{{ onPoNote }}" placeholder="Optional" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                        </label>
+                      </div>
+                      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+                        <button onClick="{{ po.savePay }}" style="padding:10px 20px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ po.saveLabel }}</button>
+                        <sc-if value="{{ po.canReopen }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ po.markOwed }}" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#B4433A; cursor:pointer">Reopen as owed</button>
+                        </sc-if>
+                        <button onClick="{{ po.togglePay }}" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer">Close</button>
+                        <span style="font-size:11px; color:#67746F">{{ po.payHint }}</span>
+                      </div>
+                    </div>
                   </sc-if>
-                </sc-if>
+
+                </div>
               </sc-if>
             </div>
           </sc-for>
         </div>
-        <span style="font-size:11px; color:#67746F">Payouts are marked by hand once the transfer is actually made. The amount is snapshotted at that moment — a later rate edit cannot move it. TDS, where set on the crew row, is withheld from the crew member and owed to the department.</span>
+        <span style="font-size:11px; color:#67746F">Payouts are marked by hand once the transfer is actually made, with the date, mode and reference of the actual transfer. TDS, where set on the crew row, is withheld from the crew member and owed to the department.</span>
       </div>
       </sc-if>
 
@@ -1880,6 +1929,7 @@
         </sc-if>
 
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+          <input value="{{ moneySearch }}" onChange="{{ onMoneySearch }}" placeholder="Search client or invoice no." style="padding:8px 12px; border:1px solid var(--line); border-radius:3px; font-size:12px; outline:none; min-width:200px; flex:0 1 240px">
           <sc-for list="{{ moneyFilterVM }}" as="mf" hint-placeholder-count="4">
             <button onClick="{{ mf.go }}" style="padding:8px 14px; background:{{ mf.bg }}; border:1px solid {{ mf.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ mf.color }}; cursor:pointer">{{ mf.label }}</button>
           </sc-for>
@@ -1908,6 +1958,10 @@
                   </sc-if>
                 </div>
                 <button onClick="{{ mo.toggle }}" style="padding:8px 14px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ mo.toggleLabel }}</button>
+              </div>
+
+              <div style="height:3px; background:#EEF2F0; margin:0 16px 14px; border-radius:2px; overflow:hidden">
+                <div style="height:100%; width:{{ mo.pctWidth }}; background:var(--green)"></div>
               </div>
 
               <sc-if value="{{ mo.isOpen }}" hint-placeholder-val="{{ false }}">
@@ -1962,6 +2016,12 @@
                         <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Note
                           <input value="{{ rcNote }}" onChange="{{ onRcNote }}" placeholder="Optional" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
                         </label>
+                      </div>
+                      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+                        <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Quick fill</span>
+                        <button onClick="{{ mo.fillFull }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ mo.fullLabel }}</button>
+                        <button onClick="{{ mo.fillHalf }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#5D6864; cursor:pointer" style-hover="border-color:var(--green)">{{ mo.halfLabel }}</button>
+                        <button onClick="{{ mo.fillClear }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#5D6864; cursor:pointer">Clear</button>
                       </div>
                       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
                         <button onClick="{{ mo.save }}" style="padding:10px 20px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ rcSaveLabel }}</button>
@@ -3996,7 +4056,17 @@ const TALENT_CRAFTS = [
   ['anchor', 'Anchor / host'],
   ['choreographer', 'Choreographer'],
 ];
-const craftLabel = k => (TALENT_CRAFTS.find(c => c[0] === k) || [k, k])[1];
+// A craft typed in by hand is stored as its own slug, so an unknown key is not a
+// bug — it is a custom craft, and it reads back as the words that were typed.
+const craftLabel = k => {
+  const hit = TALENT_CRAFTS.find(c => c[0] === k);
+  if (hit) return hit[1];
+  const words = String(k || '').replace(/[-_]+/g, ' ').trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : '—';
+};
+const craftSlug = v => String(v || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const CUSTOM_CRAFT = '__custom';
+const CUSTOM_ROLE = '__custom_role';
 
 // A trial is the look/test day, an actual day is the real shoot, a reshoot is
 // the argument nobody wants to have from a note field.
@@ -4380,6 +4450,8 @@ class Component extends DCLogic {
     experience: [], expEmployer: '', expRole: '', expFrom: '', expTo: '',
     cvPath: '', cvName: '', cvUploadedAt: null, cvUrl: '',
     photoPath: '', photoUrl: '',
+    craftCustomOn: false, craftCustomText: '',
+    roleCustomOn: false, roleCustomText: '',
     payments: [], payStatus: '', payOpen: null, payFormOpen: false,
     payKind: 'salary', payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '',
     payMode: 'bank', payRef: '', slip: { ...EMPTY_SLIP },
@@ -4397,8 +4469,10 @@ class Component extends DCLogic {
     assignments: [], costing: null, crewStatus: '', agEdits: {},
     eventDays: [], dayDate: '', dayHours: {}, dayStatus: '',
     afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
-    payouts: [], payoutFilter: 'owed', payoutStatus: '',
-    moneyInvoices: [], receipts: [], invoiceReceipts: [], moneyFilter: 'open',
+    payouts: [], payoutFilter: 'owed', payoutStatus: '', payoutStatusOk: false,
+    payoutSearch: '', poOpen: null, poAmount: '', poOn: '', poMode: 'bank',
+    poRef: '', poNote: '',
+    moneyInvoices: [], receipts: [], invoiceReceipts: [], moneyFilter: 'open', moneySearch: '',
     moneyStatus: '', moneyOpen: null, receiptPreview: null,
     rcAmount: '', rcOn: '', rcMode: 'bank', rcRef: '', rcNote: '', rcEditId: null,
     bootError: '',
@@ -6630,14 +6704,37 @@ class Component extends DCLogic {
 
   newTalent() {
     this.setState({
-      talentId: null, talentMode: 'edit', talentStatus: '',
+      talentId: null, talentMode: 'edit', talentStatus: '', craftCustomOn: false, craftCustomText: '',
       talentForm: { full_name: '', craft: 'model', phone: '', email: '', city: '', notes: '', active: true },
     });
   }
 
   editTalent() {
     const t = (this.state.talent || []).find(x => x.id === this.state.talentId);
-    if (t) this.setState({ talentMode: 'edit', talentForm: Object.assign({}, t), talentStatus: '' });
+    if (!t) return;
+    const off = t.craft && !TALENT_CRAFTS.some(c => c[0] === t.craft);
+    this.setState({
+      talentMode: 'edit', talentForm: Object.assign({}, t), talentStatus: '',
+      craftCustomOn: !!off, craftCustomText: off ? craftLabel(t.craft) : '',
+    });
+  }
+
+  // "Something else…" is a mode, not a value: the select holds the sentinel while
+  // the craft itself is whatever gets typed, slugged so it matches on filter and
+  // search the same way the built-in crafts do.
+  pickCraft(value) {
+    if (value === CUSTOM_CRAFT) {
+      this.setState({ craftCustomOn: true });
+      this.setTalentField('craft', craftSlug(this.state.craftCustomText));
+      return;
+    }
+    this.setState({ craftCustomOn: false, craftCustomText: '' });
+    this.setTalentField('craft', value);
+  }
+
+  setCraftCustom(text) {
+    this.setState({ craftCustomText: text });
+    this.setTalentField('craft', craftSlug(text));
   }
 
   setTalentField(k, v) {
@@ -6652,6 +6749,9 @@ class Component extends DCLogic {
     const f = this.state.talentForm || {};
     const name = (f.full_name || '').trim();
     if (!name) { this.setState({ talentStatus: 'A name is the one thing this record cannot do without.' }); return; }
+    if (this.state.craftCustomOn && !craftSlug(this.state.craftCustomText)) {
+      this.setState({ talentStatus: 'Type the craft, or pick one from the list.' }); return;
+    }
     const email = (f.email || '').trim();
     // '' from an emptied number input must become null, not 0 — a 0 cm height
     // would read as a real measurement and would fail the check constraint.
@@ -6682,7 +6782,9 @@ class Component extends DCLogic {
       ? await this.sb.from('talent').update(row).eq('id', f.id).select('id').maybeSingle()
       : await this.sb.from('talent').insert(row).select('id').maybeSingle();
     if (res.error) {
-      this.setState({ talentStatus: /column .* does not exist/i.test(res.error.message)
+      this.setState({ talentStatus: /talent_craft_check/i.test(res.error.message)
+        ? 'The roster still only allows the eleven built-in crafts — run album-system/custom-craft.sql in Supabase, then save again.'
+        : /column .* does not exist/i.test(res.error.message)
         ? 'The roster is missing the new profile columns — run album-system/talent-attributes.sql in Supabase, then save again.'
         : res.error.message });
       return;
@@ -6892,6 +6994,7 @@ class Component extends DCLogic {
     const today = new Date().toISOString().slice(0, 10);
     const editing = s.talentMode === 'edit' && !!s.talentForm;
     const f = s.talentForm || {};
+    const isCustomCraft = !!s.craftCustomOn || !!(f.craft && !TALENT_CRAFTS.some(c => c[0] === f.craft));
     const d = s.bookingDraft || {};
 
     const liveFor = id => bookings.filter(b => b.talent_id === id
@@ -7000,7 +7103,10 @@ class Component extends DCLogic {
       newTalent: () => this.newTalent(),
       talentStatus: s.talentStatus || '',
 
-      craftFilterVM: [['all', 'All']].concat(TALENT_CRAFTS).map(pair => {
+      craftFilterVM: [['all', 'All']].concat(TALENT_CRAFTS).concat(
+        Array.from(new Set((s.talent || []).map(t => t.craft)
+          .filter(k => k && !TALENT_CRAFTS.some(c => c[0] === k)))).map(k => [k, craftLabel(k)])
+      ).map(pair => {
         const on = (s.craftFilter || 'all') === pair[0];
         return {
           label: pair[1], go: () => this.setState({ craftFilter: pair[0] }),
@@ -7159,8 +7265,13 @@ class Component extends DCLogic {
       isTalentEdit: editing,
       talentFormTitle: f.id ? 'Edit ' + (f.full_name || 'record') : 'New roster entry',
       formName: f.full_name || '', onFormName: e => this.setTalentField('full_name', e.target.value),
-      formCraft: f.craft || 'model', onFormCraft: e => this.setTalentField('craft', e.target.value),
-      craftOptionsVM: TALENT_CRAFTS.map(pair => ({ value: pair[0], label: pair[1] })),
+      formCraft: isCustomCraft ? CUSTOM_CRAFT : (f.craft || 'model'),
+      onFormCraft: e => this.pickCraft(e.target.value),
+      craftOptionsVM: TALENT_CRAFTS.map(pair => ({ value: pair[0], label: pair[1] }))
+        .concat([{ value: CUSTOM_CRAFT, label: 'Something else…' }]),
+      isCustomCraft,
+      formCraftCustom: s.craftCustomText || '',
+      onFormCraftCustom: e => this.setCraftCustom(e.target.value),
       formPhone: f.phone || '', onFormPhone: e => this.setTalentField('phone', e.target.value),
       formEmail: f.email || '', onFormEmail: e => this.setTalentField('email', e.target.value),
       formCity: f.city || '', onFormCity: e => this.setTalentField('city', e.target.value),
@@ -7434,7 +7545,7 @@ class Component extends DCLogic {
   }
 
   newPerson() {
-    this.setState({ personId: null, personForm: { ...EMPTY_PERSON }, personMode: 'edit', personStatus: '', personDocs: [], personAvail: [], personRates: [], rateLabel: '', rateAmount: '', docLabel: '', availDay: '', availNote: '', ...this.blankCareerState() });
+    this.setState({ personId: null, personForm: { ...EMPTY_PERSON }, personMode: 'edit', personStatus: '', roleCustomOn: false, roleCustomText: '', personDocs: [], personAvail: [], personRates: [], rateLabel: '', rateAmount: '', docLabel: '', availDay: '', availNote: '', ...this.blankCareerState() });
   }
 
   // Career fields live outside personForm: they save on their own button, so the
@@ -7463,7 +7574,37 @@ class Component extends DCLogic {
     return f;
   }
 
-  editPerson() { this.setState({ personMode: 'edit', personStatus: '' }); }
+  // "Something else…" is a mode, not a value: the select holds the sentinel while
+  // the role itself is whatever gets typed, slugged so crew IDs, search and the
+  // role filters keep treating it like any other role.
+  setPersonField(k, v) {
+    this.setState({ personForm: { ...(this.state.personForm || {}), [k]: v } });
+  }
+
+  pickCrewRole(value) {
+    if (value === CUSTOM_ROLE) {
+      this.setState({ roleCustomOn: true });
+      this.setPersonField('primary_role', craftSlug(this.state.roleCustomText).replace(/-/g, '_'));
+      return;
+    }
+    this.setState({ roleCustomOn: false, roleCustomText: '' });
+    this.setPersonField('primary_role', value);
+  }
+
+  setRoleCustom(text) {
+    this.setState({ roleCustomText: text });
+    this.setPersonField('primary_role', craftSlug(text).replace(/-/g, '_'));
+  }
+
+  editPerson() {
+    const p = (this.state.people || []).find(x => x.id === this.state.personId);
+    const off = p && p.primary_role && !CREW_ROLES.some(c => c[0] === p.primary_role);
+    this.setState({
+      personMode: 'edit', personStatus: '',
+      roleCustomOn: !!off,
+      roleCustomText: off ? String(p.primary_role).replace(/[-_]+/g, ' ') : '',
+    });
+  }
   cancelPersonEdit() {
     const p = this.state.people.find(x => x.id === this.state.personId);
     if (!p) { this.setState({ personId: null, personForm: null, personMode: 'view', personStatus: '' }); return; }
@@ -7490,6 +7631,9 @@ class Component extends DCLogic {
   async savePerson() {
     const f = this.state.personForm;
     if (!f.full_name.trim()) { this.setState({ personStatus: 'Name is required.' }); return; }
+    if (this.state.roleCustomOn && !craftSlug(this.state.roleCustomText)) {
+      this.setState({ personStatus: 'Type the role, or pick one from the list.' }); return;
+    }
     // A passport is the document we want. Where there isn't one, a national ID has to
     // stand in — but one of the two has to be on file, because "we'll get it later"
     // is how a crew member turns up to a shoot nobody can put on a permit.
@@ -7531,7 +7675,9 @@ class Component extends DCLogic {
       ? await this.sb.from('people').update(row).eq('id', this.state.personId).select().single()
       : await this.sb.from('people').insert(row).select().single();
     if (res.error) {
-      this.setState({ personStatus: /column .*passport/i.test(res.error.message || '')
+      this.setState({ personStatus: /primary_role/i.test(res.error.message || '') && /check constraint/i.test(res.error.message || '')
+        ? 'The crew table still only allows the nine built-in roles — run album-system/custom-role.sql in Supabase, then save again.'
+        : /column .*passport/i.test(res.error.message || '')
         ? 'Run album-system/people-identity.sql in Supabase — the passport columns do not exist yet.'
         : res.error.message });
       return;
@@ -8381,19 +8527,83 @@ class Component extends DCLogic {
   async setPayoutStatus(ag, status) {
     const base = { payout_status: status, paid_at: status === 'paid' ? new Date().toISOString() : null };
     const patch = { ...base };
-    if (status === 'paid') {
-      const ref = window.prompt('Payment reference — UTR, cheque or transaction id. Leave blank if you have none.', '');
-      if (ref === null) return;
-      patch.paid_ref = ref.trim() || null;
-      patch.paid_mode = (ag.people && ag.people.upi_id) ? 'upi' : 'bank';
-    }
+    if (status === 'paid') patch.paid_mode = (ag.people && ag.people.upi_id) ? 'upi' : 'bank';
     let { error } = await this.sb.from('assignments').update(patch).eq('id', ag.id);
     if (error && /column .*(paid_ref|paid_mode)/i.test(error.message || '')) {
       ({ error } = await this.sb.from('assignments').update(base).eq('id', ag.id));
     }
-    if (error) { this.setState({ payoutStatus: error.message }); return; }
+    if (error) { this.setState({ payoutStatus: error.message, payoutStatusOk: false }); return; }
+    this.setState({ poOpen: null, payoutStatus: '' });
     if (this.state.view === 'payouts') this.loadPayouts();
     if (this.state.current) this.loadAssignments(this.state.current.id);
+  }
+
+  // The pay panel: one row opens at a time, pre-filled with what is actually due
+  // (net of TDS) so the common case is open-and-save.
+  togglePayRow(ag) {
+    const open = this.state.poOpen === ag.id ? null : ag.id;
+    const gross = Number(ag.paid_amount != null ? ag.paid_amount : (ag.amount_owed || 0));
+    const net = +(gross * (1 - Number(ag.tds_rate || 0) / 100)).toFixed(2);
+    const p = ag.people || {};
+    this.setState({
+      poOpen: open, payoutStatus: '', payoutStatusOk: false,
+      poAmount: open && net > 0 ? String(net) : '',
+      poOn: ag.paid_at ? String(ag.paid_at).slice(0, 10) : new Date().toISOString().slice(0, 10),
+      poMode: ag.paid_mode || (p.upi_id ? 'upi' : 'bank'),
+      poRef: ag.paid_ref || '', poNote: ag.paid_note || '',
+    });
+  }
+
+  // Saves the transfer itself — date, mode, reference, note — and marks the row paid.
+  // Columns the database has not been migrated for are dropped rather than failing.
+  async savePayout(ag) {
+    const s = this.state;
+    if (!s.poOn) { this.setState({ payoutStatus: 'Enter the date it was paid.', payoutStatusOk: false }); return; }
+    const base = { payout_status: 'paid', paid_at: new Date(s.poOn + 'T12:00:00').toISOString() };
+    const full = { ...base, paid_ref: (s.poRef || '').trim() || null, paid_mode: s.poMode || 'bank', paid_note: (s.poNote || '').trim() || null };
+    let { error } = await this.sb.from('assignments').update(full).eq('id', ag.id);
+    if (error && /column .*(paid_ref|paid_mode|paid_note)/i.test(error.message || '')) {
+      const lite = { ...base, paid_ref: full.paid_ref, paid_mode: full.paid_mode };
+      ({ error } = await this.sb.from('assignments').update(lite).eq('id', ag.id));
+      if (error && /column/i.test(error.message || '')) ({ error } = await this.sb.from('assignments').update(base).eq('id', ag.id));
+    }
+    if (error) { this.setState({ payoutStatus: error.message, payoutStatusOk: false }); return; }
+
+    let note = 'Payment recorded.';
+    const amt = parseFloat(s.poAmount);
+    const current = Number(ag.paid_amount != null ? ag.paid_amount : (ag.amount_owed || 0));
+    if (!isNaN(amt) && amt > 0 && Math.abs(amt - current) > 0.5) {
+      const r = await this.sb.from('assignments').update({ paid_amount: amt }).eq('id', ag.id);
+      if (r.error) note = 'Marked paid — the ledger keeps the snapshotted amount, so the override was not applied.';
+    }
+    this.setState({ poOpen: null, payoutStatus: note, payoutStatusOk: !/not applied/.test(note) });
+    setTimeout(() => this.setState({ payoutStatus: '', payoutStatusOk: false }), 5000);
+    this.loadPayouts();
+    if (this.state.current) this.loadAssignments(this.state.current.id);
+  }
+
+  // Clearing a whole filtered batch in one go — same effect as opening each row and
+  // saving it with today's date and no reference.
+  async bulkMarkPaid(ids) {
+    if (!ids || !ids.length) return;
+    if (!window.confirm('Mark ' + ids.length + ' payout' + (ids.length === 1 ? '' : 's') + ' as paid, dated today? Each one can still be reopened.')) return;
+    this.setState({ payoutStatus: 'Marking…', payoutStatusOk: true });
+    const { error } = await this.sb.from('assignments')
+      .update({ payout_status: 'paid', paid_at: new Date().toISOString() }).in('id', ids);
+    if (error) { this.setState({ payoutStatus: error.message, payoutStatusOk: false }); return; }
+    this.setState({ payoutStatus: ids.length + ' marked paid.', payoutStatusOk: true });
+    setTimeout(() => this.setState({ payoutStatus: '', payoutStatusOk: false }), 5000);
+    this.loadPayouts();
+  }
+
+  async copyPayTo(ag) {
+    const p = ag.people || {};
+    const text = p.upi_id ? p.upi_id
+      : p.bank_account ? [p.full_name, p.bank_account, p.bank_ifsc].filter(Boolean).join('  ') : '';
+    if (!text) { this.setState({ payoutStatus: 'No account or UPI on file for them yet.', payoutStatusOk: false }); return; }
+    try { await navigator.clipboard.writeText(text); this.setState({ payoutStatus: 'Payout details copied.', payoutStatusOk: true }); }
+    catch (e) { this.setState({ payoutStatus: text, payoutStatusOk: true }); }
+    setTimeout(() => this.setState({ payoutStatus: '', payoutStatusOk: false }), 4000);
   }
 
   // One place for the filter-chip look — five chip rows used to repeat these
@@ -10314,7 +10524,13 @@ class Component extends DCLogic {
     // No division chosen yet — or an explicit switch — takes over the whole screen.
     const picking = s.view !== 'login' && (!s.division || s.pickingDivision);
     const crewRoleOptions = CREW_ROLES.map(([value, label]) => ({ value, label }));
-    const roleName = r => ROLE_LABEL[r] || r || '—';
+    // A role typed by hand is stored as its own slug, so an unknown key reads back
+    // as the words that were typed rather than as raw snake_case.
+    const roleName = r => {
+      if (ROLE_LABEL[r]) return ROLE_LABEL[r];
+      const words = String(r || '').replace(/[-_]+/g, ' ').trim();
+      return words ? words.charAt(0).toUpperCase() + words.slice(1) : '—';
+    };
     // renderVals runs on every keystroke anywhere in the app, so each list is built
     // only while the view that shows it is actually open.
     const onPeople = s.view === 'people';
@@ -10405,8 +10621,10 @@ class Component extends DCLogic {
       const v = e.target.type === 'checkbox' ? e.target.checked : (up ? e.target.value.toUpperCase() : e.target.value);
       this.setState({ personForm: { ...this.state.personForm, [k]: v } });
     };
+    const isCustomRole = !!s.roleCustomOn
+      || !!(f && f.primary_role && !CREW_ROLES.some(c => c[0] === f.primary_role));
     const personVals = f ? {
-      pfName: f.full_name, pfRole: f.primary_role, pfEngagement: f.engagement, pfPhone: f.phone,
+      pfName: f.full_name, pfRole: isCustomRole ? CUSTOM_ROLE : f.primary_role, pfEngagement: f.engagement, pfPhone: f.phone,
       pfEmail: f.email, pfAddress: f.address, pfBankName: f.bank_name, pfBankAccount: f.bank_account,
       pfBankIfsc: f.bank_ifsc, pfUpi: f.upi_id, pfPan: f.pan, pfSalary: f.monthly_salary,
       pfHourly: f.default_hourly_rate, pfNotes: f.notes, pfActive: !!f.active,
@@ -10825,7 +11043,43 @@ class Component extends DCLogic {
         statusColor: ag.payout_status === 'paid' ? '#0A6E58' : '#8A6D3B',
         markPaid: () => this.setPayoutStatus(ag, 'paid'),
         markOwed: () => this.setPayoutStatus(ag, 'owed'),
-        canReopen: this.state.role === 'admin',
+        canReopen: ag.payout_status === 'paid' && this.state.role === 'admin',
+
+        // Pay panel: the dense stack of TDS, extras and OT lines moved off the row
+        // and into a breakdown that only opens when someone is working the payout.
+        payOpen: s.poOpen === ag.id,
+        togglePay: () => this.togglePayRow(ag),
+        savePay: () => this.savePayout(ag),
+        copyPayTo: () => this.copyPayTo(ag),
+        payToggleLabel: s.poOpen === ag.id ? 'Close'
+          : ag.payout_status === 'paid' ? 'Details' : ag.pay_basis === 'salaried' ? 'Details' : 'Pay',
+        payBtnBg: s.poOpen === ag.id ? 'var(--green)' : 'none',
+        payBtnColor: s.poOpen === ag.id ? '#FFFFFF' : 'var(--green-deep)',
+        saveLabel: ag.payout_status === 'paid' ? 'Update payment' : 'Save as paid',
+        payHint: ag.payout_status === 'paid'
+          ? 'Editing a paid row corrects the transfer record — it does not re-send anything.'
+          : 'Amount is pre-filled net of TDS. Change it if you sent something else.',
+        summaryLabel: [
+          ag.pay_basis === 'fixed' ? 'Fixed fee' : ag.pay_basis === 'salaried' ? 'Salaried'
+            : ag.pay_basis === 'deliverable' ? 'Per deliverable' : 'Hourly',
+          Number(ag.tds_rate || 0) > 0 ? 'net ' + fmtINR(Number(ag.amount_owed || 0) * (1 - Number(ag.tds_rate || 0) / 100)) : '',
+          ag.paid_ref ? 'Ref ' + ag.paid_ref : '',
+        ].filter(Boolean).join(' · '),
+        breakdownVM: [
+          { label: 'Basis', value: ag.pay_basis === 'fixed' ? 'Fixed fee' : ag.pay_basis === 'salaried' ? 'Salaried'
+            : ag.pay_basis === 'deliverable' ? 'Per deliverable' : 'Hourly', color: '#16231F' },
+          Number(ag.hours) > 0 ? { label: 'Hours', value: Number(ag.hours) + ' hrs · ' + (ag.days_logged || 0) + 'd', color: '#16231F' } : null,
+          Number(ag.hours_ot || 0) > 0 ? { label: 'Overtime', value: Number(ag.hours_ot) + ' hrs @' + Number(ag.ot_multiplier || 1.5) + '×', color: '#8A6D3B' } : null,
+          Number(ag.kit_fee || 0) > 0 ? { label: 'Kit fee', value: fmtINR(ag.kit_fee), color: '#16231F' } : null,
+          Number(ag.per_diem || 0) > 0 ? { label: 'Per diem', value: fmtINR(ag.per_diem) + ' × ' + (ag.days_logged || 0) + 'd', color: '#16231F' } : null,
+          { label: 'Gross', value: fmtINR(ag.paid_amount != null ? ag.paid_amount : ag.amount_owed), color: '#16231F' },
+          Number(ag.tds_rate || 0) > 0 ? { label: 'TDS ' + String(ag.tds_section || '').toUpperCase() + ' @' + Number(ag.tds_rate) + '%',
+            value: '−' + fmtINR(Number(ag.amount_owed || 0) * Number(ag.tds_rate || 0) / 100), color: '#8A6D3B' } : null,
+          Number(ag.tds_rate || 0) > 0 ? { label: 'Net payable', value: fmtINR(Number(ag.amount_owed || 0) * (1 - Number(ag.tds_rate || 0) / 100)), color: '#0A6E58' } : null,
+          ag.paid_at ? { label: 'Paid on', value: fmtDay(String(ag.paid_at).slice(0, 10)), color: '#16231F' } : null,
+          ag.paid_mode ? { label: 'Mode', value: RECEIPT_MODE_LABEL[ag.paid_mode] || ag.paid_mode, color: '#16231F' } : null,
+          ag.paid_note ? { label: 'Note', value: ag.paid_note, color: '#5C6864' } : null,
+        ].filter(Boolean),
         remove: () => this.removeAssignment(ag),
         eventLabel: ag.events ? ag.events.couple_names : '—',
         eventDate: ag.events ? fmtDay(ag.events.event_date) : '',
@@ -10890,6 +11144,8 @@ class Component extends DCLogic {
       : this.isDelivered(a.events);
 
     let visiblePayouts = [], owedTotal = 0, paidTotal = 0, pendingCount = 0, tdsTotal = 0;
+    const bulkPayIds = [];
+    const payQ = (s.payoutSearch || '').trim().toLowerCase();
     if (onPayouts) {
       s.payouts.forEach(a => {
         if (!payoutReady(a)) { pendingCount += 1; return; }
@@ -10897,7 +11153,12 @@ class Component extends DCLogic {
         const shown = s.payoutFilter === 'all' ? true
           : s.payoutFilter === 'salaried' ? salaried
           : !salaried && a.payout_status === s.payoutFilter;
-        if (shown) visiblePayouts.push(a);
+        const pp = a.people || {};
+        const hay = [pp.full_name, pp.crew_id, a.events && a.events.couple_names].filter(Boolean).join(' ').toLowerCase();
+        if (shown && (!payQ || hay.includes(payQ))) {
+          visiblePayouts.push(a);
+          if (!salaried && a.payout_status !== 'paid') bulkPayIds.push(a.id);
+        }
         if (salaried) return;
         // A paid row counts its snapshot, so the ledger cannot drift when a rate is
         // edited afterwards. TDS is tracked separately: it is owed to the department,
@@ -10951,10 +11212,12 @@ class Component extends DCLogic {
       'settled': ['#DDEFE8', '#0A6E58'], '0-30': ['#F1F4F3', '#5D6864'],
       '30-60': ['#EFE9DA', '#8A6D3B'], '60+': ['#F7E9E7', '#B4433A'],
     };
-    const moneyVM = moneyRows.filter(r => s.moneyFilter === 'all' ? true
+    const moneyQ = (s.moneySearch || '').trim().toLowerCase();
+    const moneyVM = moneyRows.filter(r => (s.moneyFilter === 'all' ? true
       : s.moneyFilter === 'open' ? r.bal > 1
       : s.moneyFilter === 'settled' ? r.bal <= 1
-      : r.bal > 1 && r.age > 30
+      : r.bal > 1 && r.age > 30)
+      && (!moneyQ || [r.label, r.i.number].filter(Boolean).join(' ').toLowerCase().includes(moneyQ))
     ).map(r => {
       const style = BUCKET_STYLE[r.bk] || BUCKET_STYLE['0-30'];
       const rows = s.receipts.filter(x => x.invoice_id === r.i.id).map(x => ({
@@ -10982,6 +11245,12 @@ class Component extends DCLogic {
         bucketBg: style[0], bucketColor: style[1],
         receiptsVM: rows, hasReceipts: rows.length > 0,
         isOpen: s.moneyOpen === r.i.id,
+        pctWidth: (r.total > 0 ? Math.max(0, Math.min(100, Math.round(r.got / r.total * 100))) : 0) + '%',
+        fullLabel: 'Full balance ' + fmtINR(Math.max(0, r.bal)),
+        halfLabel: 'Half ' + fmtINR(Math.max(0, +(r.bal / 2).toFixed(2))),
+        fillFull: () => this.setState({ rcAmount: r.bal > 0 ? String(+r.bal.toFixed(2)) : '' }),
+        fillHalf: () => this.setState({ rcAmount: r.bal > 0 ? String(+(r.bal / 2).toFixed(2)) : '' }),
+        fillClear: () => this.setState({ rcAmount: '' }),
         toggleLabel: s.moneyOpen === r.i.id ? 'Close' : (r.bal > 1 ? 'Log payment' : 'Receipts'),
         toggle: () => this.toggleMoneyRow(r.i),
         save: () => this.saveReceipt(r.i.id),
@@ -11112,7 +11381,9 @@ class Component extends DCLogic {
       emptyScheduleHint: s.division && s.division !== 'wedding'
         ? 'Nothing here. Create a project under Projects, then set its dates and brief.'
         : 'Nothing here. Create an event under Albums, then set its nature of work and delivery deadline.',
-      emptyPayoutsHint: s.division && s.division !== 'wedding'
+      emptyPayoutsHint: (s.payoutSearch || '').trim()
+        ? 'Nothing matches “' + s.payoutSearch.trim() + '” in this filter. Try Everything, or clear the search.'
+        : s.division && s.division !== 'wedding'
         ? 'Nothing here. Assign crew to a project under Projects → Crew & cost, and their payouts appear in this list.'
         : 'Nothing here. Assign crew to an event under Albums → Crew & cost, and their payouts appear in this list.',
       canRecordsEdit: this.can('recordsEdit'),
@@ -11273,7 +11544,12 @@ class Component extends DCLogic {
       idProofOptions: ID_PROOF_TYPES.map(t => ({ value: t[0], label: t[1] })),
       onPfIdType: pfSet('id_proof_type'), onPfIdNumber: pfSet('id_proof_number', true),
       onPfPassport: pfSet('passport_number', true), onPfPassportExpiry: pfSet('passport_expiry'),
-      onPfName: pfSet('full_name'), onPfRole: pfSet('primary_role'), onPfEngagement: pfSet('engagement'),
+      onPfName: pfSet('full_name'), onPfEngagement: pfSet('engagement'),
+      onPfRole: e => this.pickCrewRole(e.target.value),
+      crewRoleFormOptions: crewRoleOptions.concat([{ value: CUSTOM_ROLE, label: 'Something else…' }]),
+      isCustomRole: isCustomRole,
+      pfRoleCustom: s.roleCustomText || '',
+      onPfRoleCustom: e => this.setRoleCustom(e.target.value),
       onPfPhone: pfSet('phone'), onPfEmail: pfSet('email'), onPfAddress: pfSet('address'),
       onPfBankName: pfSet('bank_name'), onPfBankAccount: pfSet('bank_account'), onPfBankIfsc: pfSet('bank_ifsc', true),
       onPfUpi: pfSet('upi_id'), onPfPan: pfSet('pan', true), onPfSalary: pfSet('monthly_salary'),
@@ -11354,8 +11630,21 @@ class Component extends DCLogic {
 
       payoutsVM: visiblePayouts.map(agRow), payoutFilterVM,
       hasNoPayouts: visiblePayouts.length === 0, payoutStatus: s.payoutStatus,
+      payoutStatusColor: s.payoutStatusOk ? 'var(--green-deep)' : '#B4433A',
+      payoutSearch: s.payoutSearch, onPayoutSearch: e => this.setState({ payoutSearch: e.target.value }),
+      canBulkPay: this.can('payoutsEdit') && bulkPayIds.length > 1,
+      bulkPayLabel: bulkPayIds.length + ' payout' + (bulkPayIds.length === 1 ? '' : 's')
+        + ' in this view are still owed. Clearing them together dates each one today, with no reference — open a row instead to record the UTR.',
+      bulkMarkPaid: () => this.bulkMarkPaid(bulkPayIds),
+      poAmount: s.poAmount, onPoAmount: e => this.setState({ poAmount: e.target.value }),
+      poOn: s.poOn, onPoOn: e => this.setState({ poOn: e.target.value }),
+      poMode: s.poMode, onPoMode: e => this.setState({ poMode: e.target.value }),
+      poModeOptions: RECEIPT_MODES.map(m => ({ value: m[0], label: m[1] })),
+      poRef: s.poRef, onPoRef: e => this.setState({ poRef: e.target.value }),
+      poNote: s.poNote, onPoNote: e => this.setState({ poNote: e.target.value }),
 
       moneyVM, moneyFilterVM, divisionMoneyVM, parentMoneyVM, bucketVM,
+      moneySearch: s.moneySearch, onMoneySearch: e => this.setState({ moneySearch: e.target.value, moneyOpen: null }),
       canMoneyEdit, moneyStatus: s.moneyStatus,
       hasNoMoney: moneyVM.length === 0,
       receivableFmt: fmtINR(receivableTotal),
