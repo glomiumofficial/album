@@ -3655,12 +3655,23 @@
               <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
                 <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">{{ ms.label }}</span>
                 <span style="font-size:11px; color:#67746F">{{ ms.countLabel }}</span>
-                <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ ms.status }}</span>
+                <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ ms.statusIdle }}</span>
                 <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
                   <input type="file" accept="{{ ms.accept }}" multiple="{{ true }}" ref="{{ ms.setInputRef }}" onChange="{{ ms.onFiles }}" style="display:none">
                   <button onClick="{{ ms.trigger }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Upload</button>
                 </sc-if>
               </div>
+              <sc-if value="{{ ms.uploading }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:7px">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px">
+                    <span style="font-size:11px; color:#5D6864; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ ms.status }}</span>
+                    <span style="font-size:15px; font-weight:500; color:var(--green-deep); font-variant-numeric:tabular-nums; flex-shrink:0">{{ ms.pctLabel }}</span>
+                  </div>
+                  <div style="height:5px; background:#E4EDEA; border-radius:3px; overflow:hidden">
+                    <div style="height:100%; background:var(--green); border-radius:3px; transition:width .18s linear; width:{{ ms.barWidth }}"></div>
+                  </div>
+                </div>
+              </sc-if>
               <sc-if value="{{ ms.isEmpty }}" hint-placeholder-val="{{ true }}">
                 <span style="font-size:12px; color:#67746F; line-height:1.5">{{ ms.emptyHint }}</span>
               </sc-if>
@@ -3669,6 +3680,9 @@
                   <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px; overflow:hidden">
                     <div ref="{{ mi.setGroundRef }}" style="aspect-ratio:1; display:grid; place-items:center; overflow:hidden; padding:{{ mi.pad }}">
                       <img ref="{{ mi.setImgRef }}" alt="{{ mi.name }}" style="width:100%; height:100%; object-fit:{{ mi.fit }}; display:none">
+                      <sc-if value="{{ mi.isMotion }}" hint-placeholder-val="{{ false }}">
+                        <video ref="{{ mi.setVideoRef }}" muted="{{ true }}" loop="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" preload="metadata" tabIndex="-1" style="width:100%; height:100%; object-fit:cover; display:block; background:#000; pointer-events:none"></video>
+                      </sc-if>
                       <sc-if value="{{ mi.isVideo }}" hint-placeholder-val="{{ false }}">
                         <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Film</span>
                       </sc-if>
@@ -4360,12 +4374,12 @@ const DIVISION_NOTE = {
   digital: 'Social handling, post sets and always-on content.',
   press: 'Press conferences, launches and corporate coverage.',
 };
-const MEDIA_SECTIONS = [['logo', 'Logo suite'], ['social', 'Social posts'], ['banner', 'Banners & outdoor'], ['film', 'Films & reels'], ['print', 'Print & packaging']];
+const MEDIA_SECTIONS = [['logo', 'Logo suite'], ['social', 'Social posts'], ['banner', 'Banners & outdoor'], ['film', 'Films & reels'], ['motion', 'Motion graphics'], ['print', 'Print & packaging']];
 // A digital client delivers a different set — hoardings and packaging are a
 // branding job, not an always-on social account. The section keys are fixed by
 // a database constraint, so these reuse existing keys under the names digital
 // work actually uses.
-const MEDIA_SECTIONS_DIGITAL = [['social', 'Static posts & grid'], ['film', 'Reels & video'], ['banner', 'Ad creatives'], ['guideline', 'Caption & brand guidelines']];
+const MEDIA_SECTIONS_DIGITAL = [['social', 'Static posts & grid'], ['film', 'Reels & video'], ['motion', 'Motion graphics'], ['banner', 'Ad creatives'], ['guideline', 'Caption & brand guidelines']];
 const RECEIPT_MODES = [['bank', 'Bank transfer'], ['upi', 'UPI'], ['cheque', 'Cheque'], ['cash', 'Cash'], ['card', 'Card'], ['other', 'Other']];
 const RECEIPT_MODE_LABEL = RECEIPT_MODES.reduce((m, x) => { m[x[0]] = x[1]; return m; }, {});
 
@@ -4599,7 +4613,7 @@ class Component extends DCLogic {
     linkProjects: [], linkPick: '',
     editProjClient: '', editProjTitle: '', editSector: '', editTagline: '', editBrief: '',
     paletteDraft: [], fontDraft: [], brandStatus: '',
-    projectMedia: [], projMediaStatus: {},
+    projectMedia: [], projMediaStatus: {}, projMediaProgress: {},
     current: null, media: [], detailsStatus: '', uploadStatus: '', videoUploadStatus: '',
     videoProgress: null, videoUploadName: '', videoUploadError: false,
     editCouple: '', editDate: '', editTaken: '', editDelivered: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
@@ -5010,6 +5024,7 @@ class Component extends DCLogic {
     if (/taken_date|delivered_date/.test(m)) return 'Run album-system/project-dates-schema.sql in Supabase — the taken_date / delivered_date columns do not exist yet.';
     if (/production_status_check/.test(m)) return 'Run album-system/planning-stage.sql in Supabase — the database does not allow the Planning stage yet.';
     if (/work_nature/.test(m)) return 'Run album-system/projects-schema.sql in Supabase (latest version) — the work_nature column is missing on projects.';
+    if (/project_media_section_check/.test(m)) return 'Run album-system/project-media-motion.sql in Supabase — the database does not allow the Motion graphics section yet.';
     if (/relation "?projects"?|project_media/.test(m)) return 'Run album-system/projects-schema.sql in Supabase — the projects tables do not exist yet.';
     return m;
   }
@@ -5211,7 +5226,7 @@ class Component extends DCLogic {
       fontDraft: this.asList(pr.brand_fonts).map(f => ({ id: Date.now() + Math.random(), name: f.name || '', role: f.role || '', google: f.google || '', line: f.line || '' })),
       detailsStatus: '', brandStatus: '', clientStatus: '',
       editorTab: this.firstEditorTab(),
-      projectMedia: [], projMediaStatus: {},
+      projectMedia: [], projMediaStatus: {}, projMediaProgress: {},
       assignments: [], costing: null, agEdits: {}, crewStatus: '',
       eventDays: [], dayDate: pr.start_date || '', dayHours: {}, dayStatus: '',
       afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
@@ -5273,32 +5288,69 @@ class Component extends DCLogic {
     if (!error) this.setState({ projectMedia: data || [] });
   }
 
-  async uploadProjectMedia(section, file) {
-    if (this.albumLocked()) return;
-    const kind = section === 'film' ? 'video' : 'photo';
-    this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: 'Uploading…' } });
+  setProjMedia(section, patch) {
+    const s = this.state, next = {};
+    if ('status' in patch) next.projMediaStatus = { ...s.projMediaStatus, [section]: patch.status };
+    if ('progress' in patch) next.projMediaProgress = { ...s.projMediaProgress, [section]: patch.progress };
+    this.setState(next);
+  }
+
+  // Files go up one at a time: a percentage can only honestly describe one
+  // transfer, and a dropped connection then costs one file rather than five.
+  async uploadProjectMediaBatch(section, files) {
+    if (this.albumLocked() || !files.length) return;
+    for (let i = 0; i < files.length; i++) {
+      const prefix = files.length > 1 ? (i + 1) + ' of ' + files.length + ' · ' : '';
+      const ok = await this.uploadProjectMedia(section, files[i], prefix);
+      if (!ok) break;
+    }
+    setTimeout(() => this.setProjMedia(section, { status: '', progress: null }), 2500);
+  }
+
+  async uploadProjectMedia(section, file, prefix) {
+    if (this.albumLocked()) return false;
+    const kind = (section === 'film' || section === 'motion') ? 'video' : 'photo';
+    const label = prefix || '';
+    this.setProjMedia(section, { status: label + file.name, progress: 0 });
     try {
-      let url, urlGrid = null;
+      let url, urlGrid = null, thumbUrl = null;
+      const onProg = (pct, loaded, total) => this.setProjMedia(section, {
+        progress: pct,
+        status: label + (pct >= 100 ? 'finishing on the server…' : this.fmtBytes(loaded) + ' of ' + this.fmtBytes(total)),
+      });
       if (kind === 'photo') {
-        const set = await this.uploadPhotoSet(file);
+        const set = await this.uploadPhotoSet(file, onProg);
         url = set.url; urlGrid = set.url_grid;
       } else {
-        url = await this.uploadFile(file, 'film');
+        const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+        // Same split as album films: past 20 MB the resumable path survives a
+        // dropped connection, and both report bytes as they go.
+        url = file.size > 20 * 1024 * 1024
+          ? await this.uploadResumable(file, section, ext, onProg)
+          : await this.uploadBlobWithProgress(file, section, ext, onProg);
+        this.setProjMedia(section, { progress: 100, status: label + 'making cover…' });
+        try {
+          const fr = await this.grabVideoFrame(file, section === 'motion' ? 0.2 : 1);
+          if (fr) thumbUrl = await this.uploadBlob(fr.blob, 'vthumb', fr.ext);
+        } catch (e) { /* a missing poster is survivable — the loop still plays */ }
       }
+      this.setProjMedia(section, { progress: 100, status: label + 'saving…' });
       const count = this.state.projectMedia.filter(m => m.section === section).length;
       // The file is already in the bucket by here — if the row fails to write,
       // say so, or the upload looks like it simply vanished.
       const { error } = await this.sb.from('project_media').insert({
         project_id: this.state.current.id, section, kind, url, url_grid: urlGrid, url_view: url,
-        name: file.name.replace(/\.[^.]+$/, ''), sort_order: count,
+        thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: count,
       });
       if (error) throw new Error('Uploaded, but could not be filed: ' + error.message);
-      this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: 'Done.' } });
+      this.setProjMedia(section, { status: 'Done.', progress: null });
+      await this.loadProjectMedia(this.state.current.id);
+      return true;
     } catch (e) {
-      this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: e.message || 'Upload failed' } });
+      this.setProjMedia(section, { status: e.message || 'Upload failed', progress: null });
+      this.loadProjectMedia(this.state.current.id);
+      return false;
     }
-    this.loadProjectMedia(this.state.current.id);
-    setTimeout(() => this.setState({ projMediaStatus: { ...this.state.projMediaStatus, [section]: '' } }), 2500);
   }
 
   async saveProjectMediaField(item, patch) {
@@ -5552,8 +5604,11 @@ class Component extends DCLogic {
   }
 
   // Original stays untouched for download; grid + view are the delivery tiers.
-  async uploadPhotoSet(file) {
-    const original = await this.uploadFile(file, 'photo');
+  async uploadPhotoSet(file, onProgress) {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const original = onProgress
+      ? await this.uploadBlobWithProgress(file, 'photo', ext, onProgress)
+      : await this.uploadFile(file, 'photo');
     const out = { url: original, url_grid: original, url_view: original };
     try {
       const view = await this.resizeImage(file, 2800, 0.92);
@@ -12664,23 +12719,38 @@ class Component extends DCLogic {
       mediaSectionsVM: this.parentTable() !== 'projects' ? [] : this.mediaSectionsFor(s.current).map(sec => {
         const key = sec[0], label = sec[1];
         const items = s.projectMedia.filter(m => m.section === key);
-        const isLogo = key === 'logo', isFilm = key === 'film';
+        const isLogo = key === 'logo', isFilm = key === 'film', isMotion = key === 'motion';
+        const pct = s.projMediaProgress[key];
         return {
           label, countLabel: items.length ? items.length + (items.length === 1 ? ' item' : ' items') : '',
+          statusIdle: pct == null ? (s.projMediaStatus[key] || '') : '',
           status: s.projMediaStatus[key] || '',
-          accept: isFilm ? 'video/*' : 'image/*',
+          uploading: pct != null,
+          pctLabel: pct == null ? '' : pct + '%',
+          barWidth: (pct == null ? 0 : pct) + '%',
+          accept: isMotion ? 'video/mp4' : isFilm ? 'video/*' : 'image/*',
           isEmpty: items.length === 0,
           emptyHint: isLogo ? 'Primary mark, wordmark, lockups. Flip any tile to a dark ground to show the reversed version.'
             : isFilm ? 'Reels and campaign films.'
+            : isMotion ? 'Looping motion pieces — .mp4 only. They play silently on a loop here and on the project page.'
             : key === 'social' ? 'Posts and grid sets, shown as a square grid.'
             : key === 'banner' ? 'Hoardings and wide artwork, shown full-bleed.'
             : 'Packaging, collateral and guideline pages.',
           setInputRef: el => { this.projInputs = this.projInputs || {}; this.projInputs[key] = el; },
           trigger: () => { const el = this.projInputs && this.projInputs[key]; if (el) el.click(); },
-          onFiles: e => { const fs = Array.from(e.target.files || []); e.target.value = ''; fs.forEach(f => this.uploadProjectMedia(key, f)); },
+          onFiles: e => { const fs = Array.from(e.target.files || []); e.target.value = ''; this.uploadProjectMediaBatch(key, fs); },
           itemsVM: items.map(m => ({
             name: m.name || '',
-            isVideo: m.kind === 'video',
+            isMotion: isMotion,
+            isVideo: m.kind === 'video' && !isMotion,
+            setVideoRef: el => {
+              if (!el) return;
+              el.muted = true; el.loop = true;
+              if (m.thumb_url) el.poster = m.thumb_url;
+              if (el.getAttribute('src') !== m.url) el.src = m.url;
+              const go = () => { try { el.play(); } catch (e) {} };
+              if (el.readyState >= 2) go(); else el.oncanplay = go;
+            },
             pad: isLogo ? '18%' : '0',
             fit: isLogo ? 'contain' : 'cover',
             canFlipGround: isLogo,

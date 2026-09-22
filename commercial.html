@@ -245,6 +245,26 @@
       </div>
     </sc-if>
 
+    <sc-if value="{{ hasMotion }}" hint-placeholder-val="{{ false }}">
+      <div id="sec-motion" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nMotion }}</span>
+        <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Motion graphics</h2>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#9AA6A2">{{ motionCountLabel }}</span>
+      </div>
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(16px,3vh,30px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(16px,2.4vw,32px); grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))">
+        <sc-for list="{{ motionVM }}" as="mg" hint-placeholder-count="2">
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div style="background:#000; overflow:hidden">
+              <video ref="{{ mg.setLoopRef }}" muted="{{ true }}" loop="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" preload="auto" tabIndex="-1" style="width:100%; aspect-ratio:16 / 9; object-fit:cover; display:block; pointer-events:none"></video>
+            </div>
+            <sc-if value="{{ mg.hasName }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">{{ mg.name }}</span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ hasBanners }}" hint-placeholder-val="{{ false }}">
       <div id="sec-banners" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nBanners }}</span>
@@ -580,7 +600,7 @@ class Component extends DCLogic {
   // ---- Lightbox -----------------------------------------------------------
 
   // One flat list across every section, so the arrows walk the whole project.
-  viewable() { return this.state.media.filter(m => m.url); }
+  viewable() { return this.state.media.filter(m => m.url && m.section !== 'motion'); }
 
   openLightbox(id) {
     const list = this.viewable();
@@ -646,6 +666,15 @@ class Component extends DCLogic {
         // static poster, and it costs nothing on touch where hover never fires.
         hoverIn: () => { const el = this._films && this._films[m.id]; if (el) { try { el.play(); } catch (e) {} } },
         hoverOut: () => { const el = this._films && this._films[m.id]; if (el) { el.pause(); el.currentTime = 0; } },
+        // Motion graphics are ambient: silent, looping, running as soon as the
+        // browser lets them. No poster and no click — the loop is the artwork.
+        setLoopRef: el => {
+          if (!el) return;
+          el.muted = true; el.loop = true;
+          if (el.getAttribute('src') !== m.url) el.src = m.url;
+          const go = () => { try { el.play(); } catch (e) {} };
+          if (el.readyState >= 2) go(); else el.oncanplay = go;
+        },
         setGroundRef: el => { if (el) el.style.background = m.ground === 'dark' ? '#111C19' : '#FFFFFF'; },
         setLabelRef: el => { if (el) el.style.color = m.ground === 'dark' ? 'rgba(255,255,255,.6)' : '#9AA6A2'; },
       };
@@ -694,6 +723,7 @@ class Component extends DCLogic {
     const filmsVM = this.mediaVM('film');
     const filmFeatureVM = filmsVM.slice(0, 1);
     const filmsRestVM = filmsVM.slice(1);
+    const motionVM = this.mediaVM('motion');
 
     // Sections are numbered by what this project actually has, so a project
     // with no films never shows a gap in the sequence.
@@ -703,6 +733,7 @@ class Component extends DCLogic {
       ['colour', paletteVM.length > 0, 'Colour', '#sec-colour'],
       ['type', fontsVM.length > 0, 'Type', '#sec-type'],
       ['films', filmsVM.length > 0, 'Films', '#sec-films'],
+      ['motion', motionVM.length > 0, 'Motion', '#sec-motion'],
       ['banners', bannersVM.length > 0, 'Banners', '#sec-banners'],
       ['social', socialVM.length > 0, 'Social', '#sec-social'],
       ['print', printVM.length > 0, 'Print', '#sec-print'],
@@ -746,6 +777,7 @@ class Component extends DCLogic {
       navVM: present.map(x => ({ label: x[2], href: x[3] })),
       nBrief: num.brief, nIdentity: num.identity, nColour: num.colour, nType: num.type,
       nFilms: num.films, nBanners: num.banners, nSocial: num.social, nPrint: num.print,
+      nMotion: num.motion,
       setCoverRef: el => {
         const u = p.cover_url_view || p.cover_url;
         if (el && u) { el.src = u; el.style.display = 'block'; }
@@ -765,6 +797,8 @@ class Component extends DCLogic {
       printCountLabel: count(printVM.length, 'piece', 'pieces'),
       filmFeatureVM, filmsRestVM, hasFilms: filmsVM.length > 0,
       filmCountLabel: count(filmsVM.length, 'film', 'films'),
+      motionVM, hasMotion: motionVM.length > 0,
+      motionCountLabel: count(motionVM.length, 'loop', 'loops'),
 
       lightboxOpen: s.lightboxOpen,
       lightboxName: cur ? (cur.name || cur.caption || '') : '',
