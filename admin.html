@@ -5121,6 +5121,7 @@ class Component extends DCLogic {
     const { error } = await this.sb.from('projects').update({ divisions: set }).eq('id', pr.id);
     if (error) { this.setState({ detailsStatus: error.message }); return; }
     this.setState({ current: { ...pr, divisions: set }, detailsStatus: 'Removed from ' + label + '.' });
+    setTimeout(() => this.setState({ detailsStatus: '' }), 4000);
     this.loadProjects();
   }
 
@@ -6498,6 +6499,7 @@ class Component extends DCLogic {
   }
 
   async deleteWorkDay(w) {
+    if (!window.confirm('Delete this work day? What was agreed and whether it was paid goes with it.')) return;
     const { error } = await this.sb.from('talent_work').delete().eq('id', w.id);
     if (error) { this.setState({ workStatus: error.message }); return; }
     this.loadTalentWork();
@@ -6642,6 +6644,7 @@ class Component extends DCLogic {
   }
 
   async deleteFeedback(f) {
+    if (!window.confirm('Delete this feedback record? If it was already sent, the record of sending it goes too.')) return;
     const { error } = await this.sb.from('talent_feedback').delete().eq('id', f.id);
     if (error) { this.setState({ feedbackStatus: error.message }); return; }
     this.loadTalentFeedback();
@@ -6825,6 +6828,8 @@ class Component extends DCLogic {
     const s = this.state;
     const list = s.emailTemplates || [];
     if (list.length < 2) { this.setState({ templateStatus: 'This is the only template — edit it rather than deleting it.' }); return; }
+    const open = list.find(t => t.id === s.templateId);
+    if (!window.confirm('Delete the template “' + ((open && open.name) || 'this one') + '”? Nothing that was already sent changes.')) return;
     const { error } = await this.sb.from('email_templates').delete().eq('id', s.templateId);
     if (error) { this.setState({ templateStatus: error.message }); return; }
     this.setState({ templateId: null, draftHtml: '', draftSubject: '', templateDirty: false });
@@ -7045,6 +7050,7 @@ class Component extends DCLogic {
       bookingTemplateId: id,
       bookingStatus: id ? 'Saved. Sending now goes straight from this page.' : 'Cleared. The Send button will open your mail app instead.',
     });
+    setTimeout(() => this.setState({ bookingStatus: '' }), 5000);
   }
 
   bookingTemplate() {
@@ -7165,6 +7171,7 @@ class Component extends DCLogic {
   }
 
   async deleteBooking(b) {
+    if (!window.confirm('Delete this booking? The record that they were invited goes with it.')) return;
     const { error } = await this.sb.from('talent_bookings').delete().eq('id', b.id);
     if (error) { this.setState({ talentStatus: error.message }); return; }
     this.loadTalentBookings();
@@ -7854,11 +7861,21 @@ class Component extends DCLogic {
     };
     // HR proposes, an admin decides. The record itself is untouched until then.
     if (!this.can('peopleApprove')) {
-      const ok = await this.submitPersonRequest(this.state.personId ? 'update' : 'create', row, this.state.personId);
+      const isNew = !this.state.personId;
+      const ok = await this.submitPersonRequest(isNew ? 'create' : 'update', row, this.state.personId);
       if (ok) {
-        this.setState({ personStatus: 'Sent to an admin for approval.', personMode: this.state.personId ? 'view' : 'edit' });
+        // A new person has no record to go back to, so the form empties itself and is
+        // ready for the next one. An edit keeps its fields — the record still exists.
+        this.setState(isNew
+          ? {
+              personForm: { ...EMPTY_PERSON }, personId: null, personMode: 'edit',
+              roleCustomOn: false, roleCustomText: '', craftCustomOn: false, craftCustomText: '',
+              personDocs: [], personAvail: [], personRates: [],
+              personStatus: 'Submitted for approval. The fields are cleared for the next one.',
+            }
+          : { personStatus: 'Sent to an admin for approval.', personMode: 'view' });
         this.loadChangeRequests();
-        setTimeout(() => this.setState({ personStatus: '' }), 4000);
+        setTimeout(() => this.setState({ personStatus: '' }), 6000);
       }
       return;
     }
@@ -7999,7 +8016,8 @@ class Component extends DCLogic {
       sort: this.state.personRates.length,
     });
     if (error) { this.setState({ personStatus: error.message }); return; }
-    this.setState({ rateLabel: '', rateAmount: '', personStatus: '' });
+    this.setState({ rateLabel: '', rateAmount: '', personStatus: 'Rate added.' });
+    setTimeout(() => this.setState({ personStatus: '' }), 2500);
     this.loadRates(pid);
   }
 
@@ -8081,7 +8099,8 @@ class Component extends DCLogic {
       from_date: s.expFrom || null, to_date: s.expTo || null,
     });
     if (error) { this.setState({ careerStatus: this.careerHint(error.message) }); return; }
-    this.setState({ expEmployer: '', expRole: '', expFrom: '', expTo: '', careerStatus: '' });
+    this.setState({ expEmployer: '', expRole: '', expFrom: '', expTo: '', careerStatus: 'Added to their history.' });
+    setTimeout(() => this.setState({ careerStatus: '' }), 2500);
     this.loadExperience(pid);
   }
 
@@ -8227,7 +8246,8 @@ class Component extends DCLogic {
         ? 'Run album-system/payroll-hardening.sql in Supabase to track advances.' : error.message });
       return;
     }
-    this.setState({ advAmount: '', advNote: '', advOn: '', payStatus: '' });
+    this.setState({ advAmount: '', advNote: '', advOn: '', payStatus: 'Advance recorded.' });
+    setTimeout(() => this.setState({ payStatus: '' }), 2500);
     this.loadAdvances(pid);
   }
 
@@ -8315,6 +8335,7 @@ class Component extends DCLogic {
       return;
     }
     this.setState({
+      payFormOpen: false,
       payPeriod: '', payGross: '', payDeductions: '', payPaidOn: '', payNote: '', payRef: '',
       slip: { ...EMPTY_SLIP }, payStatus: 'Recorded.',
     });
@@ -8436,7 +8457,8 @@ class Component extends DCLogic {
       { person_id: pid, day: this.state.availDay, status: this.state.availStatus, note: this.state.availNote || null },
       { onConflict: 'person_id,day' });
     if (error) { this.setState({ personStatus: error.message }); return; }
-    this.setState({ availDay: '', availNote: '' });
+    this.setState({ availDay: '', availNote: '', personStatus: 'Day marked.' });
+    setTimeout(() => this.setState({ personStatus: '' }), 2500);
     this.loadAvail(pid);
   }
 
@@ -8612,7 +8634,8 @@ class Component extends DCLogic {
       rate: parseFloat(s.dlRate) || 0,
     });
     if (error) { this.setState({ dlStatus: error.message }); return; }
-    this.setState({ dlLabel: '', dlQty: '1', dlRate: '', dlStatus: '' });
+    this.setState({ dlLabel: '', dlQty: '1', dlRate: '', dlStatus: 'Line added.' });
+    setTimeout(() => this.setState({ dlStatus: '' }), 2500);
     this.reloadCrew(this.rowParentId(ag));
   }
 
