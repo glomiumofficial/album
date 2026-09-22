@@ -251,11 +251,11 @@
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Motion graphics</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#9AA6A2">{{ motionCountLabel }}</span>
       </div>
-      <div style="max-width:1560px; margin:0 auto; padding:clamp(16px,3vh,30px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(16px,2.4vw,32px); grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))">
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(16px,3vh,30px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(16px,2.4vw,32px); grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); justify-content:start">
         <sc-for list="{{ motionVM }}" as="mg" hint-placeholder-count="2">
-          <div style="display:flex; flex-direction:column; gap:12px">
-            <div style="background:#000; overflow:hidden">
-              <video ref="{{ mg.setLoopRef }}" muted="{{ true }}" loop="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" preload="auto" tabIndex="-1" style="width:100%; aspect-ratio:16 / 9; object-fit:cover; display:block; pointer-events:none"></video>
+          <div style="display:flex; flex-direction:column; gap:12px; max-width:420px">
+            <div onClick="{{ mg.open }}" style="background:#000; overflow:hidden; cursor:zoom-in">
+              <video ref="{{ mg.setLoopRef }}" muted="{{ true }}" loop="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" preload="auto" tabIndex="-1" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; pointer-events:none"></video>
             </div>
             <sc-if value="{{ mg.hasName }}" hint-placeholder-val="{{ false }}">
               <span style="font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">{{ mg.name }}</span>
@@ -291,10 +291,10 @@
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Social</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#9AA6A2">{{ socialCountLabel }}</span>
       </div>
-      <div style="max-width:1560px; margin:0 auto; padding:clamp(16px,3vh,30px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(6px,.9vw,12px); grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr))">
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(20px,3.4vh,36px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(14px,1.9vw,30px); grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr))">
         <sc-for list="{{ socialVM }}" as="so" hint-placeholder-count="6">
           <div onClick="{{ so.open }}" style="position:relative; overflow:hidden; background:#F3F6F5; cursor:zoom-in">
-            <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" loading="lazy" style="width:100%; aspect-ratio:1; object-fit:cover; display:block; transition:transform .6s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.04)">
+            <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" loading="lazy" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; transition:transform .6s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.04)">
           </div>
         </sc-for>
       </div>
@@ -600,7 +600,7 @@ class Component extends DCLogic {
   // ---- Lightbox -----------------------------------------------------------
 
   // One flat list across every section, so the arrows walk the whole project.
-  viewable() { return this.state.media.filter(m => m.url && m.section !== 'motion'); }
+  viewable() { return this.state.media.filter(m => m.url); }
 
   openLightbox(id) {
     const list = this.viewable();
@@ -670,10 +670,23 @@ class Component extends DCLogic {
         // browser lets them. No poster and no click — the loop is the artwork.
         setLoopRef: el => {
           if (!el) return;
-          el.muted = true; el.loop = true;
-          if (el.getAttribute('src') !== m.url) el.src = m.url;
-          const go = () => { try { el.play(); } catch (e) {} };
-          if (el.readyState >= 2) go(); else el.oncanplay = go;
+          // Order matters: muted and loop must be set before the source, or the
+          // browser judges it a sound-on video and refuses to autoplay at all.
+          el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
+          // The light re-encode plays; the master stays for the lightbox.
+          const src = m.url_grid || m.url;
+          if (el.getAttribute('src') !== src) { el.setAttribute('src', src); el.load(); }
+          const go = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+          el.oncanplay = go; el.onstalled = go; el.onpause = go;
+          // A loop that fires 'ended' has stalled rather than looped — rewind it.
+          el.onended = () => { el.currentTime = 0; go(); };
+          go();
+          if (window.IntersectionObserver && !el._io) {
+            el._io = new IntersectionObserver(es => es.forEach(e => {
+              if (e.isIntersecting) go(); else { el.onpause = null; el.pause(); el.onpause = go; }
+            }), { threshold: 0.1 });
+            el._io.observe(el);
+          }
         },
         setGroundRef: el => { if (el) el.style.background = m.ground === 'dark' ? '#111C19' : '#FFFFFF'; },
         setLabelRef: el => { if (el) el.style.color = m.ground === 'dark' ? 'rgba(255,255,255,.6)' : '#9AA6A2'; },

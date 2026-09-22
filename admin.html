@@ -3678,7 +3678,7 @@
               <div style="display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
                 <sc-for list="{{ ms.itemsVM }}" as="mi" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px; overflow:hidden">
-                    <div ref="{{ mi.setGroundRef }}" style="aspect-ratio:1; display:grid; place-items:center; overflow:hidden; padding:{{ mi.pad }}">
+                    <div ref="{{ mi.setGroundRef }}" style="aspect-ratio:{{ mi.tileAspect }}; display:grid; place-items:center; overflow:hidden; padding:{{ mi.pad }}">
                       <img ref="{{ mi.setImgRef }}" alt="{{ mi.name }}" style="width:100%; height:100%; object-fit:{{ mi.fit }}; display:none">
                       <sc-if value="{{ mi.isMotion }}" hint-placeholder-val="{{ false }}">
                         <video ref="{{ mi.setVideoRef }}" muted="{{ true }}" loop="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" preload="metadata" tabIndex="-1" style="width:100%; height:100%; object-fit:cover; display:block; background:#000; pointer-events:none"></video>
@@ -5333,6 +5333,13 @@ class Component extends DCLogic {
           const fr = await this.grabVideoFrame(file, section === 'motion' ? 0.2 : 1);
           if (fr) thumbUrl = await this.uploadBlob(fr.blob, 'vthumb', fr.ext);
         } catch (e) { /* a missing poster is survivable — the loop still plays */ }
+        if (section === 'motion') {
+          this.setProjMedia(section, { progress: 0, status: label + 'compressing the loop…' });
+          const small = await this.compressMotionLoop(file, p => this.setProjMedia(section, {
+            progress: p, status: label + 'compressing the loop — plays at ' + p + '%',
+          }));
+          if (small) urlGrid = await this.uploadBlob(small.blob, 'motion-loop', small.ext);
+        }
       }
       this.setProjMedia(section, { progress: 100, status: label + 'saving…' });
       const count = this.state.projectMedia.filter(m => m.section === section).length;
@@ -5604,6 +5611,69 @@ class Component extends DCLogic {
   }
 
   // Original stays untouched for download; grid + view are the delivery tiers.
+
+  // Playback copy for a motion loop. The page should not pull a 40 MB master
+  // down to show five seconds of animation — but the master is what the
+  // lightbox plays and what downloads, so nothing lossy reaches the client.
+  // Re-encode runs in real time off a canvas, so it costs the clip's duration.
+  async compressMotionLoop(file, onProg) {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return null;
+    // WebM playback cannot be relied on in Safari, so mp4 out or nothing —
+    // a loop that will not play is worse than a heavy one that does.
+    const type = ['video/mp4;codecs=avc1.4d0028', 'video/mp4'].find(t => {
+      try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; }
+    });
+    if (!type) return null;
+    const objUrl = URL.createObjectURL(file);
+    let v = null, raf = 0;
+    try {
+      v = document.createElement('video');
+      v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
+      await new Promise((res, rej) => {
+        v.onloadedmetadata = res;
+        v.onerror = () => rej(new Error('unreadable'));
+        setTimeout(() => rej(new Error('timed out')), 20000);
+      });
+      const dur = v.duration || 0;
+      if (!dur || dur > 40) return null; // a long film is not a loop
+      const w0 = v.videoWidth, h0 = v.videoHeight;
+      if (!w0 || !h0) return null;
+      // 1080 on the long edge is the most an Instagram-sized box ever shows.
+      const scale = Math.min(1, 1080 / Math.max(w0, h0));
+      const w = Math.max(2, Math.round(w0 * scale / 2) * 2);
+      const h = Math.max(2, Math.round(h0 * scale / 2) * 2);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      const rec = new MediaRecorder(c.captureStream(30), { mimeType: type, videoBitsPerSecond: 3500000 });
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      const stopped = new Promise(res => { rec.onstop = res; });
+      rec.start();
+      await v.play();
+      const draw = () => {
+        try { ctx.drawImage(v, 0, 0, w, h); } catch (e) {}
+        if (onProg) onProg(Math.min(99, Math.round((v.currentTime / dur) * 100)));
+        raf = requestAnimationFrame(draw);
+      };
+      draw();
+      await new Promise(res => { v.onended = res; setTimeout(res, (dur + 8) * 1000); });
+      cancelAnimationFrame(raf); raf = 0;
+      rec.stop();
+      await stopped;
+      const blob = new Blob(chunks, { type: 'video/mp4' });
+      // No point shipping a "small" copy that is bigger than the master.
+      if (!blob.size || blob.size > file.size * 0.9) return null;
+      return { blob, ext: 'mp4' };
+    } catch (e) {
+      return null;
+    } finally {
+      if (raf) cancelAnimationFrame(raf);
+      if (v) { try { v.pause(); } catch (e) {} v.removeAttribute('src'); }
+      URL.revokeObjectURL(objUrl);
+    }
+  }
+
   async uploadPhotoSet(file, onProgress) {
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
     const original = onProgress
@@ -12732,7 +12802,7 @@ class Component extends DCLogic {
           isEmpty: items.length === 0,
           emptyHint: isLogo ? 'Primary mark, wordmark, lockups. Flip any tile to a dark ground to show the reversed version.'
             : isFilm ? 'Reels and campaign films.'
-            : isMotion ? 'Looping motion pieces — .mp4 only. They play silently on a loop here and on the project page.'
+            : isMotion ? 'Looping motion pieces — .mp4 only, shown in an Instagram post box (4:5). A light copy is made for silent looping; the file you upload is what the lightbox plays and what downloads.'
             : key === 'social' ? 'Posts and grid sets, shown as a square grid.'
             : key === 'banner' ? 'Hoardings and wide artwork, shown full-bleed.'
             : 'Packaging, collateral and guideline pages.',
@@ -12743,13 +12813,19 @@ class Component extends DCLogic {
             name: m.name || '',
             isMotion: isMotion,
             isVideo: m.kind === 'video' && !isMotion,
+            tileAspect: isMotion ? '4 / 5' : '1',
             setVideoRef: el => {
               if (!el) return;
-              el.muted = true; el.loop = true;
-              if (m.thumb_url) el.poster = m.thumb_url;
-              if (el.getAttribute('src') !== m.url) el.src = m.url;
-              const go = () => { try { el.play(); } catch (e) {} };
-              if (el.readyState >= 2) go(); else el.oncanplay = go;
+              // Order matters: muted and loop must be set before the source, or
+              // the browser judges it a sound-on video and refuses to autoplay.
+              el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
+              const src = m.url_grid || m.url;
+              if (el.getAttribute('src') !== src) { el.setAttribute('src', src); el.load(); }
+              const go = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+              el.oncanplay = go; el.onstalled = go; el.onpause = go;
+              // A loop that ends without looping is stuck; nudge it back.
+              el.onended = () => { el.currentTime = 0; go(); };
+              go();
             },
             pad: isLogo ? '18%' : '0',
             fit: isLogo ? 'contain' : 'cover',
