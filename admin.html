@@ -1762,6 +1762,9 @@
           <div style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:6px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
             <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">Paid out</span>
             <span style="font-size:26px; font-weight:400; color:var(--green-deep)">{{ paidTotal }}</span>
+            <sc-if value="{{ hasManualTotal }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:10px; color:#67746F">{{ manualTotalLabel }}</span>
+            </sc-if>
           </div>
           <sc-if value="{{ hasTdsTotal }}" hint-placeholder-val="{{ false }}">
             <div style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:6px; padding:20px 22px; border:1px solid var(--line); border-radius:4px; background:#FAF7F0">
@@ -1786,6 +1789,128 @@
             <button onClick="{{ bulkMarkPaid }}" style="margin-left:auto; padding:8px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Mark all shown paid</button>
           </div>
         </sc-if>
+
+        <sc-if value="{{ hasCrewTally }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:8px">
+            <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">Per crew member</span>
+            <sc-for list="{{ crewTallyVM }}" as="ct" hint-placeholder-count="0">
+              <div style="display:grid; grid-template-columns:minmax(150px,1.4fr) repeat(3, minmax(110px,1fr)); gap:14px; align-items:start; padding:12px 14px; border:1px solid var(--line); border-radius:3px">
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-size:13px; color:#16231F">{{ ct.name }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ ct.crewId }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Owed from shoots</span>
+                  <span style="font-size:14px; color:{{ ct.owedColor }}; font-variant-numeric:tabular-nums">{{ ct.owedFmt }}</span>
+                  <span style="font-size:10px; color:#67746F">{{ ct.owedNote }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Paid on shoots</span>
+                  <span style="font-size:14px; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ ct.paidFmt }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:3px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Paid by hand</span>
+                  <span style="font-size:14px; color:{{ ct.handColor }}; font-variant-numeric:tabular-nums">{{ ct.handFmt }}</span>
+                  <span style="font-size:10px; color:#67746F; text-wrap:pretty">{{ ct.handNote }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="display:flex; flex-direction:column; gap:12px; padding:16px 18px; border:1px solid var(--line); border-radius:4px; background:#FCFDFC">
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+            <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">Paid by hand</span>
+            <span style="font-size:11px; color:#67746F">{{ manualCountLabel }}</span>
+            <span style="font-size:11px; color:{{ mpStatusColor }}">{{ mpStatus }}</span>
+            <sc-if value="{{ canPayoutsEdit }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ toggleManualForm }}" style="margin-left:auto; padding:8px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ mpFormToggleLabel }}</button>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ mpFormOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid var(--line); border-radius:3px; background:#fff">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; align-items:end">
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Crew member
+                  <select value="{{ mpPerson }}" onChange="{{ onMpPerson }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                    <sc-for list="{{ mpPersonOptions }}" as="mo" hint-placeholder-count="3">
+                      <option value="{{ mo.value }}">{{ mo.label }}</option>
+                    </sc-for>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">What it was for
+                  <select value="{{ mpReason }}" onChange="{{ onMpReason }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                    <sc-for list="{{ mpReasonOptions }}" as="mr" hint-placeholder-count="9">
+                      <option value="{{ mr.value }}">{{ mr.label }}</option>
+                    </sc-for>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Amount (₹)
+                  <input value="{{ mpAmount }}" onChange="{{ onMpAmount }}" inputmode="decimal" placeholder="0" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Paid on
+                  <input type="date" value="{{ mpOn }}" onChange="{{ onMpOn }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Mode
+                  <select value="{{ mpMode }}" onChange="{{ onMpMode }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                    <sc-for list="{{ mpModeOptions }}" as="mm" hint-placeholder-count="4">
+                      <option value="{{ mm.value }}">{{ mm.label }}</option>
+                    </sc-for>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Against
+                  <select value="{{ mpLink }}" onChange="{{ onMpLink }}" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                    <sc-for list="{{ mpShootOptions }}" as="ms" hint-placeholder-count="2">
+                      <option value="{{ ms.value }}">{{ ms.label }}</option>
+                    </sc-for>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Reference
+                  <input value="{{ mpRef }}" onChange="{{ onMpRef }}" placeholder="UTR / cheque no." style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:4px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Note
+                  <input value="{{ mpNote }}" onChange="{{ onMpNote }}" placeholder="Optional" style="padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+                </label>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+                <button onClick="{{ saveManualPay }}" style="padding:10px 20px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ mpSaveLabel }}</button>
+                <button onClick="{{ toggleManualForm }}" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer">Cancel</button>
+                <span style="font-size:11px; color:#67746F; text-wrap:pretty">Money already handed over — a trial shoot, a day nobody was assigned to, travel paid on the spot. It lands on their pay record straight away.</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasManualPays }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <sc-for list="{{ manualPaysVM }}" as="mp" hint-placeholder-count="0">
+                <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px 14px; border:1px solid var(--line); border-radius:3px; background:#fff">
+                  <div style="display:flex; flex-direction:column; gap:3px; min-width:150px">
+                    <span style="font-size:13px; color:#16231F">{{ mp.name }}</span>
+                    <span style="font-size:11px; color:#5C6864">{{ mp.crewId }} · {{ mp.dateLabel }}</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:3px; min-width:150px">
+                    <span style="font-size:12px; color:#5D6864">{{ mp.reasonLabel }}</span>
+                    <span style="font-size:11px; color:#67746F">{{ mp.againstLabel }}</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:2px; margin-left:auto; text-align:right">
+                    <span style="font-size:14px; color:#16231F; font-variant-numeric:tabular-nums">{{ mp.amountFmt }}</span>
+                    <span style="font-size:11px; color:#67746F">{{ mp.modeLabel }}</span>
+                  </div>
+                  <sc-if value="{{ mp.hasRef }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11px; color:#67746F">{{ mp.refLabel }}</span>
+                  </sc-if>
+                  <sc-if value="{{ mp.hasNote }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11px; color:#67746F; max-width:200px">{{ mp.note }}</span>
+                  </sc-if>
+                  <sc-if value="{{ canPayoutsEdit }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ mp.edit }}" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5D6864; cursor:pointer" style-hover="border-color:var(--green); color:var(--green-deep)">Edit</button>
+                    <button onClick="{{ mp.remove }}" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#B4433A; cursor:pointer">Delete</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
 
         <sc-if value="{{ hasNoPayouts }}" hint-placeholder-val="{{ true }}">
           <span style="font-size:13px; color:#5C6864">{{ emptyPayoutsHint }}</span>
@@ -4330,6 +4455,21 @@ const PAY_MODES = [
 ];
 const PAY_MODE_LABEL = { hourly: 'Hourly', deliverable: 'Per deliverable', salaried: 'Salaried' };
 
+// Why money went out to a crew member outside the assignment ledger. Kept short
+// and concrete — the list is what someone actually types into a UPI note.
+const MANUAL_PAY_REASONS = [
+  ['trial', 'Trial shoot'],
+  ['shoot', 'Shoot fee'],
+  ['advance', 'Advance against a shoot'],
+  ['travel', 'Travel and food'],
+  ['kit', 'Kit or equipment'],
+  ['extra_day', 'Extra day or overtime'],
+  ['assist', 'Assistant or extra hand'],
+  ['goodwill', 'Bonus or goodwill'],
+  ['other', 'Something else'],
+];
+const MANUAL_PAY_REASON_LABEL = MANUAL_PAY_REASONS.reduce((m, r) => { m[r[0]] = r[1]; return m; }, {});
+
 const ID_PROOF_TYPES = [
   ['', 'National ID — pick one'],
   ['aadhaar', 'Aadhaar'],
@@ -4509,6 +4649,10 @@ class Component extends DCLogic {
     payouts: [], payoutFilter: 'owed', payoutStatus: '', payoutStatusOk: false,
     payoutSearch: '', poOpen: null, poAmount: '', poOn: '', poMode: 'bank',
     poRef: '', poNote: '',
+    manualPays: [], payRoster: [], payEvents: [], payProjects: [], payShoots: [],
+    mpFormOpen: false, mpEditId: null,
+    mpPerson: '', mpReason: 'trial', mpAmount: '', mpOn: '', mpMode: 'bank',
+    mpRef: '', mpNote: '', mpLink: '', mpStatus: '', mpStatusOk: false,
     moneyInvoices: [], receipts: [], invoiceReceipts: [], moneyFilter: 'open', moneySearch: '',
     moneyStatus: '', moneyStatusOk: false, moneyOpen: null, receiptPreview: null,
     spendStatusOk: false, spendSearch: '', spendPanel: 'spend',
@@ -4632,7 +4776,9 @@ class Component extends DCLogic {
     if (view === 'talent') this.loadTalent();
     if (view === 'digital') this.loadDigital();
     if (view === 'approvals') { this.loadChangeRequests(); if (!this.state.people.length) this.loadPeople(); }
-    if (view === 'payouts') { this.loadPayouts(); }
+    if (view === 'payouts') {
+      this.loadPayouts(); this.loadManualPays(); this.loadPayRoster(); this.loadPayJobs();
+    }
     if (view === 'money') { this.loadMoney(); }
     if (view === 'spend') { this.loadSpend(); if (!(this.state.talent || []).length) this.loadTalent(); }
   }
@@ -8567,6 +8713,142 @@ class Component extends DCLogic {
     this.setState({ payouts: norm, payoutStatus: '' });
   }
 
+  // ---- Manual payments ---------------------------------------------------------
+  // Money handed to crew outside the assignment ledger: a trial shoot, a day nobody
+  // was formally assigned to, travel paid on the spot. They are people_payments rows
+  // of kind 'adhoc', so the person's Pay tab and lifetime earnings pick them up and
+  // there is no second ledger to reconcile.
+
+  async loadManualPays() {
+    const { data, error } = await this.sb.from('people_payments')
+      .select('*, people(full_name, crew_id, upi_id, bank_account, bank_ifsc), events(couple_names, event_date), projects(client_name), shoots(title, kind, shoot_date)')
+      .eq('kind', 'adhoc')
+      .order('paid_on', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false });
+    if (error) {
+      this.setState({ manualPays: [], mpStatusOk: false, mpStatus:
+        /relationship|column .*(reason|event_id|project_id)/i.test(error.message || '')
+          ? 'Run album-system/crew-manual-pay.sql in Supabase to log manual payments.'
+          : error.message });
+      return;
+    }
+    this.setState({ manualPays: data || [], mpStatus: '' });
+  }
+
+  // The payouts screen is open to accounts, who never load the crew list otherwise,
+  // so the picker fetches its own thin roster.
+  async loadPayRoster() {
+    const { data } = await this.sb.from('people')
+      .select('id, full_name, crew_id, upi_id, bank_account, bank_ifsc')
+      .order('full_name', { ascending: true });
+    this.setState({ payRoster: data || [] });
+  }
+
+  // Crew and payouts are shared across every division, so the “against” picker is
+  // too: weddings, commercial jobs and the sub-shoots under them. A trial day is a
+  // sub-shoot, and paying someone for the trial is the whole reason this exists, so
+  // shoots are listed under their job rather than left out.
+  async loadPayJobs() {
+    const [ev, pr, sh] = await Promise.all([
+      this.sb.from('events').select('id, couple_names, event_date').order('event_date', { ascending: false }).limit(400),
+      this.sb.from('projects').select('id, client_name, title, division, start_date').order('start_date', { ascending: false }).limit(400),
+      this.sb.from('shoots').select('id, title, kind, shoot_date, event_id, project_id').order('shoot_date', { ascending: false }).limit(800),
+    ]);
+    this.setState({
+      payEvents: ev.data || [], payProjects: pr.data || [],
+      payShoots: sh.error ? [] : (sh.data || []),
+    });
+  }
+
+  toggleManualForm() {
+    const open = !this.state.mpFormOpen;
+    this.setState({
+      mpFormOpen: open, mpEditId: null, mpStatus: '', mpStatusOk: false,
+      mpPerson: '', mpReason: 'trial', mpAmount: '', mpMode: 'bank',
+      mpRef: '', mpNote: '', mpLink: '',
+      mpOn: new Date().toISOString().slice(0, 10),
+    });
+  }
+
+  editManualPay(x) {
+    this.setState({
+      mpFormOpen: true, mpEditId: x.id, mpStatus: '', mpStatusOk: false,
+      mpPerson: x.person_id || '', mpReason: x.reason || 'other',
+      mpAmount: String(x.gross == null ? '' : x.gross),
+      mpOn: x.paid_on || new Date().toISOString().slice(0, 10),
+      mpMode: x.paid_mode || 'bank', mpRef: x.paid_ref || '', mpNote: x.note || '',
+      mpLink: x.shoot_id ? 's:' + x.shoot_id : x.event_id ? 'e:' + x.event_id : x.project_id ? 'p:' + x.project_id : '',
+    });
+  }
+
+  async saveManualPay() {
+    const s = this.state;
+    const fail = m => this.setState({ mpStatus: m, mpStatusOk: false });
+    if (!s.mpPerson) return fail('Pick who was paid.');
+    const amt = Number(s.mpAmount);
+    if (!isFinite(amt) || amt <= 0) return fail('Enter the amount that was paid.');
+    if (!s.mpOn) return fail('Enter the date it was paid.');
+    const link = String(s.mpLink || '');
+    const tag = link.slice(0, 2), linkId = link.slice(2);
+    let eventId = tag === 'e:' ? linkId : null;
+    let projectId = tag === 'p:' ? linkId : null;
+    const shootId = tag === 's:' ? linkId : null;
+    if (shootId) {
+      // A sub-shoot carries its own parent, so the payment lands on the job too and
+      // the job-level totals do not have to join through shoots to find it.
+      const sh = (s.payShoots || []).find(x => x.id === shootId);
+      if (sh) { eventId = sh.event_id || null; projectId = sh.project_id || null; }
+    }
+    const row = {
+      person_id: s.mpPerson, kind: 'adhoc', reason: s.mpReason,
+      // period doubles as the human label on the person's Pay tab.
+      period: MANUAL_PAY_REASON_LABEL[s.mpReason] || 'Manual payment',
+      gross: amt, deductions: 0,
+      paid_on: s.mpOn, paid_mode: s.mpMode || 'bank',
+      paid_ref: (s.mpRef || '').trim() || null,
+      note: (s.mpNote || '').trim() || null,
+      event_id: eventId, project_id: projectId, shoot_id: shootId,
+    };
+    const editing = s.mpEditId;
+    this.setState({ mpStatus: 'Saving…', mpStatusOk: true });
+    const write = r => editing
+      ? this.sb.from('people_payments').update(r).eq('id', editing)
+      : this.sb.from('people_payments').insert(r);
+    let { error } = await write(row);
+    if (error && /column .*shoot_id/i.test(error.message || '')) {
+      const lite = { ...row }; delete lite.shoot_id;
+      ({ error } = await write(lite));
+    }
+    if (error) {
+      const msg = error.message || '';
+      return fail(/kind_check|reason_check|column .*(reason|event_id|project_id)/i.test(msg)
+          ? 'Run album-system/crew-manual-pay.sql in Supabase — manual payments need the reason and shoot columns.'
+        : /row-level security/i.test(msg)
+          ? 'Your role cannot log crew payments yet. Run album-system/crew-manual-pay.sql to let accounts write them.'
+        : msg);
+    }
+    this.setState({
+      mpFormOpen: false, mpEditId: null, mpStatusOk: true,
+      mpStatus: editing ? 'Payment updated.' : 'Payment logged.',
+    });
+    setTimeout(() => this.setState({ mpStatus: '' }), 4000);
+    this.loadManualPays();
+  }
+
+  async removeManualPay(x) {
+    if (!window.confirm('Delete this manual payment? It comes off their earnings too.')) return;
+    const { error } = await this.sb.from('people_payments').delete().eq('id', x.id);
+    if (error) {
+      this.setState({ mpStatusOk: false, mpStatus: /void it instead/i.test(error.message || '')
+        ? 'Run album-system/crew-manual-pay.sql in Supabase — the payslip delete guard still covers manual payments.'
+        : error.message });
+      return;
+    }
+    this.setState({ mpStatus: 'Payment deleted.', mpStatusOk: true, mpEditId: null, mpFormOpen: false });
+    setTimeout(() => this.setState({ mpStatus: '' }), 4000);
+    this.loadManualPays();
+  }
+
   // Marking paid records HOW it was paid as well as that it was. The amount itself is
   // snapshotted by the database, so a later rate edit cannot rewrite what was sent.
   async setPayoutStatus(ag, status) {
@@ -10974,6 +11256,7 @@ class Component extends DCLogic {
     const livePay = payRows.filter(x => x.status !== 'void');
     const sumNet = k => livePay.filter(x => x.kind === k).reduce((t, x) => t + Number(x.net || 0), 0);
     const salaryTotal = sumNet('salary'), bonusTotal = sumNet('bonus'), reimburseTotal = sumNet('reimbursement');
+    const adhocTotal = sumNet('adhoc');
     const paidOut = a => Number(a.paid_amount != null ? a.paid_amount : (a.amount_owed || 0));
     const paidPayouts = mineAll.filter(a => a.payout_status === 'paid' && a.pay_basis !== 'salaried')
       .reduce((t, a) => t + paidOut(a), 0);
@@ -11001,6 +11284,7 @@ class Component extends DCLogic {
       { label: 'Payslips (net)', value: fmtINR(salaryTotal) },
       { label: 'Bonuses', value: fmtINR(bonusTotal) },
       { label: 'Event payouts paid', value: fmtINR(paidPayouts) },
+      { label: 'Paid by hand', value: fmtINR(adhocTotal) },
       { label: 'Reimbursed', value: fmtINR(reimburseTotal) },
       { label: 'TDS withheld', value: fmtINR(tdsWithheld) },
       { label: 'EPF withheld', value: fmtINR(epfWithheld) },
@@ -11018,10 +11302,12 @@ class Component extends DCLogic {
       const earnRows = rows(SLIP_EARN), dedRows = rows(SLIP_DED);
       const basic = Number(c.basic || 0), gross = Number(x.gross || 0);
       return {
-        kindLabel: x.kind === 'bonus' ? 'Bonus' : x.kind === 'reimbursement' ? 'Reimbursement' : 'Payslip',
-        kindBg: x.kind === 'bonus' ? '#EFE9DA' : x.kind === 'reimbursement' ? '#E4EEF7' : '#DDEFE8',
-        kindColor: x.kind === 'bonus' ? '#8A6D3B' : x.kind === 'reimbursement' ? '#2C5F8A' : '#0A6E58',
-        periodLabel: x.kind === 'salary' ? payPeriodLabel(x.period) : (x.period || x.note || '—'),
+        kindLabel: x.kind === 'bonus' ? 'Bonus' : x.kind === 'reimbursement' ? 'Reimbursement' : x.kind === 'adhoc' ? 'Paid by hand' : 'Payslip',
+        kindBg: x.kind === 'bonus' ? '#EFE9DA' : x.kind === 'reimbursement' ? '#E4EEF7' : x.kind === 'adhoc' ? '#F1F4F3' : '#DDEFE8',
+        kindColor: x.kind === 'bonus' ? '#8A6D3B' : x.kind === 'reimbursement' ? '#2C5F8A' : x.kind === 'adhoc' ? '#5D6864' : '#0A6E58',
+        periodLabel: x.kind === 'salary' ? payPeriodLabel(x.period)
+          : x.kind === 'adhoc' ? (MANUAL_PAY_REASON_LABEL[x.reason] || x.period || 'Manual payment')
+          : (x.period || x.note || '—'),
         grossLabel: fmtINR(x.gross), dedLabel: fmtINR(x.deductions), netLabel: fmtINR(x.net),
         hasDeductions: Number(x.deductions || 0) > 0,
         paidLabel: x.paid_on ? 'Paid ' + fmtDay(x.paid_on) : 'Not marked paid',
@@ -11100,7 +11386,7 @@ class Component extends DCLogic {
       addExperience: () => this.addExperience(),
       payTotalsVM, paymentsVM, hasNoPayments: paymentsVM.length === 0,
       payStatus: s.payStatus,
-      payTotalLabel: fmtINR(salaryTotal + bonusTotal + paidPayouts + reimburseTotal),
+      payTotalLabel: fmtINR(salaryTotal + bonusTotal + paidPayouts + reimburseTotal + adhocTotal),
       payBankName: person ? (person.bank_name || '—') : '—',
       payBankAccount: person ? (person.bank_account || '—') : '—',
       payBankIfsc: person ? (person.bank_ifsc || '—') : '—',
@@ -11387,6 +11673,106 @@ class Component extends DCLogic {
     const payoutFilterVM = this.chips(
       [['owed', 'Owed'], ['paid', 'Paid'], ['salaried', 'Salaried crew'], ['all', 'Everything']],
       s.payoutFilter, key => this.setState({ payoutFilter: key }));
+
+    // Manual payments sit beside the assignment ledger rather than inside it: they
+    // are already money gone, so they only ever add to what has been paid out.
+    const manualAll = onPayouts ? (s.manualPays || []) : [];
+    const manualTotal = manualAll.reduce((t, x) => t + Number(x.gross || 0), 0);
+    const manualShown = manualAll.filter(x => {
+      if (!payQ) return true;
+      const pp = x.people || {};
+      return [pp.full_name, pp.crew_id, MANUAL_PAY_REASON_LABEL[x.reason],
+        x.events && x.events.couple_names, x.projects && x.projects.client_name, x.note]
+        .filter(Boolean).join(' ').toLowerCase().includes(payQ);
+    });
+    const manualPaysVM = manualShown.map(x => {
+      const pp = x.people || {};
+      return {
+        name: pp.full_name || 'Crew member',
+        crewId: pp.crew_id || '—',
+        reasonLabel: MANUAL_PAY_REASON_LABEL[x.reason] || 'Manual payment',
+        amountFmt: fmtINR(x.gross),
+        dateLabel: fmtDay(x.paid_on),
+        modeLabel: x.paid_mode === 'upi' ? 'UPI' : x.paid_mode === 'cash' ? 'Cash'
+          : x.paid_mode === 'cheque' ? 'Cheque' : 'Bank transfer',
+        againstLabel: x.shoots
+          ? ((x.events ? x.events.couple_names : x.projects ? x.projects.client_name : 'Shoot') + ' · ' + x.shoots.title)
+          : x.events ? x.events.couple_names : x.projects ? x.projects.client_name : 'Not tied to a shoot',
+        refLabel: x.paid_ref ? 'Ref ' + x.paid_ref : '',
+        hasRef: !!x.paid_ref,
+        note: x.note || '', hasNote: !!x.note,
+        isEditing: s.mpEditId === x.id,
+        edit: () => this.editManualPay(x),
+        remove: () => this.removeManualPay(x),
+      };
+    });
+    // Every job, every division — payouts are shared across all of them — with each
+    // job's sub-shoots listed under it so a trial day can be paid by name.
+    const shootsFor = (key, id) => (s.payShoots || []).filter(sh => sh[key] === id)
+      .map(sh => ({
+        value: 's:' + sh.id,
+        label: ' ↳ ' + ((SHOOT_KINDS.find(k => k[0] === sh.kind) || ['', 'Shoot'])[1]) + ' · ' + sh.title
+          + (sh.shoot_date ? ' · ' + fmtDay(sh.shoot_date) : ''),
+      }));
+    const mpShootOptions = [{ value: '', label: 'Not tied to a shoot' }].concat(
+      [].concat(
+        ...(s.payEvents || []).map(e => [{
+          value: 'e:' + e.id,
+          label: e.couple_names + (e.event_date ? ' · ' + fmtDay(e.event_date) : ''),
+        }].concat(shootsFor('event_id', e.id))),
+        ...(s.payProjects || []).map(p => [{
+          value: 'p:' + p.id,
+          label: (p.client_name || p.title || 'Project') + (p.title && p.client_name ? ' · ' + p.title : ''),
+        }].concat(shootsFor('project_id', p.id))),
+      ));
+
+    // One line per crew member: what the shoots still owe them, what the shoots have
+    // already paid, and what was handed over by hand. Three different ledgers meeting
+    // on one row, so nobody has to add up the list themselves.
+    const crewTally = {};
+    const tallyFor = (pid, pp) => {
+      const k = pid || 'unknown';
+      if (!crewTally[k]) crewTally[k] = {
+        name: (pp && pp.full_name) || 'Crew member',
+        crewId: (pp && pp.crew_id) || '—',
+        owed: 0, paid: 0, hand: 0, shoots: 0, handCount: 0, reasons: {},
+      };
+      return crewTally[k];
+    };
+    if (onPayouts) {
+      s.payouts.forEach(a => {
+        if (!payoutReady(a) || a.pay_basis === 'salaried') return;
+        const t = tallyFor(a.person_id, a.people);
+        const gross = Number(a.paid_amount != null ? a.paid_amount : (a.amount_owed || 0));
+        if (a.payout_status === 'paid') t.paid += gross; else { t.owed += gross; t.shoots += 1; }
+      });
+      manualAll.forEach(x => {
+        const t = tallyFor(x.person_id, x.people);
+        t.hand += Number(x.gross || 0);
+        t.handCount += 1;
+        const r = MANUAL_PAY_REASON_LABEL[x.reason] || 'Manual';
+        t.reasons[r] = (t.reasons[r] || 0) + Number(x.gross || 0);
+      });
+    }
+    const crewTallyVM = Object.keys(crewTally).map(k => crewTally[k])
+      .filter(t => !payQ || (t.name + ' ' + t.crewId).toLowerCase().includes(payQ))
+      .filter(t => t.owed > 0.5 || t.paid > 0.5 || t.hand > 0.5)
+      .sort((a, b) => (b.owed - a.owed) || (b.hand - a.hand))
+      .map(t => ({
+        name: t.name, crewId: t.crewId,
+        owedFmt: fmtINR(t.owed),
+        owedColor: t.owed > 0.5 ? '#B4433A' : '#9AA5A1',
+        owedNote: t.owed > 0.5 ? t.shoots + (t.shoots === 1 ? ' shoot unpaid' : ' shoots unpaid') : 'nothing outstanding',
+        paidFmt: fmtINR(t.paid),
+        handFmt: fmtINR(t.hand),
+        handColor: t.hand > 0.5 ? '#16231F' : '#9AA5A1',
+        handNote: t.hand > 0.5
+          ? Object.keys(t.reasons).map(r => r.toLowerCase() + ' ' + fmtINR(t.reasons[r])).join(' · ')
+          : 'nothing by hand',
+        totalFmt: fmtINR(t.paid + t.hand),
+      }));
+
+
 
     // ---- Money in ---------------------------------------------------------
     const onMoney = s.view === 'money';
@@ -11858,6 +12244,28 @@ class Component extends DCLogic {
       poRef: s.poRef, onPoRef: e => this.setState({ poRef: e.target.value }),
       poNote: s.poNote, onPoNote: e => this.setState({ poNote: e.target.value }),
 
+      crewTallyVM, hasCrewTally: crewTallyVM.length > 0,
+      manualPaysVM, hasManualPays: manualPaysVM.length > 0,      manualCountLabel: manualShown.length === 0 ? 'Nothing logged by hand yet'
+        : manualShown.length + (manualShown.length === 1 ? ' payment' : ' payments') + ' · ' + fmtINR(manualShown.reduce((t, x) => t + Number(x.gross || 0), 0)),
+      mpFormOpen: s.mpFormOpen, toggleManualForm: () => this.toggleManualForm(),
+      mpFormToggleLabel: s.mpFormOpen ? 'Cancel' : 'Log a payment',
+      mpPerson: s.mpPerson, onMpPerson: e => this.setState({ mpPerson: e.target.value, mpStatus: '' }),
+      mpPersonOptions: [{ value: '', label: 'Who was paid' }].concat((s.payRoster || [])
+        .map(p => ({ value: p.id, label: p.full_name + (p.crew_id ? ' · ' + p.crew_id : '') }))),
+      mpReason: s.mpReason, onMpReason: e => this.setState({ mpReason: e.target.value, mpStatus: '' }),
+      mpReasonOptions: MANUAL_PAY_REASONS.map(r => ({ value: r[0], label: r[1] })),
+      mpAmount: s.mpAmount, onMpAmount: e => this.setState({ mpAmount: e.target.value }),
+      mpOn: s.mpOn, onMpOn: e => this.setState({ mpOn: e.target.value }),
+      mpMode: s.mpMode, onMpMode: e => this.setState({ mpMode: e.target.value }),
+      mpModeOptions: RECEIPT_MODES.map(m => ({ value: m[0], label: m[1] })),
+      mpRef: s.mpRef, onMpRef: e => this.setState({ mpRef: e.target.value }),
+      mpNote: s.mpNote, onMpNote: e => this.setState({ mpNote: e.target.value }),
+      mpLink: s.mpLink, onMpLink: e => this.setState({ mpLink: e.target.value }),
+      mpShootOptions,
+      mpSaveLabel: s.mpEditId ? 'Update payment' : 'Log payment',
+      saveManualPay: () => this.saveManualPay(),
+      mpStatus: s.mpStatus, mpStatusColor: s.mpStatusOk ? 'var(--green-deep)' : '#B4433A',
+
       moneyVM, moneyFilterVM, divisionMoneyVM, parentMoneyVM, bucketVM,
       moneySearch: s.moneySearch, onMoneySearch: e => this.setState({ moneySearch: e.target.value, moneyOpen: null }),
       canMoneyEdit, moneyStatus: s.moneyStatus,
@@ -11895,8 +12303,10 @@ class Component extends DCLogic {
       hasPendingPayouts: pendingCount > 0,
       pendingPayoutLabel: pendingCount + (pendingCount === 1 ? ' assignment is' : ' assignments are')
         + ' waiting — hourly crew need their hours logged, fixed-fee and per-deliverable crew need the event marked delivered.',
-      owedTotal: fmtINR(owedTotal), paidTotal: fmtINR(paidTotal),
+      owedTotal: fmtINR(owedTotal), paidTotal: fmtINR(paidTotal + manualTotal),
       tdsTotal: fmtINR(tdsTotal), hasTdsTotal: tdsTotal > 0,
+      hasManualTotal: manualTotal > 0,
+      manualTotalLabel: 'incl. ' + fmtINR(manualTotal) + ' logged by hand',
     };
   }
 
