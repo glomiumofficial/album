@@ -3746,6 +3746,12 @@
                           </sc-if>
                           <button onClick="{{ mi.remove }}" style="padding:5px 9px; background:none; border:1px solid var(--line); border-radius:3px; font-size:10px; color:#B4433A; cursor:pointer">✕</button>
                         </div>
+                        <sc-if value="{{ mi.canStream }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ mi.makeStream }}" title="Plays too slowly online? Make a light streaming copy — the original stays for download." style="padding:6px; background:none; border:1px solid var(--green); border-radius:3px; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Make streaming copy</button>
+                        </sc-if>
+                        <sc-if value="{{ mi.hasStream }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--green-deep)">✓ streams fast</span>
+                        </sc-if>
                       </div>
                     </sc-if>
                   </div>
@@ -5364,7 +5370,7 @@ class Component extends DCLogic {
     const label = prefix || '';
     this.setProjMedia(section, { status: label + file.name, progress: 0 });
     try {
-      let url, urlGrid = null, thumbUrl = null;
+      let url, urlGrid = null, thumbUrl = null, urlView = null;
       const onProg = (pct, loaded, total) => this.setProjMedia(section, {
         progress: pct,
         status: label + (pct >= 100 ? 'finishing on the server…' : this.fmtBytes(loaded) + ' of ' + this.fmtBytes(total)),
@@ -5391,13 +5397,25 @@ class Component extends DCLogic {
           }));
           if (small) urlGrid = await this.uploadBlob(small.blob, 'motion-loop', small.ext);
         }
+        // Heavy films get a streaming copy; small ones already stream fine.
+        if (section === 'film' && file.size > 40 * 1024 * 1024) {
+          const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+          this.setProjMedia(section, { progress: 0, status: label + 'making streaming copy…' });
+          const st = await this.makeStreamCopy(file, (p, t, d) => this.setProjMedia(section, {
+            progress: p, status: label + 'streaming copy · ' + fmtT(t) + ' of ' + fmtT(d) + ' — keep this tab open',
+          }));
+          if (st) {
+            this.setProjMedia(section, { progress: 100, status: label + 'uploading streaming copy…' });
+            urlView = await this.uploadBlob(st.blob, 'film-stream', st.ext);
+          }
+        }
       }
       this.setProjMedia(section, { progress: 100, status: label + 'saving…' });
       const count = this.state.projectMedia.filter(m => m.section === section).length;
       // The file is already in the bucket by here — if the row fails to write,
       // say so, or the upload looks like it simply vanished.
       const { error } = await this.sb.from('project_media').insert({
-        project_id: this.state.current.id, section, kind, url, url_grid: urlGrid, url_view: url,
+        project_id: this.state.current.id, section, kind, url, url_grid: urlGrid, url_view: urlView || url,
         thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: count,
         ...(section === 'social' ? { post_no: postNo || 1, caption: this.postCaptionFor(postNo || 1) || null } : {}),
       });
@@ -5692,6 +5710,102 @@ class Component extends DCLogic {
   // down to show five seconds of animation — but the master is what the
   // lightbox plays and what downloads, so nothing lossy reaches the client.
   // Re-encode runs in real time off a canvas, so it costs the clip's duration.
+  // Streaming copy for films. A camera/export master is usually 25–40 Mbps
+  // with its index (moov) at the END of the file, so the browser has to pull
+  // most of it before frame one. This re-encodes to 1080p at ~5 Mbps as
+  // fragmented MP4 — playable from the first megabyte. Audio is kept via
+  // WebAudio (routed to the recorder only, so nothing plays out loud).
+  // Runs in real time: a 3-minute film takes about 3 minutes. Master untouched.
+  async makeStreamCopy(src, onProg) {
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return null;
+    const type = ['video/mp4;codecs=avc1.640028,mp4a.40.2', 'video/mp4;codecs=avc1.4d0028,mp4a.40.2', 'video/mp4'].find(t => {
+      try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; }
+    });
+    if (!type) return null;
+    const isFile = typeof src !== 'string';
+    const objUrl = isFile ? URL.createObjectURL(src) : null;
+    let v = null, raf = 0, ac = null;
+    try {
+      v = document.createElement('video');
+      if (!isFile) v.crossOrigin = 'anonymous';
+      v.playsInline = true; v.preload = 'auto'; v.src = objUrl || src;
+      await new Promise((res, rej) => {
+        v.onloadedmetadata = res;
+        v.onerror = () => rej(new Error('unreadable'));
+        setTimeout(() => rej(new Error('timed out')), 60000);
+      });
+      const dur = v.duration || 0;
+      const w0 = v.videoWidth, h0 = v.videoHeight;
+      if (!dur || !w0 || !h0) return null;
+      const scale = Math.min(1, 1920 / Math.max(w0, h0));
+      const w = Math.max(2, Math.round(w0 * scale / 2) * 2);
+      const h = Math.max(2, Math.round(h0 * scale / 2) * 2);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      const stream = c.captureStream(30);
+      try {
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        const node = ac.createMediaElementSource(v);
+        const dest = ac.createMediaStreamDestination();
+        node.connect(dest);
+        dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+        if (ac.state === 'suspended') await ac.resume();
+      } catch (e) { v.muted = true; }
+      const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 5000000, audioBitsPerSecond: 160000 });
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+      const stopped = new Promise(res => { rec.onstop = res; });
+      rec.start(1000);
+      await v.play();
+      const draw = () => {
+        try { ctx.drawImage(v, 0, 0, w, h); } catch (e) {}
+        if (onProg) onProg(Math.min(99, Math.round((v.currentTime / dur) * 100)), v.currentTime, dur);
+        raf = requestAnimationFrame(draw);
+      };
+      draw();
+      // A background tab throttles rAF; keep painting from a timer too.
+      const tick = setInterval(() => { try { ctx.drawImage(v, 0, 0, w, h); } catch (e) {} }, 1000 / 30);
+      await new Promise(res => { v.onended = res; setTimeout(res, (dur + 15) * 1000); });
+      clearInterval(tick);
+      cancelAnimationFrame(raf); raf = 0;
+      rec.stop();
+      await stopped;
+      const blob = new Blob(chunks, { type: 'video/mp4' });
+      const masterSize = isFile ? src.size : Infinity;
+      if (!blob.size || blob.size > masterSize * 0.85) return null;
+      return { blob, ext: 'mp4' };
+    } catch (e) {
+      return null;
+    } finally {
+      if (raf) cancelAnimationFrame(raf);
+      if (v) { try { v.pause(); } catch (e) {} v.removeAttribute('src'); }
+      if (ac) { try { ac.close(); } catch (e) {} }
+      if (objUrl) URL.revokeObjectURL(objUrl);
+    }
+  }
+
+  async streamCopyFor(item) {
+    if (this.albumLocked()) return;
+    const sec = item.section;
+    if (!window.confirm('Make a streaming copy of this film? It plays through once in the background, so it takes about as long as the film. Keep this tab open.')) return;
+    const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+    this.setProjMedia(sec, { progress: 0, status: 'streaming copy · ' + (item.name || 'film') });
+    const out = await this.makeStreamCopy(item.url, (p, t, d) => this.setProjMedia(sec, { progress: p, status: 'streaming copy · ' + fmtT(t) + ' of ' + fmtT(d) + ' — keep this tab open' }));
+    if (!out) { this.setProjMedia(sec, { progress: null, status: 'Could not make a streaming copy in this browser — use Chrome, or re-export with Fast Start on.' }); return; }
+    try {
+      this.setProjMedia(sec, { progress: 100, status: 'uploading streaming copy…' });
+      const u = await this.uploadBlob(out.blob, 'film-stream', out.ext);
+      const { error } = await this.sb.from('project_media').update({ url_view: u }).eq('id', item.id);
+      if (error) throw error;
+      this.setProjMedia(sec, { progress: null, status: 'Streaming copy ready · ' + this.fmtBytes(out.blob.size) });
+    } catch (e) {
+      this.setProjMedia(sec, { progress: null, status: e.message || 'Upload failed' });
+    }
+    await this.loadProjectMedia(this.state.current.id);
+    setTimeout(() => this.setProjMedia(sec, { status: '' }), 4000);
+  }
+
   async compressMotionLoop(file, onProg) {
     if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) return null;
     // WebM playback cannot be relied on in Safari, so mp4 out or nothing —
@@ -12898,6 +13012,9 @@ class Component extends DCLogic {
             saveName: () => this.saveProjectMediaField(m, { name: (this.state.projectMedia.find(x => x.id === m.id) || {}).name || null }),
             flipGround: () => this.saveProjectMediaField(m, { ground: m.ground === 'dark' ? 'light' : 'dark' }),
             remove: () => this.deleteProjectMedia(m),
+            canStream: isFilm && m.kind === 'video' && (!m.url_view || m.url_view === m.url),
+            hasStream: isFilm && m.kind === 'video' && !!m.url_view && m.url_view !== m.url,
+            makeStream: () => this.streamCopyFor(m),
         });
         return {
           isPosts, notPosts: !isPosts,
