@@ -291,8 +291,9 @@
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Social</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#9AA6A2">{{ socialCountLabel }}</span>
       </div>
-      <div style="max-width:1560px; margin:0 auto; padding:clamp(28px,5vh,56px) clamp(18px,4vw,48px) 0; display:flex; justify-content:center">
-        <div style="width:100%; max-width:470px; background:#FFFFFF; border:1px solid #E3E8E6; border-radius:6px; overflow:hidden; box-shadow:0 18px 50px -30px rgba(16,26,23,.28)">
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(28px,5vh,56px) clamp(18px,4vw,48px) 0; display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:clamp(22px,3vw,44px)">
+        <sc-for list="{{ postsVM }}" as="pst" hint-placeholder-count="1">
+        <div style="width:100%; max-width:440px; flex:1 1 320px; background:#FFFFFF; border:1px solid #E3E8E6; border-radius:6px; overflow:hidden; box-shadow:0 18px 50px -30px rgba(16,26,23,.28)">
           <div style="display:flex; align-items:center; gap:11px; padding:12px 14px">
             <div style="width:34px; height:34px; border-radius:50%; padding:2px; background:linear-gradient(135deg, var(--green), #9FD8C8); flex-shrink:0">
               <div style="width:100%; height:100%; border-radius:50%; background:#FFFFFF; border:2px solid #FFFFFF; overflow:hidden; display:grid; place-items:center">
@@ -308,39 +309,37 @@
             </div>
           </div>
           <div style="position:relative; background:#F3F6F5">
-            <div ref="{{ setPostTrackRef }}" onScroll="{{ onPostScroll }}" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch">
-              <sc-for list="{{ socialVM }}" as="so" hint-placeholder-count="1">
+            <div ref="{{ pst.setTrackRef }}" onScroll="{{ pst.onScroll }}" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch">
+              <sc-for list="{{ pst.slides }}" as="so" hint-placeholder-count="1">
                 <div onClick="{{ so.open }}" style="flex:0 0 100%; scroll-snap-align:start; scroll-snap-stop:always; cursor:zoom-in">
                   <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" draggable="false" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; user-select:none">
                 </div>
               </sc-for>
             </div>
-            <sc-if value="{{ postMulti }}" hint-placeholder-val="{{ false }}">
-              <span style="position:absolute; top:12px; right:12px; padding:4px 9px; border-radius:12px; background:rgba(16,26,23,.66); color:#FFFFFF; font-size:11px; letter-spacing:.04em; font-variant-numeric:tabular-nums; pointer-events:none">{{ postCounter }}</span>
+            <sc-if value="{{ pst.multi }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute; top:12px; right:12px; padding:4px 9px; border-radius:12px; background:rgba(16,26,23,.66); color:#FFFFFF; font-size:11px; letter-spacing:.04em; font-variant-numeric:tabular-nums; pointer-events:none">{{ pst.counter }}</span>
             </sc-if>
-            <sc-if value="{{ postHasPrev }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ postPrev }}" aria-label="Previous" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:var(--ink); font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.18)">‹</button>
+            <sc-if value="{{ pst.hasPrev }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ pst.prev }}" aria-label="Previous" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:var(--ink); font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.18)">‹</button>
             </sc-if>
-            <sc-if value="{{ postHasNext }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ postNext }}" aria-label="Next" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:var(--ink); font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.18)">›</button>
+            <sc-if value="{{ pst.hasNext }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ pst.next }}" aria-label="Next" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:var(--ink); font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.18)">›</button>
             </sc-if>
           </div>
           <div style="display:flex; flex-direction:column; gap:10px; padding:12px 14px 16px">
-            <sc-if value="{{ postMulti }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ pst.multi }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex; justify-content:center; gap:4px; padding-top:2px">
-                <sc-for list="{{ postDots }}" as="d" hint-placeholder-count="0">
+                <sc-for list="{{ pst.dots }}" as="d" hint-placeholder-count="0">
                   <span style="width:6px; height:6px; border-radius:50%; transition:background .2s; background:{{ d.bg }}"></span>
                 </sc-for>
               </div>
             </sc-if>
-            <sc-if value="{{ hasPostCaption }}" hint-placeholder-val="{{ false }}">
-              <p style="margin:0; font-size:13px; line-height:1.5; color:#3A4441; text-wrap:pretty"><strong style="font-weight:500; color:var(--ink)">{{ postHandle }}</strong> {{ postCaption }}</p>
-            </sc-if>
-            <sc-if value="{{ hasPostSlideName }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#9AA6A2">{{ postSlideName }}</span>
+            <sc-if value="{{ pst.hasCaption }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0; font-size:13px; line-height:1.5; color:#3A4441; text-wrap:pretty; white-space:pre-line"><strong style="font-weight:500; color:var(--ink)">{{ postHandle }}</strong> {{ pst.caption }}</p>
             </sc-if>
           </div>
         </div>
+        </sc-for>
       </div>
     </sc-if>
 
@@ -384,6 +383,61 @@
       </div>
     </footer>
   </div>
+  </sc-if>
+
+  <sc-if value="{{ plbOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ plbClose }}" style="position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:clamp(8px,3vw,48px)">
+      <button onClick="{{ plbClose }}" aria-label="Close" style="position:absolute; top:12px; right:14px; width:44px; height:44px; background:none; border:0; color:#FFFFFF; font-size:22px; cursor:pointer">✕</button>
+      <sc-if value="{{ plbHasPrevPost }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ plbPrevPost }}" aria-label="Previous post" style="position:absolute; left:clamp(2px,1.4vw,20px); top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.92); color:#101A17; font-size:20px; line-height:1; cursor:pointer; display:grid; place-items:center">‹</button>
+      </sc-if>
+      <sc-if value="{{ plbHasNextPost }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ plbNextPost }}" aria-label="Next post" style="position:absolute; right:clamp(2px,1.4vw,20px); top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.92); color:#101A17; font-size:20px; line-height:1; cursor:pointer; display:grid; place-items:center">›</button>
+      </sc-if>
+      <div onClick="{{ plbStop }}" style="display:flex; flex-wrap:wrap; width:min(100%,1080px); max-height:94vh; overflow:auto; background:#FFFFFF; border-radius:4px">
+        <div style="position:relative; flex:1 1 440px; min-width:min(100%,300px); background:#000; display:flex; align-items:center; justify-content:center; aspect-ratio:4 / 5; max-height:94vh">
+          <img ref="{{ setPlbImgRef }}" alt="{{ plbName }}" style="width:100%; height:100%; object-fit:contain; display:block">
+          <sc-if value="{{ plbHasPrev }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ plbPrev }}" aria-label="Previous" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:#101A17; font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center">‹</button>
+          </sc-if>
+          <sc-if value="{{ plbHasNext }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ plbNext }}" aria-label="Next" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:#101A17; font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center">›</button>
+          </sc-if>
+          <sc-if value="{{ plbMulti }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute; bottom:14px; left:0; right:0; display:flex; justify-content:center; gap:4px; pointer-events:none">
+              <sc-for list="{{ plbDots }}" as="d" hint-placeholder-count="0">
+                <span style="width:6px; height:6px; border-radius:50%; background:{{ d.bg }}"></span>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="flex:0 1 340px; min-width:min(100%,280px); display:flex; flex-direction:column; border-left:1px solid #EFEFEF">
+          <div style="display:flex; align-items:center; gap:11px; padding:14px 16px; border-bottom:1px solid #EFEFEF">
+            <div style="width:32px; height:32px; border-radius:50%; padding:2px; background:linear-gradient(135deg, var(--green), #9FD8C8); flex-shrink:0">
+              <div style="width:100%; height:100%; border-radius:50%; background:#FFFFFF; border:2px solid #FFFFFF; overflow:hidden; display:grid; place-items:center">
+                <img ref="{{ setPostAvatarRef }}" alt="" style="width:100%; height:100%; object-fit:contain; display:none">
+                <span ref="{{ setPostInitialRef }}" style="font-size:12px; color:var(--green-deep)">{{ postInitial }}</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:1px; min-width:0">
+              <span style="font-size:13px; font-weight:500; color:#101A17">{{ postHandle }}</span>
+              <sc-if value="{{ hasPostSub }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11px; color:#7A8683">{{ postSub }}</span>
+              </sc-if>
+            </div>
+          </div>
+          <div style="flex:1; padding:16px; display:flex; flex-direction:column; gap:12px; overflow:auto">
+            <sc-if value="{{ plbHasCaption }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0; font-size:13px; line-height:1.55; color:#3A4441; text-wrap:pretty; white-space:pre-line"><strong style="font-weight:500; color:#101A17">{{ postHandle }}</strong> {{ plbCaption }}</p>
+            </sc-if>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px; border-top:1px solid #EFEFEF">
+            <span style="font-size:11px; color:#7A8683; font-variant-numeric:tabular-nums">{{ plbCounter }}</span>
+            <a href="{{ plbDownload }}" download="{{ plbName }}" target="_blank" rel="noopener" style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--green-deep); text-decoration:none">download</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </sc-if>
 
   <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
@@ -449,15 +503,38 @@ class Component extends DCLogic {
     project: null, media: [],
     copied: '',
     lightboxOpen: false, lightboxIndex: 0,
-    postIndex: 0,
+    postIdx: {}, plb: null,
   };
 
-  postGo(i) {
-    const t = this._postTrack; if (!t) return;
-    const n = this.mediaVM('social').length;
-    const k = Math.max(0, Math.min(n - 1, i));
-    t.scrollTo({ left: k * t.clientWidth, behavior: 'smooth' });
-    this.setState({ postIndex: k });
+  // Static posts are grouped into sets by post_no; each set is one carousel.
+  postGroups() {
+    const map = new Map();
+    this.state.media.filter(m => m.section === 'social' && m.url).forEach(m => {
+      const no = m.post_no || 1;
+      if (!map.has(no)) map.set(no, []);
+      map.get(no).push(m);
+    });
+    return Array.from(map.entries()).sort((a, b) => a[0] - b[0]).map(([no, items]) => ({ no, items, caption: (items.find(x => x.caption) || {}).caption || '' }));
+  }
+
+  postGo(no, i) {
+    const t = this._tracks && this._tracks[no]; if (!t) return;
+    t.scrollTo({ left: i * t.clientWidth, behavior: 'smooth' });
+    this.setState({ postIdx: { ...this.state.postIdx, [no]: i } });
+  }
+
+  openPost(gi, i) { this.scrollLock(true); this.setState({ plb: { g: gi, i } }); }
+  closePost() { this.scrollLock(false); this.setState({ plb: null }); }
+  stepPost(d) {
+    const p = this.state.plb; if (!p) return;
+    const g = this.postGroups()[p.g]; if (!g) return;
+    const i = p.i + d; if (i < 0 || i >= g.items.length) return;
+    this.setState({ plb: { g: p.g, i } });
+  }
+  jumpPost(d) {
+    const p = this.state.plb; if (!p) return;
+    const g = p.g + d; if (g < 0 || g >= this.postGroups().length) return;
+    this.setState({ plb: { g, i: 0 } });
   }
 
   // ---- Boot ---------------------------------------------------------------
@@ -504,6 +581,12 @@ class Component extends DCLogic {
   };
 
   onKeyDown = e => {
+    if (this.state.plb) {
+      if (e.key === 'Escape') this.closePost();
+      if (e.key === 'ArrowRight') this.stepPost(1);
+      if (e.key === 'ArrowLeft') this.stepPost(-1);
+      return;
+    }
     if (!this.state.lightboxOpen) return;
     if (e.key === 'Escape') this.closeLightbox();
     if (e.key === 'ArrowRight') this.step(1);
@@ -653,7 +736,7 @@ class Component extends DCLogic {
   // ---- Lightbox -----------------------------------------------------------
 
   // One flat list across every section, so the arrows walk the whole project.
-  viewable() { return this.state.media.filter(m => m.url); }
+  viewable() { return this.state.media.filter(m => m.url && m.section !== 'social'); }
 
   openLightbox(id) {
     const list = this.viewable();
@@ -857,33 +940,60 @@ class Component extends DCLogic {
       logoCountLabel: count(logosVM.length, 'mark', 'marks'),
       socialVM, hasSocial: socialVM.length > 0,
       ...(() => {
-        const n = socialVM.length, i = Math.min(this.state.postIndex, Math.max(0, n - 1));
         const logo = this.state.media.find(m => m.section === 'logo' && m.url);
         const logoSrc = logo ? (logo.url_grid || logo.url_view || logo.url) : '';
         const handle = (p.client_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '') || 'brand';
-        const cur = socialVM[i];
+        const groups = this.postGroups();
+        const dotBg = (k, i, on, off) => k === i ? on : off;
+        const pl = s.plb, pg = pl ? groups[pl.g] : null, pm = pg ? pg.items[pl.i] : null;
+        const capOf = g => g.caption || p.tagline || '';
         return {
           postHandle: handle,
           postInitial: (p.client_name || 'b').trim().charAt(0).toLowerCase(),
           postSub: p.sector || p.project_title || '', hasPostSub: !!(p.sector || p.project_title),
-          postCaption: p.tagline || '', hasPostCaption: !!p.tagline,
-          postSlideName: cur && cur.name ? cur.name : '', hasPostSlideName: !!(cur && cur.name),
-          postMulti: n > 1, postCounter: (i + 1) + '/' + n,
-          postHasPrev: i > 0, postHasNext: i < n - 1,
-          postDots: socialVM.map((_, k) => ({ bg: k === i ? 'var(--green)' : '#C9D3D0' })),
-          postPrev: e => { e.stopPropagation(); this.postGo(i - 1); },
-          postNext: e => { e.stopPropagation(); this.postGo(i + 1); },
-          setPostTrackRef: el => { this._postTrack = el; },
-          onPostScroll: e => {
-            const t = e.currentTarget; if (!t.clientWidth) return;
-            const k = Math.round(t.scrollLeft / t.clientWidth);
-            if (k !== this.state.postIndex) this.setState({ postIndex: k });
-          },
           setPostAvatarRef: el => { if (el && logoSrc) { el.src = logoSrc; el.style.display = 'block'; } },
           setPostInitialRef: el => { if (el) el.style.display = logoSrc ? 'none' : 'block'; },
+          postsVM: groups.map((g, gi) => {
+            const n = g.items.length, i = Math.min(s.postIdx[g.no] || 0, n - 1);
+            return {
+              multi: n > 1, counter: (i + 1) + '/' + n,
+              hasPrev: i > 0, hasNext: i < n - 1,
+              caption: capOf(g), hasCaption: !!capOf(g),
+              dots: g.items.map((_, k) => ({ bg: dotBg(k, i, 'var(--green)', '#C9D3D0') })),
+              prev: e => { e.stopPropagation(); this.postGo(g.no, i - 1); },
+              next: e => { e.stopPropagation(); this.postGo(g.no, i + 1); },
+              setTrackRef: el => { this._tracks = this._tracks || {}; this._tracks[g.no] = el; },
+              onScroll: e => {
+                const t = e.currentTarget; if (!t.clientWidth) return;
+                const k = Math.round(t.scrollLeft / t.clientWidth);
+                if (k !== (this.state.postIdx[g.no] || 0)) this.setState({ postIdx: { ...this.state.postIdx, [g.no]: k } });
+              },
+              slides: g.items.map((m, k) => ({
+                name: m.name || '',
+                open: () => this.openPost(gi, k),
+                setImgRef: el => { const u = m.url_grid || m.url_view || m.url; if (el && u) el.src = u; },
+              })),
+            };
+          }),
+          plbOpen: !!pm,
+          plbName: pm ? (pm.name || 'post') : '',
+          plbCaption: pg ? capOf(pg) : '', plbHasCaption: !!(pg && capOf(pg)),
+          plbMulti: !!pg && pg.items.length > 1,
+          plbCounter: pg ? (pl.i + 1) + ' of ' + pg.items.length + (groups.length > 1 ? ' · post ' + (pl.g + 1) + ' of ' + groups.length : '') : '',
+          plbDots: pg ? pg.items.map((_, k) => ({ bg: dotBg(k, pl.i, '#FFFFFF', 'rgba(255,255,255,.45)') })) : [],
+          plbHasPrev: !!pl && pl.i > 0, plbHasNext: !!pg && pl.i < pg.items.length - 1,
+          plbHasPrevPost: !!pl && pl.g > 0, plbHasNextPost: !!pl && pl.g < groups.length - 1,
+          plbDownload: pm ? pm.url : '',
+          setPlbImgRef: el => { const u = pm && (pm.url_view || pm.url); if (el && u && el.getAttribute('src') !== u) el.src = u; },
+          plbClose: () => this.closePost(),
+          plbStop: e => e.stopPropagation(),
+          plbPrev: e => { e.stopPropagation(); this.stepPost(-1); },
+          plbNext: e => { e.stopPropagation(); this.stepPost(1); },
+          plbPrevPost: e => { e.stopPropagation(); this.jumpPost(-1); },
+          plbNextPost: e => { e.stopPropagation(); this.jumpPost(1); },
         };
       })(),
-      socialCountLabel: count(socialVM.length, 'post', 'posts'),
+      socialCountLabel: count(this.postGroups().length, 'post', 'posts'),
       bannersVM, hasBanners: bannersVM.length > 0,
       bannerCountLabel: count(bannersVM.length, 'piece', 'pieces'),
       printVM, hasPrint: printVM.length > 0,

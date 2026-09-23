@@ -3658,7 +3658,12 @@
                 <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ ms.statusIdle }}</span>
                 <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
                   <input type="file" accept="{{ ms.accept }}" multiple="{{ true }}" ref="{{ ms.setInputRef }}" onChange="{{ ms.onFiles }}" style="display:none">
-                  <button onClick="{{ ms.trigger }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Upload</button>
+                  <sc-if value="{{ ms.notPosts }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ ms.trigger }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Upload</button>
+                  </sc-if>
+                  <sc-if value="{{ ms.isPosts }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ ms.addPost }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">+ New post</button>
+                  </sc-if>
                 </sc-if>
               </div>
               <sc-if value="{{ ms.uploading }}" hint-placeholder-val="{{ false }}">
@@ -3674,6 +3679,46 @@
               </sc-if>
               <sc-if value="{{ ms.isEmpty }}" hint-placeholder-val="{{ true }}">
                 <span style="font-size:12px; color:#67746F; line-height:1.5">{{ ms.emptyHint }}</span>
+              </sc-if>
+              <sc-if value="{{ ms.isPosts }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:14px">
+                  <sc-for list="{{ ms.postsVM }}" as="pp" hint-placeholder-count="1">
+                    <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FAFBFB; border:1px solid var(--line); border-radius:3px">
+                      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                        <span style="font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink)">{{ pp.title }}</span>
+                        <span style="font-size:11px; color:#67746F">{{ pp.countLabel }}</span>
+                        <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{ pp.upload }}" style="margin-left:auto; padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Add photos</button>
+                        </sc-if>
+                      </div>
+                      <sc-if value="{{ pp.hasItems }}" hint-placeholder-val="{{ false }}">
+                        <textarea placeholder="caption for this post" value="{{ pp.caption }}" onChange="{{ pp.onCaption }}" onBlur="{{ pp.saveCaption }}" readOnly="{{ albumLocked }}" rows="2" style="width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; font-family:inherit; line-height:1.5; resize:vertical; outline:none; background:#fff"></textarea>
+                      </sc-if>
+                      <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
+                        <sc-for list="{{ pp.itemsVM }}" as="mi" hint-placeholder-count="0">
+                          <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px; overflow:hidden; background:#fff">
+                            <div style="aspect-ratio:4 / 5; overflow:hidden; background:#F4F6F5">
+                              <img ref="{{ mi.setImgRef }}" alt="{{ mi.name }}" style="width:100%; height:100%; object-fit:cover; display:none">
+                            </div>
+                            <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
+                              <div style="display:flex; flex-direction:column; gap:6px; padding:8px 9px 9px">
+                                <input placeholder="Name" value="{{ mi.name }}" onChange="{{ mi.onName }}" onBlur="{{ mi.saveName }}" style="width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:3px; font-size:11px; outline:none">
+                                <div style="display:flex; gap:6px">
+                                  <select value="{{ mi.postValue }}" onChange="{{ mi.onMovePost }}" title="Move to post" style="flex:1; min-width:0; padding:5px; border:1px solid var(--line); border-radius:3px; font-size:10px; background:#fff; color:#5C6864">
+                                    <sc-for list="{{ mi.postOptions }}" as="po" hint-placeholder-count="0">
+                                      <option value="{{ po.value }}">{{ po.label }}</option>
+                                    </sc-for>
+                                  </select>
+                                  <button onClick="{{ mi.remove }}" style="padding:5px 9px; background:none; border:1px solid var(--line); border-radius:3px; font-size:10px; color:#B4433A; cursor:pointer">✕</button>
+                                </div>
+                              </div>
+                            </sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
               </sc-if>
               <div style="display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
                 <sc-for list="{{ ms.itemsVM }}" as="mi" hint-placeholder-count="0">
@@ -4613,7 +4658,7 @@ class Component extends DCLogic {
     linkProjects: [], linkPick: '',
     editProjClient: '', editProjTitle: '', editSector: '', editTagline: '', editBrief: '',
     paletteDraft: [], fontDraft: [], brandStatus: '',
-    projectMedia: [], projMediaStatus: {}, projMediaProgress: {},
+    projectMedia: [], projMediaStatus: {}, projMediaProgress: {}, socialExtraPosts: 0, postCaptionDraft: {},
     current: null, media: [], detailsStatus: '', uploadStatus: '', videoUploadStatus: '',
     videoProgress: null, videoUploadName: '', videoUploadError: false,
     editCouple: '', editDate: '', editTaken: '', editDelivered: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
@@ -5024,6 +5069,7 @@ class Component extends DCLogic {
     if (/taken_date|delivered_date/.test(m)) return 'Run album-system/project-dates-schema.sql in Supabase — the taken_date / delivered_date columns do not exist yet.';
     if (/production_status_check/.test(m)) return 'Run album-system/planning-stage.sql in Supabase — the database does not allow the Planning stage yet.';
     if (/work_nature/.test(m)) return 'Run album-system/projects-schema.sql in Supabase (latest version) — the work_nature column is missing on projects.';
+    if (/post_no/.test(m)) return 'Run album-system/project-media-posts.sql in Supabase — the database does not have post sets yet.';
     if (/project_media_section_check/.test(m)) return 'Run album-system/project-media-motion.sql in Supabase — the database does not allow the Motion graphics section yet.';
     if (/relation "?projects"?|project_media/.test(m)) return 'Run album-system/projects-schema.sql in Supabase — the projects tables do not exist yet.';
     return m;
@@ -5226,7 +5272,7 @@ class Component extends DCLogic {
       fontDraft: this.asList(pr.brand_fonts).map(f => ({ id: Date.now() + Math.random(), name: f.name || '', role: f.role || '', google: f.google || '', line: f.line || '' })),
       detailsStatus: '', brandStatus: '', clientStatus: '',
       editorTab: this.firstEditorTab(),
-      projectMedia: [], projMediaStatus: {}, projMediaProgress: {},
+      projectMedia: [], projMediaStatus: {}, projMediaProgress: {}, socialExtraPosts: 0, postCaptionDraft: {},
       assignments: [], costing: null, agEdits: {}, crewStatus: '',
       eventDays: [], dayDate: pr.start_date || '', dayHours: {}, dayStatus: '',
       afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
@@ -5297,17 +5343,17 @@ class Component extends DCLogic {
 
   // Files go up one at a time: a percentage can only honestly describe one
   // transfer, and a dropped connection then costs one file rather than five.
-  async uploadProjectMediaBatch(section, files) {
+  async uploadProjectMediaBatch(section, files, postNo) {
     if (this.albumLocked() || !files.length) return;
     for (let i = 0; i < files.length; i++) {
-      const prefix = files.length > 1 ? (i + 1) + ' of ' + files.length + ' · ' : '';
-      const ok = await this.uploadProjectMedia(section, files[i], prefix);
+      const prefix = (postNo ? 'post ' + postNo + ' · ' : '') + (files.length > 1 ? (i + 1) + ' of ' + files.length + ' · ' : '');
+      const ok = await this.uploadProjectMedia(section, files[i], prefix, postNo);
       if (!ok) break;
     }
     setTimeout(() => this.setProjMedia(section, { status: '', progress: null }), 2500);
   }
 
-  async uploadProjectMedia(section, file, prefix) {
+  async uploadProjectMedia(section, file, prefix, postNo) {
     if (this.albumLocked()) return false;
     const kind = (section === 'film' || section === 'motion') ? 'video' : 'photo';
     const label = prefix || '';
@@ -5348,6 +5394,7 @@ class Component extends DCLogic {
       const { error } = await this.sb.from('project_media').insert({
         project_id: this.state.current.id, section, kind, url, url_grid: urlGrid, url_view: url,
         thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: count,
+        ...(section === 'social' ? { post_no: postNo || 1, caption: this.postCaptionFor(postNo || 1) || null } : {}),
       });
       if (error) throw new Error('Uploaded, but could not be filed: ' + error.message);
       this.setProjMedia(section, { status: 'Done.', progress: null });
@@ -5358,6 +5405,30 @@ class Component extends DCLogic {
       this.loadProjectMedia(this.state.current.id);
       return false;
     }
+  }
+
+  postCaptionFor(no) {
+    const it = this.state.projectMedia.find(m => m.section === 'social' && (m.post_no || 1) === no && m.caption);
+    return it ? it.caption : '';
+  }
+
+  async savePostCaption(no) {
+    if (this.albumLocked()) return;
+    const text = (this.state.postCaptionDraft[no] ?? '').trim();
+    const ids = this.state.projectMedia.filter(m => m.section === 'social' && (m.post_no || 1) === no).map(m => m.id);
+    if (!ids.length) return;
+    const { error } = await this.sb.from('project_media').update({ caption: text || null }).in('id', ids);
+    this.setProjMedia('social', { status: error ? (error.message || 'Could not save caption') : 'Caption saved.' });
+    if (!error) { const d = { ...this.state.postCaptionDraft }; delete d[no]; this.setState({ postCaptionDraft: d }); }
+    await this.loadProjectMedia(this.state.current.id);
+    setTimeout(() => this.setProjMedia('social', { status: '' }), 2000);
+  }
+
+  async moveToPost(item, no) {
+    if (this.albumLocked()) return;
+    const { error } = await this.sb.from('project_media').update({ post_no: no, caption: this.postCaptionFor(no) || item.caption || null }).eq('id', item.id);
+    if (error) { this.setProjMedia('social', { status: error.message }); return; }
+    this.loadProjectMedia(this.state.current.id);
   }
 
   async saveProjectMediaField(item, patch) {
@@ -12791,39 +12862,24 @@ class Component extends DCLogic {
         const items = s.projectMedia.filter(m => m.section === key);
         const isLogo = key === 'logo', isFilm = key === 'film', isMotion = key === 'motion';
         const pct = s.projMediaProgress[key];
-        return {
-          label, countLabel: items.length ? items.length + (items.length === 1 ? ' item' : ' items') : '',
-          statusIdle: pct == null ? (s.projMediaStatus[key] || '') : '',
-          status: s.projMediaStatus[key] || '',
-          uploading: pct != null,
-          pctLabel: pct == null ? '' : pct + '%',
-          barWidth: (pct == null ? 0 : pct) + '%',
-          accept: isMotion ? 'video/mp4' : isFilm ? 'video/*' : 'image/*',
-          isEmpty: items.length === 0,
-          emptyHint: isLogo ? 'Primary mark, wordmark, lockups. Flip any tile to a dark ground to show the reversed version.'
-            : isFilm ? 'Reels and campaign films.'
-            : isMotion ? 'Looping motion pieces — .mp4 only, shown in an Instagram post box (4:5). A light copy is made for silent looping; the file you upload is what the lightbox plays and what downloads.'
-            : key === 'social' ? 'Posts and grid sets, shown as a square grid.'
-            : key === 'banner' ? 'Hoardings and wide artwork, shown full-bleed.'
-            : 'Packaging, collateral and guideline pages.',
-          setInputRef: el => { this.projInputs = this.projInputs || {}; this.projInputs[key] = el; },
-          trigger: () => { const el = this.projInputs && this.projInputs[key]; if (el) el.click(); },
-          onFiles: e => { const fs = Array.from(e.target.files || []); e.target.value = ''; this.uploadProjectMediaBatch(key, fs); },
-          itemsVM: items.map(m => ({
+        const isPosts = key === 'social';
+        const postNos = isPosts ? Array.from(new Set(items.map(m => m.post_no || 1))).sort((a, b) => a - b) : [];
+        if (isPosts) { let top = postNos.length ? postNos[postNos.length - 1] : 0; for (let k = 0; k < (s.socialExtraPosts || 0); k++) postNos.push(++top); if (!postNos.length) postNos.push(1); }
+        const tileVM = m => ({
             name: m.name || '',
             isMotion: isMotion,
             isVideo: m.kind === 'video' && !isMotion,
-            tileAspect: isMotion ? '4 / 5' : '1',
+            tileAspect: isMotion || isPosts ? '4 / 5' : '1',
+            postValue: String(m.post_no || 1),
+            postOptions: postNos.map(n => ({ value: String(n), label: 'post ' + n })),
+            onMovePost: e => this.moveToPost(m, parseInt(e.target.value, 10)),
             setVideoRef: el => {
               if (!el) return;
-              // Order matters: muted and loop must be set before the source, or
-              // the browser judges it a sound-on video and refuses to autoplay.
               el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
               const src = m.url_grid || m.url;
               if (el.getAttribute('src') !== src) { el.setAttribute('src', src); el.load(); }
               const go = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
               el.oncanplay = go; el.onstalled = go; el.onpause = go;
-              // A loop that ends without looping is stuck; nudge it back.
               el.onended = () => { el.currentTime = 0; go(); };
               go();
             },
@@ -12837,7 +12893,46 @@ class Component extends DCLogic {
             saveName: () => this.saveProjectMediaField(m, { name: (this.state.projectMedia.find(x => x.id === m.id) || {}).name || null }),
             flipGround: () => this.saveProjectMediaField(m, { ground: m.ground === 'dark' ? 'light' : 'dark' }),
             remove: () => this.deleteProjectMedia(m),
-          })),
+        });
+        return {
+          isPosts, notPosts: !isPosts,
+          postsVM: postNos.map(no => {
+            const its = items.filter(m => (m.post_no || 1) === no);
+            return {
+              title: 'post ' + no,
+              countLabel: its.length ? its.length + (its.length === 1 ? ' photo' : ' photos') : 'empty — add photos into it',
+              hasItems: its.length > 0,
+              caption: s.postCaptionDraft[no] ?? this.postCaptionFor(no),
+              onCaption: e => this.setState({ postCaptionDraft: { ...this.state.postCaptionDraft, [no]: e.target.value } }),
+              saveCaption: () => { if (this.state.postCaptionDraft[no] !== undefined) this.savePostCaption(no); },
+              upload: () => { this._postTarget = no; const el = this.projInputs && this.projInputs.social; if (el) el.click(); },
+              itemsVM: its.map(tileVM),
+            };
+          }),
+          addPost: () => this.setState({ socialExtraPosts: (this.state.socialExtraPosts || 0) + 1 }),
+          label, countLabel: items.length ? items.length + (items.length === 1 ? ' item' : ' items') : '',
+          statusIdle: pct == null ? (s.projMediaStatus[key] || '') : '',
+          status: s.projMediaStatus[key] || '',
+          uploading: pct != null,
+          pctLabel: pct == null ? '' : pct + '%',
+          barWidth: (pct == null ? 0 : pct) + '%',
+          accept: isMotion ? 'video/mp4' : isFilm ? 'video/*' : 'image/*',
+          isEmpty: items.length === 0,
+          emptyHint: isLogo ? 'Primary mark, wordmark, lockups. Flip any tile to a dark ground to show the reversed version.'
+            : isFilm ? 'Reels and campaign films.'
+            : isMotion ? 'Looping motion pieces — .mp4 only, shown in an Instagram post box (4:5). A light copy is made for silent looping; the file you upload is what the lightbox plays and what downloads.'
+            : key === 'social' ? 'Each post is its own swipeable carousel on the project page. Add photos into a post, or start a new one.'
+            : key === 'banner' ? 'Hoardings and wide artwork, shown full-bleed.'
+            : 'Packaging, collateral and guideline pages.',
+          setInputRef: el => { this.projInputs = this.projInputs || {}; this.projInputs[key] = el; },
+          trigger: () => { const el = this.projInputs && this.projInputs[key]; if (el) el.click(); },
+          onFiles: e => {
+            const fs = Array.from(e.target.files || []); e.target.value = '';
+            const no = isPosts ? (this._postTarget || 1) : undefined; this._postTarget = null;
+            if (isPosts && this.state.socialExtraPosts) this.setState({ socialExtraPosts: 0 });
+            this.uploadProjectMediaBatch(key, fs, no);
+          },
+          itemsVM: isPosts ? [] : items.map(tileVM),
         };
       }),
 
