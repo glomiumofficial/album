@@ -291,12 +291,56 @@
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Social</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#9AA6A2">{{ socialCountLabel }}</span>
       </div>
-      <div style="max-width:1560px; margin:0 auto; padding:clamp(20px,3.4vh,36px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(14px,1.9vw,30px); grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr))">
-        <sc-for list="{{ socialVM }}" as="so" hint-placeholder-count="6">
-          <div onClick="{{ so.open }}" style="position:relative; overflow:hidden; background:#F3F6F5; cursor:zoom-in">
-            <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" loading="lazy" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; transition:transform .6s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.04)">
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(28px,5vh,56px) clamp(18px,4vw,48px) 0; display:flex; justify-content:center">
+        <div style="width:100%; max-width:470px; background:#FFFFFF; border:1px solid #E3E8E6; border-radius:6px; overflow:hidden; box-shadow:0 18px 50px -30px rgba(16,26,23,.28)">
+          <div style="display:flex; align-items:center; gap:11px; padding:12px 14px">
+            <div style="width:34px; height:34px; border-radius:50%; padding:2px; background:linear-gradient(135deg, var(--green), #9FD8C8); flex-shrink:0">
+              <div style="width:100%; height:100%; border-radius:50%; background:#FFFFFF; border:2px solid #FFFFFF; overflow:hidden; display:grid; place-items:center">
+                <img ref="{{ setPostAvatarRef }}" alt="" style="width:100%; height:100%; object-fit:contain; display:none">
+                <span ref="{{ setPostInitialRef }}" style="font-size:13px; font-weight:400; color:var(--green-deep)">{{ postInitial }}</span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:1px; min-width:0; flex:1">
+              <span style="font-size:13px; font-weight:500; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ postHandle }}</span>
+              <sc-if value="{{ hasPostSub }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11px; color:#7A8683; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ postSub }}</span>
+              </sc-if>
+            </div>
           </div>
-        </sc-for>
+          <div style="position:relative; background:#F3F6F5">
+            <div ref="{{ setPostTrackRef }}" onScroll="{{ onPostScroll }}" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch">
+              <sc-for list="{{ socialVM }}" as="so" hint-placeholder-count="1">
+                <div onClick="{{ so.open }}" style="flex:0 0 100%; scroll-snap-align:start; scroll-snap-stop:always; cursor:zoom-in">
+                  <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" draggable="false" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; user-select:none">
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ postMulti }}" hint-placeholder-val="{{ false }}">
+              <span style="position:absolute; top:12px; right:12px; padding:4px 9px; border-radius:12px; background:rgba(16,26,23,.66); color:#FFFFFF; font-size:11px; letter-spacing:.04em; font-variant-numeric:tabular-nums; pointer-events:none">{{ postCounter }}</span>
+            </sc-if>
+            <sc-if value="{{ postHasPrev }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ postPrev }}" aria-label="Previous" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:var(--ink); font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.18)">‹</button>
+            </sc-if>
+            <sc-if value="{{ postHasNext }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ postNext }}" aria-label="Next" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:var(--ink); font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.18)">›</button>
+            </sc-if>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px; padding:12px 14px 16px">
+            <sc-if value="{{ postMulti }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; justify-content:center; gap:4px; padding-top:2px">
+                <sc-for list="{{ postDots }}" as="d" hint-placeholder-count="0">
+                  <span style="width:6px; height:6px; border-radius:50%; transition:background .2s; background:{{ d.bg }}"></span>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasPostCaption }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0; font-size:13px; line-height:1.5; color:#3A4441; text-wrap:pretty"><strong style="font-weight:500; color:var(--ink)">{{ postHandle }}</strong> {{ postCaption }}</p>
+            </sc-if>
+            <sc-if value="{{ hasPostSlideName }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#9AA6A2">{{ postSlideName }}</span>
+            </sc-if>
+          </div>
+        </div>
       </div>
     </sc-if>
 
@@ -405,7 +449,16 @@ class Component extends DCLogic {
     project: null, media: [],
     copied: '',
     lightboxOpen: false, lightboxIndex: 0,
+    postIndex: 0,
   };
+
+  postGo(i) {
+    const t = this._postTrack; if (!t) return;
+    const n = this.mediaVM('social').length;
+    const k = Math.max(0, Math.min(n - 1, i));
+    t.scrollTo({ left: k * t.clientWidth, behavior: 'smooth' });
+    this.setState({ postIndex: k });
+  }
 
   // ---- Boot ---------------------------------------------------------------
 
@@ -803,6 +856,33 @@ class Component extends DCLogic {
       logosVM, hasLogos: logosVM.length > 0,
       logoCountLabel: count(logosVM.length, 'mark', 'marks'),
       socialVM, hasSocial: socialVM.length > 0,
+      ...(() => {
+        const n = socialVM.length, i = Math.min(this.state.postIndex, Math.max(0, n - 1));
+        const logo = this.state.media.find(m => m.section === 'logo' && m.url);
+        const logoSrc = logo ? (logo.url_grid || logo.url_view || logo.url) : '';
+        const handle = (p.client_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '') || 'brand';
+        const cur = socialVM[i];
+        return {
+          postHandle: handle,
+          postInitial: (p.client_name || 'b').trim().charAt(0).toLowerCase(),
+          postSub: p.sector || p.project_title || '', hasPostSub: !!(p.sector || p.project_title),
+          postCaption: p.tagline || '', hasPostCaption: !!p.tagline,
+          postSlideName: cur && cur.name ? cur.name : '', hasPostSlideName: !!(cur && cur.name),
+          postMulti: n > 1, postCounter: (i + 1) + '/' + n,
+          postHasPrev: i > 0, postHasNext: i < n - 1,
+          postDots: socialVM.map((_, k) => ({ bg: k === i ? 'var(--green)' : '#C9D3D0' })),
+          postPrev: e => { e.stopPropagation(); this.postGo(i - 1); },
+          postNext: e => { e.stopPropagation(); this.postGo(i + 1); },
+          setPostTrackRef: el => { this._postTrack = el; },
+          onPostScroll: e => {
+            const t = e.currentTarget; if (!t.clientWidth) return;
+            const k = Math.round(t.scrollLeft / t.clientWidth);
+            if (k !== this.state.postIndex) this.setState({ postIndex: k });
+          },
+          setPostAvatarRef: el => { if (el && logoSrc) { el.src = logoSrc; el.style.display = 'block'; } },
+          setPostInitialRef: el => { if (el) el.style.display = logoSrc ? 'none' : 'block'; },
+        };
+      })(),
       socialCountLabel: count(socialVM.length, 'post', 'posts'),
       bannersVM, hasBanners: bannersVM.length > 0,
       bannerCountLabel: count(bannersVM.length, 'piece', 'pieces'),
