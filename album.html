@@ -656,7 +656,6 @@ class Component extends DCLogic {
           // start at full volume and fall back to muted only if a browser refuses.
           el.muted = false;
           el.volume = 1;
-          this.wireStallGuard(el);
           const p = el.play();
           if (p && p.catch) p.catch(() => {
             el.muted = true;

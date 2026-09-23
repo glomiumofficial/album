@@ -1139,11 +1139,10 @@ class Component extends DCLogic {
       lightboxIsVideo: !!cur && cur.kind === 'video',
       lightboxIsImage: !!cur && cur.kind !== 'video',
       setLightboxImgRef: el => { const u = cur && (cur.url_view || cur.url); if (el && u && el.getAttribute('src') !== u) el.src = u; },
-      // Films play the streaming copy (download still gives the master);
-      // motion plays its full-quality original.
+      // The lightbox always plays the uploaded master — no compressed copy.
       setLightboxVideoRef: el => {
         if (!el || !cur) return;
-        const src = cur.section === 'film' ? (cur.url_view || cur.url) : cur.url;
+        const src = cur.url;
         if (el.getAttribute('src') !== src) {
           el.preload = 'auto';
           if (cur.thumb_url) el.setAttribute('poster', cur.thumb_url); else el.removeAttribute('poster');
