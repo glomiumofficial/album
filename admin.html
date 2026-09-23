@@ -5356,6 +5356,7 @@ class Component extends DCLogic {
   // transfer, and a dropped connection then costs one file rather than five.
   async uploadProjectMediaBatch(section, files, postNo) {
     if (this.albumLocked() || !files.length) return;
+    this._dimsMissing = false;
     for (let i = 0; i < files.length; i++) {
       const prefix = (postNo ? 'post ' + postNo + ' · ' : '') + (files.length > 1 ? (i + 1) + ' of ' + files.length + ' · ' : '');
       const ok = await this.uploadProjectMedia(section, files[i], prefix, postNo);
@@ -5370,14 +5371,17 @@ class Component extends DCLogic {
     const label = prefix || '';
     this.setProjMedia(section, { status: label + file.name, progress: 0 });
     try {
-      let url, urlGrid = null, thumbUrl = null, urlView = null;
+      let url, urlGrid = null, thumbUrl = null, urlView = null, dims = {};
       const onProg = (pct, loaded, total) => this.setProjMedia(section, {
         progress: pct,
         status: label + (pct >= 100 ? 'finishing on the server…' : this.fmtBytes(loaded) + ' of ' + this.fmtBytes(total)),
       });
       if (kind === 'photo') {
         const set = await this.uploadPhotoSet(file, onProg);
-        url = set.url; urlGrid = set.url_grid;
+        // url_view used to be dropped here, so the lightbox pulled the original
+        // and the 2800 copy sat in the bucket with nothing pointing at it.
+        url = set.url; urlGrid = set.url_grid; urlView = set.url_view;
+        if (set.width && set.height) dims = { width: set.width, height: set.height };
       } else {
         const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
         // Same split as album films: past 20 MB the resumable path survives a
@@ -5392,8 +5396,8 @@ class Component extends DCLogic {
         } catch (e) { /* a missing poster is survivable — the loop still plays */ }
         if (section === 'motion') {
           this.setProjMedia(section, { progress: 0, status: label + 'compressing the loop…' });
-          const small = await this.compressMotionLoop(file, p => this.setProjMedia(section, {
-            progress: p, status: label + 'compressing the loop — plays at ' + p + '%',
+          const small = await this.compressMotionLoop(file, (p, paused) => this.setProjMedia(section, {
+            progress: p, status: label + (paused ? 'loop copy paused at ' + p + '% — bring this tab back to the front to continue' : 'compressing the loop — plays at ' + p + '%'),
           }));
           if (small) urlGrid = await this.uploadBlob(small.blob, 'motion-loop', small.ext);
         }
@@ -5401,12 +5405,15 @@ class Component extends DCLogic {
         if (section === 'film' && file.size > 40 * 1024 * 1024) {
           const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
           this.setProjMedia(section, { progress: 0, status: label + 'making streaming copy…' });
-          const st = await this.makeStreamCopy(file, (p, t, d) => this.setProjMedia(section, {
-            progress: p, status: label + 'streaming copy · ' + fmtT(t) + ' of ' + fmtT(d) + ' — keep this tab open',
+          const st = await this.makeStreamCopy(file, (p, t, d, paused) => this.setProjMedia(section, {
+            progress: p, status: label + (paused
+              ? 'streaming copy paused at ' + fmtT(t) + ' of ' + fmtT(d) + ' — bring this tab back to the front to continue'
+              : 'streaming copy · ' + fmtT(t) + ' of ' + fmtT(d) + ' — keep this tab in front'),
           }));
           if (st) {
-            this.setProjMedia(section, { progress: 100, status: label + 'uploading streaming copy…' });
-            urlView = await this.uploadBlob(st.blob, 'film-stream', st.ext);
+            urlView = await this.uploadMediaBlob(st.blob, 'film-stream', 'mp4', (p, l, t) => this.setProjMedia(section, {
+              progress: p, status: label + 'uploading streaming copy · ' + this.fmtBytes(l) + ' of ' + this.fmtBytes(t),
+            }));
           }
         }
       }
@@ -5414,13 +5421,13 @@ class Component extends DCLogic {
       const count = this.state.projectMedia.filter(m => m.section === section).length;
       // The file is already in the bucket by here — if the row fails to write,
       // say so, or the upload looks like it simply vanished.
-      const { error } = await this.sb.from('project_media').insert({
+      const { error } = await this.insertWithDims('project_media', {
         project_id: this.state.current.id, section, kind, url, url_grid: urlGrid, url_view: urlView || url,
-        thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: count,
+        thumb_url: thumbUrl, name: file.name.replace(/\.[^.]+$/, ''), sort_order: count, ...dims,
         ...(section === 'social' ? { post_no: postNo || 1, caption: this.postCaptionFor(postNo || 1) || null } : {}),
       });
       if (error) throw new Error('Uploaded, but could not be filed: ' + error.message);
-      this.setProjMedia(section, { status: 'Done.', progress: null });
+      this.setProjMedia(section, { status: this._dimsMissing ? 'Done — run album-system/audit-2026-09-23.sql so pages can reserve image sizes.' : 'Done.', progress: null });
       await this.loadProjectMedia(this.state.current.id);
       return true;
     } catch (e) {
@@ -5622,23 +5629,41 @@ class Component extends DCLogic {
   }
 
   // Downscale to a max long edge. Returns null if the source is already smaller.
-  async resizeImage(file, maxEdge, quality) {
-    const bmp = await createImageBitmap(file);
+  // One-pixel probe, once. The old test encoded the full-size canvas to a data
+  // URL on every call — a main-thread WebP encode per photo, just to ask.
+  canWebp() {
+    if (this._webp == null) {
+      const t = document.createElement('canvas'); t.width = t.height = 1;
+      this._webp = t.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+    }
+    return this._webp;
+  }
+
+  // bmpIn: an already-decoded bitmap, so a photo is decoded once for all its
+  // sizes. The caller owns and closes it.
+  async resizeImage(file, maxEdge, quality, bmpIn) {
+    const bmp = bmpIn || await createImageBitmap(file);
+    const own = !bmpIn;
     const long = Math.max(bmp.width, bmp.height);
-    if (long <= maxEdge * 1.02) { bmp.close && bmp.close(); return null; }
+    if (long <= maxEdge * 1.02) { if (own && bmp.close) bmp.close(); return null; }
     const scale = maxEdge / long;
     const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
-    const ctx = c.getContext('2d', { alpha: false });
+    // A logo's transparency is the artwork. The opaque canvas turned every
+    // transparent pixel black, so a PNG mark arrived as a black box. Formats
+    // that carry alpha keep it, and never fall back to JPEG (Safari cannot
+    // encode WebP, so they go PNG there).
+    const alpha = /png|webp|gif|svg/i.test(file.type || '') || /\.(png|webp|gif|svg)$/i.test(file.name || '');
+    const ctx = c.getContext('2d', { alpha });
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(bmp, 0, 0, w, h);
-    bmp.close && bmp.close();
-    const webp = c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-    const type = webp ? 'image/webp' : 'image/jpeg';
+    if (own && bmp.close) bmp.close();
+    const webp = this.canWebp();
+    const type = webp ? 'image/webp' : alpha ? 'image/png' : 'image/jpeg';
     const blob = await new Promise(r => c.toBlob(r, type, quality));
-    return blob ? { blob, ext: webp ? 'webp' : 'jpg' } : null;
+    return blob ? { blob, ext: webp ? 'webp' : alpha ? 'png' : 'jpg' } : null;
   }
 
   // Pull one frame out of the local file before it leaves the browser — the album
@@ -5724,16 +5749,12 @@ class Component extends DCLogic {
     if (!type) return null;
     const isFile = typeof src !== 'string';
     const objUrl = isFile ? URL.createObjectURL(src) : null;
-    let v = null, raf = 0, ac = null;
+    let v = null, ac = null, job = null;
     try {
       v = document.createElement('video');
       if (!isFile) v.crossOrigin = 'anonymous';
       v.playsInline = true; v.preload = 'auto'; v.src = objUrl || src;
-      await new Promise((res, rej) => {
-        v.onloadedmetadata = res;
-        v.onerror = () => rej(new Error('unreadable'));
-        setTimeout(() => rej(new Error('timed out')), 60000);
-      });
+      await this.firstFrame(v, 60000);
       const dur = v.duration || 0;
       const w0 = v.videoWidth, h0 = v.videoHeight;
       if (!dur || !w0 || !h0) return null;
@@ -5742,8 +5763,7 @@ class Component extends DCLogic {
       const h = Math.max(2, Math.round(h0 * scale / 2) * 2);
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
-      const ctx = c.getContext('2d');
-      const stream = c.captureStream(30);
+      const stream = c.captureStream();
       try {
         ac = new (window.AudioContext || window.webkitAudioContext)();
         const node = ac.createMediaElementSource(v);
@@ -5751,51 +5771,128 @@ class Component extends DCLogic {
         node.connect(dest);
         dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
         if (ac.state === 'suspended') await ac.resume();
-      } catch (e) { v.muted = true; }
+      } catch (e) { console.warn('streaming copy: no audio route, copy will be silent', e); v.muted = true; }
       const rec = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 5000000, audioBitsPerSecond: 160000 });
-      const chunks = [];
-      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-      const stopped = new Promise(res => { rec.onstop = res; });
-      rec.start(1000);
-      await v.play();
-      const draw = () => {
-        try { ctx.drawImage(v, 0, 0, w, h); } catch (e) {}
-        if (onProg) onProg(Math.min(99, Math.round((v.currentTime / dur) * 100)), v.currentTime, dur);
-        raf = requestAnimationFrame(draw);
-      };
-      draw();
-      // A background tab throttles rAF; keep painting from a timer too.
-      const tick = setInterval(() => { try { ctx.drawImage(v, 0, 0, w, h); } catch (e) {} }, 1000 / 30);
-      await new Promise(res => { v.onended = res; setTimeout(res, (dur + 15) * 1000); });
-      clearInterval(tick);
-      cancelAnimationFrame(raf); raf = 0;
-      rec.stop();
-      await stopped;
-      const blob = new Blob(chunks, { type: 'video/mp4' });
+      job = this.recordCanvas(v, c.getContext('2d', { alpha: false }), w, h, rec, dur, onProg);
+      const blob = await job.done;
       const masterSize = isFile ? src.size : Infinity;
       if (!blob.size || blob.size > masterSize * 0.85) return null;
       return { blob, ext: 'mp4' };
     } catch (e) {
+      console.warn('streaming copy failed', e);
       return null;
     } finally {
-      if (raf) cancelAnimationFrame(raf);
-      if (v) { try { v.pause(); } catch (e) {} v.removeAttribute('src'); }
-      if (ac) { try { ac.close(); } catch (e) {} }
+      if (job) job.cancel();
+      if (v) { v.pause(); v.removeAttribute('src'); }
+      if (ac) { const p = ac.close(); if (p && p.catch) p.catch(e => console.warn('audio context close', e)); }
       if (objUrl) URL.revokeObjectURL(objUrl);
     }
+  }
+
+  // Resolves once a decoded frame exists, so frame one of a copy is real
+  // picture rather than an empty canvas.
+  firstFrame(v, ms) {
+    return new Promise((res, rej) => {
+      const t = setTimeout(() => rej(new Error('timed out')), ms);
+      v.onloadeddata = () => { clearTimeout(t); res(); };
+      v.onerror = () => { clearTimeout(t); rej(new Error('unreadable')); };
+    });
+  }
+
+  // Real-time re-encode off a canvas, driven by the SOURCE's frames:
+  // requestVideoFrameCallback draws each decoded frame exactly once, and a
+  // canvas stream with no fixed rate emits one frame per draw — so a 24 or 25
+  // fps film keeps its cadence instead of being resampled onto a 30 fps clock
+  // (the judder). Recording starts on the first real frame, which removes the
+  // blank frame a loop used to flash at its seam. A hidden tab throttles every
+  // timer to ~1 fps, which baked stutter into the copy; now the source and the
+  // recorder pause together while hidden and carry on when the tab returns.
+  // A source that stops advancing fails the copy — a truncated streaming copy
+  // is worse than none, since the page falls back to the master.
+  recordCanvas(v, ctx, w, h, rec, dur, onProg) {
+    const chunks = [];
+    const hasVfc = typeof v.requestVideoFrameCallback === 'function';
+    let vfc = 0, raf = 0, stall = 0, over = false, resolveDone, rejectDone;
+    const done = new Promise((res, rej) => { resolveDone = res; rejectDone = rej; });
+    const clear = () => {
+      over = true;
+      if (vfc && v.cancelVideoFrameCallback) v.cancelVideoFrameCallback(vfc);
+      if (raf) cancelAnimationFrame(raf);
+      clearTimeout(stall);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+    const fail = err => {
+      if (over) return;
+      clear();
+      if (rec.state !== 'inactive') rec.stop();
+      rejectDone(err);
+    };
+    const armStall = () => { clearTimeout(stall); stall = setTimeout(() => fail(new Error('source stopped advancing')), 20000); };
+    const next = () => { if (hasVfc) vfc = v.requestVideoFrameCallback(draw); else raf = requestAnimationFrame(draw); };
+    const draw = () => {
+      if (over) return;
+      try { ctx.drawImage(v, 0, 0, w, h); } catch (e) { fail(e); return; }
+      armStall();
+      if (onProg) onProg(Math.min(99, Math.round((v.currentTime / dur) * 100)), v.currentTime, dur);
+      next();
+    };
+    const onVis = () => {
+      if (over) return;
+      if (document.hidden) {
+        clearTimeout(stall);
+        v.pause();
+        if (rec.state === 'recording') rec.pause();
+        // Fourth argument: paused. The next drawn frame reports running again.
+        if (onProg) onProg(Math.min(99, Math.round((v.currentTime / dur) * 100)), v.currentTime, dur, true);
+      } else {
+        if (rec.state === 'paused') rec.resume();
+        armStall();
+        v.play().catch(fail);
+      }
+    };
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    v.onended = () => {
+      if (over) return;
+      clear();
+      rec.onstop = () => resolveDone(new Blob(chunks, { type: 'video/mp4' }));
+      rec.stop();
+    };
+    v.onerror = () => fail(new Error('decode error'));
+    document.addEventListener('visibilitychange', onVis);
+    v.play().then(() => {
+      if (over) return;
+      rec.start(1000);
+      draw();
+      if (document.hidden) onVis();
+    }, fail);
+    return { done, cancel: () => fail(new Error('cancelled')) };
+  }
+
+  // Streaming copies run 100 MB+, past the single-request limit and too big to
+  // lose to one dropped connection. A fresh File name keeps tus fingerprints
+  // unique, so a half-finished copy can never be resumed into another one.
+  async uploadMediaBlob(blob, prefix, ext, onProg) {
+    const file = new File([blob], prefix + '-' + Date.now() + '.' + ext, { type: blob.type || 'video/mp4', lastModified: Date.now() });
+    return file.size > 20 * 1024 * 1024
+      ? this.uploadResumable(file, prefix, ext, onProg)
+      : this.uploadBlobWithProgress(file, prefix, ext, onProg);
   }
 
   async streamCopyFor(item) {
     if (this.albumLocked()) return;
     const sec = item.section;
-    if (!window.confirm('Make a streaming copy of this film? It plays through once in the background, so it takes about as long as the film. Keep this tab open.')) return;
+    if (!window.confirm('Make a streaming copy of this film? It plays through once, so it takes about as long as the film. Keep this tab in front — it pauses while the tab is hidden.')) return;
     const fmtT = t => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
     this.setProjMedia(sec, { progress: 0, status: 'streaming copy · ' + (item.name || 'film') });
-    const out = await this.makeStreamCopy(item.url, (p, t, d) => this.setProjMedia(sec, { progress: p, status: 'streaming copy · ' + fmtT(t) + ' of ' + fmtT(d) + ' — keep this tab open' }));
+    const out = await this.makeStreamCopy(item.url, (p, t, d, paused) => this.setProjMedia(sec, { progress: p, status: paused
+      ? 'streaming copy paused at ' + fmtT(t) + ' of ' + fmtT(d) + ' — bring this tab back to the front to continue'
+      : 'streaming copy · ' + fmtT(t) + ' of ' + fmtT(d) + ' — keep this tab in front' }));
     if (!out) { this.setProjMedia(sec, { progress: null, status: 'Could not make a streaming copy in this browser — use Chrome, or re-export with Fast Start on.' }); return; }
     try {
       this.setProjMedia(sec, { progress: 100, status: 'uploading streaming copy…' });
-      const u = await this.uploadBlob(out.blob, 'film-stream', out.ext);
+      const u = await this.uploadMediaBlob(out.blob, 'film-stream', 'mp4', (p, l, t) => this.setProjMedia(sec, {
+        progress: p, status: 'uploading streaming copy · ' + this.fmtBytes(l) + ' of ' + this.fmtBytes(t),
+      }));
       const { error } = await this.sb.from('project_media').update({ url_view: u }).eq('id', item.id);
       if (error) throw error;
       this.setProjMedia(sec, { progress: null, status: 'Streaming copy ready · ' + this.fmtBytes(out.blob.size) });
@@ -5815,15 +5912,11 @@ class Component extends DCLogic {
     });
     if (!type) return null;
     const objUrl = URL.createObjectURL(file);
-    let v = null, raf = 0;
+    let v = null, job = null;
     try {
       v = document.createElement('video');
       v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = objUrl;
-      await new Promise((res, rej) => {
-        v.onloadedmetadata = res;
-        v.onerror = () => rej(new Error('unreadable'));
-        setTimeout(() => rej(new Error('timed out')), 20000);
-      });
+      await this.firstFrame(v, 20000);
       const dur = v.duration || 0;
       if (!dur || dur > 40) return null; // a long film is not a loop
       const w0 = v.videoWidth, h0 = v.videoHeight;
@@ -5834,32 +5927,18 @@ class Component extends DCLogic {
       const h = Math.max(2, Math.round(h0 * scale / 2) * 2);
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
-      const ctx = c.getContext('2d');
-      const rec = new MediaRecorder(c.captureStream(30), { mimeType: type, videoBitsPerSecond: 3500000 });
-      const chunks = [];
-      rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-      const stopped = new Promise(res => { rec.onstop = res; });
-      rec.start();
-      await v.play();
-      const draw = () => {
-        try { ctx.drawImage(v, 0, 0, w, h); } catch (e) {}
-        if (onProg) onProg(Math.min(99, Math.round((v.currentTime / dur) * 100)));
-        raf = requestAnimationFrame(draw);
-      };
-      draw();
-      await new Promise(res => { v.onended = res; setTimeout(res, (dur + 8) * 1000); });
-      cancelAnimationFrame(raf); raf = 0;
-      rec.stop();
-      await stopped;
-      const blob = new Blob(chunks, { type: 'video/mp4' });
+      const rec = new MediaRecorder(c.captureStream(), { mimeType: type, videoBitsPerSecond: 3500000 });
+      job = this.recordCanvas(v, c.getContext('2d', { alpha: false }), w, h, rec, dur, (p, t, d, paused) => onProg && onProg(p, paused));
+      const blob = await job.done;
       // No point shipping a "small" copy that is bigger than the master.
       if (!blob.size || blob.size > file.size * 0.9) return null;
       return { blob, ext: 'mp4' };
     } catch (e) {
+      console.warn('loop copy failed', e);
       return null;
     } finally {
-      if (raf) cancelAnimationFrame(raf);
-      if (v) { try { v.pause(); } catch (e) {} v.removeAttribute('src'); }
+      if (job) job.cancel();
+      if (v) { v.pause(); v.removeAttribute('src'); }
       URL.revokeObjectURL(objUrl);
     }
   }
@@ -5870,13 +5949,22 @@ class Component extends DCLogic {
       ? await this.uploadBlobWithProgress(file, 'photo', ext, onProgress)
       : await this.uploadFile(file, 'photo');
     const out = { url: original, url_grid: original, url_view: original };
+    let bmp = null;
     try {
-      const view = await this.resizeImage(file, 2800, 0.92);
+      bmp = await createImageBitmap(file);
+      // Stored so album pages can reserve each tile's box before it loads.
+      out.width = bmp.width; out.height = bmp.height;
+      const view = await this.resizeImage(file, 2800, 0.92, bmp);
       if (view) out.url_view = await this.uploadBlob(view.blob, 'view', view.ext);
-      const grid = await this.resizeImage(file, 1200, 0.9);
+      const grid = await this.resizeImage(file, 1200, 0.9, bmp);
       if (grid) out.url_grid = await this.uploadBlob(grid.blob, 'grid', grid.ext);
       else out.url_grid = out.url_view;
-    } catch (e) { /* fall back to original on any canvas/codec failure */ }
+    } catch (e) {
+      // The original is already up and still serves; the page is just heavier.
+      console.warn('photo copies failed, serving the original', file.name, e);
+    } finally {
+      if (bmp && bmp.close) bmp.close();
+    }
     return out;
   }
 
@@ -5902,6 +5990,7 @@ class Component extends DCLogic {
     if (this.albumLocked()) { this.setState({ uploadStatus: 'Album is locked — this event is delivered.' }); return; }
     const files = Array.from(fileList || []);
     if (!files.length) return;
+    this._dimsMissing = false;
     let n = 0;
     const fails = [];
     for (const file of files) {
@@ -5911,7 +6000,7 @@ class Component extends DCLogic {
         const set = await this.uploadPhotoSet(file);
         // The file is in the bucket by now. A failed row means the photo is
         // paid-for storage that nothing points at, so it has to be reported.
-        const { error } = await this.sb.from('media').insert({ event_id: this.state.current.id, kind: 'photo', ...set, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + n });
+        const { error } = await this.insertWithDims('media', { event_id: this.state.current.id, kind: 'photo', ...set, name: file.name.replace(/\.[^.]+$/, ''), sort_order: this.state.media.length + n });
         if (error) throw new Error(error.message);
       } catch (e) { fails.push(file.name + ': ' + (e.message || 'failed')); }
     }
@@ -5921,7 +6010,7 @@ class Component extends DCLogic {
     this.setState({ uploadStatus: fails.length
       ? fails.length + ' of ' + files.length + ' did not save. ' + fails.slice(0, 2).join(' \u00b7 ')
         + (fails.length > 2 ? ' \u00b7 and ' + (fails.length - 2) + ' more' : '')
-      : 'Done.' });
+      : this._dimsMissing ? 'Done — run album-system/audit-2026-09-23.sql so the album can reserve image sizes.' : 'Done.' });
     this.loadMedia(this.state.current.id);
     if (!fails.length) setTimeout(() => this.setState({ uploadStatus: '' }), 2000);
   }
@@ -5965,6 +6054,29 @@ class Component extends DCLogic {
   // A long upload can outlive the access token, so the row insert gets rejected
   // by RLS just as the bytes land. Refresh once and retry before giving up — the
   // file is already in storage at this point.
+  // width/height arrive with audit-2026-09-23.sql. Until it has run, the row is
+  // written without them — a photo must not be lost over layout metadata —
+  // and the upload status names the missing script.
+  // PostgREST PGRST204: "Could not find the 'width' column of 'media' in the
+  // schema cache". Postgres 42703: column "width" of relation … does not exist.
+  // Nothing else — any other failure is a real one and must surface.
+  isMissingDimsColumn(err) {
+    const code = String((err && err.code) || ''), msg = String((err && err.message) || '');
+    if (code === 'PGRST204') return /Could not find the '(width|height)' column/.test(msg);
+    if (code === '42703') return /column "(width|height)"/.test(msg);
+    return false;
+  }
+
+  async insertWithDims(table, row) {
+    let res = await this.sb.from(table).insert(row);
+    if (res.error && ('width' in row) && this.isMissingDimsColumn(res.error)) {
+      const { width, height, ...rest } = row;
+      res = await this.sb.from(table).insert(rest);
+      if (!res.error) this._dimsMissing = true;
+    }
+    return res;
+  }
+
   async insertMediaRow(row) {
     let res = await this.sb.from('media').insert(row);
     if (res.error) {
@@ -6001,7 +6113,7 @@ class Component extends DCLogic {
   async uploadResumable(file, prefix, ext, onProgress) {
     try { await loadLib('tus'); } catch (e) { /* checked below */ }
     if (!window.tus) throw new Error('Resumable uploader failed to load. Check your connection and reload.');
-    const path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+    let path = this.state.current.id + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
     let { data: sess } = await this.sb.auth.getSession();
     // Every chunk carries the header set at creation time, so a token that is
     // close to expiry would die mid-transfer. Start from a fresh one.
@@ -6039,7 +6151,21 @@ class Component extends DCLogic {
           const t = p && p.creationTime ? new Date(p.creationTime).getTime() : 0;
           return t && (Date.now() - t) < 12 * 60 * 60 * 1000;
         });
-        if (fresh.length) upload.resumeFromPreviousUpload(fresh[0]);
+        if (fresh.length) {
+          // A resumed upload keeps the object name it was created with. The URL
+          // was built from this attempt's fresh path, so the row pointed at a
+          // file that never existed.
+          const prev = fresh[0].metadata || {};
+          // Same bucket AND same event/project folder only. The fingerprint is
+          // the file, not the destination, so the same film retried into another
+          // project would otherwise land in the first project's folder — and
+          // deleting it there would break the second.
+          const folder = this.state.current.id + '/';
+          if (prev.bucketName === BUCKET && typeof prev.objectName === 'string' && prev.objectName.indexOf(folder) === 0) {
+            upload.resumeFromPreviousUpload(fresh[0]);
+            path = prev.objectName;
+          }
+        }
         upload.start();
       }).catch(() => upload.start());
     });
@@ -8445,11 +8571,8 @@ class Component extends DCLogic {
     // A phone camera shot is 4–8 MB for a 104px-wide frame; downscale first.
     try { const small = await this.resizeImage(file, 900, 0.9); if (small) { blob = small.blob; ext = small.ext; } } catch (e) {}
     const path = 'crew-photo/' + pid + '/' + Date.now() + '.' + ext;
-    let res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, blob, { contentType: blob.type || undefined });
-    if (res.error && /bucket not found|does not exist/i.test(res.error.message || '')) {
-      res = await this.sb.storage.from(BUCKET).upload(path, blob, { contentType: blob.type || undefined });
-    }
-    if (res.error) { this.setState({ personStatus: res.error.message }); return; }
+    const res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, blob, { contentType: blob.type || undefined });
+    if (res.error) { this.setState({ personStatus: this.privateUploadError(res.error) }); return; }
     const old = this.state.photoPath;
     const { error } = await this.sb.from('people').update({ photo_path: path }).eq('id', pid);
     if (error) { this.setState({ personStatus: this.careerHint(error.message) }); return; }
@@ -8494,11 +8617,8 @@ class Component extends DCLogic {
     const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = 'cv/' + pid + '/' + Date.now() + '-' + safe;
     this.setState({ careerStatus: 'Uploading CV…' });
-    let res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, file, { contentType: file.type || undefined });
-    if (res.error && /bucket not found|does not exist/i.test(res.error.message || '')) {
-      res = await this.sb.storage.from(BUCKET).upload(path, file, { contentType: file.type || undefined });
-    }
-    if (res.error) { this.setState({ careerStatus: res.error.message }); return; }
+    const res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, file, { contentType: file.type || undefined });
+    if (res.error) { this.setState({ careerStatus: this.privateUploadError(res.error) }); return; }
     const patch = { cv_path: path, cv_name: file.name, cv_uploaded_at: new Date().toISOString() };
     const { error } = await this.sb.from('people').update(patch).eq('id', pid);
     if (error) { this.setState({ careerStatus: this.careerHint(error.message) }); return; }
@@ -8706,20 +8826,34 @@ class Component extends DCLogic {
     this.setState({ personDocs: data || [] });
   }
 
+  // Private files never fall back to the public bucket. They used to, on a
+  // "bucket not found" error — and a public copy of an ID proof cannot be
+  // recalled once its URL exists.
+  privateUploadError(err) {
+    const m = (err && err.message) || 'Upload failed';
+    return /bucket not found|does not exist/i.test(m)
+      ? 'Private storage is not set up — run album-system/security-fixes.sql. Nothing was uploaded.'
+      : m;
+  }
+
   async uploadDoc(file) {
     const pid = this.state.personId;
     if (!pid || !file) return;
     const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const path = 'documents/' + pid + '/' + Date.now() + '-' + safe;
     this.setState({ personStatus: 'Uploading document…' });
-    // ID proofs go to the private bucket. Until security-fixes.sql has been run it
-    // does not exist yet, so fall back rather than losing the upload.
-    let res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, file);
-    if (res.error && /bucket not found|does not exist/i.test(res.error.message || '')) {
-      res = await this.sb.storage.from(BUCKET).upload(path, file);
+    const res = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, file);
+    if (res.error) { this.setState({ personStatus: this.privateUploadError(res.error) }); return; }
+    const ins = await this.sb.from('people_documents').insert({ person_id: pid, label: this.state.docLabel || file.name, storage_path: path });
+    if (ins.error) {
+      // No row means nothing in the panel can ever list or delete this file —
+      // an ID proof nobody knows is there. Take it back out.
+      const rm = await this.sb.storage.from(PRIVATE_BUCKET).remove([path]);
+      const cleaned = !rm.error && Array.isArray(rm.data) && rm.data.length === 1;
+      this.setState({ personStatus: 'Document not saved: ' + (ins.error.message || 'database error')
+        + (cleaned ? ' — the upload was removed.' : ' — and the uploaded file could not be removed (' + path + '). Delete it in Storage → staff-private.') });
+      return;
     }
-    if (res.error) { this.setState({ personStatus: res.error.message }); return; }
-    await this.sb.from('people_documents').insert({ person_id: pid, label: this.state.docLabel || file.name, storage_path: path });
     this.setState({ personStatus: 'Document added.', docLabel: '' });
     setTimeout(() => this.setState({ personStatus: '' }), 2500);
     this.loadDocs(pid);
@@ -12994,10 +13128,13 @@ class Component extends DCLogic {
             onMovePost: e => this.moveToPost(m, parseInt(e.target.value, 10)),
             setVideoRef: el => {
               if (!el) return;
-              el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
               const src = m.url_grid || m.url;
+              // Wire once — every panel re-render re-runs this ref.
+              if (el._wiredSrc === src) return;
+              el._wiredSrc = src;
+              el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
               if (el.getAttribute('src') !== src) { el.setAttribute('src', src); el.load(); }
-              const go = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+              const go = () => { const p = el.play(); if (p && p.catch) p.catch(e => { if (e && e.name !== 'AbortError' && e.name !== 'NotAllowedError') console.warn('loop play failed', e); }); };
               el.oncanplay = go; el.onstalled = go; el.onpause = go;
               el.onended = () => { el.currentTime = 0; go(); };
               go();

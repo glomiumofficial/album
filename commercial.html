@@ -10,6 +10,7 @@
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>creative INFINITELY</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
@@ -21,6 +22,7 @@
   a { color:var(--green); text-decoration:none; }
   a:hover { color:var(--green-deep); }
   img { -webkit-user-drag:none; }
+  button { font-family:inherit; }
   ::selection { background:var(--green); color:#fff; }
   @keyframes glm-rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
 </style>
@@ -56,11 +58,11 @@
   <sc-if value="{{ hasProject }}" hint-placeholder-val="{{ false }}">
   <div>
 
-    <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:30; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px clamp(18px,4vw,48px); opacity:0; pointer-events:none; background:rgba(255,255,255,.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); transition:opacity .35s ease">
-      <span style="font-size:13px; letter-spacing:.02em; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ clientName }}</span>
-      <div style="display:flex; align-items:center; gap:clamp(12px,1.8vw,24px); overflow-x:auto">
+    <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:30; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px clamp(18px,4vw,48px); opacity:0; pointer-events:none; background:rgba(255,255,255,.97); border-bottom:1px solid var(--line); transition:opacity .35s ease">
+      <span style="flex:0 1 auto; min-width:0; font-size:13px; letter-spacing:.02em; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ clientName }}</span>
+      <div style="flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:clamp(12px,1.8vw,24px); overflow-x:auto; scrollbar-width:none">
         <sc-for list="{{ navVM }}" as="nv" hint-placeholder-count="0">
-          <a href="{{ nv.href }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--mute); white-space:nowrap" style-hover="color:var(--green)">{{ nv.label }}</a>
+          <a href="{{ nv.href }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)">{{ nv.label }}</a>
         </sc-for>
       </div>
     </div>
@@ -104,13 +106,13 @@
       <div id="sec-brief" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(56px,11vh,140px) clamp(18px,4vw,48px) clamp(60px,10vh,120px); display:flex; flex-wrap:wrap; gap:clamp(30px,5vw,70px)">
         <div style="flex:1 1 260px; max-width:420px; display:flex; flex-direction:column; gap:clamp(18px,3vh,28px)">
           <div style="display:flex; align-items:baseline; gap:14px">
-            <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nBrief }}</span>
+            <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nBrief }}</span>
             <span style="font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:var(--ink)">The brief</span>
           </div>
           <div style="display:flex; flex-direction:column; gap:1px">
             <sc-for list="{{ metaVM }}" as="mt" hint-placeholder-count="3">
               <div style="display:flex; align-items:baseline; gap:16px; padding:11px 0; border-top:1px solid var(--line)">
-                <span style="flex:0 0 clamp(80px,8vw,110px); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ mt.label }}</span>
+                <span style="flex:0 0 clamp(80px,8vw,110px); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ mt.label }}</span>
                 <span style="font-size:13px; font-weight:300; color:#3A4844; text-wrap:pretty">{{ mt.value }}</span>
               </div>
             </sc-for>
@@ -127,9 +129,9 @@
 
     <sc-if value="{{ hasLogos }}" hint-placeholder-val="{{ false }}">
       <div id="sec-identity" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nIdentity }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nIdentity }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Identity</h2>
-        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ logoCountLabel }}</span>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ logoCountLabel }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:grid; gap:1px; grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))">
         <sc-for list="{{ logosVM }}" as="lg" hint-placeholder-count="3">
@@ -145,9 +147,9 @@
 
     <sc-if value="{{ hasPalette }}" hint-placeholder-val="{{ false }}">
       <div id="sec-colour" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nColour }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nColour }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Colour</h2>
-        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ paletteHint }}</span>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ paletteHint }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-wrap:wrap; align-items:stretch; gap:clamp(6px,.8vw,10px)">
         <sc-for list="{{ paletteLead }}" as="sw" hint-placeholder-count="1">
@@ -186,7 +188,7 @@
 
     <sc-if value="{{ hasFonts }}" hint-placeholder-val="{{ false }}">
       <div id="sec-type" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nType }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nType }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Typography</h2>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:0 clamp(18px,4vw,48px)">
@@ -205,9 +207,9 @@
 
     <sc-if value="{{ hasFilms }}" hint-placeholder-val="{{ false }}">
       <div id="sec-films" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nFilms }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nFilms }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Films &amp; reels</h2>
-        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ filmCountLabel }}</span>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ filmCountLabel }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(16px,2.4vw,32px)">
         <sc-for list="{{ filmFeatureVM }}" as="ff" hint-placeholder-count="1">
@@ -247,15 +249,15 @@
 
     <sc-if value="{{ hasMotion }}" hint-placeholder-val="{{ false }}">
       <div id="sec-motion" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nMotion }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nMotion }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Motion graphics</h2>
-        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ motionCountLabel }}</span>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ motionCountLabel }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:clamp(18px,2.6vw,36px)">
         <sc-for list="{{ motionVM }}" as="mg" hint-placeholder-count="2">
           <div style="flex:1 1 280px; max-width:380px; display:flex; flex-direction:column; gap:12px">
             <div onClick="{{ mg.open }}" style="background:#000; overflow:hidden; cursor:zoom-in">
-              <video ref="{{ mg.setLoopRef }}" muted="{{ true }}" loop="{{ true }}" autoPlay="{{ true }}" playsinline="{{ true }}" preload="auto" tabIndex="-1" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; pointer-events:none"></video>
+              <video ref="{{ mg.setLoopRef }}" muted="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" preload="none" tabIndex="-1" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; pointer-events:none"></video>
             </div>
             <sc-if value="{{ mg.hasName }}" hint-placeholder-val="{{ false }}">
               <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">{{ mg.name }}</span>
@@ -267,18 +269,18 @@
 
     <sc-if value="{{ hasBanners }}" hint-placeholder-val="{{ false }}">
       <div id="sec-banners" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nBanners }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nBanners }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Banners &amp; outdoor</h2>
-        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ bannerCountLabel }}</span>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ bannerCountLabel }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(18px,3vw,40px)">
         <sc-for list="{{ bannersVM }}" as="bn" hint-placeholder-count="2">
           <div style="display:flex; flex-direction:column; gap:11px">
             <div onClick="{{ bn.open }}" style="width:100%; cursor:zoom-in; background:#F3F6F5; overflow:hidden; display:flex; justify-content:center">
-              <img ref="{{ bn.setImgRef }}" alt="{{ bn.name }}" loading="lazy" style="max-width:100%; max-height:84vh; width:auto; height:auto; object-fit:contain; display:block">
+              <img ref="{{ bn.setBannerImgRef }}" alt="{{ bn.name }}" loading="lazy" style="max-width:100%; max-height:84vh; width:auto; height:auto; object-fit:contain; display:block">
             </div>
             <sc-if value="{{ bn.hasLabel }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ bn.label }}</span>
+              <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ bn.label }}</span>
             </sc-if>
           </div>
         </sc-for>
@@ -287,9 +289,9 @@
 
     <sc-if value="{{ hasSocial }}" hint-placeholder-val="{{ false }}">
       <div id="sec-social" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nSocial }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nSocial }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Social</h2>
-        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ socialCountLabel }}</span>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ socialCountLabel }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:clamp(22px,3vw,44px)">
         <sc-for list="{{ postsVM }}" as="pst" hint-placeholder-count="1">
@@ -304,7 +306,7 @@
             <div style="display:flex; flex-direction:column; gap:1px; min-width:0; flex:1">
               <span style="font-size:13px; font-weight:500; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ postHandle }}</span>
               <sc-if value="{{ hasPostSub }}" hint-placeholder-val="{{ false }}">
-                <span style="font-size:11px; color:#7A8683; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ postSub }}</span>
+                <span style="font-size:11px; color:#5F6C68; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ postSub }}</span>
               </sc-if>
             </div>
           </div>
@@ -312,7 +314,7 @@
             <div ref="{{ pst.setTrackRef }}" onScroll="{{ pst.onScroll }}" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; -webkit-overflow-scrolling:touch">
               <sc-for list="{{ pst.slides }}" as="so" hint-placeholder-count="1">
                 <div onClick="{{ so.open }}" style="flex:0 0 100%; scroll-snap-align:start; scroll-snap-stop:always; cursor:zoom-in">
-                  <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" draggable="false" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; user-select:none">
+                  <img ref="{{ so.setImgRef }}" alt="{{ so.name }}" loading="lazy" decoding="async" draggable="false" style="width:100%; aspect-ratio:4 / 5; object-fit:cover; display:block; user-select:none">
                 </div>
               </sc-for>
             </div>
@@ -345,18 +347,18 @@
 
     <sc-if value="{{ hasPrint }}" hint-placeholder-val="{{ false }}">
       <div id="sec-print" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
-        <span style="font-size:11px; letter-spacing:.24em; color:var(--green); font-variant-numeric:tabular-nums">{{ nPrint }}</span>
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nPrint }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Print &amp; packaging</h2>
-        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ printCountLabel }}</span>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ printCountLabel }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:grid; gap:clamp(12px,1.8vw,26px); grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))">
         <sc-for list="{{ printVM }}" as="pr" hint-placeholder-count="2">
           <div style="display:flex; flex-direction:column; gap:11px">
             <div onClick="{{ pr.open }}" style="overflow:hidden; background:#F3F6F5; cursor:zoom-in">
-              <img ref="{{ pr.setImgRef }}" alt="{{ pr.name }}" loading="lazy" style="width:100%; display:block; transition:transform .6s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.02)">
+              <img ref="{{ pr.setSizedImgRef }}" alt="{{ pr.name }}" loading="lazy" style="width:100%; display:block; transition:transform .6s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.02)">
             </div>
             <sc-if value="{{ pr.hasLabel }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6F7C78">{{ pr.label }}</span>
+              <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ pr.label }}</span>
             </sc-if>
           </div>
         </sc-for>
@@ -374,19 +376,19 @@
         </div>
         <div style="display:flex; flex-direction:column; gap:14px; align-items:flex-start">
           <span style="font-size:clamp(28px,3.4vw,40px); font-weight:200; line-height:1; color:var(--green); opacity:.55">∞</span>
-          <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#9AA6A2; text-wrap:pretty">Private preview prepared for {{ clientName }}</span>
+          <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#5F6C68; text-wrap:pretty">Private preview prepared for {{ clientName }}</span>
         </div>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(16px,2.4vh,22px) clamp(18px,4vw,48px) clamp(26px,4vh,40px); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap">
-        <span style="font-size:10px; letter-spacing:.2em; color:#9AA6A2"><span style="text-transform:lowercase">creative</span> <span style="color:var(--green-deep); text-transform:uppercase">INFINITELY</span></span>
-        <span style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#B4BEBA">Glomium</span>
+        <span style="font-size:10px; letter-spacing:.2em; color:#5F6C68"><span style="text-transform:lowercase">creative</span> <span style="color:var(--green-deep); text-transform:uppercase">INFINITELY</span></span>
+        <span style="font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#5F6C68">Glomium</span>
       </div>
     </footer>
   </div>
   </sc-if>
 
   <sc-if value="{{ plbOpen }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ plbClose }}" style="position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:clamp(8px,3vw,48px)">
+    <div onClick="{{ plbClose }}" role="dialog" aria-modal="true" aria-label="{{ plbName }}" style="position:fixed; inset:0; z-index:1001; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:clamp(8px,3vw,48px)">
       <button onClick="{{ plbClose }}" aria-label="Close" style="position:absolute; top:12px; right:14px; width:44px; height:44px; background:none; border:0; color:#FFFFFF; font-size:22px; cursor:pointer">✕</button>
       <sc-if value="{{ plbHasPrevPost }}" hint-placeholder-val="{{ false }}">
         <button onClick="{{ plbPrevPost }}" aria-label="Previous post" style="position:absolute; left:clamp(2px,1.4vw,20px); top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.92); color:#101A17; font-size:20px; line-height:1; cursor:pointer; display:grid; place-items:center">‹</button>
@@ -395,7 +397,7 @@
         <button onClick="{{ plbNextPost }}" aria-label="Next post" style="position:absolute; right:clamp(2px,1.4vw,20px); top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.92); color:#101A17; font-size:20px; line-height:1; cursor:pointer; display:grid; place-items:center">›</button>
       </sc-if>
       <div onClick="{{ plbStop }}" style="display:flex; flex-wrap:wrap; width:min(100%,1080px); max-height:94vh; overflow:auto; background:#FFFFFF; border-radius:4px">
-        <div style="position:relative; flex:1 1 440px; min-width:min(100%,300px); background:#000; display:flex; align-items:center; justify-content:center; aspect-ratio:4 / 5; max-height:94vh">
+        <div onTouchStart="{{ swipeStart }}" onTouchEnd="{{ plbSwipeEnd }}" style="position:relative; flex:1 1 440px; min-width:min(100%,300px); background:#000; display:flex; align-items:center; justify-content:center; aspect-ratio:4 / 5; max-height:94vh">
           <img ref="{{ setPlbImgRef }}" alt="{{ plbName }}" style="width:100%; height:100%; object-fit:contain; display:block">
           <sc-if value="{{ plbHasPrev }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ plbPrev }}" aria-label="Previous" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:30px; height:30px; border-radius:50%; border:0; background:rgba(255,255,255,.9); color:#101A17; font-size:16px; line-height:1; cursor:pointer; display:grid; place-items:center">‹</button>
@@ -422,7 +424,7 @@
             <div style="display:flex; flex-direction:column; gap:1px; min-width:0">
               <span style="font-size:13px; font-weight:500; color:#101A17">{{ postHandle }}</span>
               <sc-if value="{{ hasPostSub }}" hint-placeholder-val="{{ false }}">
-                <span style="font-size:11px; color:#7A8683">{{ postSub }}</span>
+                <span style="font-size:11px; color:#5F6C68">{{ postSub }}</span>
               </sc-if>
             </div>
           </div>
@@ -432,7 +434,7 @@
             </sc-if>
           </div>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px; border-top:1px solid #EFEFEF">
-            <span style="font-size:11px; color:#7A8683; font-variant-numeric:tabular-nums">{{ plbCounter }}</span>
+            <span style="font-size:11px; color:#5F6C68; font-variant-numeric:tabular-nums">{{ plbCounter }}</span>
             <a href="{{ plbDownload }}" download="{{ plbFile }}" rel="noopener" style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--green-deep); text-decoration:none">download</a>
           </div>
         </div>
@@ -441,7 +443,7 @@
   </sc-if>
 
   <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed; inset:0; z-index:1000; background:rgba(8,12,11,.975); display:flex; flex-direction:column">
+    <div role="dialog" aria-modal="true" aria-label="{{ lightboxName }}" style="position:fixed; inset:0; z-index:1000; background:rgba(8,12,11,.975); display:flex; flex-direction:column">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:clamp(10px,2vh,16px) clamp(12px,4vw,40px); flex-wrap:wrap">
         <span style="font-size:12px; letter-spacing:.04em; color:#EAF5F1; max-width:56vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ lightboxName }}</span>
         <div style="display:flex; gap:10px; align-items:center">
@@ -449,18 +451,18 @@
           <sc-if value="{{ lightboxCanDownload }}" hint-placeholder-val="{{ false }}">
             <a href="{{ lightboxDownload }}" download="{{ lightboxFile }}" rel="noopener" style="display:flex; align-items:center; gap:8px; min-height:44px; padding:10px 14px; border:1px solid rgba(255,255,255,.28); color:#EAF5F1; font-size:10px; letter-spacing:.2em; text-transform:uppercase; text-decoration:none" style-hover="border-color:var(--green); color:var(--green)">↓ download</a>
           </sc-if>
-          <button onClick="{{ closeLightbox }}" style="min-width:44px; min-height:44px; padding:10px 12px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.28); font-size:14px; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">✕</button>
+          <button onClick="{{ closeLightbox }}" aria-label="Close" style="min-width:44px; min-height:44px; padding:10px 12px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.28); font-size:14px; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">✕</button>
         </div>
       </div>
-      <div style="flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:0 clamp(8px,3vw,44px) clamp(16px,3vh,40px); min-height:0">
-        <button onClick="{{ prevItem }}" style="position:absolute; left:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">‹</button>
+      <div onClick="{{ stageClick }}" onTouchStart="{{ swipeStart }}" onTouchEnd="{{ swipeEnd }}" style="flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:0 clamp(8px,3vw,44px) clamp(16px,3vh,40px); min-height:0">
+        <button onClick="{{ prevItem }}" aria-label="Previous" style="position:absolute; left:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">‹</button>
         <sc-if value="{{ lightboxIsVideo }}" hint-placeholder-val="{{ false }}">
           <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; background:#000"></video>
         </sc-if>
         <sc-if value="{{ lightboxIsImage }}" hint-placeholder-val="{{ false }}">
           <img ref="{{ setLightboxImgRef }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain">
         </sc-if>
-        <button onClick="{{ nextItem }}" style="position:absolute; right:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">›</button>
+        <button onClick="{{ nextItem }}" aria-label="Next" style="position:absolute; right:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">›</button>
       </div>
     </div>
   </sc-if>
@@ -509,6 +511,14 @@ class Component extends DCLogic {
     postIdx: {}, plb: null,
   };
 
+  // R-02: width descriptors come from stored dimensions only.
+  srcsetFor(m, g, v) {
+    if (!v || v === g || !(m.width > 0 && m.height > 0)) return '';
+    const at = max => Math.round(m.width * Math.min(1, max / Math.max(m.width, m.height)));
+    const gw = at(1200), vw = m.url_view ? at(2800) : m.width;
+    return vw > gw ? g + ' ' + gw + 'w, ' + v + ' ' + vw + 'w' : '';
+  }
+
   // Static posts are grouped into sets by post_no; each set is one carousel.
   postGroups() {
     const map = new Map();
@@ -526,8 +536,34 @@ class Component extends DCLogic {
     this.setState({ postIdx: { ...this.state.postIdx, [no]: i } });
   }
 
-  openPost(gi, i) { this.scrollLock(true); this.setState({ plb: { g: gi, i } }); }
-  closePost() { this.scrollLock(false); this.setState({ plb: null }); }
+  openPost(gi, i) { this.scrollLock(true); this.setOverlay(true); this.setState({ plb: { g: gi, i } }); }
+  closePost() { this.scrollLock(false); this.setOverlay(false); this.setState({ plb: null }); }
+
+  // An open overlay is fixed over the page, so IntersectionObserver still calls
+  // the loops behind it visible and they kept decoding next to the lightbox's
+  // own player. Everything behind an overlay rests until it closes.
+  setOverlay(on) {
+    this._overlay = on;
+    Object.values(this._films || {}).forEach(el => { if (el && on) el.pause(); });
+    (this._loops || new Set()).forEach(el => { if (on) el.pause(); else if (el._go) el._go(); });
+  }
+
+  // play() rejects with AbortError when a pause lands first and NotAllowedError
+  // when autoplay is refused — both expected here. Anything else is a real fault.
+  playQuiet(el) {
+    const p = el.play();
+    if (p && p.catch) p.catch(e => { if (!e || (e.name !== 'AbortError' && e.name !== 'NotAllowedError')) console.warn('video play failed', e); });
+  }
+
+  swipeStart = e => { const t = e.touches && e.touches[0]; this._sw = t ? { x: t.clientX, y: t.clientY } : null; };
+  // -1 / 0 / 1. A drag on the video element is its scrubber, never a swipe.
+  swipeDir(e) {
+    const s = this._sw; this._sw = null;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!s || !t || (e.target && e.target.tagName === 'VIDEO')) return 0;
+    const dx = t.clientX - s.x, dy = t.clientY - s.y;
+    return Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4 ? (dx < 0 ? 1 : -1) : 0;
+  }
   stepPost(d) {
     const p = this.state.plb; if (!p) return;
     const g = this.postGroups()[p.g]; if (!g) return;
@@ -565,6 +601,8 @@ class Component extends DCLogic {
   componentWillUnmount() {
     window.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('keydown', this.onKeyDown);
+    if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
+    (this._loops || new Set()).forEach(el => { if (el._io) el._io.disconnect(); });
   }
 
   // The title tag is a stream-time literal, so it has to be re-set once the
@@ -576,11 +614,17 @@ class Component extends DCLogic {
   }
 
   onScroll = () => {
-    const bar = document.querySelector('[data-el="topbar"]');
-    if (!bar) return;
-    const on = window.scrollY > window.innerHeight * .7;
-    bar.style.opacity = on ? '1' : '0';
-    bar.style.pointerEvents = on ? 'auto' : 'none';
+    if (this._scrollRaf) return;
+    this._scrollRaf = requestAnimationFrame(() => {
+      this._scrollRaf = 0;
+      const on = window.scrollY > window.innerHeight * .7;
+      if (on === this._barOn) return;
+      this._barOn = on;
+      const bar = document.querySelector('[data-el="topbar"]');
+      if (!bar) return;
+      bar.style.opacity = on ? '1' : '0';
+      bar.style.pointerEvents = on ? 'auto' : 'none';
+    });
   };
 
   onKeyDown = e => {
@@ -591,7 +635,9 @@ class Component extends DCLogic {
       return;
     }
     if (!this.state.lightboxOpen) return;
-    if (e.key === 'Escape') this.closeLightbox();
+    if (e.key === 'Escape') { this.closeLightbox(); return; }
+    // Arrows on a focused player belong to its scrubber.
+    if (e.target && e.target.tagName === 'VIDEO') return;
     if (e.key === 'ArrowRight') this.step(1);
     if (e.key === 'ArrowLeft') this.step(-1);
   };
@@ -698,18 +744,27 @@ class Component extends DCLogic {
     return (family ? "'" + family + "', " : '') + "'Jost', " + generic;
   }
 
+  // One stylesheet per family, each asking only for its own weights. Google
+  // answers 400 for the WHOLE request when any family lacks any requested
+  // weight, so one shared URL let a display face that ships only Regular blank
+  // out every specimen on the page. A family that refuses its weights is asked
+  // again for whatever it has.
   loadBrandFonts(p) {
-    const rows = this.asList(p.brand_fonts);
-    const fams = [...new Set(rows.map(f => this.famName(f)).filter(Boolean))];
-    if (!fams.length) return;
-    const wts = [...new Set(rows.map(f => this.weightOf(f)).concat([400]))].sort((a, b) => a - b);
-    const href = 'https://fonts.googleapis.com/css2?' +
-      fams.map(f => 'family=' + encodeURIComponent(f).replace(/%20/g, '+') + ':wght@' + wts.join(';')).join('&') +
-      '&display=swap';
-    if (document.querySelector('link[data-brand-fonts]')) return;
-    const el = document.createElement('link');
-    el.rel = 'stylesheet'; el.href = href; el.setAttribute('data-brand-fonts', '1');
-    document.head.appendChild(el);
+    const byFam = new Map();
+    this.asList(p.brand_fonts).forEach(f => {
+      const fam = this.famName(f); if (!fam) return;
+      if (!byFam.has(fam)) byFam.set(fam, new Set([400]));
+      byFam.get(fam).add(this.weightOf(f));
+    });
+    byFam.forEach((wts, fam) => {
+      if (document.querySelector('link[data-brand-font="' + fam + '"]')) return;
+      const base = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(fam).replace(/%20/g, '+');
+      const el = document.createElement('link');
+      el.rel = 'stylesheet'; el.setAttribute('data-brand-font', fam);
+      el.onerror = () => { el.onerror = null; el.href = base + '&display=swap'; };
+      el.href = base + ':wght@' + [...wts].sort((a, b) => a - b).join(';') + '&display=swap';
+      document.head.appendChild(el);
+    });
   }
 
   // jsonb columns arrive as arrays, but a hand-edited row can hold a string.
@@ -753,18 +808,24 @@ class Component extends DCLogic {
   }
 
   // One flat list across every section, so the arrows walk the whole project.
-  viewable() { return this.state.media.filter(m => m.url && m.section !== 'social'); }
+  // Page order, so the arrows walk the project the way it reads.
+  viewable() {
+    return ['logo', 'film', 'motion', 'banner', 'print', 'guideline']
+      .flatMap(sec => this.state.media.filter(m => m.url && m.section === sec));
+  }
 
   openLightbox(id) {
     const list = this.viewable();
     const i = list.findIndex(m => m.id === id);
     if (i < 0) return;
     this.scrollLock(true);
+    this.setOverlay(true);
     this.setState({ lightboxOpen: true, lightboxIndex: i });
   }
 
   closeLightbox() {
     this.scrollLock(false);
+    this.setOverlay(false);
     this.setState({ lightboxOpen: false });
   }
 
@@ -807,18 +868,40 @@ class Component extends DCLogic {
         hasName: !!m.name,
         label, hasLabel: !!label,
         open: () => this.openLightbox(m.id),
-        setImgRef: el => { const u = m.url_grid || m.url_view || m.url; if (el && u) el.src = u; },
+        setImgRef: el => { const u = m.url_grid || m.url_view || m.url; if (el && u && el.getAttribute('src') !== u) el.src = u; },
+        // Box reserved before the file arrives: a lazy image with no size is 0px
+        // tall, so every one of them qualified as on-screen and loaded at once.
+        setSizedImgRef: el => {
+          const u = m.url_grid || m.url_view || m.url;
+          if (!el || !u) return;
+          const known = m.width > 0 && m.height > 0;
+          if (el._arFor !== u) {
+            el._arFor = u;
+            el.style.aspectRatio = known ? m.width + ' / ' + m.height : '4 / 5';
+            if (!known) el.addEventListener('load', () => { if (el._arFor === u && el.naturalWidth) el.style.aspectRatio = el.naturalWidth + ' / ' + el.naturalHeight; }, { once: true });
+          }
+          if (el.getAttribute('src') !== u) el.src = u;
+        },
+        // Wide artwork: the 1200 grid copy on phones, the 2800 view copy where
+        // the banner actually spans a desktop screen.
+        setBannerImgRef: el => {
+          const g = m.url_grid || m.url, v = m.url_view || m.url;
+          if (!el || !g || el.getAttribute('src') === g) return;
+          const set = this.srcsetFor(m, g, v);
+          if (set) { el.sizes = 'min(100vw, 1464px)'; el.srcset = set; } else el.removeAttribute('srcset');
+          el.src = g;
+        },
         setVideoRef: el => {
           this._films = this._films || {};
           this._films[m.id] = el;
           if (!el) return;
-          if (m.thumb_url) el.poster = m.thumb_url;
+          if (m.thumb_url && el.getAttribute('poster') !== m.thumb_url) el.setAttribute('poster', m.thumb_url);
           const src = m.section === 'film' ? (m.url_view || m.url) : m.url;
           if (el.getAttribute('src') !== src) el.src = src;
         },
         // A silent few seconds of the film on hover reads far better than a
         // static poster, and it costs nothing on touch where hover never fires.
-        hoverIn: () => { const el = this._films && this._films[m.id]; if (el) { try { el.play(); } catch (e) {} } },
+        hoverIn: () => { const el = this._films && this._films[m.id]; if (el && !this._overlay) this.playQuiet(el); },
         hoverOut: () => { const el = this._films && this._films[m.id]; if (el) { el.pause(); el.currentTime = 0; } },
         // Motion graphics are ambient: silent, looping, running as soon as the
         // browser lets them. No poster and no click — the loop is the artwork.
@@ -827,23 +910,32 @@ class Component extends DCLogic {
           // Order matters: muted and loop must be set before the source, or the
           // browser judges it a sound-on video and refuses to autoplay at all.
           el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
+          // The frame grabbed at upload shows until the loop's first bytes land.
+          if (m.thumb_url && el.getAttribute('poster') !== m.thumb_url) el.setAttribute('poster', m.thumb_url);
           // The light re-encode plays; the master stays for the lightbox.
           const src = m.url_grid || m.url;
-          if (el.getAttribute('src') !== src) { el.setAttribute('src', src); el.load(); }
-          const go = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+          // Wire once — re-renders re-run refs and must not restart playback.
+          if (el._wiredSrc === src) return;
+          el._wiredSrc = src;
+          el._vis = !window.IntersectionObserver;
+          // Only a loop on screen ever plays; off-screen ones stay idle.
+          const go = () => { if (!el._vis || this._overlay) return; if (el.getAttribute('src') !== src) { el.setAttribute('src', src); el.load(); } this.playQuiet(el); };
+          el._go = go;
+          (this._loops = this._loops || new Set()).add(el);
           el.oncanplay = go; el.onstalled = go; el.onpause = go;
           // A loop that fires 'ended' has stalled rather than looped — rewind it.
           el.onended = () => { el.currentTime = 0; go(); };
-          go();
-          if (window.IntersectionObserver && !el._io) {
+          if (el._io) el._io.disconnect();
+          if (window.IntersectionObserver) {
             el._io = new IntersectionObserver(es => es.forEach(e => {
-              if (e.isIntersecting) go(); else { el.onpause = null; el.pause(); el.onpause = go; }
-            }), { threshold: 0.1 });
+              el._vis = e.isIntersecting;
+              if (e.isIntersecting) go(); else el.pause();
+            }), { threshold: 0.1, rootMargin: '200px 0px' });
             el._io.observe(el);
-          }
+          } else go();
         },
         setGroundRef: el => { if (el) el.style.background = m.ground === 'dark' ? '#111C19' : '#FFFFFF'; },
-        setLabelRef: el => { if (el) el.style.color = m.ground === 'dark' ? 'rgba(255,255,255,.6)' : '#9AA6A2'; },
+        setLabelRef: el => { if (el) el.style.color = m.ground === 'dark' ? 'rgba(255,255,255,.72)' : '#5F6C68'; },
       };
     });
   }
@@ -947,7 +1039,7 @@ class Component extends DCLogic {
       nMotion: num.motion,
       setCoverRef: el => {
         const u = p.cover_url_view || p.cover_url;
-        if (el && u) { el.src = u; el.style.display = 'block'; }
+        if (el && u && el.getAttribute('src') !== u) { el.src = u; el.style.display = 'block'; }
       },
 
       isDemo: !!s.project && s.project.slug === 'demo',
@@ -969,7 +1061,7 @@ class Component extends DCLogic {
           postHandle: handle,
           postInitial: (p.client_name || 'b').trim().charAt(0).toLowerCase(),
           postSub: p.sector || p.project_title || '', hasPostSub: !!(p.sector || p.project_title),
-          setPostAvatarRef: el => { if (el && logoSrc) { el.src = logoSrc; el.style.display = 'block'; } },
+          setPostAvatarRef: el => { if (el && logoSrc && el.getAttribute('src') !== logoSrc) { el.src = logoSrc; el.style.display = 'block'; } },
           setPostInitialRef: el => { if (el) el.style.display = logoSrc ? 'none' : 'block'; },
           postsVM: groups.map((g, gi) => {
             const n = g.items.length, i = Math.min(s.postIdx[g.no] || 0, n - 1);
@@ -989,7 +1081,13 @@ class Component extends DCLogic {
               slides: g.items.map((m, k) => ({
                 name: m.name || '',
                 open: () => this.openPost(gi, k),
-                setImgRef: el => { const u = m.url_grid || m.url_view || m.url; if (el && u) el.src = u; },
+                // R-03: only the current slide and the next one fetch; a slide
+                // already loaded keeps its file when you swipe back.
+                setImgRef: el => {
+                  const u = m.url_grid || m.url_view || m.url;
+                  if (!el || !u || el.getAttribute('src') === u) return;
+                  if (k === i || k === i + 1) el.src = u;
+                },
               })),
             };
           }),
@@ -1029,15 +1127,25 @@ class Component extends DCLogic {
       lightboxCounter: view.length ? (s.lightboxIndex + 1) + ' / ' + view.length : '',
       lightboxIsVideo: !!cur && cur.kind === 'video',
       lightboxIsImage: !!cur && cur.kind !== 'video',
-      setLightboxImgRef: el => { const u = cur && (cur.url_view || cur.url); if (el && u) el.src = u; },
+      setLightboxImgRef: el => { const u = cur && (cur.url_view || cur.url); if (el && u && el.getAttribute('src') !== u) el.src = u; },
       // Films play the streaming copy (download still gives the master);
       // motion plays its full-quality original.
       setLightboxVideoRef: el => {
         if (!el || !cur) return;
         const src = cur.section === 'film' ? (cur.url_view || cur.url) : cur.url;
-        if (el.getAttribute('src') !== src) { el.preload = 'auto'; el.src = src; const p = el.play(); if (p && p.catch) p.catch(() => {}); }
+        if (el.getAttribute('src') !== src) {
+          el.preload = 'auto';
+          if (cur.thumb_url) el.setAttribute('poster', cur.thumb_url); else el.removeAttribute('poster');
+          el.src = src;
+          this.playQuiet(el);
+        }
       },
       closeLightbox: () => this.closeLightbox(),
+      // A tap on the empty stage closes; taps on the media or arrows do not.
+      stageClick: e => { if (e.target === e.currentTarget) this.closeLightbox(); },
+      swipeStart: this.swipeStart,
+      swipeEnd: e => { const d = this.swipeDir(e); if (d) this.step(d); },
+      plbSwipeEnd: e => { const d = this.swipeDir(e); if (d) this.stepPost(d); },
       prevItem: () => this.step(-1),
       nextItem: () => this.step(1),
     };
