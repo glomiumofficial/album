@@ -3682,6 +3682,11 @@
               </sc-if>
               <sc-if value="{{ ms.isPosts }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex; flex-direction:column; gap:14px">
+                  <div style="display:flex; gap:6px; flex-wrap:wrap">
+                    <sc-for list="{{ ms.postTabs }}" as="pt" hint-placeholder-count="1">
+                      <button onClick="{{ pt.pick }}" style="display:flex; align-items:center; gap:7px; padding:7px 12px; border:1px solid {{ pt.bd }}; border-radius:3px; background:{{ pt.bg }}; color:{{ pt.fg }}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer">{{ pt.label }}<span style="font-size:10px; opacity:.75; letter-spacing:0">{{ pt.count }}</span></button>
+                    </sc-for>
+                  </div>
                   <sc-for list="{{ ms.postsVM }}" as="pp" hint-placeholder-count="1">
                     <div style="display:flex; flex-direction:column; gap:12px; padding:16px; background:#FAFBFB; border:1px solid var(--line); border-radius:3px">
                       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
@@ -3692,9 +3697,9 @@
                         </sc-if>
                       </div>
                       <sc-if value="{{ pp.hasItems }}" hint-placeholder-val="{{ false }}">
-                        <textarea placeholder="caption for this post" value="{{ pp.caption }}" onChange="{{ pp.onCaption }}" onBlur="{{ pp.saveCaption }}" readOnly="{{ albumLocked }}" rows="2" style="width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; font-family:inherit; line-height:1.5; resize:vertical; outline:none; background:#fff"></textarea>
+                        <textarea placeholder="caption for this post" value="{{ pp.caption }}" onChange="{{ pp.onCaption }}" onBlur="{{ pp.saveCaption }}" readOnly="{{ albumLocked }}" rows="1" style="width:100%; padding:8px 11px; border:1px solid var(--line); border-radius:3px; font-size:13px; font-family:inherit; line-height:1.5; resize:vertical; outline:none; background:#fff"></textarea>
                       </sc-if>
-                      <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
+                      <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(112px,1fr))">
                         <sc-for list="{{ pp.itemsVM }}" as="mi" hint-placeholder-count="0">
                           <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:3px; overflow:hidden; background:#fff">
                             <div style="aspect-ratio:4 / 5; overflow:hidden; background:#F4F6F5">
@@ -4658,7 +4663,7 @@ class Component extends DCLogic {
     linkProjects: [], linkPick: '',
     editProjClient: '', editProjTitle: '', editSector: '', editTagline: '', editBrief: '',
     paletteDraft: [], fontDraft: [], brandStatus: '',
-    projectMedia: [], projMediaStatus: {}, projMediaProgress: {}, socialExtraPosts: 0, postCaptionDraft: {},
+    projectMedia: [], projMediaStatus: {}, projMediaProgress: {}, socialExtraPosts: 0, postCaptionDraft: {}, socialPostTab: 1,
     current: null, media: [], detailsStatus: '', uploadStatus: '', videoUploadStatus: '',
     videoProgress: null, videoUploadName: '', videoUploadError: false,
     editCouple: '', editDate: '', editTaken: '', editDelivered: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
@@ -5272,7 +5277,7 @@ class Component extends DCLogic {
       fontDraft: this.asList(pr.brand_fonts).map(f => ({ id: Date.now() + Math.random(), name: f.name || '', role: f.role || '', google: f.google || '', line: f.line || '' })),
       detailsStatus: '', brandStatus: '', clientStatus: '',
       editorTab: this.firstEditorTab(),
-      projectMedia: [], projMediaStatus: {}, projMediaProgress: {}, socialExtraPosts: 0, postCaptionDraft: {},
+      projectMedia: [], projMediaStatus: {}, projMediaProgress: {}, socialExtraPosts: 0, postCaptionDraft: {}, socialPostTab: 1,
       assignments: [], costing: null, agEdits: {}, crewStatus: '',
       eventDays: [], dayDate: pr.start_date || '', dayHours: {}, dayStatus: '',
       afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
@@ -12896,7 +12901,16 @@ class Component extends DCLogic {
         });
         return {
           isPosts, notPosts: !isPosts,
-          postsVM: postNos.map(no => {
+          postTabs: postNos.map(no => {
+            const on = no === (postNos.includes(s.socialPostTab) ? s.socialPostTab : postNos[0]);
+            const c = items.filter(m => (m.post_no || 1) === no).length;
+            return {
+              label: 'post ' + no, count: String(c),
+              bg: on ? 'var(--green)' : '#FFFFFF', fg: on ? '#FFFFFF' : 'var(--green-deep)', bd: on ? 'var(--green)' : 'var(--line)',
+              pick: () => this.setState({ socialPostTab: no }),
+            };
+          }),
+          postsVM: postNos.filter(no => no === (postNos.includes(s.socialPostTab) ? s.socialPostTab : postNos[0])).map(no => {
             const its = items.filter(m => (m.post_no || 1) === no);
             return {
               title: 'post ' + no,
@@ -12909,7 +12923,10 @@ class Component extends DCLogic {
               itemsVM: its.map(tileVM),
             };
           }),
-          addPost: () => this.setState({ socialExtraPosts: (this.state.socialExtraPosts || 0) + 1 }),
+          addPost: () => {
+            const top = postNos.length ? postNos[postNos.length - 1] : 0;
+            this.setState({ socialExtraPosts: (this.state.socialExtraPosts || 0) + 1, socialPostTab: top + 1 });
+          },
           label, countLabel: items.length ? items.length + (items.length === 1 ? ' item' : ' items') : '',
           statusIdle: pct == null ? (s.projMediaStatus[key] || '') : '',
           status: s.projMediaStatus[key] || '',
