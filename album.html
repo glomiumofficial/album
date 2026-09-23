@@ -423,7 +423,9 @@ class Component extends DCLogic {
     const check = () => { if (holding && (ahead() >= CUSHION || nearEnd())) release(); };
 
     const hold = () => {
-      if (holding || el.paused || el.ended) return;
+      // A seek fires 'waiting' while the browser jumps; that is not starvation,
+      // and holding here is what made scrubbing freeze.
+      if (holding || el.paused || el.ended || el.seeking) return;
       // readyState 3+ means the browser already has enough to keep playing — a
       // cached file reports this and needs no help from us.
       if (el.readyState >= 3 || ahead() >= CUSHION || nearEnd()) return;
@@ -436,7 +438,13 @@ class Component extends DCLogic {
     };
 
     el.addEventListener('waiting', hold);
-    el.addEventListener('stalled', hold);
+    // 'stalled' only means the network went quiet — a fully buffered file fires
+    // it too — so it no longer triggers a hold.
+    el.addEventListener('seeking', () => {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      if (watchdog) { clearInterval(watchdog); watchdog = null; }
+      if (holding) { holding = false; const p = el.play(); if (p && p.catch) p.catch(() => {}); }
+    });
     el.addEventListener('progress', check);
     el.addEventListener('canplay', check);
     el.addEventListener('canplaythrough', check);

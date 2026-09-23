@@ -542,10 +542,19 @@ class Component extends DCLogic {
   // An open overlay is fixed over the page, so IntersectionObserver still calls
   // the loops behind it visible and they kept decoding next to the lightbox's
   // own player. Everything behind an overlay rests until it closes.
+  // Pausing was not enough: a paused tile keeps downloading, and each film
+  // tile holds the same streaming file the lightbox plays. Two players on one
+  // URL fight over the browser's media cache — slow start, then the bar moves
+  // with no picture or sound. Sources are detached while an overlay is up.
   setOverlay(on) {
     this._overlay = on;
-    Object.values(this._films || {}).forEach(el => { if (el && on) el.pause(); });
-    (this._loops || new Set()).forEach(el => { if (on) el.pause(); else if (el._go) el._go(); });
+    const rest = el => { el.pause(); const s = el.getAttribute('src'); if (s) { el._restSrc = s; el.removeAttribute('src'); el.load(); } };
+    Object.values(this._films || {}).forEach(el => {
+      if (!el) return;
+      if (on) rest(el);
+      else if (el._restSrc) { el.preload = 'metadata'; el.setAttribute('src', el._restSrc); el._restSrc = null; }
+    });
+    (this._loops || new Set()).forEach(el => { if (on) rest(el); else { el._restSrc = null; if (el._go) el._go(); } });
   }
 
   // play() rejects with AbortError when a pause lands first and NotAllowedError
@@ -897,6 +906,8 @@ class Component extends DCLogic {
           if (!el) return;
           if (m.thumb_url && el.getAttribute('poster') !== m.thumb_url) el.setAttribute('poster', m.thumb_url);
           const src = m.section === 'film' ? (m.url_view || m.url) : m.url;
+          // Behind an open lightbox the tile stays detached (see setOverlay).
+          if (this._overlay) { el._restSrc = src; return; }
           if (el.getAttribute('src') !== src) el.src = src;
         },
         // A silent few seconds of the film on hover reads far better than a
