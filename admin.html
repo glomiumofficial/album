@@ -714,59 +714,88 @@
                   </sc-if>
                   <sc-if value="{{ pm2.isOpen }}" hint-placeholder-val="{{ false }}">
                     <div style="display:flex; flex-direction:column; gap:10px">
-                      <div ref="{{ pm2.setSlipRef }}" style="display:flex; flex-direction:column; gap:18px; padding:34px 32px; background:#fff; border:1px solid var(--line); border-radius:3px">
-                        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding-bottom:14px; border-bottom:1px solid var(--line)">
-                          <span style="font-size:15px; letter-spacing:.2em; text-transform:uppercase; color:var(--green)">Glomium</span>
-                          <span style="font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#67746F">Payslip</span>
-                        </div>
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px">
-                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Crew member</span><span style="font-size:14px; color:#16231F">{{ personPayName }}</span></div>
-                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Crew ID</span><span style="font-size:14px; color:#16231F">{{ personPayId }}</span></div>
-                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Role</span><span style="font-size:14px; color:#16231F">{{ personPayRole }}</span></div>
-                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Period</span><span style="font-size:14px; color:#16231F">{{ pm2.periodLabel }}</span></div>
-                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Payslip no.</span><span style="font-size:14px; color:#16231F">{{ pm2.payslipNo }}</span></div>
-                          <div style="display:flex; flex-direction:column; gap:3px"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">PAN</span><span style="font-size:14px; color:#16231F">{{ payPan }}</span></div>
-                        </div>
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:28px">
-                          <div style="display:flex; flex-direction:column; gap:6px">
-                            <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep); padding-bottom:6px; border-bottom:1px solid var(--line)">Earnings</span>
-                            <sc-for list="{{ pm2.earnRows }}" as="er" hint-placeholder-count="3">
-                              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:5px 0"><span style="font-size:12px; color:#5D6864">{{ er.label }}</span><span style="font-size:12px; color:#16231F; font-variant-numeric:tabular-nums">{{ er.value }}</span></div>
-                            </sc-for>
-                            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0 0; border-top:1px solid #F1F4F3"><span style="font-size:12px; color:#16231F">Gross earnings</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.grossLabel }}</span></div>
+                      <div style="overflow-x:auto; max-width:100%"><div ref="{{ pm2.setSlipRef }}" style="width:680px; box-sizing:border-box; display:flex; flex-direction:column; gap:20px; padding:36px 34px; background:#fff; border:1px solid var(--line); border-radius:3px; color:#1B1D1E">
+                        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding-bottom:16px; border-bottom:2px solid #0E8E72">
+                          <div style="display:flex; flex-direction:column; gap:4px">
+                            <span style="font-size:18px; font-weight:300; letter-spacing:.04em; color:#0A6E58">glomium.</span>
+                            <span style="font-size:9px; letter-spacing:.26em; text-transform:uppercase; color:#8A9390">creative INFINITELY</span>
                           </div>
-                          <div style="display:flex; flex-direction:column; gap:6px">
-                            <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep); padding-bottom:6px; border-bottom:1px solid var(--line)">Deductions</span>
-                            <sc-for list="{{ pm2.dedRows }}" as="dr" hint-placeholder-count="3">
-                              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:5px 0"><span style="font-size:12px; color:#5D6864">{{ dr.label }}</span><span style="font-size:12px; color:#16231F; font-variant-numeric:tabular-nums">{{ dr.value }}</span></div>
-                            </sc-for>
-                            <sc-if value="{{ pm2.hasDedRows }}" hint-placeholder-val="{{ true }}">
-                              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0 0; border-top:1px solid #F1F4F3"><span style="font-size:12px; color:#16231F">Total deductions</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ pm2.dedLabel }}</span></div>
-                            </sc-if>
+                          <div style="display:flex; flex-direction:column; gap:4px; text-align:right">
+                            <span style="font-size:15px; font-weight:400; color:#1B1D1E">{{ pm2.slipTitle }}</span>
+                            <span style="font-size:11px; color:#4A524F; white-space:nowrap">No. {{ pm2.payslipNo }} · Pay date {{ pm2.payDateLabel }}</span>
                           </div>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:8px">
-                          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:12px 0 0; border-top:1px solid var(--line)"><span style="font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep)">Net pay</span><span style="font-size:19px; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ pm2.netLabel }}</span></div>
-                          <span style="font-size:11px; color:#5C6864; font-style:italic">{{ pm2.netWords }}</span>
+
+                        <div style="display:flex; flex-direction:column; gap:6px">
+                          <span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Employee</span>
+                          <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:#E3E8E6; border:1px solid #E3E8E6">
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Name</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ personPayName }}</span></div>
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Employee ID</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ personPayId }}</span></div>
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Designation</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ personPayRole }}</span></div>
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Engagement</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ personPayEngagement }}</span></div>
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Date of joining</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ personPayJoined }}</span></div>
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">PAN</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ payPan }}</span></div>
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Bank account</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ payBankName }} {{ personPayAccount }}</span></div>
+                            <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">IFSC</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ personPayIfsc }}</span></div>
+                          </div>
                         </div>
-                        <sc-if value="{{ pm2.showEmployer }}" hint-placeholder-val="{{ false }}">
-                          <div style="display:flex; gap:24px; padding:10px 12px; background:#F7FAF9; border-radius:3px; flex-wrap:wrap">
-                            <span style="font-size:10px; color:#5C6864">Employer EPF {{ pm2.employerEpf }}</span>
-                            <span style="font-size:10px; color:#5C6864">Employer ESI {{ pm2.employerEsi }}</span>
-                            <span style="font-size:10px; color:#67746F">Not deducted from net — shown so this can be checked against the EPFO record.</span>
+
+                        <div style="display:flex; flex-direction:column; border:1px solid #E3E8E6">
+                          <div style="display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,1.3fr) minmax(0,.7fr)">
+                            <span style="padding:9px 12px; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#0A6E58; background:#F2F4F3">Earnings</span><span style="padding:9px 12px; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#0A6E58; background:#F2F4F3; text-align:right">Amount</span>
+                            <span style="padding:9px 12px; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#0A6E58; background:#F2F4F3; border-left:1px solid #E3E8E6">Deductions</span><span style="padding:9px 12px; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#0A6E58; background:#F2F4F3; text-align:right">Amount</span>
+                          </div>
+                          <sc-for list="{{ pm2.slipTable }}" as="tr" hint-placeholder-count="3">
+                            <div style="display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,1.3fr) minmax(0,.7fr); border-top:1px solid #F2F4F3">
+                              <span style="padding:7px 12px; font-size:12px; color:#4A524F">{{ tr.eLabel }}</span><span style="padding:7px 12px; font-size:12px; color:#1B1D1E; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums">{{ tr.eVal }}</span>
+                              <span style="padding:7px 12px; font-size:12px; color:#4A524F; border-left:1px solid #E3E8E6">{{ tr.dLabel }}</span><span style="padding:7px 12px; font-size:12px; color:#1B1D1E; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums">{{ tr.dVal }}</span>
+                            </div>
+                          </sc-for>
+                          <div style="display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,1.3fr) minmax(0,.7fr); border-top:1px solid #E3E8E6; background:#FAFBFB">
+                            <span style="padding:7px 12px; font-size:12px; color:#4A524F; color:#1B1D1E">Gross earnings</span><span style="padding:7px 12px; font-size:12px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums; font-weight:500">{{ pm2.grossLabel }}</span>
+                            <span style="padding:7px 12px; font-size:12px; color:#4A524F; color:#1B1D1E; border-left:1px solid #E3E8E6">Total deductions</span><span style="padding:7px 12px; font-size:12px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums; font-weight:500">{{ pm2.dedLabel }}</span>
+                          </div>
+                        </div>
+
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:16px 18px; border:1px solid #0E8E72; border-radius:3px; background:#F4FAF8">
+                          <div style="display:flex; flex-direction:column; gap:4px; min-width:0">
+                            <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#0A6E58">Net pay</span>
+                            <span style="font-size:11px; color:#4A524F; font-style:italic">{{ pm2.netWords }}</span>
+                          </div>
+                          <span style="font-size:24px; font-weight:300; color:#0A6E58; font-variant-numeric:tabular-nums">{{ pm2.netLabel }}</span>
+                        </div>
+
+                        <sc-if value="{{ pm2.hasYtd }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; flex-direction:column; gap:6px">
+                            <span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">{{ pm2.ytdLabel }}</span>
+                            <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; background:#E3E8E6; border:1px solid #E3E8E6">
+                              <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Gross</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ pm2.ytdGross }}</span></div>
+                              <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Deductions</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ pm2.ytdDed }}</span></div>
+                              <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">TDS</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ pm2.ytdTds }}</span></div>
+                              <div style="display:flex; flex-direction:column; gap:3px; padding:9px 12px; background:#fff"><span style="font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A9390">Net paid</span><span style="font-size:12px; color:#1B1D1E; white-space:nowrap">{{ pm2.ytdNet }}</span></div>
+                            </div>
                           </div>
                         </sc-if>
-                        <div style="display:flex; flex-direction:column; gap:4px; padding-top:12px; border-top:1px solid var(--line)">
-                          <span style="font-size:11px; color:#5C6864">{{ pm2.paidLabel }} · {{ pm2.payModeLabel }} · Credited to {{ payBankName }} {{ payBankAccount }}</span>
+
+                        <sc-if value="{{ pm2.showEmployer }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; gap:24px; padding:10px 12px; background:#F2F4F3; flex-wrap:wrap">
+                            <span style="font-size:10px; color:#4A524F">Employer EPF {{ pm2.employerEpf }}</span>
+                            <span style="font-size:10px; color:#4A524F">Employer ESI {{ pm2.employerEsi }}</span>
+                            <span style="font-size:10px; color:#8A9390">Paid by the employer on top of gross; not deducted from net pay.</span>
+                          </div>
+                        </sc-if>
+
+                        <div style="display:flex; flex-direction:column; gap:4px; padding-top:14px; border-top:1px solid #E3E8E6">
+                          <span style="font-size:11px; color:#4A524F">{{ pm2.paidLabel }} · {{ pm2.payModeLabel }}</span>
                           <sc-if value="{{ pm2.hasPayRef }}" hint-placeholder-val="{{ false }}">
-                            <span style="font-size:11px; color:#5C6864">{{ pm2.payRefLabel }}</span>
+                            <span style="font-size:11px; color:#4A524F">{{ pm2.payRefLabel }}</span>
                           </sc-if>
                           <sc-if value="{{ pm2.hasNote }}" hint-placeholder-val="{{ false }}">
-                            <span style="font-size:11px; color:#5C6864">{{ pm2.note }}</span>
+                            <span style="font-size:11px; color:#4A524F">{{ pm2.note }}</span>
                           </sc-if>
-                          <span style="font-size:10px; color:#67746F; line-height:1.6">Computer-generated payslip. No signature required.</span>
+                          <span style="font-size:9px; letter-spacing:.06em; color:#8A9390; line-height:1.6">This is a computer-generated payslip and does not need a signature.</span>
                         </div>
-                      </div>
+                      </div></div>
                       <div>
                         <button onClick="{{ pm2.download }}" style="padding:8px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Download PDF</button>
                       </div>
@@ -2247,6 +2276,200 @@
       </div>
       </sc-if>
 
+      <sc-if value="{{ isFinPayroll }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:20px">
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Payroll</span>
+          <div style="display:flex; align-items:center; gap:6px">
+            <button onClick="{{ prPrev }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">←</button>
+            <span style="font-size:15px; color:#16231F; min-width:150px; text-align:center">{{ prMonthLabel }}</span>
+            <button onClick="{{ prNext }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">→</button>
+          </div>
+          <span style="font-size:12px; color:#5C6864">{{ prTotalsLabel }}</span>
+          <sc-if value="{{ prCanRunAll }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ prRunAll }}" style="margin-left:auto; padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ prRunAllLabel }}</button>
+          </sc-if>
+        </div>
+        <span style="font-size:12px; color:var(--green-deep)">{{ prStatus }}</span>
+        <sc-if value="{{ prEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">Nobody is on salary. Open a person in People, set Engagement to employee and fill in their monthly salary.</span></sc-if>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <sc-for list="{{ prRowsVM }}" as="r" hint-placeholder-count="0">
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:13px 16px; border:1px solid var(--line); border-radius:3px">
+              <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                <span style="font-size:14px; color:#16231F">{{ r.name }}</span>
+                <span style="font-size:11px; color:{{ r.noteColor }}">{{ r.meta }} · {{ r.note }}</span>
+              </div>
+              <div style="display:flex; gap:12px; flex-wrap:wrap">
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Gross</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ r.grossFmt }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Deductions</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ r.dedFmt }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Net pay</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ r.netFmt }}</span></div>
+              </div>
+              <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ r.stateBg }}; color:{{ r.stateColor }}; letter-spacing:.08em; text-transform:uppercase; min-width:70px; text-align:center">{{ r.stateLabel }}</span>
+              <div style="display:flex; gap:6px">
+                <sc-if value="{{ r.canPay }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ r.pay }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Pay</button>
+                </sc-if>
+                <sc-if value="{{ r.canMarkPaid }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ r.markPaid }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">Mark paid</button>
+                </sc-if>
+                <sc-if value="{{ r.canOpen }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ r.open }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">Payslip</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size:11px; color:#67746F; line-height:1.7">Pay records this month's payslip, paid today, repeating the person's last payslip (basic, HRA, PF, PT…) — or their profile salary if it is the first. To change an amount, open Payslip and edit it there. A paid payslip is never deleted; void it on the person's Pay tab.</span>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isFinInventory }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <sc-if value="{{ invMissing }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:13px; color:#8A6D3B">Run album-system/inventory-schema.sql in Supabase to turn on the inventory.</span>
+        </sc-if>
+
+        <sc-if value="{{ invIsList }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; flex-direction:column; gap:18px">
+          <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Inventory</span>
+            <span style="font-size:12px; color:#5C6864">{{ invSummary }}</span>
+            <span style="font-size:12px; color:var(--green-deep)">{{ invStatus }}</span>
+            <sc-if value="{{ invCanEdit }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ invNew }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; margin-left:auto" style-hover="background:var(--green-deep)">+ Add item</button>
+            </sc-if>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+            <sc-for list="{{ invCatChipsVM }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.go }}" style="padding:7px 13px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+            </sc-for>
+            <input value="{{ invQuery }}" onChange="{{ onInvQuery }}" placeholder="Search asset no., name, model, serial" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; margin-left:auto; flex:0 1 260px; min-width:0" style-focus="border-color:var(--green)">
+          </div>
+          <sc-if value="{{ invNoItems }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">{{ invEmptyLabel }}</span></sc-if>
+          <div style="display:flex; flex-direction:column; gap:8px">
+            <sc-for list="{{ invListVM }}" as="it" hint-placeholder-count="0">
+              <div onClick="{{ it.open }}" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:13px 16px; border:1px solid var(--line); border-radius:3px; cursor:pointer" style-hover="border-color:var(--green)">
+                <span style="width:104px; font-size:12px; letter-spacing:.06em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ it.assetNo }}</span>
+                <div style="flex:1 1 240px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                  <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ it.name }}</span>
+                  <span style="font-size:11px; color:#67746F; overflow-wrap:anywhere">{{ it.meta }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:110px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Bought</span>
+                  <span style="font-size:13px; color:#16231F">{{ it.dateLabel }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:120px; text-align:right">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Price</span>
+                  <span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ it.priceFmt }}</span>
+                </div>
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ it.stateBg }}; color:{{ it.stateColor }}; letter-spacing:.08em; text-transform:uppercase; min-width:80px; text-align:center">{{ it.stateLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ invIsInfo }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:20px">
+          <div><button onClick="{{ invBack }}" style="background:none; border:none; padding:0; font-size:13px; color:var(--green-deep); cursor:pointer">← Inventory</button></div>
+          <div style="display:flex; align-items:flex-start; gap:18px; flex-wrap:wrap; padding-bottom:18px; border-bottom:1px solid var(--line)">
+            <div style="flex:1 1 280px; display:flex; flex-direction:column; gap:8px; min-width:0">
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:#F1F4F3; color:#5C6864; letter-spacing:.08em; text-transform:uppercase">{{ invCatLabel }}</span>
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ invStateBg }}; color:{{ invStateColor }}; letter-spacing:.08em; text-transform:uppercase">{{ invStateLabel }}</span>
+              </div>
+              <span style="font-size:13px; letter-spacing:.1em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ invAssetNo }}</span>
+              <span style="font-size:24px; font-weight:300; color:#16231F; overflow-wrap:anywhere">{{ invName }}</span>
+              <span style="font-size:13px; color:#5C6864">{{ invBoughtLabel }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; text-align:right">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Price paid</span>
+              <span style="font-size:26px; color:#16231F; font-variant-numeric:tabular-nums">{{ invPriceFmt }}</span>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden">
+            <sc-for list="{{ invInfoVM }}" as="r" hint-placeholder-count="10">
+              <div style="display:flex; flex-direction:column; gap:5px; padding:16px 18px; background:#fff">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">{{ r.label }}</span>
+                <span style="font-size:14px; color:{{ r.color }}; overflow-wrap:anywhere">{{ r.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ invHasNotes }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px; padding:16px 18px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Notes</span>
+              <span style="font-size:14px; color:#16231F; line-height:1.7; white-space:pre-wrap">{{ invNotes }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ invCanEdit }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+              <button onClick="{{ invEdit }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Edit</button>
+              <button onClick="{{ invRemove }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; color:#B4433A">Delete</button>
+              <span style="font-size:12px; color:var(--green-deep)">{{ invStatus }}</span>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ invIsForm }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:18px">
+          <div><button onClick="{{ invCancel }}" style="background:none; border:none; padding:0; font-size:13px; color:var(--green-deep); cursor:pointer">← Cancel</button></div>
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">{{ invFormTitle }}</span>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; padding:22px; border:1px solid var(--line); border-radius:4px">
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Asset no.
+              <input value="{{ ifAssetNo }}" onChange="{{ onIfAssetNo }}" placeholder="GL-CAM-001" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; text-transform:uppercase">
+              <span style="font-size:10px; color:#67746F">{{ ifAssetHint }}</span>
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; grid-column:span 2">Item name
+              <input value="{{ ifName }}" onChange="{{ onIfName }}" placeholder="Sony FX3 body" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Category
+              <select value="{{ ifCategory }}" onChange="{{ onIfCategory }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff"><sc-for list="{{ invCatOptsVM }}" as="o" hint-placeholder-count="8"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select>
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Brand
+              <input value="{{ ifBrand }}" onChange="{{ onIfBrand }}" placeholder="Sony" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Model
+              <input value="{{ ifModel }}" onChange="{{ onIfModel }}" placeholder="ILME-FX3" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Serial number
+              <input value="{{ ifSerial }}" onChange="{{ onIfSerial }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Purchase date
+              <input type="date" value="{{ ifDate }}" onChange="{{ onIfDate }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Price paid (₹)
+              <input type="number" min="0" value="{{ ifPrice }}" onChange="{{ onIfPrice }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Bought from
+              <input value="{{ ifVendor }}" onChange="{{ onIfVendor }}" placeholder="Store or seller" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Bill / invoice no.
+              <input value="{{ ifBill }}" onChange="{{ onIfBill }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Warranty until
+              <input type="date" value="{{ ifWarranty }}" onChange="{{ onIfWarranty }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Kept at / with
+              <input value="{{ ifLocation }}" onChange="{{ onIfLocation }}" placeholder="Studio shelf B · with Arjun" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Status
+              <select value="{{ ifStatus }}" onChange="{{ onIfStatus }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff"><sc-for list="{{ invStatusOptsVM }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select>
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; grid-column:1/-1">Notes
+              <textarea value="{{ ifNotes }}" onChange="{{ onIfNotes }}" rows="3" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; resize:vertical; font-family:inherit"></textarea>
+            </label>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+            <button onClick="{{ invSave }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save item</button>
+            <button onClick="{{ invCancel }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; color:#5C6864">Cancel</button>
+            <span style="font-size:12px; color:#B4433A">{{ invStatus }}</span>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
       <sc-if value="{{ isFinMaster }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:24px">
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
@@ -2502,6 +2725,12 @@
               <div style="display:flex; gap:8px; flex-wrap:wrap">
                 <button onClick="{{ iv.preview }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Preview</button>
                 <button onClick="{{ iv.open }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Open project</button>
+                <sc-if value="{{ iv.canIssue }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ iv.issue }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Mark issued</button>
+                </sc-if>
+                <sc-if value="{{ iv.canCancel }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ iv.cancel }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:#B4433A; cursor:pointer">{{ iv.cancelLabel }}</button>
+                </sc-if>
                 <sc-if value="{{ iv.canLog }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ iv.logPayment }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Log payment</button>
                 </sc-if>
@@ -4317,8 +4546,8 @@
 
           <sc-if value="{{ plCanEdit }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap">
-            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; flex:1 1 200px">Cost override (₹) — leave blank to use expenses + crew
-              <input type="number" min="0" value="{{ plCostOverride }}" onChange="{{ onPlCostOverride }}" placeholder="From ledgers" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; flex:1 1 200px">Cost override (₹) — leave blank to use expenses, crew and payouts
+              <input type="number" min="0" value="{{ plCostOverride }}" onChange="{{ onPlCostOverride }}" placeholder="From expenses, crew and payouts" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
             </label>
             <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; width:150px">Target margin (%)
               <input type="number" min="0" max="99" value="{{ plTargetMargin }}" onChange="{{ onPlTargetMargin }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
@@ -4420,7 +4649,7 @@
               <button onClick="{{ invoiceDueLines }}" style="padding:11px 20px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:12px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ plDueLabel }}</button>
             </sc-if>
             <span style="font-size:12px; color:#5C6864; padding-bottom:11px">{{ plNoDueLabel }}</span>
-            <span style="font-size:11px; color:#67746F; line-height:1.6; flex:1 1 100%">Creates one draft invoice with GST from the place of supply (uses the invoice type and GST setting below). Each line bills once; deleting the draft frees its lines. Once sent, its lines are frozen.</span>
+            <span style="font-size:11px; color:#67746F; line-height:1.6; flex:1 1 100%">Creates one draft tax invoice with GST from the place of supply (uses the GST setting below). Quotes go through the proforma form. Each line bills once; deleting the draft frees its lines. Once sent, its lines are frozen.</span>
           </div>
           </sc-if>
         </div>
@@ -4557,7 +4786,8 @@
                   <sc-if value="{{ canMoneyEdit }}" hint-placeholder-val="{{ false }}">
                     <button onClick="{{ inv.logPayment }}" style="padding:7px 12px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Log payment</button>
                   </sc-if>
-                  <button onClick="{{ inv.remove }}" style="padding:7px 10px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#B4433A; cursor:pointer">Delete</button>
+                  <sc-if value="{{ inv.canIssue }}" hint-placeholder-val="{{ false }}"><button onClick="{{ inv.issue }}" style="padding:7px 12px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; color:var(--green-deep); cursor:pointer">Mark issued</button></sc-if>
+                  <sc-if value="{{ inv.canRemove }}" hint-placeholder-val="{{ true }}"><button onClick="{{ inv.remove }}" style="padding:7px 10px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#B4433A; cursor:pointer">{{ inv.removeLabel }}</button></sc-if>
                 </div>
               </div>
             </sc-for>
@@ -5022,7 +5252,7 @@ const CAPS = {
   studio:      ['none', 'admin', 'creative', 'hr'],
   // Sold lines and cost terms: same writers as the expense ledger's RLS.
   pricingEdit: ['admin', 'accounts', 'hr'],
-  shootEdit:   ['admin', 'accounts', 'creative'],
+  shootEdit:   ['admin', 'accounts', 'hr', 'creative'],
   hoursUnlock: ['admin'],
   albumUnlock: ['admin'],
 };
@@ -5233,8 +5463,11 @@ function loadLib(name) {
 }
 
 const WS_STORAGE_KEY = 'gl_workspace';
-const FIN_VIEWS = ['finance', 'finMaster', 'finProjects', 'finInvoices', 'money', 'payouts', 'spend', 'finPeople'];
-const CM_KINDS = [['loan', 'Loan EMI'], ['rent', 'Rent'], ['subscription', 'Subscription'], ['salary', 'Salary'], ['utility', 'Utility'], ['tax', 'Tax / statutory'], ['other', 'Other']];
+const FIN_VIEWS = ['finance', 'finMaster', 'finProjects', 'finInvoices', 'money', 'payouts', 'spend', 'finPeople', 'finInventory', 'finPayroll'];
+const INV_CATS = [['camera', 'Camera'], ['lens', 'Lens'], ['computer', 'Mac / computer'], ['lighting', 'Lighting'], ['audio', 'Audio'], ['storage', 'SSD / drive'], ['memory', 'Memory card'], ['drone', 'Drone'], ['support', 'Tripod / rig / gimbal'], ['power', 'Batteries / power'], ['accessory', 'Accessory'], ['other', 'Other']];
+const INV_PREFIX = { camera: 'CAM', lens: 'LEN', computer: 'MAC', lighting: 'LGT', audio: 'AUD', storage: 'SSD', memory: 'MEM', drone: 'DRN', support: 'RIG', power: 'PWR', accessory: 'ACC', other: 'OTH' };
+const INV_STATUS = [['in_use', 'In use', '#DDEFE8', '#0A6E58'], ['spare', 'Spare', '#F1F4F3', '#5C6864'], ['repair', 'In repair', '#FDF9F0', '#8A6D3B'], ['lost', 'Lost', '#F7E9E7', '#B4433A'], ['sold', 'Sold / retired', '#EEEEEE', '#5C6864']];
+const CM_KINDS = [['loan', 'Loan EMI'], ['rent', 'Rent'], ['subscription', 'Subscription'], ['salary', 'Salary (not staff — use Payroll)'], ['utility', 'Utility'], ['tax', 'Tax / statutory'], ['other', 'Other']];
 const CM_FREQ = [['monthly', 'Monthly', 1], ['quarterly', 'Quarterly', 3], ['half_yearly', 'Every six months', 6], ['yearly', 'Yearly', 12], ['once', 'One time', 0]];
 const PL_CATS = { posts: 'Posts', reels: 'Reels', ads: 'Ads', digital_marketing: 'Digital marketing', video: 'Video', photo: 'Photo', units: 'Units', retainer: 'Retainer', other: 'Other' };
 const PL_UNITS = { posts: 'post', reels: 'reel', ads: 'ad', digital_marketing: 'month', video: 'video', photo: 'photo', units: 'unit', retainer: 'month', other: 'unit' };
@@ -5309,6 +5542,8 @@ class Component extends DCLogic {
     finStatus: '', finQuery: '', finDivision: '', finInvFilter: 'unpaid', finInvQuery: '', finPeopleQuery: '', finPeopleMissing: false,
     finProjectsRaw: [], finEventsRaw: [], finBilling: [], finBillingMissing: false, finInvRaw: [], finReceipts: [], finDueLines: [],
     finInvList: [], finInvReceipts: [], finExpenses: [], finCommitments: [], finCmPays: [], finCmMissing: false,
+    prMonth: '', prPeople: [], prSlips: [], prStatus: '', prBusy: false,
+    invItems: [], invMissing: false, invQuery: '', invCat: '', invOpenId: null, invForm: null, invStatus: '',
     cmForm: null, cmShowForm: false, cmStatus: '', finClientOpen: null, finPeopleRows: [], finRates: [], finAdvances: [],
     role: null,
     people: [], peopleQuery: '', personId: null, personForm: null, personStatus: '', personMode: 'view',
@@ -5509,6 +5744,8 @@ class Component extends DCLogic {
     if (view === 'finMaster') { this.loadFinance(); this.loadMaster(); }
     if (view === 'finInvoices') this.loadFinInvoices();
     if (view === 'finPeople') this.loadFinPeople();
+    if (view === 'finPayroll') this.loadPayroll();
+    if (view === 'finInventory') { this.setState({ invOpenId: null, invForm: null }); this.loadInventory(); }
     if (view === 'shoots') { this.setState({ spendStatus: '' }); this.loadShootsOnly(); }
   }
 
@@ -7033,7 +7270,11 @@ class Component extends DCLogic {
   onAddonAmountChange(id, val) { this.setState({ newInvAddons: this.state.newInvAddons.map(a => a.id === id ? { ...a, amount: val } : a) }); }
 
   async nextInvoiceNumber(type) {
-    const year = new Date().getFullYear();
+    // GST numbering runs per financial year (1 April – 31 March), not per
+    // calendar year: INV-2627-001 is the first invoice of FY 2026-27.
+    const now = new Date();
+    const fy = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+    const year = String(fy).slice(2) + String(fy + 1).slice(2);
     const prefix = type === 'proforma' ? 'PRO' : 'INV';
     // Counting rows re-issues a number that a deleted invoice already used, so read
     // the highest number actually issued this year instead.
@@ -7044,6 +7285,18 @@ class Component extends DCLogic {
     if (error) throw new Error('Could not read the last invoice number (' + error.message + ') \u2014 nothing was created.');
     const last = data && data[0] ? parseInt(String(data[0].number).split('-').pop(), 10) : 0;
     return prefix + '-' + year + '-' + String((isFinite(last) ? last : 0) + 1).padStart(3, '0');
+  }
+
+  // Two people raising an invoice in the same second both read the same "last
+  // number". The column is unique, so the second insert fails — take the next
+  // number and try again instead of surfacing a duplicate-key error.
+  async insertInvoice(row) {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      if (attempt > 0) row.number = await this.nextInvoiceNumber(row.type);
+      const res = await this.sb.from('invoices').insert(row).select('id, number').single();
+      if (!res.error || res.error.code !== '23505') return res;
+    }
+    return { error: { message: 'Could not get a free invoice number — try again.' } };
   }
 
   async generateInvoice() {
@@ -7075,6 +7328,7 @@ class Component extends DCLogic {
       const balance = +(total - advance).toFixed(2);
       const row = {
         [this.parentCol(ev)]: ev.id, type, number, status: 'draft', issue_date: new Date().toISOString().slice(0, 10),
+        due_date: this.addDays(this.toIso(new Date()), Number(ev.payment_terms_days == null ? 7 : ev.payment_terms_days)),
         bill_name: name, bill_couple: ev.couple_names, bill_gstin: s.editClientGstin || ev.client_gstin || '',
         bill_pan: s.editClientPan || ev.client_pan || '', bill_email: s.editClientEmail || ev.client_email || '',
         place_of_supply: clientState || '—', gst_mode: gstMode, gst_rate: rate,
@@ -7082,12 +7336,282 @@ class Component extends DCLogic {
         cgst_amount: cgst, sgst_amount: sgst, igst_amount: igst, total,
         advance_pct: advPct, advance_amount: advance, balance_amount: balance, notes: s.newInvNotes,
       };
-      const { error } = await this.sb.from('invoices').insert(row);
+      const { error } = await this.insertInvoice(row);
       if (error) throw error;
-      this.setState({ invStatus: 'Generated ' + number + '.', showInvoiceForm: false, newInvAddons: [] });
+      this.setState({ invStatus: 'Generated ' + row.number + '.', showInvoiceForm: false, newInvAddons: [] });
       this.loadInvoices(ev.id);
     } catch (e) { this.setState({ invStatus: e.message || 'Failed to generate.' }); }
     setTimeout(() => this.setState({ invStatus: '' }), 2500);
+  }
+
+  // ---- Inventory: gear we own, what it cost, when we bought it ------------------
+
+  blankInvItem() {
+    return { id: null, asset_no: '', name: '', category: 'camera', brand: '', model: '', serial_no: '', purchase_date: '', price: '',
+      vendor: '', bill_no: '', warranty_until: '', location: '', status: 'in_use', notes: '' };
+  }
+
+  async loadInventory() {
+    const { data, error } = await this.sb.from('inventory_items').select('*').order('purchase_date', { ascending: false, nullsFirst: false });
+    const missing = !!error && /inventory_items|schema cache|does not exist/i.test(error.message || '');
+    this.setState({ invItems: data || [], invMissing: missing, invStatus: error && !missing ? error.message : '' });
+  }
+
+  // GL-CAM-001, GL-CAM-002… the next free number in that category's series.
+  nextAssetNo(category) {
+    const pre = 'GL-' + (INV_PREFIX[category] || 'OTH') + '-';
+    const max = (this.state.invItems || []).reduce((m, it) => {
+      const a = String(it.asset_no || '');
+      if (!a.startsWith(pre)) return m;
+      const n = parseInt(a.slice(pre.length), 10);
+      return isFinite(n) && n > m ? n : m;
+    }, 0);
+    return pre + String(max + 1).padStart(3, '0');
+  }
+
+  setInv(k, v) { this.setState({ invForm: Object.assign({}, this.state.invForm || this.blankInvItem(), { [k]: v }), invStatus: '' }); }
+
+  async saveInvItem() {
+    const f = this.state.invForm || this.blankInvItem();
+    if (!(f.name || '').trim()) { this.setState({ invStatus: 'Name the item — e.g. Sony FX3 body.' }); return; }
+    const price = f.price === '' || f.price == null ? null : Number(f.price);
+    if (price != null && !(price >= 0)) { this.setState({ invStatus: 'Price must be zero or more.' }); return; }
+    const t = v => (v || '').trim() || null;
+    const assetNo = ((f.asset_no || '').trim() || this.nextAssetNo(f.category)).toUpperCase();
+    if ((this.state.invItems || []).some(it => it.id !== f.id && String(it.asset_no || '').toUpperCase() === assetNo)) {
+      this.setState({ invStatus: assetNo + ' is already on another item.' }); return;
+    }
+    const row = {
+      asset_no: assetNo, name: f.name.trim(), category: f.category, brand: t(f.brand), model: t(f.model), serial_no: t(f.serial_no),
+      purchase_date: f.purchase_date || null, price, vendor: t(f.vendor), bill_no: t(f.bill_no),
+      warranty_until: f.warranty_until || null, location: t(f.location), status: f.status || 'in_use', notes: t(f.notes),
+    };
+    const res = f.id
+      ? await this.sb.from('inventory_items').update(row).eq('id', f.id).select('id').single()
+      : await this.sb.from('inventory_items').insert(row).select('id').single();
+    if (res.error) {
+      this.setState({ invStatus: /duplicate|unique/i.test(res.error.message || '') ? assetNo + ' is already taken.' : /inventory_items|asset_no|schema cache/i.test(res.error.message || '') ? 'Run album-system/inventory-schema.sql in Supabase first.' : res.error.message });
+      return;
+    }
+    this.setState({ invForm: null, invOpenId: res.data.id, invStatus: f.id ? 'Saved.' : 'Added.' });
+    this.loadInventory();
+  }
+
+  editInvItem(it) {
+    const f = this.blankInvItem();
+    Object.keys(f).forEach(k => { if (it[k] != null) f[k] = String(it[k]); });
+    f.id = it.id;
+    this.setState({ invForm: f, invOpenId: it.id, invStatus: '' });
+  }
+
+  async removeInvItem(it) {
+    if (!window.confirm('Delete "' + it.name + '" from inventory?')) return;
+    const { error } = await this.sb.from('inventory_items').delete().eq('id', it.id);
+    if (error) { this.setState({ invStatus: error.message }); return; }
+    this.setState({ invOpenId: null, invForm: null, invStatus: 'Deleted.' });
+    this.loadInventory();
+  }
+
+  inventoryVM() {
+    const s = this.state;
+    const today = this.toIso(new Date());
+    const catLabel = k => (INV_CATS.find(c => c[0] === k) || [k, 'Other'])[1];
+    const st = k => INV_STATUS.find(x => x[0] === k) || INV_STATUS[0];
+    const canEdit = this.can('moneyEdit');
+    const items = s.invItems || [];
+    const q = (s.invQuery || '').trim().toLowerCase();
+    const cat = s.invCat || '';
+    const shown = items.filter(it => (!cat || it.category === cat)
+      && (!q || [it.asset_no, it.name, it.brand, it.model, it.serial_no, it.vendor, it.location].filter(Boolean).join(' ').toLowerCase().includes(q)));
+    const owned = shown.filter(it => it.status !== 'sold' && it.status !== 'lost');
+    const value = owned.reduce((t, it) => t + Number(it.price || 0), 0);
+    const age = d => {
+      if (!d) return '';
+      const m = Math.max(0, Math.round((new Date(today) - new Date(d)) / (86400000 * 30.44)));
+      return m < 12 ? m + (m === 1 ? ' month' : ' months') : (Math.round(m / 12 * 10) / 10) + ' years';
+    };
+    const f = s.invForm;
+    const open = s.invOpenId ? items.find(it => it.id === s.invOpenId) : null;
+    const set = k => e => this.setInv(k, e.target.value);
+    const base = {
+      isFinInventory: true, invMissing: !!s.invMissing, invStatus: s.invStatus || '', invCanEdit: canEdit,
+      invIsList: !open && !f, invIsInfo: !!open && !f, invIsForm: !!f,
+      invBack: () => this.setState({ invOpenId: null, invForm: null, invStatus: '' }),
+      invNew: () => this.setState({ invForm: this.blankInvItem(), invOpenId: null, invStatus: '' }),
+    };
+    if (f) {
+      return Object.assign(base, {
+        invFormTitle: f.id ? 'Edit item' : 'New item',
+        invCancel: () => this.setState({ invForm: null, invStatus: '' }),
+        invSave: () => this.saveInvItem(),
+        invCatOptsVM: INV_CATS.map(c => ({ value: c[0], label: c[1] })),
+        invStatusOptsVM: INV_STATUS.map(c => ({ value: c[0], label: c[1] })),
+        ifAssetNo: f.asset_no, onIfAssetNo: set('asset_no'), ifAssetHint: f.asset_no ? '' : 'Leave blank for ' + this.nextAssetNo(f.category),
+        ifName: f.name, onIfName: set('name'), ifCategory: f.category, onIfCategory: set('category'),
+        ifBrand: f.brand, onIfBrand: set('brand'), ifModel: f.model, onIfModel: set('model'),
+        ifSerial: f.serial_no, onIfSerial: set('serial_no'), ifDate: f.purchase_date, onIfDate: set('purchase_date'),
+        ifPrice: f.price, onIfPrice: set('price'), ifVendor: f.vendor, onIfVendor: set('vendor'),
+        ifBill: f.bill_no, onIfBill: set('bill_no'), ifWarranty: f.warranty_until, onIfWarranty: set('warranty_until'),
+        ifLocation: f.location, onIfLocation: set('location'), ifStatus: f.status, onIfStatus: set('status'),
+        ifNotes: f.notes, onIfNotes: set('notes'),
+      });
+    }
+    if (open) {
+      const x = st(open.status);
+      const w = open.warranty_until;
+      return Object.assign(base, {
+        invAssetNo: open.asset_no || 'No number', invName: open.name, invCatLabel: catLabel(open.category),
+        invStateLabel: x[1], invStateBg: x[2], invStateColor: x[3],
+        invPriceFmt: open.price != null ? fmtINR(open.price) : '—',
+        invBoughtLabel: open.purchase_date ? 'Bought ' + fmtDay(open.purchase_date) + ' · ' + age(open.purchase_date) + ' old' : 'Purchase date not recorded',
+        invInfoVM: [
+          ['Asset no.', open.asset_no], ['Brand', open.brand], ['Model', open.model], ['Serial number', open.serial_no],
+          ['Purchase date', open.purchase_date ? fmtDay(open.purchase_date) : null],
+          ['Price paid', open.price != null ? fmtINR(open.price) : null],
+          ['Bought from', open.vendor], ['Bill / invoice no.', open.bill_no],
+          ['Warranty', w ? (w >= today ? 'Until ' + fmtDay(w) : 'Expired ' + fmtDay(w)) : null],
+          ['Kept at / with', open.location], ['Status', x[1]],
+        ].map(r => ({ label: r[0], value: r[1] || '—', color: r[0] === 'Warranty' && w && w < today ? '#B4433A' : '#16231F' })),
+        invNotes: open.notes || '', invHasNotes: !!open.notes,
+        invEdit: () => this.editInvItem(open), invRemove: () => this.removeInvItem(open),
+      });
+    }
+    const counts = {};
+    items.forEach(it => { counts[it.category] = (counts[it.category] || 0) + 1; });
+    return Object.assign(base, {
+      invQuery: s.invQuery || '', onInvQuery: e => this.setState({ invQuery: e.target.value }),
+      invSummary: shown.length + (shown.length === 1 ? ' item' : ' items') + ' · ' + fmtINR(value) + ' paid for what we still own',
+      invCatChipsVM: [['', 'All (' + items.length + ')']].concat(INV_CATS.filter(c => counts[c[0]]).map(c => [c[0], c[1] + ' (' + counts[c[0]] + ')']))
+        .map(c => Object.assign({ label: c[1], go: () => this.setState({ invCat: c[0] }) }, this.finChip(cat === c[0]))),
+      invNoItems: !shown.length,
+      invEmptyLabel: items.length ? 'Nothing matches.' : 'No gear listed yet. Add cameras, Macs, lights, SSDs and cards as you buy them.',
+      invListVM: shown.map(it => {
+        const x = st(it.status);
+        return {
+          assetNo: it.asset_no || '—', name: it.name, meta: [catLabel(it.category), [it.brand, it.model].filter(Boolean).join(' '), it.serial_no ? 'S/N ' + it.serial_no : null].filter(Boolean).join(' · '),
+          dateLabel: it.purchase_date ? fmtDay(it.purchase_date) : '—',
+          priceFmt: it.price != null ? fmtINR(it.price) : '—',
+          stateLabel: x[1], stateBg: x[2], stateColor: x[3],
+          open: () => this.setState({ invOpenId: it.id, invStatus: '' }),
+        };
+      }),
+    });
+  }
+
+  // ---- Payroll: one screen, one month, everyone on a salary ----------------------
+  //
+  // A payslip is a people_payments row, kind 'salary', one per person per month.
+  // The amount comes from the last payslip they had (so HRA, PF and PT repeat
+  // as they were), or from the monthly salary on their profile if this is the
+  // first. Itemised edits still happen on the person's Pay tab.
+
+  async loadPayroll(month) {
+    const m = month || this.state.prMonth || this.toIso(new Date()).slice(0, 7);
+    this.setState({ prMonth: m, prStatus: this.state.view === 'finPayroll' ? 'Loading…' : this.state.prStatus });
+    const [pp, sl] = await Promise.all([
+      this.sb.from('people').select('*').order('full_name', { ascending: true }),
+      this.sb.from('people_payments').select('*').eq('kind', 'salary').order('period', { ascending: false }).limit(5000),
+    ]);
+    this.setState({
+      prPeople: pp.data || [], prSlips: sl.error ? [] : (sl.data || []),
+      prStatus: pp.error ? 'Could not read staff: ' + pp.error.message : sl.error ? sl.error.message : '',
+    });
+  }
+
+  // Who is on payroll: anyone active with a monthly salary, or salaried by pay mode.
+  payrollPeople() {
+    return (this.state.prPeople || []).filter(p => p.active !== false
+      && (Number(p.monthly_salary) > 0 || p.pay_mode === 'salaried' || p.engagement === 'employee'));
+  }
+
+  payrollTemplate(p, month) {
+    const live = (this.state.prSlips || []).filter(x => x.person_id === p.id && x.status !== 'void');
+    const prev = live.filter(x => String(x.period || '') < month)[0];
+    if (prev && prev.components && Object.keys(prev.components).length) {
+      const comp = Object.assign({}, prev.components);
+      const gross = SLIP_EARN.reduce((t, r) => t + Number(comp[r[0]] || 0), 0);
+      const ded = SLIP_DED.reduce((t, r) => t + Number(comp[r[0]] || 0), 0);
+      if (gross > 0) return { components: comp, gross, deductions: ded, from: 'as ' + prev.period };
+    }
+    const sal = Number(p.monthly_salary || 0);
+    return { components: sal ? { basic: sal } : {}, gross: sal, deductions: 0, from: sal ? 'profile salary' : '' };
+  }
+
+  async runPayroll(people) {
+    const month = this.state.prMonth;
+    const today = this.toIso(new Date());
+    const rows = people.map(p => {
+      const t = this.payrollTemplate(p, month);
+      return { person_id: p.id, kind: 'salary', period: month, gross: t.gross, deductions: t.deductions,
+        components: t.components, paid_on: today, paid_mode: p.upi_id ? 'upi' : 'bank' };
+    }).filter(r => r.gross > 0);
+    if (!rows.length) { this.setState({ prStatus: 'Nobody to pay — set a monthly salary on their profile first.' }); return; }
+    if (rows.length > 1 && !window.confirm('Record ' + rows.length + ' salaries for ' + this.monthLabel(month) + ', paid today, ' + fmtINR(rows.reduce((t, r) => t + r.gross - r.deductions, 0)) + ' net?')) return;
+    this.setState({ prBusy: true, prStatus: 'Saving…' });
+    const { error } = await this.sb.from('people_payments').insert(rows);
+    this.setState({ prBusy: false, prStatus: error
+      ? (/period_uq|duplicate key/i.test(error.message || '') ? 'Someone already has a payslip for this month — reload and pay the rest.' : error.message)
+      : (rows.length === 1 ? 'Salary recorded.' : rows.length + ' salaries recorded.') });
+    this.loadPayroll(month);
+  }
+
+  async markSlipPaid(x) {
+    const { error } = await this.sb.from('people_payments').update({ paid_on: this.toIso(new Date()), paid_mode: x.paid_mode || 'bank' }).eq('id', x.id);
+    this.setState({ prStatus: error ? error.message : 'Marked paid.' });
+    this.loadPayroll();
+  }
+
+  monthLabel(m) { return m ? new Date(m + '-01T00:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) : ''; }
+
+  payrollSummary(month) {
+    const ppl = this.payrollPeople();
+    let due = 0, paid = 0, unpaidPeople = [];
+    ppl.forEach(p => {
+      const slip = (this.state.prSlips || []).find(x => x.person_id === p.id && x.period === month && x.status !== 'void');
+      const t = slip ? { gross: Number(slip.gross || 0), deductions: Number(slip.deductions || 0) } : this.payrollTemplate(p, month);
+      const net = t.gross - t.deductions;
+      if (slip && slip.paid_on) paid += net; else { due += net; if (net > 0) unpaidPeople.push({ p, net, slip }); }
+    });
+    return { people: ppl, due, paid, unpaidPeople };
+  }
+
+  payrollVM() {
+    const s = this.state;
+    const month = s.prMonth || this.toIso(new Date()).slice(0, 7);
+    const canEdit = this.can('moneyEdit');
+    const sum = this.payrollSummary(month);
+    const rows = sum.people.map(p => {
+      const slip = (s.prSlips || []).find(x => x.person_id === p.id && x.period === month && x.status !== 'void');
+      const t = slip ? { gross: Number(slip.gross || 0), deductions: Number(slip.deductions || 0), from: '' } : this.payrollTemplate(p, month);
+      const net = t.gross - t.deductions;
+      const state = slip ? (slip.paid_on ? 'paid' : 'unpaid') : 'none';
+      return {
+        name: p.full_name, meta: [p.crew_id, p.engagement].filter(Boolean).join(' · '),
+        grossFmt: t.gross ? fmtINR(t.gross) : '—', dedFmt: t.deductions ? fmtINR(t.deductions) : '—', netFmt: net > 0 ? fmtINR(net) : '—',
+        note: slip ? (slip.payslip_no || 'Payslip') + (slip.paid_on ? ' · paid ' + fmtDay(slip.paid_on) : ' · not paid yet')
+          : t.gross ? 'Will use ' + t.from : 'No salary on profile',
+        noteColor: !slip && !t.gross ? '#B4433A' : '#67746F',
+        stateLabel: state === 'paid' ? 'Paid' : state === 'unpaid' ? 'Slip made' : 'Due',
+        stateBg: state === 'paid' ? '#DDEFE8' : state === 'unpaid' ? '#FDF9F0' : '#F7E9E7',
+        stateColor: state === 'paid' ? '#0A6E58' : state === 'unpaid' ? '#8A6D3B' : '#B4433A',
+        canPay: canEdit && state === 'none' && t.gross > 0, pay: () => this.runPayroll([p]),
+        canMarkPaid: canEdit && state === 'unpaid', markPaid: () => this.markSlipPaid(slip),
+        canOpen: this.can('people'), open: () => this.openFinPerson(p),
+      };
+    });
+    const payable = sum.people.filter(p => !(s.prSlips || []).some(x => x.person_id === p.id && x.period === month && x.status !== 'void')
+      && this.payrollTemplate(p, month).gross > 0);
+    const shift = n => { const [y, m] = month.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+    return {
+      isFinPayroll: true, prStatus: s.prStatus || '',
+      prMonthLabel: this.monthLabel(month),
+      prPrev: () => this.loadPayroll(shift(-1)), prNext: () => this.loadPayroll(shift(1)),
+      prTotalsLabel: sum.people.length + (sum.people.length === 1 ? ' person' : ' people') + ' · ' + fmtINR(sum.paid) + ' paid · ' + fmtINR(sum.due) + ' still to pay',
+      prRowsVM: rows, prEmpty: !rows.length,
+      prCanRunAll: canEdit && payable.length > 1 && !s.prBusy,
+      prRunAllLabel: 'Pay all due (' + payable.length + ')',
+      prRunAll: () => this.runPayroll(payable),
+    };
   }
 
   // ---- Master: every client, every rupee in and out, what is due next ------------
@@ -7097,6 +7621,11 @@ class Component extends DCLogic {
   }
 
   async loadMaster() {
+    this.loadPayroll(this.toIso(new Date()).slice(0, 7));
+    // The expenses page's full ledger: typed expenses, paid talent days and
+    // Payouts → Paid by hand. Master reads the same stream so the two agree.
+    this.loadSpend();
+    if (!(this.state.talent || []).length) this.loadTalent();
     const [ex, cm, cp] = await Promise.all([
       this.sb.from('expenses').select('id, project_id, event_id, spend_date, category, vendor, note, amount').order('spend_date', { ascending: false }).limit(3000),
       this.sb.from('commitments').select('*').order('start_date', { ascending: true }),
@@ -7186,8 +7715,9 @@ class Component extends DCLogic {
     const recs = this.finRecords();
     const canEdit = this.can('moneyEdit');
 
+    const allSpend = (s.spendExpenses || s.finExpenses || []).concat(this.paidTalentRows());
     const spendBy = {};
-    (s.finExpenses || []).forEach(e => {
+    allSpend.forEach(e => {
       const k = e.project_id ? 'project:' + e.project_id : 'event:' + e.event_id;
       spendBy[k] = (spendBy[k] || 0) + Number(e.amount || 0);
     });
@@ -7249,6 +7779,12 @@ class Component extends DCLogic {
         dues.push({ c, d, paid });
       });
     });
+    // This month's unpaid salaries are dues like any other, due on the last day.
+    const curMonth = today.slice(0, 7);
+    const pr = this.payrollSummary(curMonth);
+    const [cy, cm] = curMonth.split('-').map(Number);
+    const monthEnd = this.toIso(new Date(cy, cm, 0));
+    pr.unpaidPeople.forEach(u => dues.push({ c: { id: 'sal:' + u.p.id, title: 'Salary — ' + u.p.full_name, kind: 'salary', payee: null, amount: u.net }, d: monthEnd, paid: null, salary: true }));
     dues.sort((a, b) => a.d.localeCompare(b.d));
     const due30 = dues.filter(x => !x.paid && x.d <= this.addDays(today, 30)).reduce((t, x) => t + Number(x.c.amount || 0), 0);
     const overdueAmt = dues.filter(x => !x.paid && x.d < today).reduce((t, x) => t + Number(x.c.amount || 0), 0);
@@ -7259,10 +7795,10 @@ class Component extends DCLogic {
         dateLabel: fmtDay(x.d),
         when: x.paid ? 'Paid ' + fmtDay(x.paid.paid_on) : late ? (-days) + (days === -1 ? ' day late' : ' days late') : days === 0 ? 'Due today' : 'In ' + days + (days === 1 ? ' day' : ' days'),
         whenColor: x.paid ? '#0A6E58' : late || days === 0 ? '#B4433A' : '#67746F',
-        title: x.c.title, meta: [kindLabel(x.c.kind), x.c.payee].filter(Boolean).join(' · '),
+        title: x.c.title, meta: x.salary ? 'Payroll · this month' : [kindLabel(x.c.kind), x.c.payee].filter(Boolean).join(' · '),
         amountFmt: fmtINR(x.c.amount),
-        canEdit, btnLabel: x.paid ? 'Undo' : 'Mark paid',
-        toggle: () => this.markDuePaid(x.c, x.d, x.paid),
+        canEdit, btnLabel: x.salary ? 'Payroll' : x.paid ? 'Undo' : 'Mark paid',
+        toggle: () => (x.salary ? this.goWorkspace('finPayroll') : this.markDuePaid(x.c, x.d, x.paid)),
       };
     });
     const mCommitmentsVM = (s.finCommitments || []).map(c => {
@@ -7281,18 +7817,18 @@ class Component extends DCLogic {
 
     const nameOfKey = {};
     recs.forEach(r => { nameOfKey[r.kind + ':' + r.id] = (r.kind === 'event' ? r.label : r.label + (r.sub ? ' — ' + r.sub : '')); });
-    const exAll = s.finExpenses || [];
+    const exAll = allSpend.slice().sort((a, b) => String(b.spend_date || '').localeCompare(String(a.spend_date || '')));
     const monthKey = today.slice(0, 7);
     const spentMonth = exAll.filter(e => String(e.spend_date || '').slice(0, 7) === monthKey).reduce((t, e) => t + Number(e.amount || 0), 0);
     const spentAll = exAll.reduce((t, e) => t + Number(e.amount || 0), 0);
     const mExpensesVM = exAll.slice(0, 15).map(e => ({
       date: fmtDay(e.spend_date), job: nameOfKey[e.project_id ? 'project:' + e.project_id : 'event:' + e.event_id] || '—',
-      what: [e.category, e.vendor, e.note].filter(Boolean).join(' · '), amountFmt: fmtINR(e.amount),
+      what: [e.isTrial ? 'Trial · ours' : null, e.category, e.vendor, e.note].filter(Boolean).join(' · '), amountFmt: fmtINR(e.amount),
     }));
 
     const rcv = {};
     (s.finReceipts || []).forEach(r => { rcv[r.invoice_id] = (rcv[r.invoice_id] || 0) + Number(r.amount || 0); });
-    const invAll = (s.finInvRaw || []).filter(i => i.type === 'tax' && i.status !== 'draft')
+    const invAll = (s.finInvRaw || []).filter(i => i.type === 'tax' && (i.status === 'sent' || i.status === 'paid'))
       .sort((a, b) => String(b.issue_date || '').localeCompare(String(a.issue_date || '')));
     const invoicedAll = invAll.reduce((t, i) => t + Number(i.total || 0), 0);
     const receivedAll = invAll.reduce((t, i) => t + (rcv[i.id] || 0), 0);
@@ -7314,7 +7850,8 @@ class Component extends DCLogic {
         { label: 'Received', value: fmtINR(receivedAll), color: '#0A6E58', note: invoicedAll ? pct(receivedAll / invoicedAll * 100) + ' collected' : 'Nothing invoiced yet' },
         { label: 'Receivable', value: fmtINR(Math.max(0, invoicedAll - receivedAll)), color: invoicedAll - receivedAll > 1 ? '#B4433A' : '#16231F', note: 'Still with clients' },
         { label: 'Job expenses', value: fmtINR(spentAll), color: '#16231F', note: fmtINR(spentMonth) + ' this month' },
-        { label: 'Dues · next 30 days', value: fmtINR(due30), color: due30 > 0 ? '#8A6D3B' : '#16231F', note: overdueAmt > 0 ? fmtINR(overdueAmt) + ' already late' : 'Loans, rent and other standing costs' },
+        { label: 'Payroll · ' + this.monthLabel(curMonth).split(' ')[0], value: fmtINR(pr.paid + pr.due), color: pr.due > 1 ? '#8A6D3B' : '#16231F', note: pr.people.length ? fmtINR(pr.paid) + ' paid · ' + fmtINR(pr.due) + ' to pay' : 'No one on salary yet' },
+        { label: 'Dues · next 30 days', value: fmtINR(due30), color: due30 > 0 ? '#8A6D3B' : '#16231F', note: overdueAmt > 0 ? fmtINR(overdueAmt) + ' already late' : 'Salaries, loans, rent and other standing costs' },
       ],
       mClientsVM, mNoClients: !mClientsVM.length, mClientCount: mClientsVM.length + (mClientsVM.length === 1 ? ' client' : ' clients'),
       mDuesVM, mNoDues: !mDuesVM.length, finCmMissing: !!s.finCmMissing,
@@ -7426,7 +7963,7 @@ class Component extends DCLogic {
     (s.finInvRaw || []).forEach(i => { const k = i.project_id ? 'p:' + i.project_id : 'e:' + i.event_id; (invBy[k] = invBy[k] || []).push(i); });
     // A draft is not a demand for payment, and a proforma is a quote.
     const money = k => {
-      const list = (invBy[k] || []).filter(i => i.type === 'tax' && i.status !== 'draft');
+      const list = (invBy[k] || []).filter(i => i.type === 'tax' && (i.status === 'sent' || i.status === 'paid'));
       return {
         invoiced: list.reduce((t, i) => t + Number(i.total || 0), 0),
         received: list.reduce((t, i) => t + (rcv[i.id] || 0), 0),
@@ -7439,7 +7976,9 @@ class Component extends DCLogic {
         kind: 'project', rec: p, id: p.id,
         label: (p.client_name || '').trim() || 'Untitled project', sub: p.project_title || '', divisions: divs,
         price: b ? Number(b.price || 0) : Number(p.package_price || 0),
-        cost: b ? Number(b.cost_actual || 0) : (p.cost_override != null ? Number(p.cost_override) : null),
+        // Same basis as the pricing card: typed cost wins, else the higher of actual and planned.
+        cost: p.cost_override != null ? Number(p.cost_override)
+          : b && Math.max(Number(b.cost_actual || 0), Number(b.cost_planned || 0)) > 0 ? Math.max(Number(b.cost_actual || 0), Number(b.cost_planned || 0)) : null,
         target: Number(p.target_margin_pct == null ? 30 : p.target_margin_pct),
         dueNow: b ? Number(b.due_now || 0) : 0,
       }, money('p:' + p.id));
@@ -7466,7 +8005,7 @@ class Component extends DCLogic {
       finStatus: s.finStatus || '',
       isFinOverview: false, isFinProjects: false, isFinInvoices: false, isFinPeople: false, isShoots: false,
       finKpisVM: [], finBillSoonVM: [], finOverdueVM: [], finLowMarginVM: [], finRowsVM: [], finDivisionOptsVM: [],
-      finInvRowsVM: [], finInvFilterVM: [], finPeopleVM: [], finPeopleChipsVM: [], isFinMaster: false,
+      finInvRowsVM: [], finInvFilterVM: [], finPeopleVM: [], finPeopleChipsVM: [], isFinMaster: false, isFinInventory: false, isFinPayroll: false, prRowsVM: [], invListVM: [], invCatChipsVM: [], invCatOptsVM: [], invStatusOptsVM: [], invInfoVM: [],
       mKpisVM: [], mClientsVM: [], mDuesVM: [], mCommitmentsVM: [], mExpensesVM: [], mInvoicesVM: [], cmKindOptsVM: [], cmFreqOptsVM: [],
       svJobOptsVM: [], svListVM: [], svKindOptsVM: [],
     };
@@ -7474,6 +8013,8 @@ class Component extends DCLogic {
     if (s.view === 'finance' || s.view === 'finProjects') Object.assign(out, this.finProjectsVM(s.view));
     if (s.view === 'finInvoices') Object.assign(out, this.finInvoicesVM());
     if (s.view === 'finMaster') Object.assign(out, this.masterVM());
+    if (s.view === 'finInventory') Object.assign(out, this.inventoryVM());
+    if (s.view === 'finPayroll') Object.assign(out, this.payrollVM());
     if (s.view === 'finPeople') Object.assign(out, this.finPeopleVM());
     if (s.view === 'shoots') Object.assign(out, this.shootsVM());
     return out;
@@ -7549,12 +8090,13 @@ class Component extends DCLogic {
 
     const rcv = {};
     (s.finReceipts || []).forEach(r => { rcv[r.invoice_id] = (rcv[r.invoice_id] || 0) + Number(r.amount || 0); });
-    const overdue = (s.finInvRaw || []).filter(i => i.type === 'tax' && i.status !== 'draft' && i.due_date && i.due_date < today
+    const dueOf = i => i.due_date || (i.issue_date ? this.addDays(i.issue_date, 7) : null);
+    const overdue = (s.finInvRaw || []).filter(i => i.type === 'tax' && (i.status === 'sent' || i.status === 'paid') && dueOf(i) && dueOf(i) < today
       && Number(i.total || 0) - (rcv[i.id] || 0) > 1).map(i => {
       const r = byId[(i.project_id ? 'project:' : 'event:') + (i.project_id || i.event_id)];
-      const days = Math.round((new Date(today) - new Date(i.due_date)) / 86400000);
+      const days = Math.round((new Date(today) - new Date(dueOf(i))) / 86400000);
       return {
-        label: r ? r.label : (i.bill_name || '—'), meta: i.number + ' · due ' + fmtDay(i.due_date),
+        label: r ? r.label : (i.bill_name || '—'), meta: i.number + ' · due ' + fmtDay(dueOf(i)),
         balanceFmt: fmtINR(Number(i.total || 0) - (rcv[i.id] || 0)),
         lateLabel: days + (days === 1 ? ' day late' : ' days late'), _days: days,
         canLog: this.can('moneyEdit'), logPayment: () => this.goLogPayment(i),
@@ -7570,7 +8112,7 @@ class Component extends DCLogic {
       finKpisVM: [
         { label: 'Receivable', value: fmtINR(receivable), color: receivable > 1 ? '#B4433A' : '#16231F', note: late ? late + (late === 1 ? ' job' : ' jobs') + ' with money out · GST incl.' : 'Nothing outstanding' },
         { label: 'To bill now', value: fmtINR(dueNow), color: dueNow > 0 ? '#8A6D3B' : '#16231F', note: dueJobs ? dueJobs + (dueJobs === 1 ? ' project' : ' projects') + ' with lines due' : 'No sold lines due today' },
-        { label: 'Draft invoices', value: String(drafts.length), color: '#16231F', note: drafts.length ? fmtINR(drafts.reduce((t, i) => t + Number(i.total || 0), 0)) + ' raised, not sent' : 'None waiting' },
+        { label: 'Draft invoices', value: String(drafts.length), color: '#16231F', note: drafts.length ? fmtINR(drafts.reduce((t, i) => t + Number(i.total || 0), 0)) + ' raised, not issued — not owed yet' : 'None waiting' },
         { label: 'Margin', value: fmtINR(mSum), color: mSum < 0 ? '#B4433A' : '#0A6E58', note: priced.length ? pct(pSum ? mSum / pSum * 100 : 0) + ' across ' + priced.length + ' priced ' + (priced.length === 1 ? 'project' : 'projects') : 'Price a project to see margin' },
       ],
       finBillingMissing: !!s.finBillingMissing,
@@ -7589,7 +8131,7 @@ class Component extends DCLogic {
       : i.events ? (i.events.couple_names || '—') : (i.bill_name || '—');
     const rows = (s.finInvList || []).map(i => {
       const got = rcv[i.id] || 0, bal = Number(i.total || 0) - got;
-      const state = i.type === 'proforma' ? 'proforma' : i.status === 'draft' ? 'draft' : bal <= 1 ? 'paid' : 'unpaid';
+      const state = i.status === 'cancelled' ? 'cancelled' : i.type === 'proforma' ? 'proforma' : i.status === 'draft' ? 'draft' : bal <= 1 ? 'paid' : 'unpaid';
       return { i, got, bal, state, name: nameOf(i) };
     });
     const f = s.finInvFilter || 'unpaid';
@@ -7599,13 +8141,13 @@ class Component extends DCLogic {
     const count = k => rows.filter(x => k === 'all' || x.state === k).length;
     const STATE = {
       unpaid: ['Unpaid', '#F7E9E7', '#B4433A'], draft: ['Draft', '#EEEEEE', '#5C6864'],
-      paid: ['Paid', '#DDEFE8', '#0A6E58'], proforma: ['Proforma', '#EFE9DA', '#8A6D3B'],
+      paid: ['Paid', '#DDEFE8', '#0A6E58'], proforma: ['Proforma', '#EFE9DA', '#8A6D3B'], cancelled: ['Cancelled', '#EEEEEE', '#5C6864'],
     };
-    const totalShown = shown.reduce((t, x) => t + Number(x.i.total || 0), 0);
+    const totalShown = shown.filter(x => x.state !== 'cancelled').reduce((t, x) => t + Number(x.i.total || 0), 0);
     const balShown = shown.filter(x => x.state === 'unpaid').reduce((t, x) => t + x.bal, 0);
     return {
       isFinInvoices: true,
-      finInvFilterVM: [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['all', 'All']].map(c =>
+      finInvFilterVM: [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['cancelled', 'Cancelled'], ['all', 'All']].map(c =>
         Object.assign({ label: c[1] + ' (' + count(c[0]) + ')', go: () => this.setState({ finInvFilter: c[0] }) }, this.finChip(f === c[0]))),
       finInvQuery: s.finInvQuery || '', onFinInvQuery: e => this.setState({ finInvQuery: e.target.value }),
       finInvSummary: shown.length + (shown.length === 1 ? ' invoice · ' : ' invoices · ') + fmtINR(totalShown)
@@ -7620,9 +8162,14 @@ class Component extends DCLogic {
           dateColor: late ? '#B4433A' : '#67746F',
           stateLabel: st[0], stateBg: st[1], stateColor: st[2],
           totalFmt: fmtINR(x.i.total),
-          subLabel: x.state === 'proforma' ? 'Quote' : x.state === 'draft' ? 'Not sent' : x.got <= 0 ? 'Nothing received' : x.bal > 1 ? fmtINR(x.bal) + ' outstanding' : 'Received in full',
+          subLabel: x.state === 'cancelled' ? (x.i.cancel_reason || 'Cancelled') : x.state === 'proforma' ? 'Quote' : x.state === 'draft' ? 'Not issued — not owed yet' : x.got <= 0 ? 'Nothing received' : x.bal > 1 ? fmtINR(x.bal) + ' outstanding' : 'Received in full',
           subColor: x.state === 'unpaid' ? '#B4433A' : '#67746F',
           canLog: x.state === 'unpaid' && this.can('moneyEdit'),
+          canIssue: x.state === 'draft' && x.i.type === 'tax' && this.can('moneyEdit'),
+          issue: () => this.markInvoiceIssued(x.i),
+          canCancel: (x.state === 'draft' || x.state === 'unpaid' || x.state === 'proforma') && this.can('moneyEdit'),
+          cancelLabel: x.i.status === 'draft' ? 'Delete draft' : 'Cancel',
+          cancel: () => this.cancelInvoice(x.i),
           logPayment: () => this.goLogPayment(x.i),
           preview: () => this.openInvoicePreview(x.i),
           open: () => this.openFinInvoiceParent(x.i),
@@ -7841,11 +8388,13 @@ class Component extends DCLogic {
       const lineItems = due.map(l => ({ desc: this.priceLineDesc(l), amount: Number(l.amount) }));
       const clientState = (s.editClientState || pr.client_state || '').trim();
       const t = this.invoiceTotals(lineItems, 0, clientState, s.newInvGstOverride);
-      const type = s.newInvType || 'tax';
+      // A proforma is a quote. Stamping lines onto one would mark them billed
+      // when nothing has been demanded, so sold lines only ever go on a tax invoice.
+      const type = 'tax';
       const number = await this.nextInvoiceNumber(type);
       const terms = Number(pr.payment_terms_days == null ? 7 : pr.payment_terms_days);
       const today = this.toIso(new Date());
-      const { data: inv, error } = await this.sb.from('invoices').insert({
+      const { data: inv, error } = await this.insertInvoice({
         project_id: pr.id, type, number, status: 'draft', issue_date: today, due_date: this.addDays(today, terms),
         bill_name: name, bill_couple: pr.project_title || pr.client_name,
         bill_gstin: s.editClientGstin || pr.client_gstin || '', bill_pan: s.editClientPan || pr.client_pan || '',
@@ -7855,7 +8404,7 @@ class Component extends DCLogic {
         cgst_amount: t.cgst, sgst_amount: t.sgst, igst_amount: t.igst, total: t.total,
         advance_pct: 0, advance_amount: 0, balance_amount: t.total,
         notes: 'Payment due by ' + fmtDay(this.addDays(today, terms)) + '.',
-      }).select('id').single();
+      });
       if (error) throw error;
       const ids = due.map(l => l.id);
       const { data: stamped, error: sErr } = await this.sb.from('project_price_lines')
@@ -7864,7 +8413,7 @@ class Component extends DCLogic {
         await this.sb.from('invoices').delete().eq('id', inv.id);
         throw new Error(sErr ? sErr.message : 'Some of these lines were billed meanwhile — nothing was created. Refresh and try again.');
       }
-      this.plFlash('Generated ' + number + ' · ' + due.length + (due.length === 1 ? ' line' : ' lines') + ' · ' + fmtINR(t.total) + ' incl. GST.');
+      this.plFlash('Generated ' + inv.number + ' · ' + due.length + (due.length === 1 ? ' line' : ' lines') + ' · ' + fmtINR(t.total) + ' incl. GST.');
       this.loadInvoices(pr.id, pr);
       this.loadPricing(pr.id);
     } catch (e) {
@@ -7887,10 +8436,14 @@ class Component extends DCLogic {
     const price = lines.length ? sum(lines, 'amount') : Number(pr.package_price || 0);
     const costPlanned = sum(lines, 'cost_total');
     const v = s.pricingSummary || {};
-    const costLedger = Number(v.cost_expenses || 0) + Number(v.cost_crew || 0);
+    const costLedger = Number(v.cost_expenses || 0) + Number(v.cost_crew || 0) + Number(v.cost_hand || 0) + Number(v.cost_talent || 0);
     const hasOverride = pr.cost_override != null;
     const costActual = hasOverride ? Number(pr.cost_override) : costLedger;
-    const margin = price - costActual;
+    // Before the ledgers catch up, actual cost understates the job. Margin is
+    // taken on whichever is higher, actual or planned, unless cost was typed in.
+    const usingPlanned = !hasOverride && costPlanned > costActual;
+    const marginCost = usingPlanned ? costPlanned : costActual;
+    const margin = price - marginCost;
     const marginPct = price > 0 ? margin / price * 100 : 0;
     const target = Number(pr.target_margin_pct == null ? 30 : pr.target_margin_pct);
     const costBasis = Math.max(costActual, costPlanned);
@@ -7937,10 +8490,15 @@ class Component extends DCLogic {
       plPriceSub: lines.length ? lines.length + (lines.length === 1 ? ' line' : ' lines') + ' · before GST' : 'Package price · no lines yet',
       plCostFmt: fmtINR(costActual),
       plCostSub: hasOverride ? 'Entered by hand · ledgers say ' + fmtINR(costLedger)
-        : 'Expenses ' + fmtINR(v.cost_expenses) + ' · crew ' + fmtINR(v.cost_crew) + (costPlanned ? ' · planned ' + fmtINR(costPlanned) : ''),
-      plMarginFmt: fmtINR(margin),
-      plMarginSub: price > 0 ? pctFmt(marginPct) + ' of price · target ' + pctFmt(target) : 'Set a price to see margin',
-      plMarginColor: margin < 0 ? '#B4433A' : marginPct < target ? '#8A6D3B' : '#0A6E58',
+        : ['Expenses ' + fmtINR(v.cost_expenses), 'crew ' + fmtINR(v.cost_crew),
+          Number(v.cost_hand) ? 'paid by hand ' + fmtINR(v.cost_hand) : null,
+          Number(v.cost_talent) ? 'talent ' + fmtINR(v.cost_talent) : null,
+          Number(v.cost_trial) ? 'trial spend ' + fmtINR(v.cost_trial) + ' carried by us, not counted' : null,
+          costPlanned ? 'planned ' + fmtINR(costPlanned) : null].filter(Boolean).join(' · '),
+      plMarginFmt: !hasOverride && marginCost === 0 ? '—' : fmtINR(margin),
+      plMarginSub: !hasOverride && marginCost === 0 ? 'No cost yet — add a unit cost to the lines or log expenses'
+        : price > 0 ? pctFmt(marginPct) + ' of price · target ' + pctFmt(target) + (usingPlanned ? ' · on planned cost ' + fmtINR(costPlanned) : '') : 'Set a price to see margin',
+      plMarginColor: !hasOverride && marginCost === 0 ? '#5C6864' : margin < 0 ? '#B4433A' : marginPct < target ? '#8A6D3B' : '#0A6E58',
       plUnbilledFmt: fmtINR(sum(unbilled, 'amount')),
       plUnbilledSub: dueNow.length ? fmtINR(sum(dueNow, 'amount')) + ' due now · billed ' + fmtINR(sum(lines.filter(l => l.invoice_id), 'amount'))
         : 'Nothing due today · billed ' + fmtINR(sum(lines.filter(l => l.invoice_id), 'amount')),
@@ -8082,7 +8640,7 @@ class Component extends DCLogic {
       const lineItems = [{ desc: scope + ' — ' + label, amount }];
       const t = this.invoiceTotals(lineItems, 0, s.editClientState || pr.client_state, s.newInvGstOverride);
       const number = await this.nextInvoiceNumber('tax');
-      const { error } = await this.sb.from('invoices').insert({
+      const { error } = await this.insertInvoice({
         project_id: pr.id, type: 'tax', number, status: 'draft',
         issue_date: period.start, due_date: period.dueDate,
         period_start: period.start, period_end: period.end, period_label: label,
@@ -8170,8 +8728,40 @@ class Component extends DCLogic {
   // The paid flag is derived from the receipts ledger now (see
   // receipts-schema.sql), so there is no button that simply asserts it.
 
+  // Issued invoices are never deleted: the number has been used and GST needs an
+  // unbroken series. They are cancelled instead, which keeps the number, frees
+  // any sold lines, and drops the invoice out of every receivable.
+  async markInvoiceIssued(inv) {
+    if (inv.status !== 'draft') return;
+    if (!window.confirm('Mark ' + inv.number + ' as issued? Use this when it went to the client another way (WhatsApp, print). From now it counts as owed.')) return;
+    const { error } = await this.sb.from('invoices').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', inv.id);
+    this.afterInvoiceChange(error, inv.number + ' is issued.');
+  }
+
+  async cancelInvoice(inv) {
+    if (inv.status === 'draft') return this.deleteInvoice(inv);
+    if (inv.status === 'cancelled') return;
+    const { data: rc } = await this.sb.from('payments_received').select('id').eq('invoice_id', inv.id).limit(1);
+    if (rc && rc.length) { this.afterInvoiceChange({ message: inv.number + ' has payments logged. Reverse them in Money in first, or raise a credit note.' }); return; }
+    const why = window.prompt('Cancel ' + inv.number + '? The number stays used. Reason:', '');
+    if (why === null) return;
+    const { error } = await this.sb.from('invoices').update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: why || null }).eq('id', inv.id);
+    if (!error) await this.sb.from('project_price_lines').update({ invoice_id: null }).eq('invoice_id', inv.id);
+    this.afterInvoiceChange(error && /cancel|check constraint/i.test(error.message || '') ? { message: 'Run album-system/finance-audit-2026-09.sql in Supabase first.' } : error, inv.number + ' cancelled.');
+  }
+
+  afterInvoiceChange(error, okMsg) {
+    const msg = error ? error.message : okMsg;
+    this.setState({ invStatus: msg, finStatus: error ? msg : '' });
+    setTimeout(() => this.setState({ invStatus: '' }), 3500);
+    const c = this.state.current;
+    if (c) { this.loadInvoices(c.id, c); if (c._table === 'projects') this.loadPricing(c.id); }
+    if (this.state.view === 'finInvoices') this.loadFinInvoices();
+  }
+
   async deleteInvoice(inv) {
-    if (!window.confirm('Delete invoice ' + inv.number + '?')) return;
+    if (inv.status && inv.status !== 'draft') { this.afterInvoiceChange({ message: inv.number + ' has been issued — cancel it instead, so the number series stays unbroken.' }); return; }
+    if (!window.confirm('Delete draft ' + inv.number + '?')) return;
     const { error } = await this.sb.from('invoices').delete().eq('id', inv.id);
     if (error) {
       this.setState({ invStatus: /violates foreign key|still referenced/i.test(error.message || '')
@@ -8179,6 +8769,7 @@ class Component extends DCLogic {
         : error.message });
       return;
     }
+    if (!this.state.current) { if (this.state.view === 'finInvoices') this.loadFinInvoices(); return; }
     this.loadInvoices(this.state.current.id);
     // A deleted invoice releases its lines (on delete set null); show them as unbilled again.
     if (this.state.current && this.state.current._table === 'projects') this.loadPricing(this.state.current.id);
@@ -11529,6 +12120,30 @@ class Component extends DCLogic {
     // may return nothing for an accounts login; an empty list is the right
     // outcome, not an error.
     if (!(this.state.talentWork || []).length) this.loadTalentWork();
+    this.loadHandPays();
+  }
+
+  // Money handed over from Payouts → Paid by hand, when it names a job. It is
+  // cash that left for that job, so the job's expenses have to show it.
+  async loadHandPays() {
+    const { data, error } = await this.sb.from('people_payments')
+      .select('id, person_id, project_id, event_id, shoot_id, gross, deductions, paid_on, reason, note, status, people(full_name)')
+      .eq('kind', 'adhoc');
+    this.setState({ spendHandPays: error ? [] : (data || []) });
+  }
+
+  handPayRows() {
+    return (this.state.spendHandPays || [])
+      // An advance is money the person owes back, not a cost of the job.
+      .filter(p => p.status !== 'void' && p.reason !== 'advance' && p.paid_on && (p.project_id || p.event_id))
+      .map(p => ({
+        id: 'pp:' + p.id, spend_date: p.paid_on, category: 'Talent & crew',
+        vendor: (p.people && p.people.full_name) || 'Crew',
+        note: 'Paid by hand' + (p.reason ? ' · ' + p.reason.replace(/_/g, ' ') : '') + (p.note ? ' · ' + p.note : ''),
+        amount: Number(p.gross || 0) - Number(p.deductions || 0),
+        project_id: p.project_id || null, event_id: p.event_id || null, shoot_id: p.shoot_id || null,
+        billable: false, recovered: false, paid: true, fromWorkLog: true, fromHand: true, isTrial: p.reason === 'trial',
+      }));
   }
 
   // After a mutation only the two tables that changed are re-read. The job
@@ -11674,7 +12289,7 @@ class Component extends DCLogic {
   // paid flag invalidates the cache even though nothing got longer.
   paidTalentRows() {
     const s = this.state;
-    const keys = [s.spendProjects, s.spendEvents, s.spendShoots, s.talentWork, s.talent];
+    const keys = [s.spendProjects, s.spendEvents, s.spendShoots, s.talentWork, s.talent, s.spendHandPays];
     const same = this._talentRowsKeys
       && keys.every((k, i) => k === this._talentRowsKeys[i]);
     if (same && this._talentRows) return this._talentRows;
@@ -11682,7 +12297,10 @@ class Component extends DCLogic {
     const rows = this.spendParents().reduce((acc, p) => acc.concat(
       this.attachShoots(
         this.talentSpendFor(p).filter(t => t.paid),
-        shoots.filter(sh => this.spendBelongs(sh, p)))), []);
+        shoots.filter(sh => this.spendBelongs(sh, p)))), [])
+      // A day titled "Mr Fone" matches every Mr Fone job. It was paid once, so it counts once.
+      .filter((r, i, arr) => arr.findIndex(x => x.id === r.id) === i)
+      .concat(this.handPayRows());
     this._talentRowsKeys = keys;
     this._talentRows = rows;
     return rows;
@@ -11953,7 +12571,7 @@ class Component extends DCLogic {
         Number(e.amount || 0),
         e.billable ? 'Yes' : 'No', e.recovered ? 'Yes' : 'No',
         e.billable ? (e.recovered ? 'Client (recovered)' : 'Client (pending)') : 'Company',
-        e.fromWorkLog ? 'Work log' : 'Entered here',
+        e.fromHand ? 'Payouts (paid by hand)' : e.fromWorkLog ? 'Work log' : 'Entered here',
       ]);
     });
     const spent = view.reduce((a, r) => a + Number(r.e.amount || 0), 0);
@@ -12059,7 +12677,8 @@ class Component extends DCLogic {
     const talentDue = talentLines.filter(t => !t.paid).reduce((a, t) => a + t.amount, 0);
     // One ledger for the job: typed expenses and paid talent days together,
     // each line appearing exactly once, under the sub-shoot it belongs to.
-    const mineAll = mine.concat(talentLines.filter(t => t.paid));
+    const handLines = parent ? this.handPayRows().filter(e => this.spendBelongs(e, parent)) : [];
+    const mineAll = mine.concat(talentLines.filter(t => t.paid), handLines);
     // A line can name a sub-shoot that is not on this job any more — the shoot
     // was deleted, or was filed against the other half of a client booked in two
     // divisions. It still counted in the total but belonged to no list on screen,
@@ -12090,7 +12709,7 @@ class Component extends DCLogic {
       note: [e.vendor, e.note].filter(Boolean).join(' · '),
       hasNote: !!(e.vendor || e.note),
       amount: money(e.amount),
-      bearerLabel: e.fromWorkLog ? 'Work log' : (e.billable ? (e.recovered ? 'Recovered' : 'To recover') : 'We bore it'),
+      bearerLabel: e.isTrial ? 'Trial · ours' : e.fromHand ? 'Payouts' : e.fromWorkLog ? 'Work log' : (e.billable ? (e.recovered ? 'Recovered' : 'To recover') : 'We bore it'),
       bearerBg: e.fromWorkLog ? '#F1F4F3' : (e.billable ? (e.recovered ? '#E7F4EF' : '#FDF9F0') : '#F4F6F5'),
       bearerColor: e.fromWorkLog ? '#5D6864' : (e.billable ? (e.recovered ? '#1C6B52' : '#8A6D3B') : '#5D6864'),
       // A pulled-in day is edited on the person's profile, never here — two
@@ -12340,7 +12959,7 @@ class Component extends DCLogic {
         note: [r.e.vendor, r.e.note].filter(Boolean).join(' · '),
         hasNote: !!(r.e.vendor || r.e.note),
         amount: money(r.e.amount),
-        bearerLabel: r.e.fromWorkLog ? 'Work log'
+        bearerLabel: r.e.isTrial ? 'Trial · ours' : r.e.fromHand ? 'Payouts' : r.e.fromWorkLog ? 'Work log'
           : (r.e.billable ? (r.e.recovered ? 'Recovered' : 'To recover') : 'We bore it'),
         bearerBg: r.e.fromWorkLog ? '#F1F4F3'
           : (r.e.billable ? (r.e.recovered ? '#E7F4EF' : '#FDF9F0') : '#F4F6F5'),
@@ -12899,7 +13518,7 @@ class Component extends DCLogic {
       ? 'Run album-system/receipts-schema.sql in Supabase — the receipts ledger does not exist yet.' : m;
     const inv = await this.sb.from('invoices')
       .select('*, events(couple_names, event_date), projects(client_name, start_date, division)')
-      .eq('type', 'tax').order('issue_date', { ascending: false });
+      .eq('type', 'tax').in('status', ['sent', 'paid']).order('issue_date', { ascending: false });
     if (inv.error) { this.setState({ moneyStatus: say(inv.error.message) }); return; }
     const rec = await this.sb.from('payments_received').select('*').order('received_on', { ascending: false }).limit(1000);
     this.setState({
@@ -13079,7 +13698,9 @@ class Component extends DCLogic {
       if (this.can('money')) nav.push({ key: 'money', label: 'Money in' });
       if (this.can('payouts')) nav.push({ key: 'payouts', label: 'Payouts' });
       if (this.can('spend')) nav.push({ key: 'spend', label: 'Expenses & shoots' });
+      nav.push({ key: 'finPayroll', label: 'Payroll' });
       nav.push({ key: 'finPeople', label: 'People pay' });
+      nav.push({ key: 'finInventory', label: 'Inventory' });
     } else {
       if (this.can('albums')) nav.push({ key: 'dashboard', label: s.division && s.division !== 'wedding' ? 'Projects' : 'Albums' });
       if (this.can('albums')) nav.push({ key: 'schedule', label: 'Schedule' });
@@ -13336,6 +13957,27 @@ class Component extends DCLogic {
       const rows = defs => defs.map(d => ({ label: d[1], value: fmtINR(Number(c[d[0]] || 0)) , raw: Number(c[d[0]] || 0) }))
         .filter(r => r.raw > 0).map(r => ({ label: r.label, value: r.value }));
       const earnRows = rows(SLIP_EARN), dedRows = rows(SLIP_DED);
+      // Earnings and deductions side by side, one printed row per line, the
+      // shorter column padded so the totals sit on the same row.
+      const slipTable = Array.from({ length: Math.max(earnRows.length, dedRows.length, 1) }, (_, i) => ({
+        eLabel: earnRows[i] ? earnRows[i].label : '', eVal: earnRows[i] ? earnRows[i].value : '',
+        dLabel: dedRows[i] ? dedRows[i].label : '', dVal: dedRows[i] ? dedRows[i].value : '',
+      }));
+      // Year to date within the Indian financial year this slip falls in —
+      // what the employee needs for Form 16 and what TDS is checked against.
+      let ytd = null;
+      if (x.kind === 'salary' && /^\d{4}-\d{2}$/.test(x.period || '')) {
+        const [py, pmn] = x.period.split('-').map(Number);
+        const fyStart = (pmn >= 4 ? py : py - 1) + '-04';
+        const inFy = livePay.filter(y => y.kind === 'salary' && y.period && y.period >= fyStart && y.period <= x.period);
+        const tot = f => inFy.reduce((t, y) => t + f(y), 0);
+        ytd = {
+          gross: fmtINR(tot(y => Number(y.gross || 0))), ded: fmtINR(tot(y => Number(y.deductions || 0))),
+          net: fmtINR(tot(y => Number(y.gross || 0) - Number(y.deductions || 0))),
+          tds: fmtINR(tot(y => Number((y.components || {}).tds || 0))),
+          label: 'FY ' + String(pmn >= 4 ? py : py - 1) + '–' + String((pmn >= 4 ? py : py - 1) + 1).slice(2) + ' to date',
+        };
+      }
       const basic = Number(c.basic || 0), gross = Number(x.gross || 0);
       return {
         kindLabel: x.kind === 'bonus' ? 'Bonus' : x.kind === 'reimbursement' ? 'Reimbursement' : x.kind === 'adhoc' ? 'Paid by hand' : 'Payslip',
@@ -13353,8 +13995,11 @@ class Component extends DCLogic {
         voidLabel: x.status === 'void' ? ('Void' + (x.voided_note ? ' — ' + x.voided_note : '')) : '',
         payslipNo: x.payslip_no || '—',
         hasPayslipNo: !!x.payslip_no,
-        earnRows, dedRows,
+        earnRows, dedRows, slipTable,
         hasEarnRows: earnRows.length > 0, hasDedRows: dedRows.length > 0,
+        hasYtd: !!ytd, ytdLabel: ytd ? ytd.label : '', ytdGross: ytd ? ytd.gross : '', ytdDed: ytd ? ytd.ded : '', ytdNet: ytd ? ytd.net : '', ytdTds: ytd ? ytd.tds : '',
+        payDateLabel: x.paid_on ? fmtDay(x.paid_on) : 'Not paid yet',
+        slipTitle: x.kind === 'salary' ? 'Payslip for ' + payPeriodLabel(x.period) : (x.kind === 'bonus' ? 'Bonus advice' : x.kind === 'reimbursement' ? 'Reimbursement advice' : 'Payment advice'),
         // Employer-side contributions are not withheld from the net, but a slip that
         // shows them lets someone reconcile against the EPFO portal themselves.
         employerEpf: fmtINR(Math.round(0.12 * Math.min(basic, 15000))),
@@ -13468,6 +14113,11 @@ class Component extends DCLogic {
       personPayName: person ? person.full_name : '',
       personPayId: person && person.crew_id ? person.crew_id : '',
       personPayRole: person ? (ROLE_LABEL[person.primary_role] || person.primary_role || '') : '',
+      personPayEngagement: person ? ({ employee: 'Employee', freelancer: 'Freelancer', intern: 'Intern' }[person.engagement] || person.engagement || '—') : '',
+      personPayJoined: person && [person.appointed_date, person.intern_from, person.freelance_from].filter(Boolean).length
+        ? fmtDay([person.appointed_date, person.intern_from, person.freelance_from].filter(Boolean).sort()[0]) : '—',
+      personPayAccount: person && person.bank_account ? '•••• ' + String(person.bank_account).slice(-4) : '—',
+      personPayIfsc: person && person.bank_ifsc ? person.bank_ifsc : '—',
 
       hasPhoto: !!s.photoPath, hasNoPhoto: !s.photoPath,
       photoUploadLabel: s.photoPath ? 'Replace' : 'Add photo',
@@ -14463,7 +15113,10 @@ class Component extends DCLogic {
         const got = (s.invoiceReceipts || []).filter(r => r.invoice_id === inv.id).reduce((t, r) => t + Number(r.amount || 0), 0);
         return got <= 0 ? '#67746F' : (Number(inv.total || 0) - got > 1 ? '#8A6D3B' : 'var(--green-deep)');
       })(),
-      preview: () => this.openInvoicePreview(inv), remove: () => this.deleteInvoice(inv),
+      preview: () => this.openInvoicePreview(inv),
+      remove: () => (inv.status === 'draft' ? this.deleteInvoice(inv) : this.cancelInvoice(inv)),
+      removeLabel: inv.status === 'draft' ? 'Delete' : 'Cancel', canRemove: inv.status !== 'cancelled',
+      canIssue: inv.status === 'draft' && inv.type === 'tax', issue: () => this.markInvoiceIssued(inv),
       logPayment: () => this.goLogPayment(inv),
       email: () => this.emailInvoiceFromList(inv),
       emailDisabled: s.pdfBusy || !hasClientEmail,
