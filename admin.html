@@ -81,7 +81,16 @@
     <div>
       <div style="display:flex; align-items:center; gap:16px; padding:20px clamp(20px,5vw,60px); border-bottom:1px solid var(--line); flex-wrap:wrap">
         <span style="font-size:17px; font-weight:300; color:var(--green)">Glomium Workspace</span>
+        <sc-if value="{{ showWsSwitch }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; border:1px solid var(--green); border-radius:10px; overflow:hidden">
+            <sc-for list="{{ wsSwitchVM }}" as="w" hint-placeholder-count="2">
+              <button onClick="{{ w.go }}" style="padding:8px 16px; background:{{ w.bg }}; border:none; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:{{ w.color }}; cursor:pointer">{{ w.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showDivisionPicker }}" hint-placeholder-val="{{ true }}">
         <button onClick="{{ openDivisionPicker }}" style="display:flex; align-items:center; gap:8px; padding:8px 14px; background:#F3FAF8; border:1px solid var(--line); border-radius:10px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ divisionLabel }} <span style="font-size:10px; color:#67746F">Switch</span></button>
+        </sc-if>
         <div style="display:flex; gap:6px; flex-wrap:wrap">
           <sc-for list="{{ navVM }}" as="nv" hint-placeholder-count="1">
             <button onClick="{{ nv.go }}" style="padding:9px 15px; background:{{ nv.bg }}; border:1px solid {{ nv.border }}; border-radius:3px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:{{ nv.color }}; cursor:pointer">{{ nv.label }}</button>
@@ -2062,7 +2071,7 @@
         </div>
 
         <sc-if value="{{ hasNoMoney }}" hint-placeholder-val="{{ true }}">
-          <span style="font-size:13px; color:#5C6864">Nothing here. Tax invoices appear the moment they are raised on a project's Billing tab.</span>
+          <span style="font-size:13px; color:#5C6864">Nothing here. Tax invoices appear the moment they are raised from Finance → Projects &amp; pricing.</span>
         </sc-if>
 
         <div style="display:flex; flex-direction:column; gap:10px">
@@ -2168,12 +2177,459 @@
       </div>
       </sc-if>
 
+      <sc-if value="{{ isFinOverview }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Finance overview</span>
+          <span style="font-size:12px; color:#5C6864">Every division, one ledger. Amounts before GST unless marked.</span>
+          <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ finStatus }}</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px">
+          <sc-for list="{{ finKpisVM }}" as="k" hint-placeholder-count="4">
+            <div style="display:flex; flex-direction:column; gap:6px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">{{ k.label }}</span>
+              <span style="font-size:26px; font-weight:400; color:{{ k.color }}; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+              <span style="font-size:11px; color:#67746F; line-height:1.5">{{ k.note }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ finBillingMissing }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px; color:#8A6D3B">Pricing and margin need album-system/billing-schema.sql — run it in Supabase.</span>
+        </sc-if>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px">
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">To bill · next 7 days</span>
+            <sc-if value="{{ finNoBillSoon }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color:#5C6864">Nothing falls due this week.</span></sc-if>
+            <sc-for list="{{ finBillSoonVM }}" as="b" hint-placeholder-count="0">
+              <div onClick="{{ b.open }}" style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line); cursor:pointer">
+                <div style="flex:1 1 180px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ b.label }}</span>
+                  <span style="font-size:11px; color:{{ b.metaColor }}">{{ b.meta }}</span>
+                </div>
+                <span style="font-size:14px; color:#16231F; font-variant-numeric:tabular-nums">{{ b.amountFmt }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Overdue invoices</span>
+            <sc-if value="{{ finNoOverdue }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color:#5C6864">Nobody is late.</span></sc-if>
+            <sc-for list="{{ finOverdueVM }}" as="o" hint-placeholder-count="0">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line)">
+                <div style="flex:1 1 180px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ o.label }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ o.meta }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:2px; text-align:right">
+                  <span style="font-size:14px; color:#B4433A; font-variant-numeric:tabular-nums">{{ o.balanceFmt }}</span>
+                  <span style="font-size:11px; color:#B4433A">{{ o.lateLabel }}</span>
+                </div>
+                <sc-if value="{{ o.canLog }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ o.logPayment }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Log payment</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ finHasLowMargin }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Below target margin</span>
+            <sc-for list="{{ finLowMarginVM }}" as="m" hint-placeholder-count="0">
+              <div onClick="{{ m.open }}" style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line); cursor:pointer">
+                <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ m.label }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ m.meta }}</span>
+                </div>
+                <span style="font-size:14px; color:{{ m.marginColor }}; font-variant-numeric:tabular-nums">{{ m.marginFmt }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isFinMaster }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:24px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Master</span>
+          <span style="font-size:12px; color:#5C6864">Every client, everything invoiced and spent, and what we owe next.</span>
+          <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ finStatus }}</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px">
+          <sc-for list="{{ mKpisVM }}" as="k" hint-placeholder-count="5">
+            <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">{{ k.label }}</span>
+              <span style="font-size:22px; font-weight:400; color:{{ k.color }}; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+              <span style="font-size:11px; color:#67746F; line-height:1.5">{{ k.note }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Clients</span>
+            <span style="font-size:12px; color:#5C6864">{{ mClientCount }} · grouped by client name across every division</span>
+          </div>
+          <sc-if value="{{ mNoClients }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">No clients yet.</span></sc-if>
+          <sc-for list="{{ mClientsVM }}" as="c" hint-placeholder-count="0">
+            <div style="display:flex; flex-direction:column; border-top:1px solid var(--line)">
+              <div onClick="{{ c.toggle }}" style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:13px 0; cursor:pointer">
+                <span style="width:18px; font-size:15px; color:var(--green-deep)">{{ c.arrow }}</span>
+                <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                  <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ c.name }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ c.meta }}</span>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap">
+                  <div style="display:flex; flex-direction:column; gap:3px; width:100px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Price</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ c.priceFmt }}</span></div>
+                  <div style="display:flex; flex-direction:column; gap:3px; width:100px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Invoiced</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ c.invoicedFmt }}</span></div>
+                  <div style="display:flex; flex-direction:column; gap:3px; width:100px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Received</span><span style="font-size:13px; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ c.receivedFmt }}</span></div>
+                  <div style="display:flex; flex-direction:column; gap:3px; width:100px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Outstanding</span><span style="font-size:13px; color:{{ c.outstandingColor }}; font-variant-numeric:tabular-nums">{{ c.outstandingFmt }}</span></div>
+                  <div style="display:flex; flex-direction:column; gap:3px; width:100px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Spent</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ c.spentFmt }}</span></div>
+                  <div style="display:flex; flex-direction:column; gap:3px; width:100px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Margin</span><span style="font-size:13px; color:{{ c.marginColor }}; font-variant-numeric:tabular-nums">{{ c.marginFmt }}</span></div>
+                </div>
+              </div>
+              <sc-if value="{{ c.isOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:6px; padding:0 0 14px 32px">
+                  <sc-for list="{{ c.jobsVM }}" as="j" hint-placeholder-count="0">
+                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; border:1px solid var(--line); border-radius:3px; background:#FAFCFB">
+                      <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                        <span style="font-size:13px; color:#16231F">{{ j.label }}</span>
+                        <span style="font-size:11px; color:#67746F">{{ j.meta }} · {{ j.line }}</span>
+                      </div>
+                      <button onClick="{{ j.open }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Open</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:18px">
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Upcoming dues</span>
+              <span style="font-size:12px; color:#5C6864">Next 60 days, plus anything late</span>
+            </div>
+            <sc-if value="{{ finCmMissing }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#8A6D3B">Run album-system/commitments-schema.sql in Supabase to track loans and rent.</span></sc-if>
+            <sc-if value="{{ mNoDues }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color:#5C6864">Nothing due. Add a loan, rent or subscription alongside.</span></sc-if>
+            <sc-for list="{{ mDuesVM }}" as="d" hint-placeholder-count="0">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line); align-items:center">
+                <div style="display:flex; flex-direction:column; gap:2px; width:96px">
+                  <span style="font-size:12px; color:#16231F">{{ d.dateLabel }}</span>
+                  <span style="font-size:11px; color:{{ d.whenColor }}">{{ d.when }}</span>
+                </div>
+                <div style="flex:1 1 140px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:13px; color:#16231F; overflow-wrap:anywhere">{{ d.title }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ d.meta }}</span>
+                </div>
+                <span style="font-size:14px; color:#16231F; font-variant-numeric:tabular-nums">{{ d.amountFmt }}</span>
+                <sc-if value="{{ d.canEdit }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ d.toggle }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ d.btnLabel }}</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Standing commitments</span>
+            </div>
+            <sc-for list="{{ mCommitmentsVM }}" as="m" hint-placeholder-count="0">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line); align-items:center; opacity:{{ m.opacity }}">
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:#F1F4F3; color:#5C6864; letter-spacing:.08em; text-transform:uppercase">{{ m.kindLabel }}</span>
+                <div style="flex:1 1 180px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:13px; color:#16231F; overflow-wrap:anywhere">{{ m.title }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ m.meta }}</span>
+                  <span style="font-size:11px; color:#5C6864">{{ m.leftLabel }}</span>
+                </div>
+                <sc-if value="{{ m.canEdit }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:6px">
+                    <button onClick="{{ m.edit }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">Edit</button>
+                    <button onClick="{{ m.toggle }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">{{ m.toggleLabel }}</button>
+                    <button onClick="{{ m.remove }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; color:#B4433A">✕</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ cmShowAdd }}" hint-placeholder-val="{{ false }}">
+              <div><button onClick="{{ cmOpenForm }}" style="padding:8px 14px; background:none; border:1px dashed var(--line); border-radius:3px; font-size:11px; color:var(--green-deep); cursor:pointer">+ Add loan, rent or other due</button></div>
+            </sc-if>
+            <sc-if value="{{ cmShowForm }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid var(--line); border-radius:3px; background:#FAFCFB">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">{{ cmFormTitle }}</span>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px">
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; grid-column:span 2">Name
+                    <input value="{{ cmTitle }}" onChange="{{ onCmTitle }}" placeholder="Office rent · Sony FX3 EMI" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Type
+                    <select value="{{ cmKind }}" onChange="{{ onCmKind }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff"><sc-for list="{{ cmKindOptsVM }}" as="o" hint-placeholder-count="6"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select>
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Paid to
+                    <input value="{{ cmPayee }}" onChange="{{ onCmPayee }}" placeholder="HDFC Bank · landlord" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Amount each time (₹)
+                    <input type="number" min="0" value="{{ cmAmount }}" onChange="{{ onCmAmount }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Repeats
+                    <select value="{{ cmFreq }}" onChange="{{ onCmFreq }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff"><sc-for list="{{ cmFreqOptsVM }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select>
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">First due
+                    <input type="date" value="{{ cmStart }}" onChange="{{ onCmStart }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Last due (optional)
+                    <input type="date" value="{{ cmEnd }}" onChange="{{ onCmEnd }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Loan total (optional, ₹)
+                    <input type="number" min="0" value="{{ cmTotal }}" onChange="{{ onCmTotal }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  </label>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+                  <button onClick="{{ saveCommitment }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save</button>
+                  <button onClick="{{ cmCancel }}" style="padding:10px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer">Cancel</button>
+                </div>
+              </div>
+            </sc-if>
+            <span style="font-size:12px; color:#8A6D3B">{{ cmStatus }}</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:18px">
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Latest expenses</span>
+              <button onClick="{{ goExpenses }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; margin-left:auto">All expenses</button>
+            </div>
+            <sc-if value="{{ mNoExpenses }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color:#5C6864">No expenses logged.</span></sc-if>
+            <sc-for list="{{ mExpensesVM }}" as="e" hint-placeholder-count="0">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line)">
+                <span style="font-size:12px; color:#5C6864; width:84px">{{ e.date }}</span>
+                <div style="flex:1 1 160px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:13px; color:#16231F; overflow-wrap:anywhere">{{ e.job }}</span>
+                  <span style="font-size:11px; color:#67746F; overflow-wrap:anywhere">{{ e.what }}</span>
+                </div>
+                <span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ e.amountFmt }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px; padding:20px 22px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Latest invoices</span>
+              <button onClick="{{ goInvoices }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; margin-left:auto">All invoices</button>
+            </div>
+            <sc-if value="{{ mNoInvoices }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color:#5C6864">No tax invoices issued yet.</span></sc-if>
+            <sc-for list="{{ mInvoicesVM }}" as="i" hint-placeholder-count="0">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:11px 0; border-top:1px solid var(--line)">
+                <span style="font-size:12px; color:#5C6864; width:84px">{{ i.date }}</span>
+                <div style="flex:1 1 160px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:13px; color:#16231F; overflow-wrap:anywhere">{{ i.client }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ i.number }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:2px; text-align:right">
+                  <span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ i.totalFmt }}</span>
+                  <span style="font-size:11px; color:{{ i.balColor }}">{{ i.balLabel }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isFinProjects }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Projects &amp; pricing</span>
+          <span style="font-size:12px; color:#5C6864">{{ finCountLabel }}</span>
+          <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ finStatus }}</span>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap">
+          <input value="{{ finQuery }}" onChange="{{ onFinQuery }}" placeholder="Search client, project or couple" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; flex:1 1 240px; min-width:0" style-focus="border-color:var(--green)">
+          <select value="{{ finDivision }}" onChange="{{ onFinDivision }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; flex:0 1 220px">
+            <sc-for list="{{ finDivisionOptsVM }}" as="d" hint-placeholder-count="6">
+              <option value="{{ d.value }}">{{ d.label }}</option>
+            </sc-for>
+          </select>
+        </div>
+        <sc-if value="{{ finNoRows }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">Nothing matches.</span></sc-if>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <sc-for list="{{ finRowsVM }}" as="fr" hint-placeholder-count="0">
+            <div onClick="{{ fr.open }}" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:14px 16px; border:1px solid var(--line); border-radius:3px; cursor:pointer" style-hover="border-color:var(--green)">
+              <div style="flex:1 1 220px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ fr.label }}</span>
+                <span style="font-size:11px; color:#67746F">{{ fr.sub }}</span>
+              </div>
+              <div style="display:flex; gap:14px; flex-wrap:wrap">
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Price</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ fr.priceFmt }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Cost</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ fr.costFmt }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Margin</span><span style="font-size:13px; color:{{ fr.marginColor }}; font-variant-numeric:tabular-nums">{{ fr.marginFmt }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Invoiced</span><span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ fr.invoicedFmt }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Outstanding</span><span style="font-size:13px; color:{{ fr.outstandingColor }}; font-variant-numeric:tabular-nums">{{ fr.outstandingFmt }}</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px; width:104px; text-align:right"><span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">To bill</span><span style="font-size:13px; color:{{ fr.dueColor }}; font-variant-numeric:tabular-nums">{{ fr.dueFmt }}</span></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font-size:11px; color:#67746F; line-height:1.6">Price and cost are before GST. Invoiced and outstanding are issued tax invoices, GST included. Open a row to edit sold lines, cost, the contract and its invoices.</span>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isFinInvoices }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Invoices</span>
+          <span style="font-size:12px; color:#5C6864">{{ finInvSummary }}</span>
+          <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ finStatus }}</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+          <sc-for list="{{ finInvFilterVM }}" as="f" hint-placeholder-count="5">
+            <button onClick="{{ f.go }}" style="padding:8px 14px; background:{{ f.bg }}; border:1px solid {{ f.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ f.color }}; cursor:pointer">{{ f.label }}</button>
+          </sc-for>
+          <input value="{{ finInvQuery }}" onChange="{{ onFinInvQuery }}" placeholder="Search client or invoice no." style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; margin-left:auto; flex:0 1 260px; min-width:0" style-focus="border-color:var(--green)">
+        </div>
+        <sc-if value="{{ finNoInvoices }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">No invoices here.</span></sc-if>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <sc-for list="{{ finInvRowsVM }}" as="iv" hint-placeholder-count="0">
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:13px 16px; border:1px solid var(--line); border-radius:3px">
+              <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                <span style="font-size:14px; color:#16231F; overflow-wrap:anywhere">{{ iv.client }}</span>
+                <span style="font-size:11px; color:{{ iv.dateColor }}">{{ iv.number }} · {{ iv.dateLabel }}</span>
+              </div>
+              <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ iv.stateBg }}; color:{{ iv.stateColor }}; letter-spacing:.08em; text-transform:uppercase">{{ iv.stateLabel }}</span>
+              <div style="display:flex; flex-direction:column; gap:2px; text-align:right; min-width:120px">
+                <span style="font-size:14px; color:#16231F; font-variant-numeric:tabular-nums">{{ iv.totalFmt }}</span>
+                <span style="font-size:11px; color:{{ iv.subColor }}">{{ iv.subLabel }}</span>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button onClick="{{ iv.preview }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Preview</button>
+                <button onClick="{{ iv.open }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Open project</button>
+                <sc-if value="{{ iv.canLog }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ iv.logPayment }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Log payment</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isFinPeople }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">People pay</span>
+          <span style="font-size:12px; color:#5C6864">Where each person is paid, at what rate, and what they still owe back.</span>
+          <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ finStatus }}</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+          <sc-for list="{{ finPeopleChipsVM }}" as="c" hint-placeholder-count="2">
+            <button onClick="{{ c.go }}" style="padding:8px 14px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+          </sc-for>
+          <input value="{{ finPeopleQuery }}" onChange="{{ onFinPeopleQuery }}" placeholder="Search name, ID or role" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; margin-left:auto; flex:0 1 240px; min-width:0" style-focus="border-color:var(--green)">
+        </div>
+        <sc-if value="{{ finNoPeople }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">Nobody here.</span></sc-if>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <sc-for list="{{ finPeopleVM }}" as="fp" hint-placeholder-count="0">
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:13px 16px; border:1px solid var(--line); border-radius:3px">
+              <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                <span style="font-size:14px; color:#16231F">{{ fp.name }}</span>
+                <span style="font-size:11px; color:#67746F">{{ fp.meta }}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 180px; min-width:0">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Pay to</span>
+                <span style="font-size:12px; color:{{ fp.payColor }}; overflow-wrap:anywhere">{{ fp.payTo }}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 150px; min-width:0">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Rate</span>
+                <span style="font-size:12px; color:#16231F">{{ fp.rateLabel }}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:3px; width:120px; text-align:right">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Advance due</span>
+                <span style="font-size:13px; color:{{ fp.advColor }}; font-variant-numeric:tabular-nums">{{ fp.advLabel }}</span>
+              </div>
+              <sc-if value="{{ fp.canOpen }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ fp.open }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Pay profile</button>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isShoots }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Shoots</span>
+          <span style="font-size:12px; color:#5C6864">Trials, recces and shoot days, by job. What they cost is logged in Finance.</span>
+          <span style="font-size:12px; color:{{ svStatusColor }}; margin-left:auto">{{ svStatus }}</span>
+        </div>
+        <select value="{{ svJob }}" onChange="{{ onSvJob }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; max-width:520px">
+          <sc-for list="{{ svJobOptsVM }}" as="j" hint-placeholder-count="1">
+            <option value="{{ j.value }}">{{ j.label }}</option>
+          </sc-for>
+        </select>
+        <sc-if value="{{ svHasJob }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <sc-if value="{{ svEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">No shoots on this job yet.</span></sc-if>
+            <sc-for list="{{ svListVM }}" as="sh" hint-placeholder-count="0">
+              <div style="display:flex; flex-direction:column; gap:10px; padding:14px 16px; border:1px solid var(--line); border-radius:3px">
+                <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap">
+                  <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ sh.title }}</span>
+                  <span style="font-size:11px; padding:3px 9px; border-radius:10px; background:{{ sh.kindBg }}; color:{{ sh.kindColor }}; letter-spacing:.08em; text-transform:uppercase">{{ sh.kindLabel }}</span>
+                  <sc-if value="{{ sh.canEdit }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ sh.edit }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="border-color:var(--green)">Edit</button>
+                  </sc-if>
+                </div>
+                <span style="font-size:12px; color:#5C6864; line-height:1.6">{{ sh.meta }}</span>
+                <sc-if value="{{ sh.isEditing }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-direction:column; gap:10px; padding:14px; border:1px solid var(--green); border-radius:3px; background:#FBFEFD">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px">
+                      <input value="{{ sh.edTitle }}" onChange="{{ sh.onEdTitle }}" placeholder="Name it" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                      <select value="{{ sh.edKind }}" onChange="{{ sh.onEdKind }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                        <sc-for list="{{ svKindOptsVM }}" as="ko" hint-placeholder-count="4"><option value="{{ ko.value }}">{{ ko.label }}</option></sc-for>
+                      </select>
+                      <input type="date" value="{{ sh.edDate }}" onChange="{{ sh.onEdDate }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                      <input value="{{ sh.edLocation }}" onChange="{{ sh.onEdLocation }}" placeholder="Location" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                      <input value="{{ sh.edBrief }}" onChange="{{ sh.onEdBrief }}" placeholder="What it was for" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; grid-column:1/-1">
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap">
+                      <button onClick="{{ sh.saveEdit }}" style="padding:9px 16px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save shoot</button>
+                      <button onClick="{{ sh.cancelEdit }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer">Cancel</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ svCanAdd }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:12px; padding:16px; border:1px solid var(--line); border-radius:3px; background:#FCFDFC">
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Add a shoot</span>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px">
+                  <input value="{{ svTitle }}" onChange="{{ onSvTitle }}" placeholder="Trial · look test" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; grid-column:1/-1">
+                  <select value="{{ svKind }}" onChange="{{ onSvKind }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                    <sc-for list="{{ svKindOptsVM }}" as="ko" hint-placeholder-count="4"><option value="{{ ko.value }}">{{ ko.label }}</option></sc-for>
+                  </select>
+                  <input type="date" value="{{ svDate }}" onChange="{{ onSvDate }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  <input value="{{ svLocation }}" onChange="{{ onSvLocation }}" placeholder="Location" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  <input value="{{ svBrief }}" onChange="{{ onSvBrief }}" placeholder="What it was for" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; grid-column:1/-1">
+                </div>
+                <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                  <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#5D6864; cursor:pointer">
+                    <input type="checkbox" checked="{{ svBillable }}" onChange="{{ onSvBillable }}" style="width:15px; height:15px; accent-color:var(--green); cursor:pointer">
+                    The client is paying for this shoot
+                  </label>
+                  <button onClick="{{ svAdd }}" style="padding:10px 18px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Add shoot</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
       <sc-if value="{{ isSpend }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
 
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
           <button onClick="{{ spendBack }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer" style-hover="border-color:var(--green); color:var(--green-deep)">{{ spendBackLabel }}</button>
-          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Accounts</span>
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Expenses &amp; shoots</span>
           <span style="font-size:12px; color:#5C6864">Sub-shoots and what they cost us</span>
           <button onClick="{{ downloadSpendExcel }}" style="margin-left:auto; padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Download Excel</button>
         </div>
@@ -3172,6 +3628,7 @@
           </sc-for>
         </div>
         <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">{{ roleLabel }}</span>
+        <sc-if value="{{ editorIsStudio }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; gap:10px; align-items:center">
           <sc-if value="{{ isPublished }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ togglePublish }}" style="padding:9px 14px; background:#F3FAF8; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green-deep)">Live · hide</button>
@@ -3185,10 +3642,12 @@
           <button onClick="{{ copyPublicLink }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ copyLabel }}</button>
           <a href="{{ previewUrl }}" target="_blank" style="padding:9px 18px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ previewLabel }}</a>
         </div>
+        </sc-if>
       </div>
 
       <div style="padding:clamp(20px,5vw,60px); display:flex; flex-direction:column; gap:44px; max-width:1080px; margin:0 auto">
 
+        <sc-if value="{{ editorIsStudio }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; flex-direction:column; gap:12px; padding:16px 20px; border:1px solid var(--line); border-left:3px solid {{ prodBadgeColor }}; border-radius:4px; background:#FAFCFB">
           <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
             <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F; margin-right:4px">Production</span>
@@ -3217,6 +3676,7 @@
             <span style="font-size:12px; color:#B4433A; line-height:1.5; overflow-wrap:anywhere">{{ detailsStatus }}</span>
           </sc-if>
         </div>
+        </sc-if>
 
         <sc-if value="{{ hasEditorTabs }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; gap:16px; border-bottom:1px solid var(--line)">
@@ -3537,67 +3997,13 @@
             </sc-if>
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
-            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
-              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Contract</span>
-              <span style="font-size:11px; color:#67746F">A retainer bills on a cycle and carries a delivery date per period.</span>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px">
-              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Billing
-                <select value="{{ editBillingType }}" onChange="{{ onEditBillingType }}" disabled="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
-                  <option value="one_time">One-off project</option>
-                  <option value="retainer">Retainer contract</option>
-                </select>
-              </label>
-              <sc-if value="{{ isRetainerDraft }}" hint-placeholder-val="{{ false }}">
-                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Contract starts
-                  <input type="date" value="{{ editContractStart }}" onChange="{{ onEditContractStart }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
-                </label>
-                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Term (months)
-                  <input type="number" min="1" value="{{ editContractMonths }}" onChange="{{ onEditContractMonths }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
-                </label>
-                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Bills every
-                  <select value="{{ editBillingCycle }}" onChange="{{ onEditBillingCycle }}" disabled="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
-                    <option value="monthly">Month</option>
-                    <option value="quarterly">Quarter</option>
-                    <option value="half_yearly">Six months</option>
-                    <option value="yearly">Year</option>
-                  </select>
-                </label>
-                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Amount per cycle (₹)
-                  <input type="number" min="0" value="{{ editRetainerAmount }}" onChange="{{ onEditRetainerAmount }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; text-align:right; outline:none" style-focus="border-color:var(--green)">
-                </label>
-                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Payment terms (days)
-                  <input type="number" min="0" value="{{ editPaymentTerms }}" onChange="{{ onEditPaymentTerms }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
-                </label>
-              </sc-if>
-            </div>
-            <sc-if value="{{ isRetainerDraft }}" hint-placeholder-val="{{ false }}">
-              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">What each cycle delivers
-                <input value="{{ editRetainerScope }}" onChange="{{ onEditRetainerScope }}" readOnly="{{ contractLocked }}" placeholder="e.g. 8 reels, 2 photoshoots, monthly content calendar" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
-              </label>
-              <div style="display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--line)">
-                <span style="font-size:12px; color:#5D6864">{{ contractSummary }}</span>
-                <span style="font-size:15px; color:var(--green-deep); margin-left:auto; font-variant-numeric:tabular-nums">{{ contractValueLabel }}</span>
-                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Contract value</span>
-              </div>
-            </sc-if>
-            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--line)">
-              <button onClick="{{ saveContract }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save contract</button>
-              <span style="font-size:12px; color:var(--green-deep)">{{ contractStatus }}</span>
-              <sc-if value="{{ contractDirty }}" hint-placeholder-val="{{ false }}">
-                <span style="font-size:11px; color:#8A6D3B">Unsaved — the billing schedule updates once you save.</span>
-              </sc-if>
-            </div>
-          </div>
-
           <div style="display:flex; flex-direction:column; gap:10px; padding:20px 24px; border:1px solid var(--line); border-radius:4px">
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
               <button onClick="{{ sendPreviewEmail }}" disabled="{{ noClientEmail }}" style="padding:11px 20px; background:none; border:1px solid var(--green); border-radius:3px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Email project link</button>
               <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
             </div>
             <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}">
-              <span style="font-size:11px; color:#67746F">Add a client email under Billing &amp; invoices, then save, to enable the email.</span>
+              <span style="font-size:11px; color:#67746F">Add the client email in Finance → Projects &amp; pricing to enable the email.</span>
             </sc-if>
             <span style="font-size:11px; color:#67746F">Sends automatically from official@glomium.in — no mail app needed.</span>
           </div>
@@ -3792,7 +4198,7 @@
             <button onClick="{{ sendPreviewEmail }}" disabled="{{ noClientEmail }}" style="padding:11px 20px; background:none; border:1px solid var(--green); border-radius:3px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Email album link</button>
             <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
           </div>
-          <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#67746F">Add a client email under Billing &amp; invoices, then save, to enable this.</span></sc-if>
+          <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#67746F">Add the client email in Finance → Projects &amp; pricing to enable this.</span></sc-if>
           <span style="font-size:11px; color:#67746F">Sends automatically from official@glomium.in — no mail app needed.</span>
         </div>
         </sc-if>
@@ -3815,6 +4221,210 @@
             <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
           </div>
         </div>
+
+        <sc-if value="{{ isProjectRecord }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Contract</span>
+              <span style="font-size:11px; color:#67746F">A retainer bills on a cycle and carries a delivery date per period.</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px">
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Billing
+                <select value="{{ editBillingType }}" onChange="{{ onEditBillingType }}" disabled="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  <option value="one_time">One-off project</option>
+                  <option value="retainer">Retainer contract</option>
+                </select>
+              </label>
+              <sc-if value="{{ isRetainerDraft }}" hint-placeholder-val="{{ false }}">
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Contract starts
+                  <input type="date" value="{{ editContractStart }}" onChange="{{ onEditContractStart }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Term (months)
+                  <input type="number" min="1" value="{{ editContractMonths }}" onChange="{{ onEditContractMonths }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Bills every
+                  <select value="{{ editBillingCycle }}" onChange="{{ onEditBillingCycle }}" disabled="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                    <option value="monthly">Month</option>
+                    <option value="quarterly">Quarter</option>
+                    <option value="half_yearly">Six months</option>
+                    <option value="yearly">Year</option>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Amount per cycle (₹)
+                  <input type="number" min="0" value="{{ editRetainerAmount }}" onChange="{{ onEditRetainerAmount }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; text-align:right; outline:none" style-focus="border-color:var(--green)">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Payment terms (days)
+                  <input type="number" min="0" value="{{ editPaymentTerms }}" onChange="{{ onEditPaymentTerms }}" readOnly="{{ contractLocked }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+                </label>
+              </sc-if>
+            </div>
+            <sc-if value="{{ isRetainerDraft }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">What each cycle delivers
+                <input value="{{ editRetainerScope }}" onChange="{{ onEditRetainerScope }}" readOnly="{{ contractLocked }}" placeholder="e.g. 8 reels, 2 photoshoots, monthly content calendar" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none" style-focus="border-color:var(--green)">
+              </label>
+              <div style="display:flex; gap:14px; align-items:baseline; flex-wrap:wrap; padding-top:12px; border-top:1px solid var(--line)">
+                <span style="font-size:12px; color:#5D6864">{{ contractSummary }}</span>
+                <span style="font-size:15px; color:var(--green-deep); margin-left:auto; font-variant-numeric:tabular-nums">{{ contractValueLabel }}</span>
+                <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Contract value</span>
+              </div>
+            </sc-if>
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--line)">
+              <button onClick="{{ saveContract }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">Save contract</button>
+              <span style="font-size:12px; color:var(--green-deep)">{{ contractStatus }}</span>
+              <sc-if value="{{ contractDirty }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:11px; color:#8A6D3B">Unsaved — the billing schedule updates once you save.</span>
+              </sc-if>
+            </div>
+          </div>
+
+        </sc-if>
+
+        <sc-if value="{{ showPricing }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:18px; padding:24px; border:1px solid var(--line); border-radius:4px">
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Pricing &amp; sold lines</span>
+            <span style="font-size:11px; color:#67746F">What it costs us, what the client pays, and what is still to bill.</span>
+            <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ plStatus }}</span>
+          </div>
+
+          <sc-if value="{{ plMissing }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:13px; color:#B4433A">Run album-system/billing-schema.sql in Supabase to turn this on.</span>
+          </sc-if>
+
+          <sc-if value="{{ plReady }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px">
+            <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">Client price</span>
+              <span style="font-size:24px; font-weight:400; color:#16231F">{{ plPriceFmt }}</span>
+              <span style="font-size:11px; color:#67746F; line-height:1.5">{{ plPriceSub }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">Cost to us</span>
+              <span style="font-size:24px; font-weight:400; color:#16231F">{{ plCostFmt }}</span>
+              <span style="font-size:11px; color:#67746F; line-height:1.5">{{ plCostSub }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">Margin</span>
+              <span style="font-size:24px; font-weight:400; color:{{ plMarginColor }}">{{ plMarginFmt }}</span>
+              <span style="font-size:11px; color:#67746F; line-height:1.5">{{ plMarginSub }}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:4px">
+              <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5C6864">Unbilled</span>
+              <span style="font-size:24px; font-weight:400; color:#16231F">{{ plUnbilledFmt }}</span>
+              <span style="font-size:11px; color:#67746F; line-height:1.5">{{ plUnbilledSub }}</span>
+            </div>
+          </div>
+
+          <sc-if value="{{ plCanEdit }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap">
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; flex:1 1 200px">Cost override (₹) — leave blank to use expenses + crew
+              <input type="number" min="0" value="{{ plCostOverride }}" onChange="{{ onPlCostOverride }}" placeholder="From ledgers" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+            </label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; width:150px">Target margin (%)
+              <input type="number" min="0" max="99" value="{{ plTargetMargin }}" onChange="{{ onPlTargetMargin }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+            </label>
+            <button onClick="{{ savePricingTerms }}" style="padding:11px 18px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Save</button>
+          </div>
+          </sc-if>
+          <sc-if value="{{ plHasSuggest }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px; color:#5C6864">{{ plSuggestLabel }}</span>
+          </sc-if>
+
+          <div style="display:flex; flex-direction:column; gap:8px">
+            <span style="font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864">Sold lines</span>
+            <sc-if value="{{ plNoLines }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:13px; color:#5C6864">No lines yet. Add what was sold — e.g. 12 posts at ₹2,500 till 31 Oct.</span>
+            </sc-if>
+            <sc-for list="{{ plLines }}" as="ln" hint-placeholder-count="0">
+              <div style="display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid var(--line); border-radius:3px; flex-wrap:wrap">
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:#F1F4F3; color:#5C6864; letter-spacing:.08em; text-transform:uppercase">{{ ln.catLabel }}</span>
+                <div style="display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 220px">
+                  <span style="font-size:14px; color:#16231F">{{ ln.description }}</span>
+                  <span style="font-size:11px; color:#5C6864">{{ ln.qtyLabel }} · {{ ln.dateLabel }}</span>
+                  <span style="font-size:11px; color:#67746F">{{ ln.costLabel }}</span>
+                </div>
+                <span style="font-size:14px; color:#16231F">{{ ln.amountFmt }}</span>
+                <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ ln.stateBg }}; color:{{ ln.stateColor }}; letter-spacing:.08em; text-transform:uppercase">{{ ln.stateLabel }}</span>
+                <sc-if value="{{ ln.canChange }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:8px">
+                    <button onClick="{{ ln.edit }}" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit</button>
+                    <button onClick="{{ ln.remove }}" style="padding:7px 10px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#B4433A; cursor:pointer">✕</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ plShowAddBtn }}" hint-placeholder-val="{{ false }}">
+              <div><button onClick="{{ plOpenForm }}" style="padding:8px 14px; background:none; border:1px dashed var(--line); border-radius:3px; font-size:11px; color:var(--green-deep); cursor:pointer">+ Add sold line</button></div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ plShowForm }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px; padding:18px; border:1px solid var(--line); border-radius:3px; background:#FAFCFB">
+            <span style="font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864">{{ plFormTitle }}</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Type
+                <select value="{{ plF.category }}" onChange="{{ onPl_category }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  <option value="posts">Posts</option>
+                  <option value="reels">Reels</option>
+                  <option value="ads">Ads</option>
+                  <option value="digital_marketing">Digital marketing</option>
+                  <option value="video">Video</option>
+                  <option value="photo">Photo</option>
+                  <option value="units">Units</option>
+                  <option value="retainer">Retainer</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864; grid-column:span 2">Description (printed on invoice)
+                <input value="{{ plF.description }}" onChange="{{ onPl_description }}" placeholder="e.g. Instagram posts — October" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Quantity
+                <input type="number" min="0" step="1" value="{{ plF.qty }}" onChange="{{ onPl_qty }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Unit
+                <input value="{{ plF.unit }}" onChange="{{ onPl_unit }}" placeholder="post" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Our cost per unit (₹)
+                <input type="number" min="0" value="{{ plF.unit_cost }}" onChange="{{ onPl_unit_cost }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Client price per unit (₹)
+                <input type="number" min="0" value="{{ plF.unit_price }}" onChange="{{ onPl_unit_price }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">From
+                <input type="date" value="{{ plF.start_date }}" onChange="{{ onPl_start_date }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Till
+                <input type="date" value="{{ plF.end_date }}" onChange="{{ onPl_end_date }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Bill on
+                <select value="{{ plF.bill_at }}" onChange="{{ onPl_bill_at }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                  <option value="end">Till date (in arrears)</option>
+                  <option value="start">From date (in advance)</option>
+                </select>
+              </label>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+              <button onClick="{{ savePriceLine }}" style="padding:11px 22px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ plSaveLabel }}</button>
+              <button onClick="{{ plCancelForm }}" style="padding:11px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer">Cancel</button>
+              <span style="font-size:12px; color:#5C6864">{{ plFormTotal }}</span>
+              <span style="font-size:12px; color:var(--green-deep); flex:1 1 100%">{{ plStatus }}</span>
+            </div>
+          </div>
+          </sc-if>
+
+          <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--line)">
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Invoice lines due by
+              <input type="date" value="{{ plCutoff }}" onChange="{{ onPlCutoff }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none">
+            </label>
+            <sc-if value="{{ plHasDue }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ invoiceDueLines }}" style="padding:11px 20px; background:var(--green); color:#fff; border:none; border-radius:3px; font-size:12px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green-deep)">{{ plDueLabel }}</button>
+            </sc-if>
+            <span style="font-size:12px; color:#5C6864; padding-bottom:11px">{{ plNoDueLabel }}</span>
+            <span style="font-size:11px; color:#67746F; line-height:1.6; flex:1 1 100%">Creates one draft invoice with GST from the place of supply (uses the invoice type and GST setting below). Each line bills once; deleting the draft frees its lines. Once sent, its lines are frozen.</span>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
 
         <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:4px">
           <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
@@ -4383,11 +4993,11 @@ const CAPS = {
   // Adding, editing or removing a crew member is an admin decision; HR proposes.
   peopleApprove: ['admin'],
   payouts:     ['admin', 'accounts', 'hr'],
-  payoutsEdit: ['admin', 'accounts'],
+  payoutsEdit: ['admin', 'accounts', 'hr'],
   // Money in: accounts and admin log receipts; HR reads, because billing is
   // already theirs. Nobody else sees what clients owe.
   money:       ['admin', 'accounts', 'hr'],
-  moneyEdit:   ['admin', 'accounts'],
+  moneyEdit:   ['admin', 'accounts', 'hr'],
   // Digital & social. Creative reads the numbers because they make the work the
   // numbers describe; terms, deals and recharge are money and stay out of reach.
   // A stored credential is admin-only, and the edge function enforces that again
@@ -4405,7 +5015,13 @@ const CAPS = {
   spend:       ['admin', 'accounts', 'hr', 'creative'],
   // HR books the crew and the freelancers, so they are the ones who know a per
   // diem was wrong — editing a logged expense is theirs too.
-  spendEdit:   ['admin', 'accounts', 'hr', 'creative'],
+  spendEdit:   ['admin', 'accounts', 'hr'],
+  // Two workspaces. Studio is the work; Finance is every rupee. Accounts is
+  // money-only, creative never sees Finance, admin and HR hold both.
+  finance:     ['admin', 'accounts', 'hr'],
+  studio:      ['none', 'admin', 'creative', 'hr'],
+  // Sold lines and cost terms: same writers as the expense ledger's RLS.
+  pricingEdit: ['admin', 'accounts', 'hr'],
   shootEdit:   ['admin', 'accounts', 'creative'],
   hoursUnlock: ['admin'],
   albumUnlock: ['admin'],
@@ -4616,6 +5232,13 @@ function loadLib(name) {
   return _libPromises[name];
 }
 
+const WS_STORAGE_KEY = 'gl_workspace';
+const FIN_VIEWS = ['finance', 'finMaster', 'finProjects', 'finInvoices', 'money', 'payouts', 'spend', 'finPeople'];
+const CM_KINDS = [['loan', 'Loan EMI'], ['rent', 'Rent'], ['subscription', 'Subscription'], ['salary', 'Salary'], ['utility', 'Utility'], ['tax', 'Tax / statutory'], ['other', 'Other']];
+const CM_FREQ = [['monthly', 'Monthly', 1], ['quarterly', 'Quarterly', 3], ['half_yearly', 'Every six months', 6], ['yearly', 'Yearly', 12], ['once', 'One time', 0]];
+const PL_CATS = { posts: 'Posts', reels: 'Reels', ads: 'Ads', digital_marketing: 'Digital marketing', video: 'Video', photo: 'Photo', units: 'Units', retainer: 'Retainer', other: 'Other' };
+const PL_UNITS = { posts: 'post', reels: 'reel', ads: 'ad', digital_marketing: 'month', video: 'video', photo: 'photo', units: 'unit', retainer: 'month', other: 'unit' };
+
 function fmtINR(n) { return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
 function numberToWordsINR(amount) {
@@ -4682,6 +5305,11 @@ class Component extends DCLogic {
     newInvAddons: [], newInvNotes: DEFAULT_INVOICE_NOTES,
     showInvoicePreview: false, previewInvoice: null, pdfBusy: false,
     editorTab: 'album', editorFrom: null,
+    workspace: (() => { try { return localStorage.getItem(WS_STORAGE_KEY) || 'studio'; } catch (e) { return 'studio'; } })(),
+    finStatus: '', finQuery: '', finDivision: '', finInvFilter: 'unpaid', finInvQuery: '', finPeopleQuery: '', finPeopleMissing: false,
+    finProjectsRaw: [], finEventsRaw: [], finBilling: [], finBillingMissing: false, finInvRaw: [], finReceipts: [], finDueLines: [],
+    finInvList: [], finInvReceipts: [], finExpenses: [], finCommitments: [], finCmPays: [], finCmMissing: false,
+    cmForm: null, cmShowForm: false, cmStatus: '', finClientOpen: null, finPeopleRows: [], finRates: [], finAdvances: [],
     role: null,
     people: [], peopleQuery: '', personId: null, personForm: null, personStatus: '', personMode: 'view',
     changeRequests: [], requestStatus: '', requestFilter: 'pending', requestOpen: null,
@@ -4831,11 +5459,37 @@ class Component extends DCLogic {
     if (error) { this.setState({ role: 'none', roleError: error.message }); return; }
     const role = (data && data.role) || 'none';
     this.setState({ role, roleError: '' });
+    this.fitWorkspace(role);
     // The nav badge needs the pending count before the page is ever opened.
     this.loadChangeRequests(role);
   }
 
   can(what) { return (CAPS[what] || []).indexOf(this.state.role || 'none') !== -1; }
+
+  // ---- Studio / Finance ---------------------------------------------------------
+  // The role decides which workspaces exist; the stored choice only picks
+  // between them when a role holds both.
+  activeWorkspace(roleArg) {
+    const r = roleArg || this.state.role || 'none';
+    const fin = CAPS.finance.indexOf(r) !== -1, studio = CAPS.studio.indexOf(r) !== -1;
+    if (fin && !studio) return 'finance';
+    if (!fin) return 'studio';
+    return this.state.workspace === 'finance' ? 'finance' : 'studio';
+  }
+
+  fitWorkspace(role) {
+    const ws = this.activeWorkspace(role);
+    this.setState({ workspace: ws }, () => {
+      if (ws === 'finance' && this.state.view === 'dashboard') this.goWorkspace('finance');
+      if (ws === 'studio' && FIN_VIEWS.indexOf(this.state.view) !== -1) this.goWorkspace('dashboard');
+    });
+  }
+
+  switchWorkspace(ws) {
+    if (ws === this.activeWorkspace()) return;
+    try { localStorage.setItem(WS_STORAGE_KEY, ws); } catch (e) {}
+    this.setState({ workspace: ws }, () => this.goWorkspace(ws === 'finance' ? 'finance' : 'dashboard'));
+  }
 
   goWorkspace(view) {
     if (view === this.state.view) return;
@@ -4851,6 +5505,11 @@ class Component extends DCLogic {
     }
     if (view === 'money') { this.loadMoney(); }
     if (view === 'spend') { this.loadSpend(); if (!(this.state.talent || []).length) this.loadTalent(); }
+    if (view === 'finance' || view === 'finProjects') this.loadFinance();
+    if (view === 'finMaster') { this.loadFinance(); this.loadMaster(); }
+    if (view === 'finInvoices') this.loadFinInvoices();
+    if (view === 'finPeople') this.loadFinPeople();
+    if (view === 'shoots') { this.setState({ spendStatus: '' }); this.loadShootsOnly(); }
   }
 
   // ---- Sign in / out -----------------------------------------------------------
@@ -4964,6 +5623,8 @@ class Component extends DCLogic {
   // Never land on a tab this account cannot hold — an empty tab is what makes the
   // "no access" notice the only thing that renders.
   firstEditorTab() {
+    // Opened from Finance, a record is its money and nothing else.
+    if (this.activeWorkspace() === 'finance') return this.can('billing') ? 'billing' : '';
     if (this.can('media')) return 'album';
     if (this.can('people')) return 'crew';
     if (this.can('billing')) return 'billing';
@@ -4977,6 +5638,9 @@ class Component extends DCLogic {
     const from = this.state.editorFrom;
     const to = from && from !== 'editor' && from !== 'login' ? from : 'dashboard';
     this.setState({ view: to, editorFrom: null, current: null, media: [], assignments: [], costing: null, agEdits: {} });
+    if (to === 'finance' || to === 'finProjects') { this.loadFinance(); return; }
+    if (to === 'finMaster') { this.loadFinance(); this.loadMaster(); return; }
+    if (to === 'finInvoices') { this.loadFinInvoices(); return; }
     if (to !== 'dashboard') return;
     this.loadForDivision();
     if (!wasProject) this.loadEvents();
@@ -5288,11 +5952,16 @@ class Component extends DCLogic {
       eventDays: [], dayDate: pr.start_date || '', dayHours: {}, dayStatus: '',
       afPerson: '', afRole: '', afBasis: 'hourly', afRate: '', afFee: '', afHours: '',
       invoices: [],
+      priceLines: [], pricingSummary: null, plMissing: false, plForm: this.blankPriceLine(), plShowForm: false,
+      plStatus: '', plCutoff: '', plBusy: false,
+      plCostOverride: pr.cost_override != null ? String(pr.cost_override) : '',
+      plTargetMargin: pr.target_margin_pct != null ? String(pr.target_margin_pct) : '30',
     });
     const rec = { ...pr, _table: 'projects' };
     this.loadProjectMedia(pr.id);
     this.loadAssignments(pr.id, rec);
     this.loadInvoices(pr.id, rec);
+    if (this.can('billing')) this.loadPricing(pr.id);
     // The Accounts & access tab reads the register, so it has to be in hand
     // before the tab is opened rather than after.
     if (this.divisionsOf(pr).indexOf('digital') !== -1 && this.can('digital')) this.loadDigital();
@@ -6421,6 +7090,887 @@ class Component extends DCLogic {
     setTimeout(() => this.setState({ invStatus: '' }), 2500);
   }
 
+  // ---- Master: every client, every rupee in and out, what is due next ------------
+
+  blankCommitment() {
+    return { id: null, title: '', kind: 'rent', payee: '', amount: '', frequency: 'monthly', start_date: this.toIso(new Date()), end_date: '', total_amount: '' };
+  }
+
+  async loadMaster() {
+    const [ex, cm, cp] = await Promise.all([
+      this.sb.from('expenses').select('id, project_id, event_id, spend_date, category, vendor, note, amount').order('spend_date', { ascending: false }).limit(3000),
+      this.sb.from('commitments').select('*').order('start_date', { ascending: true }),
+      this.sb.from('commitment_payments').select('*').order('due_date', { ascending: false }).limit(3000),
+    ]);
+    const missing = !!cm.error && /commitments|schema cache|does not exist/i.test(cm.error.message || '');
+    this.setState({
+      finExpenses: ex.data || [], finCommitments: cm.data || [], finCmPays: cp.error ? [] : (cp.data || []),
+      finCmMissing: missing,
+      cmStatus: cm.error && !missing ? cm.error.message : '',
+    });
+  }
+
+  // Every due date a commitment implies between two dates.
+  commitmentDues(c, fromIso, toIso) {
+    const f = CM_FREQ.find(x => x[0] === c.frequency) || CM_FREQ[0];
+    const out = [];
+    if (!c.start_date) return out;
+    const end = c.end_date && c.end_date < toIso ? c.end_date : toIso;
+    if (!f[2]) { if (c.start_date >= fromIso && c.start_date <= end) out.push(c.start_date); return out; }
+    for (let i = 0; i < 600; i++) {
+      const d = this.addMonths(c.start_date, i * f[2]);
+      if (d > end) break;
+      if (d >= fromIso) out.push(d);
+    }
+    return out;
+  }
+
+  setCm(k, v) { this.setState({ cmForm: Object.assign({}, this.state.cmForm || this.blankCommitment(), { [k]: v }), cmStatus: '' }); }
+
+  async saveCommitment() {
+    const f = this.state.cmForm || this.blankCommitment();
+    const amount = Number(f.amount);
+    if (!(f.title || '').trim()) { this.setState({ cmStatus: 'Name it — e.g. Office rent, Canon lens EMI.' }); return; }
+    if (!(amount > 0)) { this.setState({ cmStatus: 'Enter the amount due each time.' }); return; }
+    if (!f.start_date) { this.setState({ cmStatus: 'When is the first payment due?' }); return; }
+    if (f.end_date && f.end_date < f.start_date) { this.setState({ cmStatus: 'The last date is before the first.' }); return; }
+    const row = {
+      title: f.title.trim(), kind: f.kind, payee: (f.payee || '').trim() || null, amount,
+      frequency: f.frequency, start_date: f.start_date, end_date: f.end_date || null,
+      total_amount: f.total_amount === '' || f.total_amount == null ? null : Number(f.total_amount), active: true,
+    };
+    const res = f.id ? await this.sb.from('commitments').update(row).eq('id', f.id) : await this.sb.from('commitments').insert(row);
+    if (res.error) {
+      this.setState({ cmStatus: /commitments|schema cache/i.test(res.error.message || '') ? 'Run album-system/commitments-schema.sql in Supabase first.' : res.error.message });
+      return;
+    }
+    this.setState({ cmForm: null, cmShowForm: false, cmStatus: f.id ? 'Updated.' : 'Added.' });
+    this.loadMaster();
+  }
+
+  editCommitment(c) {
+    this.setState({ cmShowForm: true, cmStatus: '', cmForm: {
+      id: c.id, title: c.title || '', kind: c.kind || 'other', payee: c.payee || '', amount: String(c.amount || ''),
+      frequency: c.frequency || 'monthly', start_date: c.start_date || '', end_date: c.end_date || '',
+      total_amount: c.total_amount == null ? '' : String(c.total_amount),
+    } });
+  }
+
+  async toggleCommitment(c) {
+    const { error } = await this.sb.from('commitments').update({ active: !c.active }).eq('id', c.id);
+    if (error) { this.setState({ cmStatus: error.message }); return; }
+    this.loadMaster();
+  }
+
+  async removeCommitment(c) {
+    if (!window.confirm('Delete "' + c.title + '" and its payment history?')) return;
+    const { error } = await this.sb.from('commitments').delete().eq('id', c.id);
+    if (error) { this.setState({ cmStatus: error.message }); return; }
+    this.loadMaster();
+  }
+
+  async markDuePaid(c, due, paid) {
+    const res = paid
+      ? await this.sb.from('commitment_payments').delete().eq('id', paid.id)
+      : await this.sb.from('commitment_payments').insert({ commitment_id: c.id, due_date: due, amount: Number(c.amount), paid_on: this.toIso(new Date()) });
+    if (res.error) { this.setState({ cmStatus: res.error.message }); return; }
+    this.loadMaster();
+  }
+
+  masterVM() {
+    const s = this.state;
+    const today = this.toIso(new Date());
+    const horizon = this.addDays(today, 60);
+    const lookback = this.addDays(today, -120);
+    const pct = n => (Math.round(n * 10) / 10).toLocaleString('en-IN') + '%';
+    const recs = this.finRecords();
+    const canEdit = this.can('moneyEdit');
+
+    const spendBy = {};
+    (s.finExpenses || []).forEach(e => {
+      const k = e.project_id ? 'project:' + e.project_id : 'event:' + e.event_id;
+      spendBy[k] = (spendBy[k] || 0) + Number(e.amount || 0);
+    });
+
+    // A client is the name on the record, not the job. Mr Fone's trial,
+    // campaign and retainer are three projects and one client.
+    const clients = {};
+    recs.forEach(r => {
+      const name = ((r.kind === 'event' ? (r.rec.client_name || r.rec.couple_names) : r.rec.client_name) || r.label || 'Unnamed').trim();
+      const key = name.toLowerCase().replace(/\s+/g, ' ');
+      const c = clients[key] || (clients[key] = { key, name, jobs: [], price: 0, cost: 0, costKnown: false, invoiced: 0, received: 0, spent: 0, divisions: {} });
+      const spent = spendBy[r.kind + ':' + r.id] || 0;
+      c.jobs.push({ r, spent });
+      c.price += r.price; c.invoiced += r.invoiced; c.received += r.received; c.spent += spent;
+      c.cost += r.cost != null ? r.cost : spent;
+      if (r.cost != null || spent > 0) c.costKnown = true;
+      r.divisions.forEach(d => { c.divisions[d] = true; });
+    });
+    const clientList = Object.keys(clients).map(k => clients[k])
+      .sort((a, b) => (b.invoiced - b.received) - (a.invoiced - a.received) || b.price - a.price || a.name.localeCompare(b.name));
+
+    const mClientsVM = clientList.map(c => {
+      const out = Math.max(0, c.invoiced - c.received);
+      // No cost on record is not a 100% margin — it is an unknown one.
+      const margin = c.price && c.costKnown ? c.price - c.cost : null;
+      const open = s.finClientOpen === c.key;
+      return {
+        name: c.name,
+        meta: c.jobs.length + (c.jobs.length === 1 ? ' job · ' : ' jobs · ') + Object.keys(c.divisions).map(d => DIVISION_LABEL[d] || d).join(' · '),
+        priceFmt: c.price ? fmtINR(c.price) : '—',
+        invoicedFmt: c.invoiced ? fmtINR(c.invoiced) : '—',
+        receivedFmt: c.received ? fmtINR(c.received) : '—',
+        outstandingFmt: out > 1 ? fmtINR(out) : '—', outstandingColor: out > 1 ? '#B4433A' : '#5C6864',
+        spentFmt: c.spent ? fmtINR(c.spent) : '—',
+        marginFmt: margin == null ? '—' : pct(margin / c.price * 100),
+        marginColor: margin == null ? '#5C6864' : margin < 0 ? '#B4433A' : '#0A6E58',
+        toggle: () => this.setState({ finClientOpen: open ? null : c.key }),
+        isOpen: open, arrow: open ? '−' : '+',
+        jobsVM: c.jobs.map(j => ({
+          label: j.r.sub ? j.r.sub : (j.r.kind === 'event' ? j.r.label : 'Project'),
+          meta: j.r.divisions.map(d => DIVISION_LABEL[d] || d).join(' · '),
+          line: [j.r.price ? fmtINR(j.r.price) + ' price' : null, j.r.invoiced ? fmtINR(j.r.invoiced) + ' invoiced' : null,
+            j.spent ? fmtINR(j.spent) + ' spent' : null].filter(Boolean).join(' · ') || 'No money on it yet',
+          open: () => this.openFinRecord(j.r),
+        })),
+      };
+    });
+
+    const pays = {};
+    (s.finCmPays || []).forEach(p => { pays[p.commitment_id + '|' + p.due_date] = p; });
+    const paidTotal = {};
+    (s.finCmPays || []).forEach(p => { paidTotal[p.commitment_id] = (paidTotal[p.commitment_id] || 0) + Number(p.amount || 0); });
+    const kindLabel = k => (CM_KINDS.find(x => x[0] === k) || [k, 'Other'])[1];
+    const dues = [];
+    (s.finCommitments || []).filter(c => c.active !== false).forEach(c => {
+      this.commitmentDues(c, lookback, horizon).forEach(d => {
+        const paid = pays[c.id + '|' + d];
+        if (paid && d < today) return;
+        dues.push({ c, d, paid });
+      });
+    });
+    dues.sort((a, b) => a.d.localeCompare(b.d));
+    const due30 = dues.filter(x => !x.paid && x.d <= this.addDays(today, 30)).reduce((t, x) => t + Number(x.c.amount || 0), 0);
+    const overdueAmt = dues.filter(x => !x.paid && x.d < today).reduce((t, x) => t + Number(x.c.amount || 0), 0);
+    const mDuesVM = dues.map(x => {
+      const late = !x.paid && x.d < today;
+      const days = Math.round((new Date(x.d) - new Date(today)) / 86400000);
+      return {
+        dateLabel: fmtDay(x.d),
+        when: x.paid ? 'Paid ' + fmtDay(x.paid.paid_on) : late ? (-days) + (days === -1 ? ' day late' : ' days late') : days === 0 ? 'Due today' : 'In ' + days + (days === 1 ? ' day' : ' days'),
+        whenColor: x.paid ? '#0A6E58' : late || days === 0 ? '#B4433A' : '#67746F',
+        title: x.c.title, meta: [kindLabel(x.c.kind), x.c.payee].filter(Boolean).join(' · '),
+        amountFmt: fmtINR(x.c.amount),
+        canEdit, btnLabel: x.paid ? 'Undo' : 'Mark paid',
+        toggle: () => this.markDuePaid(x.c, x.d, x.paid),
+      };
+    });
+    const mCommitmentsVM = (s.finCommitments || []).map(c => {
+      const f = CM_FREQ.find(x => x[0] === c.frequency) || CM_FREQ[0];
+      const paid = paidTotal[c.id] || 0;
+      const left = c.total_amount != null ? Math.max(0, Number(c.total_amount) - paid) : null;
+      return {
+        title: c.title, kindLabel: kindLabel(c.kind),
+        meta: [fmtINR(c.amount) + ' · ' + f[1].toLowerCase(), 'from ' + fmtDay(c.start_date), c.end_date ? 'till ' + fmtDay(c.end_date) : null, c.payee].filter(Boolean).join(' · '),
+        leftLabel: left == null ? 'Paid so far ' + fmtINR(paid) : fmtINR(left) + ' left of ' + fmtINR(c.total_amount),
+        opacity: c.active === false ? '.5' : '1',
+        canEdit, edit: () => this.editCommitment(c), toggle: () => this.toggleCommitment(c), remove: () => this.removeCommitment(c),
+        toggleLabel: c.active === false ? 'Resume' : 'Pause',
+      };
+    });
+
+    const nameOfKey = {};
+    recs.forEach(r => { nameOfKey[r.kind + ':' + r.id] = (r.kind === 'event' ? r.label : r.label + (r.sub ? ' — ' + r.sub : '')); });
+    const exAll = s.finExpenses || [];
+    const monthKey = today.slice(0, 7);
+    const spentMonth = exAll.filter(e => String(e.spend_date || '').slice(0, 7) === monthKey).reduce((t, e) => t + Number(e.amount || 0), 0);
+    const spentAll = exAll.reduce((t, e) => t + Number(e.amount || 0), 0);
+    const mExpensesVM = exAll.slice(0, 15).map(e => ({
+      date: fmtDay(e.spend_date), job: nameOfKey[e.project_id ? 'project:' + e.project_id : 'event:' + e.event_id] || '—',
+      what: [e.category, e.vendor, e.note].filter(Boolean).join(' · '), amountFmt: fmtINR(e.amount),
+    }));
+
+    const rcv = {};
+    (s.finReceipts || []).forEach(r => { rcv[r.invoice_id] = (rcv[r.invoice_id] || 0) + Number(r.amount || 0); });
+    const invAll = (s.finInvRaw || []).filter(i => i.type === 'tax' && i.status !== 'draft')
+      .sort((a, b) => String(b.issue_date || '').localeCompare(String(a.issue_date || '')));
+    const invoicedAll = invAll.reduce((t, i) => t + Number(i.total || 0), 0);
+    const receivedAll = invAll.reduce((t, i) => t + (rcv[i.id] || 0), 0);
+    const mInvoicesVM = invAll.slice(0, 15).map(i => {
+      const bal = Number(i.total || 0) - (rcv[i.id] || 0);
+      return {
+        date: fmtDay(i.issue_date), number: i.number,
+        client: nameOfKey[i.project_id ? 'project:' + i.project_id : 'event:' + i.event_id] || i.bill_name || '—',
+        totalFmt: fmtINR(i.total), balLabel: bal > 1 ? fmtINR(bal) + ' due' : 'Paid', balColor: bal > 1 ? '#B4433A' : '#0A6E58',
+      };
+    });
+
+    const f = s.cmForm || this.blankCommitment();
+    const set = k => e => this.setCm(k, e.target.value);
+    return {
+      isFinMaster: true,
+      mKpisVM: [
+        { label: 'Invoiced', value: fmtINR(invoicedAll), color: '#16231F', note: invAll.length + (invAll.length === 1 ? ' issued tax invoice' : ' issued tax invoices') + ' · GST incl.' },
+        { label: 'Received', value: fmtINR(receivedAll), color: '#0A6E58', note: invoicedAll ? pct(receivedAll / invoicedAll * 100) + ' collected' : 'Nothing invoiced yet' },
+        { label: 'Receivable', value: fmtINR(Math.max(0, invoicedAll - receivedAll)), color: invoicedAll - receivedAll > 1 ? '#B4433A' : '#16231F', note: 'Still with clients' },
+        { label: 'Job expenses', value: fmtINR(spentAll), color: '#16231F', note: fmtINR(spentMonth) + ' this month' },
+        { label: 'Dues · next 30 days', value: fmtINR(due30), color: due30 > 0 ? '#8A6D3B' : '#16231F', note: overdueAmt > 0 ? fmtINR(overdueAmt) + ' already late' : 'Loans, rent and other standing costs' },
+      ],
+      mClientsVM, mNoClients: !mClientsVM.length, mClientCount: mClientsVM.length + (mClientsVM.length === 1 ? ' client' : ' clients'),
+      mDuesVM, mNoDues: !mDuesVM.length, finCmMissing: !!s.finCmMissing,
+      mCommitmentsVM,
+      mExpensesVM, mNoExpenses: !mExpensesVM.length, mInvoicesVM, mNoInvoices: !mInvoicesVM.length,
+      goExpenses: () => this.goWorkspace('spend'), goInvoices: () => this.goWorkspace('finInvoices'),
+      cmStatus: s.cmStatus || '',
+      cmShowForm: !!s.cmShowForm && canEdit, cmShowAdd: !s.cmShowForm && canEdit,
+      cmOpenForm: () => this.setState({ cmShowForm: true, cmForm: this.blankCommitment(), cmStatus: '' }),
+      cmCancel: () => this.setState({ cmShowForm: false, cmForm: null, cmStatus: '' }),
+      cmFormTitle: f.id ? 'Edit commitment' : 'New commitment',
+      cmTitle: f.title, onCmTitle: set('title'), cmKind: f.kind, onCmKind: set('kind'),
+      cmPayee: f.payee, onCmPayee: set('payee'), cmAmount: f.amount, onCmAmount: set('amount'),
+      cmFreq: f.frequency, onCmFreq: set('frequency'), cmStart: f.start_date, onCmStart: set('start_date'),
+      cmEnd: f.end_date, onCmEnd: set('end_date'), cmTotal: f.total_amount, onCmTotal: set('total_amount'),
+      cmKindOptsVM: CM_KINDS.map(k => ({ value: k[0], label: k[1] })),
+      cmFreqOptsVM: CM_FREQ.map(k => ({ value: k[0], label: k[1] })),
+      saveCommitment: () => this.saveCommitment(),
+    };
+  }
+
+  // ---- Finance workspace ---------------------------------------------------------
+
+  async loadFinance() {
+    this.setState({ finStatus: 'Loading…' });
+    const [pb, pr, ev, inv, rc, dl] = await Promise.all([
+      this.sb.from('project_billing').select('*'),
+      this.sb.from('projects').select('*').order('created_at', { ascending: false }).limit(500),
+      this.sb.from('events').select('*').order('event_date', { ascending: false }).limit(500),
+      this.sb.from('invoices').select('id, number, type, status, total, issue_date, due_date, event_id, project_id, bill_name').limit(3000),
+      this.sb.from('payments_received').select('invoice_id, amount').limit(5000),
+      this.sb.from('project_price_lines').select('project_id, amount, bill_on').is('invoice_id', null).not('bill_on', 'is', null),
+    ]);
+    const err = pr.error || ev.error || inv.error;
+    this.setState({
+      finProjectsRaw: pr.data || [], finEventsRaw: ev.data || [],
+      finBilling: pb.error ? [] : (pb.data || []), finBillingMissing: !!pb.error,
+      finInvRaw: inv.data || [], finReceipts: rc.error ? [] : (rc.data || []),
+      finDueLines: dl.error ? [] : (dl.data || []),
+      finStatus: err ? 'Could not load: ' + err.message : '',
+    });
+  }
+
+  async loadFinInvoices() {
+    this.setState({ finStatus: 'Loading…' });
+    const [inv, rc] = await Promise.all([
+      this.sb.from('invoices').select('*, events(couple_names), projects(client_name, project_title)')
+        .order('issue_date', { ascending: false }).limit(1500),
+      this.sb.from('payments_received').select('invoice_id, amount').limit(5000),
+    ]);
+    this.setState({
+      finInvList: inv.data || [], finInvReceipts: rc.error ? [] : (rc.data || []),
+      finStatus: inv.error ? 'Could not load invoices: ' + inv.error.message : '',
+    });
+  }
+
+  async loadFinPeople() {
+    this.setState({ finStatus: 'Loading…' });
+    const [pp, rt, ad] = await Promise.all([
+      this.sb.from('people').select('*').order('full_name', { ascending: true }),
+      this.sb.from('people_rates').select('person_id, label, rate').order('sort', { ascending: true }),
+      this.sb.from('people_advances').select('person_id, amount, recovered'),
+    ]);
+    this.setState({
+      finPeopleRows: pp.data || [], finRates: rt.error ? [] : (rt.data || []), finAdvances: ad.error ? [] : (ad.data || []),
+      finStatus: pp.error ? 'Could not read crew records: ' + pp.error.message : '',
+    });
+  }
+
+  async loadShootsOnly() {
+    const [pr, ev, sh] = await Promise.all([
+      this.sb.from('projects').select('id,project_title,client_name,division,divisions').limit(500),
+      this.sb.from('events').select('id,couple_names,event_date').limit(500),
+      this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).limit(1000),
+    ]);
+    const patch = { spendProjects: pr.data || [], spendEvents: ev.data || [], spendShoots: sh.data || [] };
+    const err = sh.error || pr.error || ev.error;
+    if (err) Object.assign(patch, { spendStatus: /schema cache|does not exist/i.test(err.message || '') ? 'Run album-system/spend-schema.sql in Supabase first.' : 'Could not load shoots: ' + err.message, spendStatusOk: false });
+    this.setState(patch);
+  }
+
+  openFinRecord(r) { if (r.kind === 'project') this.openProject(r.rec); else this.openEvent(r.rec); }
+
+  async openFinInvoiceParent(inv) {
+    const table = inv.project_id ? 'projects' : 'events';
+    const { data, error } = await this.sb.from(table).select('*').eq('id', inv.project_id || inv.event_id).maybeSingle();
+    if (error || !data) { this.setState({ finStatus: error ? error.message : 'That record no longer exists.' }); return; }
+    if (table === 'projects') this.openProject(data); else this.openEvent(data);
+  }
+
+  openFinPerson(p) {
+    this.goWorkspace('people');
+    this.openPerson(p);
+    this.setState({ personTab: 'pay' });
+  }
+
+  finChip(active) {
+    return { bg: active ? 'var(--green)' : 'none', border: active ? 'var(--green)' : 'var(--line)', color: active ? '#FFFFFF' : 'var(--green-deep)' };
+  }
+
+  // One row per job, both tables, with the money joined on.
+  finRecords() {
+    const s = this.state;
+    const billing = {};
+    (s.finBilling || []).forEach(b => { billing[b.project_id] = b; });
+    const rcv = {};
+    (s.finReceipts || []).forEach(r => { rcv[r.invoice_id] = (rcv[r.invoice_id] || 0) + Number(r.amount || 0); });
+    const invBy = {};
+    (s.finInvRaw || []).forEach(i => { const k = i.project_id ? 'p:' + i.project_id : 'e:' + i.event_id; (invBy[k] = invBy[k] || []).push(i); });
+    // A draft is not a demand for payment, and a proforma is a quote.
+    const money = k => {
+      const list = (invBy[k] || []).filter(i => i.type === 'tax' && i.status !== 'draft');
+      return {
+        invoiced: list.reduce((t, i) => t + Number(i.total || 0), 0),
+        received: list.reduce((t, i) => t + (rcv[i.id] || 0), 0),
+      };
+    };
+    const pRows = (s.finProjectsRaw || []).map(p => {
+      const b = billing[p.id];
+      const divs = Array.isArray(p.divisions) && p.divisions.length ? p.divisions : [p.division];
+      return Object.assign({
+        kind: 'project', rec: p, id: p.id,
+        label: (p.client_name || '').trim() || 'Untitled project', sub: p.project_title || '', divisions: divs,
+        price: b ? Number(b.price || 0) : Number(p.package_price || 0),
+        cost: b ? Number(b.cost_actual || 0) : (p.cost_override != null ? Number(p.cost_override) : null),
+        target: Number(p.target_margin_pct == null ? 30 : p.target_margin_pct),
+        dueNow: b ? Number(b.due_now || 0) : 0,
+      }, money('p:' + p.id));
+    });
+    const eRows = (s.finEventsRaw || []).map(e => Object.assign({
+      kind: 'event', rec: e, id: e.id, label: e.couple_names || 'Wedding',
+      sub: e.event_date ? fmtDay(e.event_date) : '', divisions: ['wedding'],
+      price: Number(e.package_price || 0), cost: null, target: 30, dueNow: 0,
+    }, money('e:' + e.id)));
+    return pRows.concat(eRows);
+  }
+
+  financeVM() {
+    const s = this.state;
+    const ws = this.activeWorkspace();
+    const out = {
+      showWsSwitch: this.can('finance') && this.can('studio'),
+      wsSwitchVM: [['studio', 'Studio'], ['finance', 'Finance']].map(w => ({
+        label: w[1], go: () => this.switchWorkspace(w[0]),
+        bg: ws === w[0] ? 'var(--green)' : '#FFFFFF', color: ws === w[0] ? '#FFFFFF' : 'var(--green-deep)',
+      })),
+      showDivisionPicker: ws !== 'finance',
+      editorIsStudio: ws !== 'finance',
+      finStatus: s.finStatus || '',
+      isFinOverview: false, isFinProjects: false, isFinInvoices: false, isFinPeople: false, isShoots: false,
+      finKpisVM: [], finBillSoonVM: [], finOverdueVM: [], finLowMarginVM: [], finRowsVM: [], finDivisionOptsVM: [],
+      finInvRowsVM: [], finInvFilterVM: [], finPeopleVM: [], finPeopleChipsVM: [], isFinMaster: false,
+      mKpisVM: [], mClientsVM: [], mDuesVM: [], mCommitmentsVM: [], mExpensesVM: [], mInvoicesVM: [], cmKindOptsVM: [], cmFreqOptsVM: [],
+      svJobOptsVM: [], svListVM: [], svKindOptsVM: [],
+    };
+    if (!this.can('finance') && s.view !== 'shoots') return out;
+    if (s.view === 'finance' || s.view === 'finProjects') Object.assign(out, this.finProjectsVM(s.view));
+    if (s.view === 'finInvoices') Object.assign(out, this.finInvoicesVM());
+    if (s.view === 'finMaster') Object.assign(out, this.masterVM());
+    if (s.view === 'finPeople') Object.assign(out, this.finPeopleVM());
+    if (s.view === 'shoots') Object.assign(out, this.shootsVM());
+    return out;
+  }
+
+  finProjectsVM(view) {
+    const s = this.state;
+    const today = this.toIso(new Date());
+    const soon = this.addDays(today, 7);
+    const pct = n => (Math.round(n * 10) / 10).toLocaleString('en-IN') + '%';
+    const recs = this.finRecords();
+    const rowVM = r => {
+      const margin = r.cost == null || !r.price ? null : r.price - r.cost;
+      const mp = margin == null ? null : margin / r.price * 100;
+      const out = Math.max(0, r.invoiced - r.received);
+      return {
+        key: r.kind + ':' + r.id, label: r.label,
+        sub: [r.sub, r.divisions.map(d => DIVISION_LABEL[d] || d).join(' · ')].filter(Boolean).join(' · '),
+        priceFmt: r.price ? fmtINR(r.price) : '—',
+        costFmt: r.cost == null ? '—' : fmtINR(r.cost),
+        marginFmt: mp == null ? '—' : pct(mp),
+        marginColor: mp == null ? '#5C6864' : margin < 0 ? '#B4433A' : mp < r.target ? '#8A6D3B' : '#0A6E58',
+        invoicedFmt: r.invoiced ? fmtINR(r.invoiced) : '—',
+        outstandingFmt: out > 1 ? fmtINR(out) : '—', outstandingColor: out > 1 ? '#B4433A' : '#5C6864',
+        dueFmt: r.dueNow > 0 ? fmtINR(r.dueNow) : '—', dueColor: r.dueNow > 0 ? '#B4433A' : '#5C6864',
+        open: () => this.openFinRecord(r),
+        _r: r, _margin: margin, _mp: mp, _out: out,
+      };
+    };
+    const vms = recs.map(rowVM);
+
+    if (view === 'finProjects') {
+      const q = (s.finQuery || '').trim().toLowerCase();
+      const div = s.finDivision || '';
+      const shown = vms.filter(v => (!div || v._r.divisions.indexOf(div) !== -1)
+        && (!q || [v._r.label, v._r.sub].join(' ').toLowerCase().includes(q)))
+        .sort((a, b) => (b._r.dueNow - a._r.dueNow) || (b._out - a._out) || a.label.localeCompare(b.label));
+      return {
+        isFinProjects: true, finRowsVM: shown, finNoRows: !shown.length && !(s.finStatus || '').startsWith('Loading'),
+        finCountLabel: shown.length + (shown.length === 1 ? ' job' : ' jobs'),
+        finQuery: s.finQuery || '', onFinQuery: e => this.setState({ finQuery: e.target.value }),
+        finDivision: div, onFinDivision: e => this.setState({ finDivision: e.target.value }),
+        finDivisionOptsVM: [{ value: '', label: 'All divisions' }].concat(DIVISIONS.map(d => ({ value: d[0], label: d[1] }))),
+      };
+    }
+
+    const receivable = vms.reduce((t, v) => t + v._out, 0);
+    const late = vms.filter(v => v._out > 1).length;
+    const dueNow = recs.reduce((t, r) => t + r.dueNow, 0);
+    const dueJobs = recs.filter(r => r.dueNow > 0).length;
+    const drafts = (s.finInvRaw || []).filter(i => i.status === 'draft');
+    const priced = vms.filter(v => v._mp != null);
+    const pSum = priced.reduce((t, v) => t + v._r.price, 0);
+    const mSum = priced.reduce((t, v) => t + v._margin, 0);
+    const byId = {};
+    recs.forEach(r => { byId[r.kind + ':' + r.id] = r; });
+
+    const soonBy = {};
+    (s.finDueLines || []).filter(l => l.bill_on <= soon).forEach(l => {
+      const g = soonBy[l.project_id] || (soonBy[l.project_id] = { amount: 0, n: 0, first: l.bill_on });
+      g.amount += Number(l.amount || 0); g.n++; if (l.bill_on < g.first) g.first = l.bill_on;
+    });
+    const billSoon = Object.keys(soonBy).map(pid => {
+      const g = soonBy[pid], r = byId['project:' + pid];
+      const overdue = g.first <= today;
+      return {
+        label: r ? r.label : 'Project', amountFmt: fmtINR(g.amount), _first: g.first,
+        meta: g.n + (g.n === 1 ? ' line · ' : ' lines · ') + (overdue ? 'due now' : 'from ' + fmtDay(g.first)),
+        metaColor: overdue ? '#B4433A' : '#67746F',
+        open: () => r && this.openFinRecord(r),
+      };
+    }).sort((a, b) => a._first.localeCompare(b._first));
+
+    const rcv = {};
+    (s.finReceipts || []).forEach(r => { rcv[r.invoice_id] = (rcv[r.invoice_id] || 0) + Number(r.amount || 0); });
+    const overdue = (s.finInvRaw || []).filter(i => i.type === 'tax' && i.status !== 'draft' && i.due_date && i.due_date < today
+      && Number(i.total || 0) - (rcv[i.id] || 0) > 1).map(i => {
+      const r = byId[(i.project_id ? 'project:' : 'event:') + (i.project_id || i.event_id)];
+      const days = Math.round((new Date(today) - new Date(i.due_date)) / 86400000);
+      return {
+        label: r ? r.label : (i.bill_name || '—'), meta: i.number + ' · due ' + fmtDay(i.due_date),
+        balanceFmt: fmtINR(Number(i.total || 0) - (rcv[i.id] || 0)),
+        lateLabel: days + (days === 1 ? ' day late' : ' days late'), _days: days,
+        canLog: this.can('moneyEdit'), logPayment: () => this.goLogPayment(i),
+      };
+    }).sort((a, b) => b._days - a._days);
+
+    const low = priced.filter(v => v._r.cost > 0 && v._mp < v._r.target).sort((a, b) => a._mp - b._mp).slice(0, 8)
+      .map(v => ({ label: v.label, meta: v.priceFmt + ' price · ' + v.costFmt + ' cost · target ' + pct(v._r.target),
+        marginFmt: v.marginFmt, marginColor: v.marginColor, open: v.open }));
+
+    return {
+      isFinOverview: true,
+      finKpisVM: [
+        { label: 'Receivable', value: fmtINR(receivable), color: receivable > 1 ? '#B4433A' : '#16231F', note: late ? late + (late === 1 ? ' job' : ' jobs') + ' with money out · GST incl.' : 'Nothing outstanding' },
+        { label: 'To bill now', value: fmtINR(dueNow), color: dueNow > 0 ? '#8A6D3B' : '#16231F', note: dueJobs ? dueJobs + (dueJobs === 1 ? ' project' : ' projects') + ' with lines due' : 'No sold lines due today' },
+        { label: 'Draft invoices', value: String(drafts.length), color: '#16231F', note: drafts.length ? fmtINR(drafts.reduce((t, i) => t + Number(i.total || 0), 0)) + ' raised, not sent' : 'None waiting' },
+        { label: 'Margin', value: fmtINR(mSum), color: mSum < 0 ? '#B4433A' : '#0A6E58', note: priced.length ? pct(pSum ? mSum / pSum * 100 : 0) + ' across ' + priced.length + ' priced ' + (priced.length === 1 ? 'project' : 'projects') : 'Price a project to see margin' },
+      ],
+      finBillingMissing: !!s.finBillingMissing,
+      finBillSoonVM: billSoon, finNoBillSoon: !billSoon.length,
+      finOverdueVM: overdue, finNoOverdue: !overdue.length,
+      finLowMarginVM: low, finHasLowMargin: low.length > 0,
+    };
+  }
+
+  finInvoicesVM() {
+    const s = this.state;
+    const today = this.toIso(new Date());
+    const rcv = {};
+    (s.finInvReceipts || []).forEach(r => { rcv[r.invoice_id] = (rcv[r.invoice_id] || 0) + Number(r.amount || 0); });
+    const nameOf = i => i.projects ? (i.projects.client_name || i.projects.project_title || '—')
+      : i.events ? (i.events.couple_names || '—') : (i.bill_name || '—');
+    const rows = (s.finInvList || []).map(i => {
+      const got = rcv[i.id] || 0, bal = Number(i.total || 0) - got;
+      const state = i.type === 'proforma' ? 'proforma' : i.status === 'draft' ? 'draft' : bal <= 1 ? 'paid' : 'unpaid';
+      return { i, got, bal, state, name: nameOf(i) };
+    });
+    const f = s.finInvFilter || 'unpaid';
+    const q = (s.finInvQuery || '').trim().toLowerCase();
+    const shown = rows.filter(x => (f === 'all' || x.state === f)
+      && (!q || [x.i.number, x.name, x.i.bill_name].filter(Boolean).join(' ').toLowerCase().includes(q)));
+    const count = k => rows.filter(x => k === 'all' || x.state === k).length;
+    const STATE = {
+      unpaid: ['Unpaid', '#F7E9E7', '#B4433A'], draft: ['Draft', '#EEEEEE', '#5C6864'],
+      paid: ['Paid', '#DDEFE8', '#0A6E58'], proforma: ['Proforma', '#EFE9DA', '#8A6D3B'],
+    };
+    const totalShown = shown.reduce((t, x) => t + Number(x.i.total || 0), 0);
+    const balShown = shown.filter(x => x.state === 'unpaid').reduce((t, x) => t + x.bal, 0);
+    return {
+      isFinInvoices: true,
+      finInvFilterVM: [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['all', 'All']].map(c =>
+        Object.assign({ label: c[1] + ' (' + count(c[0]) + ')', go: () => this.setState({ finInvFilter: c[0] }) }, this.finChip(f === c[0]))),
+      finInvQuery: s.finInvQuery || '', onFinInvQuery: e => this.setState({ finInvQuery: e.target.value }),
+      finInvSummary: shown.length + (shown.length === 1 ? ' invoice · ' : ' invoices · ') + fmtINR(totalShown)
+        + (balShown > 1 ? ' · ' + fmtINR(balShown) + ' outstanding' : ''),
+      finNoInvoices: !shown.length && !(s.finStatus || '').startsWith('Loading'),
+      finInvRowsVM: shown.map(x => {
+        const st = STATE[x.state];
+        const late = x.state === 'unpaid' && x.i.due_date && x.i.due_date < today;
+        return {
+          client: x.name, number: x.i.number,
+          dateLabel: 'Issued ' + fmtDay(x.i.issue_date) + (x.i.due_date ? ' · due ' + fmtDay(x.i.due_date) : ''),
+          dateColor: late ? '#B4433A' : '#67746F',
+          stateLabel: st[0], stateBg: st[1], stateColor: st[2],
+          totalFmt: fmtINR(x.i.total),
+          subLabel: x.state === 'proforma' ? 'Quote' : x.state === 'draft' ? 'Not sent' : x.got <= 0 ? 'Nothing received' : x.bal > 1 ? fmtINR(x.bal) + ' outstanding' : 'Received in full',
+          subColor: x.state === 'unpaid' ? '#B4433A' : '#67746F',
+          canLog: x.state === 'unpaid' && this.can('moneyEdit'),
+          logPayment: () => this.goLogPayment(x.i),
+          preview: () => this.openInvoicePreview(x.i),
+          open: () => this.openFinInvoiceParent(x.i),
+        };
+      }),
+    };
+  }
+
+  finPeopleVM() {
+    const s = this.state;
+    const q = (s.finPeopleQuery || '').trim().toLowerCase();
+    const adv = {};
+    (s.finAdvances || []).forEach(a => { adv[a.person_id] = (adv[a.person_id] || 0) + Number(a.amount || 0) - Number(a.recovered || 0); });
+    const rates = {};
+    (s.finRates || []).forEach(r => { (rates[r.person_id] = rates[r.person_id] || []).push(r); });
+    const missing = p => !p.upi_id && !(p.bank_account && p.bank_ifsc);
+    const active = (s.finPeopleRows || []).filter(p => p.active !== false);
+    const roleOf = r => ROLE_LABEL[r] || String(r || '').replace(/[-_]+/g, ' ');
+    const list = active.filter(p => (!s.finPeopleMissing || missing(p))
+      && (!q || [p.full_name, p.crew_id, roleOf(p.primary_role)].filter(Boolean).join(' ').toLowerCase().includes(q)));
+    const nMissing = active.filter(missing).length;
+    return {
+      isFinPeople: true,
+      finPeopleQuery: s.finPeopleQuery || '', onFinPeopleQuery: e => this.setState({ finPeopleQuery: e.target.value }),
+      finPeopleChipsVM: [
+        Object.assign({ label: 'Active (' + active.length + ')', go: () => this.setState({ finPeopleMissing: false }) }, this.finChip(!s.finPeopleMissing)),
+        Object.assign({ label: 'Missing pay details (' + nMissing + ')', go: () => this.setState({ finPeopleMissing: true }) }, this.finChip(!!s.finPeopleMissing)),
+      ],
+      finNoPeople: !list.length && !(s.finStatus || '').startsWith('Loading'),
+      finPeopleVM: list.map(p => {
+        const rs = rates[p.id] || [];
+        const owed = adv[p.id] || 0;
+        return {
+          name: p.full_name, meta: [p.crew_id, roleOf(p.primary_role), p.engagement].filter(Boolean).join(' · '),
+          payTo: p.upi_id ? 'UPI ' + p.upi_id
+            : p.bank_account ? (p.bank_name ? p.bank_name + ' · ' : '') + 'A/C …' + String(p.bank_account).slice(-4) + ' · ' + (p.bank_ifsc || 'no IFSC')
+            : 'No account or UPI on file',
+          payColor: missing(p) ? '#B4433A' : '#16231F',
+          rateLabel: Number(p.monthly_salary) > 0 ? fmtINR(p.monthly_salary) + ' / month'
+            : rs.length ? rs.slice(0, 2).map(r => r.label + ' ' + fmtINR(r.rate)).join(' · ') + (rs.length > 2 ? ' +' + (rs.length - 2) : '')
+            : Number(p.default_hourly_rate) > 0 ? fmtINR(p.default_hourly_rate) + ' / hour' : 'No rate on file',
+          advLabel: owed > 1 ? fmtINR(owed) : '—', advColor: owed > 1 ? '#8A6D3B' : '#67746F',
+          canOpen: this.can('people'), open: () => this.openFinPerson(p),
+        };
+      }),
+    };
+  }
+
+  // Studio's view of sub-shoots: the day, not the money.
+  shootsVM() {
+    const s = this.state;
+    const parents = this.spendParents();
+    const key = s.spendParent || '';
+    const parent = parents.find(p => p.key === key) || null;
+    const shoots = parent ? (s.spendShoots || []).filter(sh => this.spendBelongs(sh, parent)) : [];
+    const sf = s.shootForm || {};
+    const ef = s.editShootForm || {};
+    const canEdit = this.can('shootEdit');
+    const set = (form, k) => e => this.setSpendField(form, k, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
+    return {
+      isShoots: true,
+      svStatus: s.spendStatus || '', svStatusColor: s.spendStatusOk ? 'var(--green-deep)' : '#B4433A',
+      svJobOptsVM: [{ value: '', label: 'Pick a job…' }].concat(parents.map(p => ({
+        value: p.key, label: p.label + (p.work ? ' — ' + p.work : '') + (p.divisionLabel ? ' · ' + p.divisionLabel : ''),
+      }))),
+      svJob: key, onSvJob: e => this.setState({ spendParent: e.target.value, spendStatus: '', editShootId: null, editShootForm: null }),
+      svHasJob: !!parent, svEmpty: !!parent && !shoots.length,
+      svKindOptsVM: SHOOT_KINDS.map(k => ({ value: k[0], label: k[1] })),
+      svListVM: shoots.map(sh => {
+        const k = SHOOT_KINDS.find(x => x[0] === sh.kind) || [sh.kind, sh.kind, '#F4F6F5', '#5C6864'];
+        return {
+          title: sh.title, kindLabel: k[1], kindBg: k[2], kindColor: k[3],
+          meta: [sh.shoot_date ? fmtDay(sh.shoot_date) : 'No date', sh.location, sh.brief].filter(Boolean).join(' · '),
+          canEdit, edit: () => this.startEditShoot(sh), isEditing: canEdit && s.editShootId === sh.id,
+          edTitle: ef.title || '', onEdTitle: set('editShootForm', 'title'),
+          edKind: ef.kind || 'trial', onEdKind: set('editShootForm', 'kind'),
+          edDate: ef.shoot_date || '', onEdDate: set('editShootForm', 'shoot_date'),
+          edLocation: ef.location || '', onEdLocation: set('editShootForm', 'location'),
+          edBrief: ef.brief || '', onEdBrief: set('editShootForm', 'brief'),
+          saveEdit: () => this.saveEditShoot(),
+          cancelEdit: () => this.setState({ editShootId: null, editShootForm: null, spendStatus: '' }),
+        };
+      }),
+      svCanAdd: canEdit,
+      svTitle: sf.title || '', onSvTitle: set('shootForm', 'title'),
+      svKind: sf.kind || 'trial', onSvKind: set('shootForm', 'kind'),
+      svDate: sf.shoot_date || '', onSvDate: set('shootForm', 'shoot_date'),
+      svLocation: sf.location || '', onSvLocation: set('shootForm', 'location'),
+      svBrief: sf.brief || '', onSvBrief: set('shootForm', 'brief'),
+      svBillable: !!sf.billable, onSvBillable: set('shootForm', 'billable'),
+      svAdd: () => this.addShoot(),
+    };
+  }
+
+  // ---- Project pricing: sold lines, cost, margin ---------------------------------
+  //
+  // A line is one commitment: qty × unit price over a date window, billed once,
+  // on its start or end date. See billing-schema.sql for the rules the database
+  // enforces (a line on an issued invoice is frozen).
+
+  blankPriceLine() {
+    return { id: null, category: 'posts', description: '', qty: '1', unit: 'post', unit_cost: '', unit_price: '', start_date: '', end_date: '', bill_at: 'end' };
+  }
+
+  async loadPricing(projectId) {
+    const [l, v] = await Promise.all([
+      this.sb.from('project_price_lines').select('*').eq('project_id', projectId).order('sort').order('created_at'),
+      this.sb.from('project_billing').select('*').eq('project_id', projectId).maybeSingle(),
+    ]);
+    if (!this.state.current || this.state.current.id !== projectId) return;
+    if (l.error) {
+      const missing = /project_price_lines|does not exist|schema cache/i.test(l.error.message || '');
+      this.setState({ priceLines: [], pricingSummary: null, plMissing: missing, plStatus: missing ? '' : l.error.message });
+      return;
+    }
+    this.setState({ priceLines: l.data || [], pricingSummary: v.error ? null : v.data, plMissing: false });
+  }
+
+  setPl(field, val) {
+    const f = { ...(this.state.plForm || this.blankPriceLine()), [field]: val };
+    // Follow the category with its natural unit, unless someone typed their own.
+    if (field === 'category' && (!this.state.plForm || this.state.plForm.unit === PL_UNITS[this.state.plForm.category])) f.unit = PL_UNITS[val] || 'unit';
+    this.setState({ plForm: f });
+  }
+
+  plFlash(msg) {
+    this.setState({ plStatus: msg });
+    clearTimeout(this._plT);
+    this._plT = setTimeout(() => this.setState({ plStatus: '' }), 3500);
+  }
+
+  lineFrozen(line) {
+    if (!line.invoice_id) return false;
+    const inv = (this.state.invoices || []).find(i => i.id === line.invoice_id);
+    return !inv || inv.status !== 'draft';
+  }
+
+  async savePriceLine() {
+    const s = this.state, pr = s.current, f = s.plForm;
+    if (!pr || !f) return;
+    const qty = Number(f.qty), price = Number(f.unit_price || 0), cost = Number(f.unit_cost || 0);
+    // A blank description falls back to the type, so the button never looks dead.
+    const desc = (f.description || '').trim() || (PL_CATS[f.category] || 'Item');
+    if (!(qty > 0)) return this.plFlash('Quantity must be more than zero.');
+    if (price < 0 || cost < 0) return this.plFlash('Amounts cannot be negative.');
+    if (f.start_date && f.end_date && f.end_date < f.start_date) return this.plFlash('The end date is before the start date.');
+    const row = {
+      project_id: pr.id, category: f.category, description: desc,
+      qty, unit: (f.unit || 'unit').trim(), unit_cost: cost, unit_price: price,
+      start_date: f.start_date || null, end_date: f.end_date || null, bill_at: f.bill_at,
+    };
+    this.setState({ plBusy: true });
+    const res = f.id
+      ? await this.sb.from('project_price_lines').update(row).eq('id', f.id)
+      : await this.sb.from('project_price_lines').insert({ ...row, sort: (s.priceLines || []).length });
+    this.setState({ plBusy: false });
+    if (res.error) {
+      return this.plFlash(/project_price_lines|schema cache/i.test(res.error.message || '') ? 'Run album-system/billing-schema.sql in Supabase first.' : res.error.message);
+    }
+    this.setState({ plForm: this.blankPriceLine(), plShowForm: false });
+    const undated = f.bill_at === 'start' ? !f.start_date : !f.end_date;
+    this.plFlash((f.id ? 'Line updated.' : 'Line added.') + (undated ? ' Set its ' + (f.bill_at === 'start' ? 'From' : 'Till') + ' date before it can be invoiced.' : ''));
+    this.loadPricing(pr.id);
+  }
+
+  editPriceLine(line) {
+    if (this.lineFrozen(line)) return this.plFlash('This line is on an issued invoice. Add a new line, or raise a credit note.');
+    this.setState({ plShowForm: true, plForm: {
+      id: line.id, category: line.category, description: line.description, qty: String(line.qty), unit: line.unit,
+      unit_cost: String(line.unit_cost), unit_price: String(line.unit_price),
+      start_date: line.start_date || '', end_date: line.end_date || '', bill_at: line.bill_at,
+    } });
+  }
+
+  async removePriceLine(line) {
+    if (this.lineFrozen(line)) return this.plFlash('This line is on an issued invoice — it cannot be removed.');
+    if (!window.confirm('Remove "' + line.description + '"?')) return;
+    const { error } = await this.sb.from('project_price_lines').delete().eq('id', line.id);
+    if (error) return this.plFlash(error.message);
+    this.loadPricing(this.state.current.id);
+  }
+
+  async savePricingTerms() {
+    const s = this.state, pr = s.current;
+    const override = s.plCostOverride === '' ? null : Number(s.plCostOverride);
+    const target = s.plTargetMargin === '' ? 30 : Number(s.plTargetMargin);
+    if (override != null && !(override >= 0)) return this.plFlash('Cost must be zero or more.');
+    if (!(target >= 0 && target < 100)) return this.plFlash('Target margin must be between 0 and 99%.');
+    const { error } = await this.sb.from('projects').update({ cost_override: override, target_margin_pct: target }).eq('id', pr.id);
+    if (error) return this.plFlash(/cost_override|target_margin/i.test(error.message || '') ? 'Run album-system/billing-schema.sql in Supabase first.' : error.message);
+    this.setState({ current: { ...pr, cost_override: override, target_margin_pct: target } });
+    this.plFlash('Saved.');
+    this.loadPricing(pr.id);
+  }
+
+  priceLineDesc(l) {
+    const q = Number(l.qty);
+    const unit = q === 1 ? l.unit : (/s$/i.test(l.unit) ? l.unit : l.unit + 's');
+    const range = l.start_date && l.end_date ? ' (' + fmtDay(l.start_date) + ' – ' + fmtDay(l.end_date) + ')'
+      : l.end_date ? ' (till ' + fmtDay(l.end_date) + ')' : l.start_date ? ' (from ' + fmtDay(l.start_date) + ')' : '';
+    return l.description + ' — ' + q.toLocaleString('en-IN') + ' ' + unit + ' × ' + fmtINR(l.unit_price) + range;
+  }
+
+  // Every unbilled line due on or before the cut-off becomes one invoice. The
+  // lines are stamped only if all of them are still free; otherwise the invoice
+  // is withdrawn, so two people pressing at once cannot bill a line twice.
+  async invoiceDueLines() {
+    const s = this.state, pr = s.current;
+    const cutoff = s.plCutoff || this.toIso(new Date());
+    const due = (s.priceLines || []).filter(l => !l.invoice_id && l.bill_on && l.bill_on <= cutoff);
+    if (!due.length) return this.plFlash('Nothing unbilled is due by ' + fmtDay(cutoff) + '.');
+    const name = s.editClientName || pr.client_name;
+    if (!name) return this.plFlash('Add and save a client name first.');
+    this.setState({ plBusy: true, plStatus: 'Generating…' });
+    try {
+      const lineItems = due.map(l => ({ desc: this.priceLineDesc(l), amount: Number(l.amount) }));
+      const clientState = (s.editClientState || pr.client_state || '').trim();
+      const t = this.invoiceTotals(lineItems, 0, clientState, s.newInvGstOverride);
+      const type = s.newInvType || 'tax';
+      const number = await this.nextInvoiceNumber(type);
+      const terms = Number(pr.payment_terms_days == null ? 7 : pr.payment_terms_days);
+      const today = this.toIso(new Date());
+      const { data: inv, error } = await this.sb.from('invoices').insert({
+        project_id: pr.id, type, number, status: 'draft', issue_date: today, due_date: this.addDays(today, terms),
+        bill_name: name, bill_couple: pr.project_title || pr.client_name,
+        bill_gstin: s.editClientGstin || pr.client_gstin || '', bill_pan: s.editClientPan || pr.client_pan || '',
+        bill_email: s.editClientEmail || pr.client_email || '', place_of_supply: clientState || '—',
+        gst_mode: t.gstMode, gst_rate: t.rate, line_items: lineItems,
+        discount: 0, subtotal: t.subtotal, taxable_value: t.taxable,
+        cgst_amount: t.cgst, sgst_amount: t.sgst, igst_amount: t.igst, total: t.total,
+        advance_pct: 0, advance_amount: 0, balance_amount: t.total,
+        notes: 'Payment due by ' + fmtDay(this.addDays(today, terms)) + '.',
+      }).select('id').single();
+      if (error) throw error;
+      const ids = due.map(l => l.id);
+      const { data: stamped, error: sErr } = await this.sb.from('project_price_lines')
+        .update({ invoice_id: inv.id }).in('id', ids).is('invoice_id', null).select('id');
+      if (sErr || !stamped || stamped.length !== ids.length) {
+        await this.sb.from('invoices').delete().eq('id', inv.id);
+        throw new Error(sErr ? sErr.message : 'Some of these lines were billed meanwhile — nothing was created. Refresh and try again.');
+      }
+      this.plFlash('Generated ' + number + ' · ' + due.length + (due.length === 1 ? ' line' : ' lines') + ' · ' + fmtINR(t.total) + ' incl. GST.');
+      this.loadInvoices(pr.id, pr);
+      this.loadPricing(pr.id);
+    } catch (e) {
+      this.plFlash(e.message || 'Failed to generate.');
+    }
+    this.setState({ plBusy: false });
+  }
+
+  pricingVM() {
+    const s = this.state, pr = s.current;
+    if (!pr || pr._table !== 'projects' || !this.can('billing')) return { showPricing: false };
+    const lines = s.priceLines || [];
+    const today = this.toIso(new Date());
+    const cutoff = s.plCutoff || today;
+    const f = s.plForm || this.blankPriceLine();
+    const canEdit = this.can('pricingEdit');
+    const invById = {};
+    (s.invoices || []).forEach(i => { invById[i.id] = i; });
+    const sum = (arr, k) => arr.reduce((t, l) => t + Number(l[k] || 0), 0);
+    const price = lines.length ? sum(lines, 'amount') : Number(pr.package_price || 0);
+    const costPlanned = sum(lines, 'cost_total');
+    const v = s.pricingSummary || {};
+    const costLedger = Number(v.cost_expenses || 0) + Number(v.cost_crew || 0);
+    const hasOverride = pr.cost_override != null;
+    const costActual = hasOverride ? Number(pr.cost_override) : costLedger;
+    const margin = price - costActual;
+    const marginPct = price > 0 ? margin / price * 100 : 0;
+    const target = Number(pr.target_margin_pct == null ? 30 : pr.target_margin_pct);
+    const costBasis = Math.max(costActual, costPlanned);
+    const suggested = costBasis > 0 && target < 100 ? costBasis / (1 - target / 100) : 0;
+    const unbilled = lines.filter(l => !l.invoice_id);
+    const dueNow = unbilled.filter(l => l.bill_on && l.bill_on <= today);
+    const dueCut = unbilled.filter(l => l.bill_on && l.bill_on <= cutoff);
+    const dueCutAmt = sum(dueCut, 'amount');
+    const pctFmt = n => (Math.round(n * 10) / 10).toLocaleString('en-IN') + '%';
+
+    const linesVM = lines.map(l => {
+      const inv = l.invoice_id ? invById[l.invoice_id] : null;
+      const frozen = this.lineFrozen(l);
+      const lm = Number(l.amount) > 0 ? (Number(l.amount) - Number(l.cost_total)) / Number(l.amount) * 100 : 0;
+      const state = l.invoice_id ? 'billed' : !l.bill_on ? 'undated' : l.bill_on <= today ? 'due' : 'upcoming';
+      const q = Number(l.qty);
+      return {
+        id: l.id,
+        catLabel: PL_CATS[l.category] || 'Other',
+        description: l.description,
+        qtyLabel: q.toLocaleString('en-IN') + ' ' + (q === 1 ? l.unit : (/s$/i.test(l.unit) ? l.unit : l.unit + 's')) + ' × ' + fmtINR(l.unit_price),
+        amountFmt: fmtINR(l.amount),
+        costLabel: Number(l.cost_total) > 0 ? 'Cost ' + fmtINR(l.cost_total) + ' · margin ' + pctFmt(lm) : 'No cost entered',
+        dateLabel: (l.start_date ? fmtDay(l.start_date) : '—') + ' → ' + (l.end_date ? fmtDay(l.end_date) : '—'),
+        stateLabel: state === 'billed' ? (inv ? inv.number + ' · ' + inv.status : 'Billed')
+          : state === 'due' ? 'Due ' + fmtDay(l.bill_on) : state === 'upcoming' ? 'Bills ' + fmtDay(l.bill_on) : 'No bill date',
+        stateBg: state === 'billed' ? '#DDEFE8' : state === 'due' ? '#F7E9E7' : '#F1F4F3',
+        stateColor: state === 'billed' ? '#0A6E58' : state === 'due' ? '#B4433A' : '#5C6864',
+        canChange: canEdit && !frozen,
+        edit: () => this.editPriceLine(l),
+        remove: () => this.removePriceLine(l),
+      };
+    });
+
+    const fields = ['category', 'description', 'qty', 'unit', 'unit_cost', 'unit_price', 'start_date', 'end_date', 'bill_at'];
+    const handlers = {};
+    fields.forEach(k => { handlers['onPl_' + k] = e => this.setPl(k, e.target.value); });
+    const fq = Number(f.qty || 0), fp = Number(f.unit_price || 0), fc = Number(f.unit_cost || 0);
+
+    return {
+      showPricing: true, plMissing: !!s.plMissing, plReady: !s.plMissing, plCanEdit: canEdit,
+      plStatus: s.plStatus || '',
+      plPriceFmt: fmtINR(price),
+      plPriceSub: lines.length ? lines.length + (lines.length === 1 ? ' line' : ' lines') + ' · before GST' : 'Package price · no lines yet',
+      plCostFmt: fmtINR(costActual),
+      plCostSub: hasOverride ? 'Entered by hand · ledgers say ' + fmtINR(costLedger)
+        : 'Expenses ' + fmtINR(v.cost_expenses) + ' · crew ' + fmtINR(v.cost_crew) + (costPlanned ? ' · planned ' + fmtINR(costPlanned) : ''),
+      plMarginFmt: fmtINR(margin),
+      plMarginSub: price > 0 ? pctFmt(marginPct) + ' of price · target ' + pctFmt(target) : 'Set a price to see margin',
+      plMarginColor: margin < 0 ? '#B4433A' : marginPct < target ? '#8A6D3B' : '#0A6E58',
+      plUnbilledFmt: fmtINR(sum(unbilled, 'amount')),
+      plUnbilledSub: dueNow.length ? fmtINR(sum(dueNow, 'amount')) + ' due now · billed ' + fmtINR(sum(lines.filter(l => l.invoice_id), 'amount'))
+        : 'Nothing due today · billed ' + fmtINR(sum(lines.filter(l => l.invoice_id), 'amount')),
+      plSuggestLabel: suggested > 0 ? 'At ' + pctFmt(target) + ' margin on ' + fmtINR(costBasis) + ' cost, price at least ' + fmtINR(suggested) + '.' : '',
+      plHasSuggest: suggested > 0,
+      plCostOverride: s.plCostOverride, plTargetMargin: s.plTargetMargin,
+      onPlCostOverride: e => this.setState({ plCostOverride: e.target.value }),
+      onPlTargetMargin: e => this.setState({ plTargetMargin: e.target.value }),
+      savePricingTerms: () => this.savePricingTerms(),
+      plLines: linesVM, plHasLines: linesVM.length > 0, plNoLines: linesVM.length === 0,
+      plShowForm: !!s.plShowForm && canEdit,
+      plShowAddBtn: !s.plShowForm && canEdit,
+      plOpenForm: () => this.setState({ plShowForm: true, plForm: this.blankPriceLine() }),
+      plCancelForm: () => this.setState({ plShowForm: false, plForm: this.blankPriceLine() }),
+      plFormTitle: f.id ? 'Edit line' : 'New line',
+      plF: { ...f },
+      plFormTotal: fq > 0 ? fmtINR(fq * fp) + ' to client · ' + fmtINR(fq * fc) + ' cost' + (fq * fp > 0 ? ' · margin ' + pctFmt((fp - fc) / (fp || 1) * 100) : '') : '',
+      ...handlers,
+      savePriceLine: () => this.savePriceLine(),
+      plSaveLabel: s.plBusy ? 'Saving…' : (f.id ? 'Update line' : 'Add line'),
+      plCutoff: cutoff,
+      onPlCutoff: e => this.setState({ plCutoff: e.target.value }),
+      plDueCount: dueCut.length,
+      plHasDue: dueCut.length > 0 && canEdit,
+      plDueLabel: s.plBusy ? 'Working…' : 'Invoice ' + dueCut.length + (dueCut.length === 1 ? ' line' : ' lines') + ' · ' + fmtINR(dueCutAmt),
+      plNoDueLabel: dueCut.length ? '' : 'No unbilled lines due by ' + fmtDay(cutoff) + '.',
+      invoiceDueLines: () => !s.plBusy && this.invoiceDueLines(),
+    };
+  }
+
   // ---- Retainer contracts ------------------------------------------------------
 
   // Its own save, so the billing schedule is only ever built from a stored
@@ -6630,6 +8180,8 @@ class Component extends DCLogic {
       return;
     }
     this.loadInvoices(this.state.current.id);
+    // A deleted invoice releases its lines (on delete set null); show them as unbilled again.
+    if (this.state.current && this.state.current._table === 'projects') this.loadPricing(this.state.current.id);
   }
 
   async getInvoicePdfBlob() {
@@ -9983,6 +11535,8 @@ class Component extends DCLogic {
   // and event lists cannot have moved, and refetching them was two extra
   // round trips on every tick of a checkbox.
   async loadSpendRows() {
+    // Studio's shoots page has no read on expenses; it reloads its own lists.
+    if (this.state.view === 'shoots') return this.loadShootsOnly();
     const [sh, ex] = await Promise.all([
       this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).limit(1000),
       this.sb.from('expenses').select('*').order('spend_date', { ascending: false }).limit(3000),
@@ -10578,7 +12132,7 @@ class Component extends DCLogic {
         }
         if (parentKey) { this.setState({ spendParent: '', spendStatus: '' }); return; }
         if (s.spendSearch || divFilter) { this.setState({ spendSearch: '', spendDivision: '', spendStatus: '' }); return; }
-        this.goWorkspace('dashboard');
+        this.goWorkspace(this.activeWorkspace() === 'finance' ? 'finance' : 'dashboard');
       },
       spendBackLabel: (s.editExpenseId || s.editShootId) ? '← Close editor'
         : parentKey ? '← All jobs'
@@ -11517,25 +13071,31 @@ class Component extends DCLogic {
     // A person is "booked" while any assigned event is still in production.
     const openWork = s.workload.filter(w => w.events && !this.isDelivered(w.events));
 
+    const ws = this.activeWorkspace();
     const nav = [];
-    if (this.can('albums')) nav.push({ key: 'dashboard', label: s.division && s.division !== 'wedding' ? 'Projects' : 'Albums' });
-    if (this.can('albums')) nav.push({ key: 'schedule', label: 'Schedule' });
-    if (this.can('people')) nav.push({ key: 'people', label: 'People' });
-    // Creative holds the roster but not the staff records, so for them the
-    // roster cannot hide as a tab inside People — it has to be its own way in.
-    if (this.can('talent') && !this.can('people')) nav.push({ key: 'talent', label: 'Freelance' });
-    if (this.can('payouts')) nav.push({ key: 'payouts', label: 'Payouts' });
-    if (this.can('money')) nav.push({ key: 'money', label: 'Money in' });
-    if (this.can('spend')) nav.push({ key: 'spend', label: 'Accounts' });
-    // Only inside the division it belongs to — the other four divisions have no
-    // ad accounts, and a permanently empty tab is worse than no tab.
-    if (this.can('digital') && s.division === 'digital') nav.push({ key: 'digital', label: 'Digital' });
     const pendingRequests = s.changeRequests.filter(r => r.status === 'pending').length;
-    if (this.can('peopleApprove')) nav.push({ key: 'approvals', label: 'Approvals' + (pendingRequests ? ' (' + pendingRequests + ')' : '') });
-    // The freelance roster is a tab inside People, not its own nav item, so the
-    // People button has to stay lit while that tab is open — otherwise nothing
-    // in the nav looks selected and the page reads as orphaned.
-    const navKey = (s.view === 'talent' && this.can('people')) ? 'people' : s.view;
+    if (ws === 'finance') {
+      nav.push({ key: 'finance', label: 'Overview' }, { key: 'finMaster', label: 'Master' }, { key: 'finProjects', label: 'Projects & pricing' }, { key: 'finInvoices', label: 'Invoices' });
+      if (this.can('money')) nav.push({ key: 'money', label: 'Money in' });
+      if (this.can('payouts')) nav.push({ key: 'payouts', label: 'Payouts' });
+      if (this.can('spend')) nav.push({ key: 'spend', label: 'Expenses & shoots' });
+      nav.push({ key: 'finPeople', label: 'People pay' });
+    } else {
+      if (this.can('albums')) nav.push({ key: 'dashboard', label: s.division && s.division !== 'wedding' ? 'Projects' : 'Albums' });
+      if (this.can('albums')) nav.push({ key: 'schedule', label: 'Schedule' });
+      if (this.can('people')) nav.push({ key: 'people', label: 'People' });
+      // Creative holds the roster but not the staff records, so for them the
+      // roster cannot hide as a tab inside People — it has to be its own way in.
+      if (this.can('talent') && !this.can('people')) nav.push({ key: 'talent', label: 'Freelance' });
+      // Creative books trials and recces; Finance logs what they cost.
+      if (this.can('shootEdit') && !this.can('finance')) nav.push({ key: 'shoots', label: 'Shoots' });
+      // Only inside the division it belongs to.
+      if (this.can('digital') && s.division === 'digital') nav.push({ key: 'digital', label: 'Digital' });
+      if (this.can('peopleApprove')) nav.push({ key: 'approvals', label: 'Approvals' + (pendingRequests ? ' (' + pendingRequests + ')' : '') });
+    }
+    // A pay profile opened from Finance is still Finance's People pay.
+    const navKey = (s.view === 'talent' && this.can('people')) ? 'people'
+      : (ws === 'finance' && s.view === 'people') ? 'finPeople' : s.view;
     const navVM = nav.map(n => ({
       label: n.label, go: () => this.goWorkspace(n.key),
       bg: navKey === n.key ? 'var(--green)' : 'none',
@@ -11544,12 +13104,16 @@ class Component extends DCLogic {
     }));
 
     const tabs = [];
-    if (this.can('media')) tabs.push({ key: 'album', label: 'Album' });
-    if (this.can('people')) tabs.push({ key: 'crew', label: 'Crew & cost' });
-    if (this.can('billing')) tabs.push({ key: 'billing', label: 'Billing & invoices' });
+    const inFinance = ws === 'finance';
+    if (inFinance) {
+      if (this.can('billing')) tabs.push({ key: 'billing', label: 'Pricing & invoices' });
+    } else {
+      if (this.can('media')) tabs.push({ key: 'album', label: 'Album' });
+      if (this.can('people')) tabs.push({ key: 'crew', label: 'Crew & cost' });
+    }
     // A digital client is an account to run, not an album to deliver, so its
     // platform access and credentials belong on the client record itself.
-    if (this.parentTable() === 'projects' && this.divisionsOf(s.current).indexOf('digital') !== -1 && this.can('digital')) {
+    if (!inFinance && this.parentTable() === 'projects' && this.divisionsOf(s.current).indexOf('digital') !== -1 && this.can('digital')) {
       tabs.push({ key: 'access', label: 'Accounts & access' });
     }
     const editorTabsVM = tabs.map(t => ({
@@ -12523,7 +14087,7 @@ class Component extends DCLogic {
         color: s.view === pair[0] ? 'var(--green-deep)' : '#67746F',
       })),
 
-      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital'),
+      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || FIN_VIEWS.indexOf(s.view) !== -1),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       isMoney: onMoney,
       isApprovals: s.view === 'approvals',
@@ -12987,9 +14551,13 @@ class Component extends DCLogic {
       isPublishUnknown: !!s.current && s.current.published === undefined,
       togglePublish: () => this.togglePublish(),
       previewLabel: this.parentTable() === 'projects' ? 'Preview project' : 'Preview album',
-      backLabel: s.editorFrom === 'schedule' ? '← Schedule'
+      backLabel: s.editorFrom === 'finance' ? '← Overview'
+        : s.editorFrom === 'finProjects' ? '← Projects & pricing'
+        : s.editorFrom === 'finMaster' ? '← Master'
+        : s.editorFrom === 'finInvoices' ? '← Invoices'
+        : s.editorFrom === 'schedule' ? '← Schedule'
         : s.editorFrom === 'money' ? '← Money in'
-        : s.editorFrom === 'spend' ? '← Accounts'
+        : s.editorFrom === 'spend' ? '← Expenses'
         : s.editorFrom === 'payouts' ? '← Payouts'
         : s.editorFrom === 'people' || s.editorFrom === 'talent' ? '← People'
         : this.parentTable() === 'projects' ? '← All projects' : '← All events',
@@ -13074,6 +14642,8 @@ class Component extends DCLogic {
 
       ...this.projectDivisionsVM(),
       ...this.accessTabVM(),
+      ...this.pricingVM(),
+      ...this.financeVM(),
       isAlbumTab: s.editorTab === 'album' && this.can('media'),
       isBillingTab: s.editorTab === 'billing' && this.can('billing'),
       isWeddingAlbumTab: s.editorTab === 'album' && this.can('media') && this.parentTable() !== 'projects',
