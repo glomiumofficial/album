@@ -227,10 +227,32 @@ a:hover { color: #10AF8B; }
     </button>
   </div>
 
+  <sc-if value="{{ loaderOn }}" hint-placeholder-val="{{ true }}">
+    <div ref="{{ loaderRef }}" style="position: fixed; inset: 0; z-index: 200; background: #FFFFFF; clip-path: inset(0% 0% 0% 0%); transition: clip-path 1.1s cubic-bezier(.77,0,.18,1); display: flex; flex-direction: column; justify-content: space-between; padding: 22px clamp(20px, 4vw, 56px) clamp(28px, 5vh, 48px); box-sizing: border-box; overflow: hidden;">
+      <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(62vw 62vw at 12% 8%, rgba(16,175,139,0.13), transparent 65%), radial-gradient(52vw 52vw at 92% 86%, rgba(16,175,139,0.08), transparent 65%);"></div>
+      <div style="position: relative; display: flex; justify-content: space-between; align-items: center; gap: 24px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
+        <img src="assets/wordmark-green.png" alt="glomium" style="height: 20px; width: auto;">
+        <span>a private reel</span>
+      </div>
+      <div style="position: relative; display: flex; justify-content: center;">
+        <img ref="{{ loadMarkRef }}" src="assets/infinity.svg" alt="" style="width: clamp(72px, 8vw, 120px); height: auto;">
+      </div>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;">
+          <span ref="{{ loadNumRef }}" style="font-weight: 200; font-size: clamp(64px, 12vw, 200px); line-height: 0.8; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; color: #1B1D1E;">000</span>
+          <span ref="{{ loadLabelRef }}" style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390; text-align: right;">preparing the reel</span>
+        </div>
+        <div style="position: relative; height: 1px; background: #E2E7E5; overflow: hidden;">
+          <div ref="{{ loadBarRef }}" style="position: absolute; inset: 0; background: #10AF8B; transform-origin: left; transform: scaleX(0);"></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <div ref="{{ cursorRef }}" style="position: fixed; left: 0; top: 0; z-index: 80; width: 92px; height: 92px; border-radius: 50%; background: #10AF8B; color: #FFFFFF; display: grid; place-items: center; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: none; transform: translate3d(-200px, -200px, 0) scale(0);">open</div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;workCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:3,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;content&quot;},&quot;hud&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;look&quot;},&quot;smooth&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;drift&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;workCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:3,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;content&quot;},&quot;hud&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;look&quot;},&quot;preload&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;smooth&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;drift&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;}}">
 class Component extends DCLogic {
   state = { active: null };
   S = { hero: 0, wl: 0, wm: 0, ws: 0, bts: 0, mx: 0, my: 0, tmx: 0, tmy: 0, cx: -200, cy: -200, tx: -200, ty: -200, ring: 0, tring: 0 };
@@ -242,7 +264,7 @@ class Component extends DCLogic {
     super(p);
     ['rootRef', 'headerRef', 'logoGreenRef', 'logoWhiteRef', 'heroRef', 'filmBaseRef', 'filmUiRef', 'knockRef', 'heroOverlayRef', 'cueRef',
      'worksRef', 'sceneRef', 'worksTitleRef', 'counterRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
-     'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef', 'cursorRef'].forEach(k => { this[k] = React.createRef(); });
+     'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef', 'cursorRef', 'loaderRef', 'loadNumRef', 'loadBarRef', 'loadLabelRef', 'loadMarkRef'].forEach(k => { this[k] = React.createRef(); });
   }
 
   componentDidMount() {
@@ -272,11 +294,11 @@ class Component extends DCLogic {
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.measure());
     setTimeout(() => this.measure(), 600);
     this.onHash();
-    this.loadDb();
-    this.intro();
+    this.boot();
     this.raf = requestAnimationFrame(this.tick);
   }
   componentWillUnmount() {
+    this.unmounted = true;
     cancelAnimationFrame(this.raf);
     removeEventListener('mousemove', this.onMove);
     removeEventListener('keydown', this.onKey);
@@ -343,6 +365,15 @@ class Component extends DCLogic {
 
   tick = (t) => {
     this.raf = requestAnimationFrame(this.tick);
+    const Ld = this.L;
+    if (Ld && !this.state.loaderGone && this.loadNumRef.current) {
+      const target = Ld.total ? Math.min(1, Ld.done / Ld.total) : 0;
+      Ld.shown += (target - Ld.shown) * 0.08;
+      if (target >= 1 && Ld.shown > 0.995) Ld.shown = 1;
+      const num = String(Math.round(Ld.shown * 100)).padStart(3, '0');
+      if (this.loadNumRef.current.textContent !== num) this.loadNumRef.current.textContent = num;
+      if (this.loadBarRef.current) this.loadBarRef.current.style.transform = `scaleX(${Ld.shown})`;
+    }
     const vw = innerWidth, vh = innerHeight, S = this.S;
     const sm = (this.props.smooth ?? true) ? 0.09 : 1;
     const cl = v => v < 0 ? 0 : v > 1 ? 1 : v;
@@ -459,6 +490,86 @@ class Component extends DCLogic {
   };
 
   pad(n) { return String(n).padStart(2, '0'); }
+  // Loader: hold the page until the first screen's media is in cache,
+  // capped so a slow connection still gets in.
+  async boot() {
+    const on = this.props.preload ?? true;
+    this.L = { done: 0, total: 2, shown: 0, t0: performance.now(), finished: !on };
+    if (!on) { this.loadDb().then(() => this.prefetchRest()); this.intro(); return; }
+    try { scrollTo(0, 0); } catch (e) {}
+    document.body.style.overflow = 'hidden';
+    const mk = this.loadMarkRef.current;
+    if (mk && mk.animate) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const bump = () => { this.L.done++; };
+    const fonts = (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(bump, bump);
+    await Promise.race([this.loadDb(), sleep(8000)]); bump();
+    const db = this.state.db || { works: [], media: [] };
+    const urls = [];
+    db.works.forEach(w => urls.push(w.cover_url || w.cover_grid_url));
+    db.media.forEach(m => { if (m.section === 'bts' && !m.work_id) urls.push(m.kind === 'video' ? m.poster_url : (m.url || m.url_grid)); });
+    const reel = db.media.filter(m => m.section === 'reel').slice(-1)[0];
+    if (reel) urls.push(reel.kind === 'photo' ? reel.url : reel.poster_url);
+    const list = Array.from(new Set(urls.filter(Boolean)));
+    const film = reel && reel.kind === 'video';
+    this.L.total += list.length + (film ? 4 : 0);
+    const img = u => new Promise(res => {
+      const i = new Image(); i.decoding = 'async';
+      i.onload = () => (i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(res);
+      i.onerror = res; i.src = u;
+    }).then(bump);
+    const jobs = [fonts].concat(list.map(img));
+    if (film) jobs.push(this.waitReel().then(() => { this.L.done += 4; }));
+    await Promise.race([Promise.all(jobs), sleep(14000)]);
+    await sleep(Math.max(0, 1400 - (performance.now() - this.L.t0)));
+    this.L.done = this.L.total;
+    await sleep(750);
+    this.finishLoad();
+  }
+  waitReel() {
+    return new Promise(res => {
+      const t0 = Date.now();
+      const check = () => {
+        const v = this.reelEl;
+        if (v) {
+          if (v.readyState >= 4) return res();
+          v.addEventListener('canplaythrough', () => res(), { once: true });
+          v.addEventListener('error', () => res(), { once: true });
+          return;
+        }
+        if (Date.now() - t0 > 3000) return res();
+        setTimeout(check, 100);
+      };
+      check();
+    });
+  }
+  finishLoad() {
+    if (this.L.finished || this.unmounted) return;
+    this.L.finished = true;
+    document.body.style.overflow = this.state.active != null ? 'hidden' : '';
+    if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
+    if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
+    this.measure();
+    this.intro();
+    const v = this.reelEl;
+    if (v && v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+    setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); } }, 1200);
+  }
+  // After the reveal, warm every case page's images one at a time.
+  async prefetchRest() {
+    const db = this.state.db;
+    if (!db) return;
+    const urls = [];
+    db.works.forEach(w => urls.push(w.film_poster_url, w.cover_url));
+    db.media.forEach(m => {
+      if (m.section === 'still') urls.push(m.url || m.url_grid);
+      if (m.section === 'case_bts') urls.push(m.kind === 'video' ? m.poster_url : (m.url_grid || m.url));
+    });
+    for (const u of Array.from(new Set(urls.filter(Boolean)))) {
+      if (this.unmounted) return;
+      await new Promise(r => { const i = new Image(); i.onload = i.onerror = r; i.src = u; });
+    }
+  }
   // src arrives via data-src so the raw template never requests '{{ … }}'.
   applySrc(el) {
     if (!el) return;
@@ -476,14 +587,14 @@ class Component extends DCLogic {
       const [works, media] = await Promise.all([
         get('portfolio_works?select=*&published=eq.true&order=sort_order.asc,created_at.asc'),
         get('portfolio_media?select=*&order=sort_order.asc,created_at.asc')]);
-      this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.measure(); this.onHash(); });
-    } catch (e) { this.setState({ db: { works: [], media: [] } }); }
+      await new Promise(r => this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.measure(); this.onHash(); r(); }));
+    } catch (e) { await new Promise(r => this.setState({ db: { works: [], media: [] } }, r)); }
   }
   works() {
     const db = this.state.db, slot = !this.hosted();
     const shape = i => { const [a, b] = this.ratios[i % 8]; return { ratio: `${a} / ${b}`, width: `min(calc(46vh * ${a / b}), 78vw)` }; };
     if (db && db.works.length) return db.works.map((r, i) => {
-      const cover = r.cover_grid_url || r.cover_url || '';
+      const cover = r.cover_url || r.cover_grid_url || '';
       const mine = sec => db.media.filter(m => m.work_id === r.id && m.section === sec);
       return { id: this.pad(i + 1), no: this.pad(i + 1), title: r.title || 'untitled', kind: r.category || '', ...shape(i),
         cover, hasCover: !!cover, slot: false,
@@ -535,7 +646,7 @@ class Component extends DCLogic {
       [-0.24, 0.16, 'clamp(150px, 22vw, 420px)', '4 / 5']];
     const btsDb = db ? db.media.filter(m => m.section === 'bts' && !m.work_id) : [];
     const btsSrc = btsDb.length
-      ? btsDb.map(m => ({ img: m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url), caption: m.caption || '' }))
+      ? btsDb.map(m => ({ img: m.kind === 'video' ? (m.poster_url || '') : (m.url || m.url_grid), caption: m.caption || '' }))
       : ['setting up', 'first light', 'the crew', 'golden hour', 'on the move', 'between takes', 'the quiet part', 'in the edit', 'wrap'].map(c => ({ img: '', caption: c }));
     const bts = btsSrc.map((b, i) => { const sp = spots[i % 9];
       return { id: i + 1, no: this.pad(i + 1), fx: sp[0], fy: sp[1], z: -700 - i * 450, w: sp[2], ratio: sp[3], caption: b.caption,
@@ -565,7 +676,7 @@ class Component extends DCLogic {
       reelVideo: !!reelRow && reelRow.kind === 'video', reelPhoto: !!reelRow && reelRow.kind === 'photo', reelSlot: !reelRow && slot,
       reelUrl: reelRow ? reelRow.url : '', reelPoster: reelRow ? (reelRow.poster_url || '') : '',
       mediaRef: el => this.applySrc(el),
-      reelVideoRef: el => { this.applySrc(el); if (el && !el._gl) { el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); const p = el.play(); if (p && p.catch) p.catch(() => {}); } },
+      reelVideoRef: el => { if (el) this.reelEl = el; this.applySrc(el); if (el && !el._gl) { el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); const p = el.play(); if (p && p.catch) p.catch(() => {}); } },
       works: works.map((w, i) => ({ ...w, open: () => this.open(i) })),
       workCount: this.pad(n),
       worksHeight: `${110 + 90 + n * 42 + 100}vh`,
@@ -576,6 +687,8 @@ class Component extends DCLogic {
       btsRef: this.btsRef, btsSceneRef: this.btsSceneRef, processRef: this.processRef, markRef: this.markRef,
       hudRef: this.hudRef, chapterRef: this.chapterRef, tickRef: this.tickRef, playheadRef: this.playheadRef, tcRef: this.tcRef,
       caseRef: this.caseRef, cursorRef: this.cursorRef,
+      loaderOn: (this.props.preload ?? true) && !this.state.loaderGone,
+      loaderRef: this.loaderRef, loadNumRef: this.loadNumRef, loadBarRef: this.loadBarRef, loadLabelRef: this.loadLabelRef, loadMarkRef: this.loadMarkRef,
       showCursor: () => { this.S.tring = 1; }, hideCursor: () => { this.S.tring = 0; },
       activeWork: works[a], nextWork: works[(a + 1) % n],
       close: () => this.open(null), prev: () => this.step(-1), next: () => this.step(1)

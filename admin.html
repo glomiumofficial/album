@@ -2958,17 +2958,20 @@
         <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:4px">
           <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
             <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Showreel</span>
-            <span style="font-size:11px; color:#67746F">One silent loop or a still. It plays inside the INFINITELY title.</span>
+            <span style="font-size:11px; color:#67746F">Fills the whole screen behind the INFINITELY title.</span>
             <input type="file" accept="video/*,image/*" ref="{{ pfReelRef }}" onChange="{{ pfReelOnFile }}" style="display:none">
             <div style="display:flex; gap:8px; margin-left:auto">
               <sc-if value="{{ pfReelHas }}" hint-placeholder-val="{{ false }}"><button onClick="{{ pfReelRemove }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; color:#B4433A; border-color:#E7CEC9">Remove</button></sc-if>
               <button onClick="{{ pfReelPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ pfReelBtn }}</button>
             </div>
           </div>
+          <span style="font-size:12px; line-height:1.6; color:#5C6864">16:9 · 3840 × 2160 px (1920 × 1080 minimum). Video: MP4 (H.264), silent, a 10–30 s loop, under 50 MB. Keep the subject inside the centre band — phones only show that part.</span>
           <sc-if value="{{ pfReelHas }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap">
-              <div style="position:relative; width:min(100%, 520px); aspect-ratio:2.39 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+              <div style="position:relative; width:min(100%, 520px); aspect-ratio:16 / 9; background:#EEF3F1; border-radius:3px; overflow:hidden">
                 <sc-if value="{{ pfReelHasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pfReelThumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                <div style="position:absolute; top:0; bottom:0; left:50%; transform:translateX(-50%); aspect-ratio:9 / 16; border-left:1px dashed rgba(255,255,255,.9); border-right:1px dashed rgba(255,255,255,.9); box-shadow:0 0 0 999px rgba(0,0,0,.22); pointer-events:none"></div>
+                <span style="position:absolute; left:50%; bottom:8px; transform:translateX(-50%); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#fff; pointer-events:none">phone view</span>
               </div>
               <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">{{ pfReelKind }}</span>
             </div>
@@ -3015,14 +3018,17 @@
                     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px">
                       <div style="display:flex; flex-direction:column; gap:10px">
                         <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Cover</span>
-                        <div style="width:100%; max-width:260px; aspect-ratio:4 / 5; background:#EEF3F1; border-radius:3px; overflow:hidden">
-                          <sc-if value="{{ pw.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                        <span style="font-size:12px; line-height:1.6; color:#5C6864">{{ pw.coverSpec }}. The shape comes from this work’s place in the strip, so it changes if you reorder.</span>
+                        <div style="width:100%; max-width:{{ pw.coverMax }}; aspect-ratio:{{ pw.coverRatio }}; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                          <sc-if value="{{ pw.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.thumb }}" onLoad="{{ pw.coverLoad }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                         </div>
+                        <sc-if value="{{ pw.hasCoverWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#9A6A12">{{ pw.coverWarn }}</span></sc-if>
                         <input type="file" accept="image/*" ref="{{ pw.coverRef }}" onChange="{{ pw.coverOnFile }}" style="display:none">
                         <button onClick="{{ pw.coverPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; align-self:flex-start" style-hover="background:var(--green); color:#fff">{{ pw.coverBtn }}</button>
                       </div>
                       <div style="display:flex; flex-direction:column; gap:10px">
                         <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Film</span>
+                        <span style="font-size:12px; line-height:1.6; color:#5C6864">16:9 or 2.39:1 · 3840 × 2160 px (1920 × 1080 minimum) · MP4 (H.264). Shown in full, never cropped.</span>
                         <div style="position:relative; width:100%; max-width:360px; aspect-ratio:16 / 9; background:#EEF3F1; border-radius:3px; overflow:hidden">
                           <sc-if value="{{ pw.hasFilmThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.filmThumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                           <sc-if value="{{ pw.noFilm }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:12px; color:#67746F">No film yet</span></sc-if>
@@ -3041,14 +3047,17 @@
                         <input type="file" accept="image/*" multiple="{{ true }}" ref="{{ pw.stillsRef }}" onChange="{{ pw.stillsOnFiles }}" style="display:none">
                         <button onClick="{{ pw.stillsPick }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="border-color:var(--green)">Add stills</button>
                       </div>
-              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px">
+                      <span style="font-size:12px; line-height:1.6; color:#5C6864">Shapes repeat in this order: 3:2 · 4:5 · 4:5 · 16:10 · 21:9 (full width) · 4:3. About 2400 px on the long side. Each tile is drawn in the shape of its spot.</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; align-items:start">
                 <sc-for list="{{ pw.stillsVM }}" as="st" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; gap:6px">
-                    <div style="position:relative; aspect-ratio:1 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                    <div style="position:relative; aspect-ratio:{{ st.ratio }}; background:#EEF3F1; border-radius:3px; overflow:hidden">
                       <sc-if value="{{ st.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ st.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                       <sc-if value="{{ st.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
                       <sc-if value="{{ st.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
                     </div>
+                    <span style="font-size:10px; letter-spacing:.04em; color:#67746F">{{ st.spec }}</span>
+                    <sc-if value="{{ st.hasWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; color:#9A6A12">{{ st.warn }}</span></sc-if>
                     <div style="display:flex; gap:4px">
                       <button onClick="{{ st.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
                       <button onClick="{{ st.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
@@ -3065,14 +3074,17 @@
                         <input type="file" accept="image/*,video/*" multiple="{{ true }}" ref="{{ pw.cbRef }}" onChange="{{ pw.cbOnFiles }}" style="display:none">
                         <button onClick="{{ pw.cbPick }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="border-color:var(--green)">Add photos</button>
                       </div>
-              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px">
+                      <span style="font-size:12px; line-height:1.6; color:#5C6864">Shapes repeat: 4:5 · 3:4 · 4:5 · 1:1 · 4:5. 1200 px on the long side is enough.</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; align-items:start">
                 <sc-for list="{{ pw.cbVM }}" as="cbt" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; gap:6px">
-                    <div style="position:relative; aspect-ratio:1 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                    <div style="position:relative; aspect-ratio:{{ cbt.ratio }}; background:#EEF3F1; border-radius:3px; overflow:hidden">
                       <sc-if value="{{ cbt.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ cbt.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                       <sc-if value="{{ cbt.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
                       <sc-if value="{{ cbt.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
                     </div>
+                    <span style="font-size:10px; letter-spacing:.04em; color:#67746F">{{ cbt.spec }}</span>
+                    <sc-if value="{{ cbt.hasWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; color:#9A6A12">{{ cbt.warn }}</span></sc-if>
                     <div style="display:flex; gap:4px">
                       <button onClick="{{ cbt.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
                       <button onClick="{{ cbt.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
@@ -3100,15 +3112,18 @@
             <input type="file" accept="image/*" multiple="{{ true }}" ref="{{ pfBtsRef }}" onChange="{{ pfBtsOnFiles }}" style="display:none">
             <button onClick="{{ pfBtsPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="background:var(--green); color:#fff">Upload</button>
           </div>
+          <span style="font-size:12px; line-height:1.6; color:#5C6864">Shapes repeat: 4:5 · 3:2 · 3:4 · 4:5 · 16:10 · 3:4 · 1:1 · 3:2 · 4:5. About 1600 px on the long side.</span>
           <sc-if value="{{ pfBtsEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">No behind-the-scenes photos yet.</span></sc-if>
-          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; align-items:start">
                 <sc-for list="{{ pfBtsVM }}" as="bt" hint-placeholder-count="0">
                   <div style="display:flex; flex-direction:column; gap:6px">
-                    <div style="position:relative; aspect-ratio:1 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                    <div style="position:relative; aspect-ratio:{{ bt.ratio }}; background:#EEF3F1; border-radius:3px; overflow:hidden">
                       <sc-if value="{{ bt.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ bt.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                       <sc-if value="{{ bt.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
                       <sc-if value="{{ bt.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
                     </div>
+                    <span style="font-size:10px; letter-spacing:.04em; color:#67746F">{{ bt.spec }}</span>
+                    <sc-if value="{{ bt.hasWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; color:#9A6A12">{{ bt.warn }}</span></sc-if>
                     <input value="{{ bt.caption }}" onChange="{{ bt.onCaption }}" onBlur="{{ bt.saveCaption }}" placeholder="caption" style="padding:6px 9px; border:1px solid var(--line); border-radius:3px; font-size:12px; outline:none; background:#fff; min-width:0">
                     <div style="display:flex; gap:4px">
                       <button onClick="{{ bt.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
@@ -5611,6 +5626,27 @@ const DIVISIONS = [
 const DIVISION_LABEL = DIVISIONS.reduce((m, d) => { m[d[0]] = d[1]; return m; }, {});
 const DIVISION_STORAGE_KEY = 'gl_division';
 const PF_CATS = ['wedding film', 'brand film', 'commercial', 'product film', 'event', 'music video'];
+// Shapes the portfolio page draws, in the order it repeats them. Keep in step with portfolio.html.
+const PF_SIZE = { '16:9': [3840, 2160], '4:5': [1600, 2000], '3:4': [1500, 2000], '16:10': [2560, 1600], '3:2': [2400, 1600], '21:9': [2520, 1080], '4:3': [2400, 1800], '1:1': [2000, 2000] };
+const PF_COVER = ['4:5', '16:10', '3:4', '4:5', '16:10', '3:4', '4:5', '16:10'];
+const PF_STILL = ['3:2', '4:5', '4:5', '16:10', '21:9', '4:3'];
+const PF_CBTS = ['4:5', '3:4', '4:5', '1:1', '4:5'];
+const PF_BTS = ['4:5', '3:2', '3:4', '4:5', '16:10', '3:4', '1:1', '3:2', '4:5'];
+function pfSpec(r, long) {
+  const [w, h] = PF_SIZE[r], k = long ? long / Math.max(w, h) : 1, [x, y] = r.split(':');
+  const W = Math.round(w * k), H = Math.round(h * k);
+  return { r, css: x + ' / ' + y, w: W, h: H, label: r + ' · ' + W + ' × ' + H + ' px' };
+}
+function pfShape(w, h) {
+  let best = null, d = 1;
+  Object.keys(PF_SIZE).forEach(k => { const [x, y] = k.split(':').map(Number); const e = Math.abs(Math.log((w / h) / (x / y))); if (e < d) { d = e; best = k; } });
+  return d < 0.03 ? best : (w >= h ? (w / h).toFixed(2) + ':1' : '1:' + (h / w).toFixed(2));
+}
+function pfFit(spec, w, h) {
+  if (!w || !h) return { crop: false, low: false, actual: '' };
+  const [x, y] = spec.r.split(':').map(Number);
+  return { crop: Math.abs((w / h) / (x / y) - 1) > 0.06, low: Math.max(w, h) < Math.max(spec.w, spec.h) * 0.6, actual: pfShape(w, h) };
+}
 const DIVISION_NOTE = {
   wedding: 'Albums, films and day-sheet hours for weddings and destination weddings.',
   commercial: 'Identity, palette and campaign assets for brands.',
@@ -8920,10 +8956,16 @@ class Component extends DCLogic {
     this.pfSay(error ? error.message : 'Saved.', !error);
   }
 
-  async pfWorkFile(w, field, file) {
+  async pfWorkFile(w, field, file, spec) {
     if (!file) return;
-    await this.pfRun(field === 'film' ? 'Film uploaded.' : 'Cover uploaded.', async () => {
+    let warn = '';
+    const ok = await this.pfRun(field === 'film' ? 'Film uploaded.' : 'Cover uploaded.', async () => {
       const f = await this.pfPrepare(file, 'Uploading ' + file.name);
+      if (spec && f.width) {
+        const c = pfFit(spec, f.width, f.height);
+        warn = [c.crop ? 'it is ' + c.actual + ' and this spot is ' + spec.r + ', so the edges will be cropped' : '',
+                c.low ? 'at ' + f.width + ' × ' + f.height + ' px it will look soft (aim for ' + spec.w + ' × ' + spec.h + ')' : ''].filter(Boolean).join('; ');
+      }
       const cur = this.state.pfWorks.find(x => x.id === w.id) || w;
       const old = field === 'film' ? [cur.film_url, cur.film_poster_url] : [cur.cover_url, cur.cover_grid_url];
       const patch = field === 'film'
@@ -8934,6 +8976,7 @@ class Component extends DCLogic {
       this.pfLocal(w.id, patch);
       this.pfDropFiles(old);
     });
+    if (ok && warn) this.pfSay('Cover uploaded, but ' + warn + '.', 'warn');
   }
 
   async pfClearFilm(w) {
@@ -8965,14 +9008,19 @@ class Component extends DCLogic {
     const pick = k => () => { const el = this.pfIn && this.pfIn[k]; if (el) el.click(); };
     const files = fn => e => { const f = Array.from(e.target.files || []); e.target.value = ''; fn(f); };
     const thumbOf = m => m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url || '');
-    const tile = (m, list) => ({
+    const tile = (m, list, specs, long) => {
+      const sp = pfSpec(specs[Math.max(0, list.indexOf(m)) % specs.length], long);
+      const f = m.kind === 'video' ? {} : pfFit(sp, m.width, m.height);
+      const warn = [f.crop ? 'is ' + f.actual + ', will crop' : '', f.low ? 'low resolution' : ''].filter(Boolean).join(' · ');
+      return {
+      ratio: sp.css, spec: sp.label, warn, hasWarn: !!warn,
       thumb: thumbOf(m), hasThumb: !!thumbOf(m), noThumb: !thumbOf(m), isVideo: m.kind === 'video',
       caption: m.caption || '',
       left: () => this.pfMove(list, m, -1, 'portfolio_media'), right: () => this.pfMove(list, m, 1, 'portfolio_media'),
       remove: () => this.pfDeleteMedia(m),
       onCaption: e => { const v = e.target.value; this.setState(st => ({ pfMedia: st.pfMedia.map(x => x.id === m.id ? { ...x, caption: v } : x) })); },
       saveCaption: e => this.pfSaveCaption(m.id, e.target.value),
-    });
+    }; };
     const reel = mediaOf('reel', null).slice(-1)[0];
     const bts = mediaOf('bts', null);
     const origin = location.origin && location.origin !== 'null' && /^https?:/.test(location.origin) ? location.origin : 'https://album.glomium.co';
@@ -8981,7 +9029,7 @@ class Component extends DCLogic {
     return {
       pfSrcRef: el => { if (el) { const u = el.getAttribute('data-src'); if (u && el.getAttribute('src') !== u) el.setAttribute('src', u); } },
       isPortfolio: true, pfMissing: !!s.pfMissing, pfLoading: !s.pfLoaded,
-      pfStatus: s.pfStatus || '', pfHasStatus: !!s.pfStatus, pfStatusColor: s.pfStatusOk === false ? '#B4433A' : 'var(--green-deep)',
+      pfStatus: s.pfStatus || '', pfHasStatus: !!s.pfStatus, pfStatusColor: s.pfStatusOk === false ? '#B4433A' : s.pfStatusOk === 'warn' ? '#9A6A12' : 'var(--green-deep)',
       pfBusy: s.pfBusy || '', pfHasBusy: !!s.pfBusy, pfBarWidth: (s.pfProgress || 0) + '%',
       pfLink: link, pfCopyLabel: s.pfCopied ? 'Copied' : 'Copy link',
       pfCopy: () => { try { navigator.clipboard.writeText(link); } catch (e) {} this.setState({ pfCopied: true }); setTimeout(() => this.setState({ pfCopied: false }), 1600); },
@@ -8996,7 +9044,15 @@ class Component extends DCLogic {
         const stills = mediaOf('still', w.id), cb = mediaOf('case_bts', w.id);
         const open = s.pfOpenId === w.id;
         const thumb = w.cover_grid_url || w.cover_url || '';
+        const csp = pfSpec(PF_COVER[i % PF_COVER.length]);
+        const dims = this.pfDims && this.pfDims[w.id];
+        const cf = dims ? pfFit(csp, dims[0], dims[1]) : {};
         return {
+          coverRatio: csp.css, coverMax: csp.w > csp.h ? '360px' : '240px',
+          coverSpec: csp.label + (csp.w > csp.h ? ' landscape' : ' portrait'),
+          coverWarn: cf.crop ? 'This cover is ' + cf.actual + '. It will be cropped to ' + csp.r + '.' : '', hasCoverWarn: !!cf.crop,
+          coverLoad: e => { const el = e.target, d = [el.naturalWidth, el.naturalHeight]; this.pfDims = this.pfDims || {}; const o = this.pfDims[w.id];
+            if (d[0] && (!o || o[0] !== d[0] || o[1] !== d[1])) { this.pfDims[w.id] = d; this.forceUpdate(); } },
           no: String(i + 1).padStart(2, '0'), title: w.title || '', titleShown: w.title || 'untitled',
           category: w.category || PF_CATS[0], story: w.story || '',
           thumb, hasThumb: !!thumb, noThumb: !thumb,
@@ -9010,20 +9066,20 @@ class Component extends DCLogic {
           onCategory: e => this.pfPatch(w.id, { category: e.target.value }),
           onStory: e => this.pfLocal(w.id, { story: e.target.value }),
           saveStory: e => this.pfPatch(w.id, { story: e.target.value.trim() || null }),
-          coverRef: ref('cover-' + w.id), coverPick: pick('cover-' + w.id), coverOnFile: files(f => this.pfWorkFile(w, 'cover', f[0])),
+          coverRef: ref('cover-' + w.id), coverPick: pick('cover-' + w.id), coverOnFile: files(f => this.pfWorkFile(w, 'cover', f[0], csp)),
           coverBtn: w.cover_url ? 'Replace cover' : 'Upload cover',
           filmRef: ref('film-' + w.id), filmPick: pick('film-' + w.id), filmOnFile: files(f => this.pfWorkFile(w, 'film', f[0])),
           filmBtn: w.film_url ? 'Replace film' : 'Upload film', hasFilm: !!w.film_url, noFilm: !w.film_url,
           filmThumb: w.film_poster_url || '', hasFilmThumb: !!w.film_poster_url, removeFilm: () => this.pfClearFilm(w),
           stillsRef: ref('stills-' + w.id), stillsPick: pick('stills-' + w.id), stillsOnFiles: files(f => this.pfUploadMedia('still', w.id, f)),
-          stillsVM: stills.map(m => tile(m, stills)), stillsCount: stills.length ? String(stills.length) : 'none yet',
+          stillsVM: stills.map(m => tile(m, stills, PF_STILL)), stillsCount: stills.length ? String(stills.length) : 'none yet',
           cbRef: ref('cbts-' + w.id), cbPick: pick('cbts-' + w.id), cbOnFiles: files(f => this.pfUploadMedia('case_bts', w.id, f)),
-          cbVM: cb.map(m => tile(m, cb)), cbCount: cb.length ? String(cb.length) : 'none yet',
+          cbVM: cb.map(m => tile(m, cb, PF_CBTS, 1200)), cbCount: cb.length ? String(cb.length) : 'none yet',
           remove: () => this.pfDeleteWork(w),
         };
       }),
       pfBtsRef: ref('bts'), pfBtsPick: pick('bts'), pfBtsOnFiles: files(f => this.pfUploadMedia('bts', null, f)),
-      pfBtsVM: bts.map(m => tile(m, bts)), pfBtsEmpty: !bts.length, pfBtsCount: bts.length ? String(bts.length) : 'none yet',
+      pfBtsVM: bts.map(m => tile(m, bts, PF_BTS, 1600)), pfBtsEmpty: !bts.length, pfBtsCount: bts.length ? String(bts.length) : 'none yet',
     };
   }
 
