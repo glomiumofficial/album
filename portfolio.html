@@ -40,7 +40,9 @@ a:hover { color: #10AF8B; }
   <section id="top" ref="{{ heroRef }}" data-screen-label="01 reel" style="position: relative; height: 280vh;">
     <div style="position: sticky; top: 0; height: 100vh; overflow: hidden;">
       <div ref="{{ filmBaseRef }}" style="position: absolute; inset: 0; background: linear-gradient(125deg, #BFE9DC 0%, #EAF7F2 38%, #FFFFFF 56%, #CDEFE4 100%); transform: scale(1.18);">
-        <image-slot id="hero-reel" shape="rect" placeholder="showreel still or loop"></image-slot>
+        <sc-if value="{{ reelVideo }}" hint-placeholder-val="{{ false }}"><video ref="{{ reelVideoRef }}" data-src="{{ reelUrl }}" data-poster="{{ reelPoster }}" preload="auto" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></video></sc-if>
+        <sc-if value="{{ reelPhoto }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ reelUrl }}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+        <sc-if value="{{ reelSlot }}" hint-placeholder-val="{{ false }}"><image-slot id="hero-reel" shape="rect" placeholder="showreel still or loop"></image-slot></sc-if>
       </div>
       <div ref="{{ filmUiRef }}" style="position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(0deg, rgba(8,22,17,0.5) 0%, rgba(8,22,17,0) 38%);">
         <div style="position: absolute; left: clamp(20px, 4vw, 56px); right: clamp(20px, 4vw, 56px); bottom: 72px; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; color: #FFFFFF;">
@@ -79,7 +81,8 @@ a:hover { color: #10AF8B; }
         <sc-for list="{{ works }}" as="w" hint-placeholder-count="3">
           <article data-card="" onClick="{{ w.open }}" onMouseEnter="{{ showCursor }}" onMouseLeave="{{ hideCursor }}" style="position: absolute; left: 50%; top: 50%; width: {{ w.width }}; cursor: none; opacity: 0;">
             <div style="position: relative; width: 100%; aspect-ratio: {{ w.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 40px 90px -40px rgba(10,110,88,0.45);">
-              <image-slot id="work-{{ w.id }}" shape="rect" placeholder="cover still"></image-slot>
+              <sc-if value="{{ w.hasCover }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ w.cover }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+              <sc-if value="{{ w.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="work-{{ w.id }}" shape="rect" placeholder="cover still"></image-slot></sc-if>
               <div data-catch="" style="position: absolute; inset: 0; z-index: 2;"></div>
             </div>
             <div data-cap="" style="position: absolute; left: 0; right: 0; top: calc(100% + 14px); display: flex; justify-content: space-between; align-items: baseline; gap: 16px; opacity: 0;">
@@ -99,7 +102,7 @@ a:hover { color: #10AF8B; }
     </div>
   </section>
 
-  <section id="bts" ref="{{ btsRef }}" data-screen-label="03 behind the scenes" style="position: relative; height: 340vh;">
+  <section id="bts" ref="{{ btsRef }}" data-screen-label="03 behind the scenes" style="position: relative; height: {{ btsHeight }};">
     <div style="position: sticky; top: 0; height: 100vh; overflow: hidden; perspective: 1000px;">
       <div ref="{{ btsSceneRef }}" style="position: absolute; inset: 0; transform-style: preserve-3d;">
         <div data-depth="" data-fx="0" data-fy="0" data-z="-150" style="position: absolute; left: 50%; top: 50%; width: 92vw; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; pointer-events: none;">
@@ -109,7 +112,8 @@ a:hover { color: #10AF8B; }
         <sc-for list="{{ bts }}" as="b" hint-placeholder-count="3">
           <figure data-depth="" data-fx="{{ b.fx }}" data-fy="{{ b.fy }}" data-z="{{ b.z }}" style="position: absolute; left: 50%; top: 50%; width: {{ b.w }}; margin: 0; opacity: 0;">
             <div style="position: relative; width: 100%; aspect-ratio: {{ b.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 30px 80px -34px rgba(10,110,88,0.4);">
-              <image-slot id="bts-{{ b.id }}" shape="rect" placeholder="bts photo"></image-slot>
+              <sc-if value="{{ b.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ b.img }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+              <sc-if value="{{ b.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="bts-{{ b.id }}" shape="rect" placeholder="bts photo"></image-slot></sc-if>
             </div>
             <figcaption style="display: flex; gap: 12px; padding-top: 12px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
               <span style="color: #10AF8B;">{{ b.no }}</span>
@@ -175,12 +179,14 @@ a:hover { color: #10AF8B; }
         <span data-rise="" style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #10AF8B;">{{ activeWork.no }} — {{ activeWork.kind }}</span>
         <h2 data-rise="" style="margin: 0; font-weight: 200; font-size: clamp(56px, 11vw, 200px); line-height: 0.9; letter-spacing: -0.04em;">{{ activeWork.title }}</h2>
       </div>
-      <p data-rise="" style="flex: 0 1 360px; margin: 0; font-size: 16px; line-height: 1.8; color: #4A524F; text-wrap: pretty;">a few lines on the story — who it was for, what we wanted it to feel like, and how we made it.</p>
+      <p data-rise="" style="flex: 0 1 360px; margin: 0; font-size: 16px; line-height: 1.8; color: #4A524F; text-wrap: pretty;">{{ caseStory }}</p>
     </div>
 
     <div data-rise="" style="padding: 0 clamp(20px, 4vw, 56px);">
       <div style="position: relative; width: 100%; aspect-ratio: 2.39 / 1; overflow: hidden; background: #0F1211; box-shadow: 0 60px 140px -60px rgba(10,110,88,0.5);">
-        <image-slot id="case-{{ activeWork.id }}-film" shape="rect" placeholder="film — poster frame"></image-slot>
+        <sc-if value="{{ activeWork.hasFilm }}" hint-placeholder-val="{{ false }}"><video ref="{{ mediaRef }}" data-src="{{ activeWork.film }}" data-poster="{{ activeWork.poster }}" controls="{{ true }}" preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0F1211; display: block;"></video></sc-if>
+        <sc-if value="{{ activeWork.posterOnly }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ activeWork.hero }}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+        <sc-if value="{{ activeWork.filmSlot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-film" shape="rect" placeholder="film — poster frame"></image-slot></sc-if>
       </div>
     </div>
 
@@ -192,7 +198,8 @@ a:hover { color: #10AF8B; }
       <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 24px); align-items: start;">
         <sc-for list="{{ stills }}" as="p" hint-placeholder-count="4">
           <div style="position: relative; grid-column: {{ p.col }}; margin-top: {{ p.mt }}; aspect-ratio: {{ p.ratio }}; overflow: hidden; background: #EEF3F1;">
-            <image-slot id="case-{{ activeWork.id }}-still-{{ p.n }}" shape="rect" placeholder="still"></image-slot>
+            <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ p.img }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+            <sc-if value="{{ p.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-still-{{ p.n }}" shape="rect" placeholder="still"></image-slot></sc-if>
           </div>
         </sc-for>
       </div>
@@ -206,7 +213,8 @@ a:hover { color: #10AF8B; }
       <div style="display: flex; gap: clamp(12px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 clamp(20px, 4vw, 56px) 8px; scroll-padding: 0 clamp(20px, 4vw, 56px);">
         <sc-for list="{{ caseBts }}" as="c" hint-placeholder-count="4">
           <div style="position: relative; flex: 0 0 auto; width: clamp(220px, 26vw, 420px); aspect-ratio: {{ c.ratio }}; overflow: hidden; background: #EEF3F1; scroll-snap-align: start;">
-            <image-slot id="case-{{ activeWork.id }}-bts-{{ c.n }}" shape="rect" placeholder="bts"></image-slot>
+            <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ c.img }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+            <sc-if value="{{ c.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-bts-{{ c.n }}" shape="rect" placeholder="bts"></image-slot></sc-if>
           </div>
         </sc-for>
       </div>
@@ -264,6 +272,7 @@ class Component extends DCLogic {
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.measure());
     setTimeout(() => this.measure(), 600);
     this.onHash();
+    this.loadDb();
     this.intro();
     this.raf = requestAnimationFrame(this.tick);
   }
@@ -409,8 +418,10 @@ class Component extends DCLogic {
       S.mx += (S.tmx - S.mx) * 0.05; S.my += (S.tmy - S.my) * 0.05;
       if (r.top < vh && r.bottom > 0) {
         bs.style.transform = `rotateY(${S.mx * 3}deg) rotateX(${-S.my * 2}deg)`;
-        bs.querySelectorAll('[data-depth]').forEach(el => {
-          const z = parseFloat(el.dataset.z) + S.bts * 4900;
+        const items = bs.querySelectorAll('[data-depth]');
+        const travel = 1400 + Math.max(0, items.length - 2) * 450;
+        items.forEach(el => {
+          const z = parseFloat(el.dataset.z) + S.bts * travel;
           const o = Math.min(cl((z + 4600) / 1700), 1 - cl((z - 200) / 380));
           el.style.opacity = String(o);
           el.style.visibility = o <= 0.01 ? 'hidden' : 'visible';
@@ -448,13 +459,42 @@ class Component extends DCLogic {
   };
 
   pad(n) { return String(n).padStart(2, '0'); }
+  // src arrives via data-src so the raw template never requests '{{ … }}'.
+  applySrc(el) {
+    if (!el) return;
+    const s = el.getAttribute('data-src'), p = el.getAttribute('data-poster');
+    if (p && el.getAttribute('poster') !== p) el.setAttribute('poster', p);
+    if (s && el.getAttribute('src') !== s) el.setAttribute('src', s);
+  }
+  // Live on the studio's own domain the page shows only what the admin
+  // published; anywhere else (this editor) empty spots stay drop-in slots.
+  hosted() { return /(^|\.)glomium\.co$|github\.io$/.test(location.hostname); }
+  async loadDb() {
+    const URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co', KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
+    const get = q => fetch(URL + '/rest/v1/' + q, { headers: { apikey: KEY } }).then(r => r.ok ? r.json() : []);
+    try {
+      const [works, media] = await Promise.all([
+        get('portfolio_works?select=*&published=eq.true&order=sort_order.asc,created_at.asc'),
+        get('portfolio_media?select=*&order=sort_order.asc,created_at.asc')]);
+      this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.measure(); this.onHash(); });
+    } catch (e) { this.setState({ db: { works: [], media: [] } }); }
+  }
   works() {
-    const n = Math.max(3, Math.min(12, this.props.workCount ?? 8));
-    return Array.from({ length: n }, (_, i) => {
-      const [a, b] = this.ratios[i % 8];
-      return { id: this.pad(i + 1), no: this.pad(i + 1), title: 'project title', kind: this.kinds[i % 8],
-        ratio: `${a} / ${b}`, width: `min(calc(46vh * ${a / b}), 78vw)` };
+    const db = this.state.db, slot = !this.hosted();
+    const shape = i => { const [a, b] = this.ratios[i % 8]; return { ratio: `${a} / ${b}`, width: `min(calc(46vh * ${a / b}), 78vw)` }; };
+    if (db && db.works.length) return db.works.map((r, i) => {
+      const cover = r.cover_grid_url || r.cover_url || '';
+      const mine = sec => db.media.filter(m => m.work_id === r.id && m.section === sec);
+      return { id: this.pad(i + 1), no: this.pad(i + 1), title: r.title || 'untitled', kind: r.category || '', ...shape(i),
+        cover, hasCover: !!cover, slot: false,
+        film: r.film_url || '', hasFilm: !!r.film_url, poster: r.film_poster_url || r.cover_url || '',
+        hero: r.cover_url || '', posterOnly: !r.film_url && !!r.cover_url, filmSlot: false,
+        story: r.story || '', stills: mine('still'), bts: mine('case_bts') };
     });
+    const n = Math.max(3, Math.min(12, this.props.workCount ?? 8));
+    return Array.from({ length: n }, (_, i) => ({ id: this.pad(i + 1), no: this.pad(i + 1), title: 'project title', kind: this.kinds[i % 8], ...shape(i),
+      cover: '', hasCover: false, slot, film: '', hasFilm: false, poster: '', hero: '', posterOnly: false, filmSlot: slot,
+      story: 'a few lines on the story — who it was for, what we wanted it to feel like, and how we made it.', stills: null, bts: null }));
   }
   open(i) {
     this.S.tring = 0;
@@ -467,6 +507,7 @@ class Component extends DCLogic {
     this.wasOpen = on;
     document.body.style.overflow = on ? 'hidden' : '';
     if (!c) return;
+    c.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
     c.style.clipPath = on ? 'inset(0% 0% 0% 0%)' : 'inset(100% 0% 0% 0%)';
     c.style.pointerEvents = on ? 'auto' : 'none';
     if (on) {
@@ -485,17 +526,20 @@ class Component extends DCLogic {
       blob({ top: '-22vw', left: '-18vw' }, '62vw', 0.13, 28, 0),
       blob({ top: '38vh', right: '-24vw' }, '55vw', 0.09, 34, -10),
       blob({ bottom: '-30vw', left: '24vw' }, '58vw', 0.07, 40, -20));
-    const bts = [
-      [-0.27, -0.14, -700, 'clamp(150px, 22vw, 420px)', '4 / 5', 'setting up'],
-      [0.26, 0.12, -1150, 'clamp(170px, 26vw, 480px)', '3 / 2', 'first light'],
-      [-0.2, 0.2, -1600, 'clamp(140px, 18vw, 340px)', '3 / 4', 'the crew'],
-      [0.22, -0.18, -2050, 'clamp(150px, 22vw, 420px)', '4 / 5', 'golden hour'],
-      [-0.28, 0.02, -2500, 'clamp(180px, 28vw, 520px)', '16 / 10', 'on the move'],
-      [0.3, 0.06, -2950, 'clamp(140px, 18vw, 340px)', '3 / 4', 'between takes'],
-      [-0.12, -0.2, -3400, 'clamp(150px, 22vw, 420px)', '1 / 1', 'the quiet part'],
-      [0.16, 0.2, -3850, 'clamp(170px, 26vw, 480px)', '3 / 2', 'in the edit'],
-      [-0.24, 0.16, -4300, 'clamp(150px, 22vw, 420px)', '4 / 5', 'wrap']
-    ].map((b, i) => ({ id: i + 1, no: this.pad(i + 1), fx: b[0], fy: b[1], z: b[2], w: b[3], ratio: b[4], caption: b[5] }));
+    const slot = !this.hosted(), db = this.state.db;
+    const spots = [
+      [-0.27, -0.14, 'clamp(150px, 22vw, 420px)', '4 / 5'], [0.26, 0.12, 'clamp(170px, 26vw, 480px)', '3 / 2'],
+      [-0.2, 0.2, 'clamp(140px, 18vw, 340px)', '3 / 4'], [0.22, -0.18, 'clamp(150px, 22vw, 420px)', '4 / 5'],
+      [-0.28, 0.02, 'clamp(180px, 28vw, 520px)', '16 / 10'], [0.3, 0.06, 'clamp(140px, 18vw, 340px)', '3 / 4'],
+      [-0.12, -0.2, 'clamp(150px, 22vw, 420px)', '1 / 1'], [0.16, 0.2, 'clamp(170px, 26vw, 480px)', '3 / 2'],
+      [-0.24, 0.16, 'clamp(150px, 22vw, 420px)', '4 / 5']];
+    const btsDb = db ? db.media.filter(m => m.section === 'bts' && !m.work_id) : [];
+    const btsSrc = btsDb.length
+      ? btsDb.map(m => ({ img: m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url), caption: m.caption || '' }))
+      : ['setting up', 'first light', 'the crew', 'golden hour', 'on the move', 'between takes', 'the quiet part', 'in the edit', 'wrap'].map(c => ({ img: '', caption: c }));
+    const bts = btsSrc.map((b, i) => { const sp = spots[i % 9];
+      return { id: i + 1, no: this.pad(i + 1), fx: sp[0], fy: sp[1], z: -700 - i * 450, w: sp[2], ratio: sp[3], caption: b.caption,
+        img: b.img, hasImg: !!b.img, slot: !b.img && !btsDb.length && slot }; });
     const steps = [
       ['listen', 'we start with you — the people, the brand, the feeling worth keeping.'],
       ['plan', 'moodboards, shot lists, locations and timings, so the day itself can be easy.'],
@@ -503,13 +547,25 @@ class Component extends DCLogic {
       ['edit', 'colour, sound and pace, cut until it feels right — not just looks right.'],
       ['deliver', 'films and stills, delivered privately and ready to share.']
     ].map((s, i) => ({ no: this.pad(i + 1), verb: s[0], line: s[1] }));
-    const stills = [
+    const pat = [
       ['1 / span 7', '3 / 2', '0px'], ['9 / span 4', '4 / 5', '14vw'], ['2 / span 4', '4 / 5', '-6vw'],
-      ['7 / span 6', '16 / 10', '6vw'], ['1 / span 12', '21 / 9', '0px'], ['4 / span 6', '4 / 3', '0px']
-    ].map((s, i) => ({ n: i + 1, col: s[0], ratio: s[1], mt: s[2] }));
+      ['7 / span 6', '16 / 10', '6vw'], ['1 / span 12', '21 / 9', '0px'], ['4 / span 6', '4 / 3', '0px']];
+    const aw = works[a] || works[0];
+    const stills = (aw.stills || Array.from({ length: 6 }, () => null)).map((m, i) => { const p = pat[i % 6];
+      const img = m ? (m.url || m.url_grid) : '';
+      return { n: i + 1, col: p[0], ratio: p[1], mt: p[2], img, hasImg: !!img, slot: !m && slot }; });
+    const caseBts = (aw.bts || Array.from({ length: 5 }, () => null)).map((m, i) => {
+      const img = m ? (m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url)) : '';
+      return { n: i + 1, ratio: ['4 / 5', '3 / 4', '4 / 5', '1 / 1', '4 / 5'][i % 5], img, hasImg: !!img, slot: !m && slot }; });
+    const reelRow = db ? db.media.filter(m => m.section === 'reel').slice(-1)[0] : null;
     return {
       mist, bts, steps, stills,
-      caseBts: ['4 / 5', '3 / 4', '4 / 5', '1 / 1', '4 / 5'].map((ratio, i) => ({ n: i + 1, ratio })),
+      caseBts, caseStory: aw.story || '',
+      btsHeight: `${Math.round(120 + bts.length * 25)}vh`,
+      reelVideo: !!reelRow && reelRow.kind === 'video', reelPhoto: !!reelRow && reelRow.kind === 'photo', reelSlot: !reelRow && slot,
+      reelUrl: reelRow ? reelRow.url : '', reelPoster: reelRow ? (reelRow.poster_url || '') : '',
+      mediaRef: el => this.applySrc(el),
+      reelVideoRef: el => { this.applySrc(el); if (el && !el._gl) { el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); const p = el.play(); if (p && p.catch) p.catch(() => {}); } },
       works: works.map((w, i) => ({ ...w, open: () => this.open(i) })),
       workCount: this.pad(n),
       worksHeight: `${110 + 90 + n * 42 + 100}vh`,

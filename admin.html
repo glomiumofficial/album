@@ -2928,6 +2928,200 @@
       </div>
       </sc-if>
 
+      <sc-if value="{{ isPortfolio }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Portfolio</span>
+          <span style="font-size:12px; color:#5C6864">What clients see on the portfolio page. Only works set to Live appear; changes show the moment they save.</span>
+          <div style="display:flex; gap:8px; margin-left:auto">
+            <button onClick="{{ pfCopy }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ pfCopyLabel }}</button>
+            <a href="{{ pfLink }}" target="_blank" rel="noopener" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; text-decoration:none" style-hover="border-color:var(--green)">Open page</a>
+          </div>
+        </div>
+        <span style="font-size:12px; color:#67746F; overflow-wrap:anywhere">{{ pfLink }}</span>
+
+        <sc-if value="{{ pfMissing }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:14px 16px; background:#F9EFED; border:1px solid #E7CEC9; border-radius:3px">
+            <span style="font-size:13px; color:#B4433A">The portfolio tables are not set up yet. Run portfolio-schema.sql in Supabase, then reopen this tab.</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ pfHasStatus }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px; color:{{ pfStatusColor }}">{{ pfStatus }}</span>
+        </sc-if>
+        <sc-if value="{{ pfHasBusy }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:8px; padding:14px 16px; border:1px solid var(--green); border-radius:3px; background:#FBFEFD">
+            <span style="font-size:12px; color:var(--green-deep); overflow-wrap:anywhere">{{ pfBusy }}</span>
+            <div style="height:3px; background:#E4F4EF; border-radius:2px; overflow:hidden"><div style="height:100%; width:{{ pfBarWidth }}; background:var(--green); transition:width .2s"></div></div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:4px">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Showreel</span>
+            <span style="font-size:11px; color:#67746F">One silent loop or a still. It plays inside the INFINITELY title.</span>
+            <input type="file" accept="video/*,image/*" ref="{{ pfReelRef }}" onChange="{{ pfReelOnFile }}" style="display:none">
+            <div style="display:flex; gap:8px; margin-left:auto">
+              <sc-if value="{{ pfReelHas }}" hint-placeholder-val="{{ false }}"><button onClick="{{ pfReelRemove }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; color:#B4433A; border-color:#E7CEC9">Remove</button></sc-if>
+              <button onClick="{{ pfReelPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ pfReelBtn }}</button>
+            </div>
+          </div>
+          <sc-if value="{{ pfReelHas }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap">
+              <div style="position:relative; width:min(100%, 520px); aspect-ratio:2.39 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                <sc-if value="{{ pfReelHasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pfReelThumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+              </div>
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">{{ pfReelKind }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ pfReelEmpty }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px; color:#5C6864">No showreel yet.</span></sc-if>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:4px">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Works</span>
+            <span style="font-size:11px; color:#67746F">{{ pfWorksCount }}</span>
+            <button onClick="{{ pfAddWork }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="background:var(--green); color:#fff">+ Add work</button>
+          </div>
+          <sc-if value="{{ pfWorksEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">No works yet. Add one, give it a cover and a film, then set it Live.</span></sc-if>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <sc-for list="{{ pfWorksVM }}" as="pw" hint-placeholder-count="0">
+              <div style="display:flex; flex-direction:column; gap:12px; padding:12px 14px; border:1px solid var(--line); border-radius:3px">
+                <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                  <div style="flex:0 0 72px; height:54px; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                    <sc-if value="{{ pw.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                  </div>
+                  <span style="font-size:11px; letter-spacing:.12em; color:var(--green)">{{ pw.no }}</span>
+                  <div style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:1 1 160px">
+                    <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ pw.titleShown }}</span>
+                    <span style="font-size:11px; color:#67746F">{{ pw.category }}</span>
+                  </div>
+                  <button onClick="{{ pw.togglePub }}" title="Show or hide on the page" style="padding:5px 12px; border:none; border-radius:10px; background:{{ pw.pubBg }}; color:{{ pw.pubColor }}; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer">{{ pw.pubLabel }}</button>
+                  <div style="display:flex; gap:4px">
+                    <button onClick="{{ pw.up }}" title="Move up" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">&#8593;</button>
+                    <button onClick="{{ pw.down }}" title="Move down" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">&#8595;</button>
+                    <button onClick="{{ pw.toggle }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ pw.editLabel }}</button>
+                  </div>
+                </div>
+                <sc-if value="{{ pw.isOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-direction:column; gap:18px; padding:16px; border:1px solid var(--green); border-radius:3px; background:#FBFEFD">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px">
+                      <input value="{{ pw.title }}" onChange="{{ pw.onTitle }}" onBlur="{{ pw.saveTitle }}" placeholder="title, lowercase" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                      <select value="{{ pw.category }}" onChange="{{ pw.onCategory }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff">
+                        <sc-for list="{{ pfCatOptsVM }}" as="pc" hint-placeholder-count="1"><option value="{{ pc.value }}">{{ pc.label }}</option></sc-for>
+                      </select>
+                    </div>
+                    <textarea value="{{ pw.story }}" onChange="{{ pw.onStory }}" onBlur="{{ pw.saveStory }}" rows="3" placeholder="a few lines on the story — who it was for, how it felt" style="padding:9px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; line-height:1.6; outline:none; background:#fff; resize:vertical; font-family:inherit"></textarea>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px">
+                      <div style="display:flex; flex-direction:column; gap:10px">
+                        <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Cover</span>
+                        <div style="width:100%; max-width:260px; aspect-ratio:4 / 5; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                          <sc-if value="{{ pw.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                        </div>
+                        <input type="file" accept="image/*" ref="{{ pw.coverRef }}" onChange="{{ pw.coverOnFile }}" style="display:none">
+                        <button onClick="{{ pw.coverPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; align-self:flex-start" style-hover="background:var(--green); color:#fff">{{ pw.coverBtn }}</button>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:10px">
+                        <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Film</span>
+                        <div style="position:relative; width:100%; max-width:360px; aspect-ratio:16 / 9; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                          <sc-if value="{{ pw.hasFilmThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.filmThumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                          <sc-if value="{{ pw.noFilm }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:12px; color:#67746F">No film yet</span></sc-if>
+                        </div>
+                        <input type="file" accept="video/*" ref="{{ pw.filmRef }}" onChange="{{ pw.filmOnFile }}" style="display:none">
+                        <div style="display:flex; gap:8px">
+                          <button onClick="{{ pw.filmPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ pw.filmBtn }}</button>
+                          <sc-if value="{{ pw.hasFilm }}" hint-placeholder-val="{{ false }}"><button onClick="{{ pw.removeFilm }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; color:#B4433A; border-color:#E7CEC9">Remove</button></sc-if>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:10px">
+                      <div style="display:flex; align-items:center; gap:10px">
+                        <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Stills · {{ pw.stillsCount }}</span>
+                        <input type="file" accept="image/*" multiple="{{ true }}" ref="{{ pw.stillsRef }}" onChange="{{ pw.stillsOnFiles }}" style="display:none">
+                        <button onClick="{{ pw.stillsPick }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="border-color:var(--green)">Add stills</button>
+                      </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px">
+                <sc-for list="{{ pw.stillsVM }}" as="st" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; gap:6px">
+                    <div style="position:relative; aspect-ratio:1 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                      <sc-if value="{{ st.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ st.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                      <sc-if value="{{ st.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
+                      <sc-if value="{{ st.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
+                    </div>
+                    <div style="display:flex; gap:4px">
+                      <button onClick="{{ st.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
+                      <button onClick="{{ st.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
+                      <button onClick="{{ st.remove }}" title="Remove" style="flex:1; padding:5px 0; background:none; border:1px solid #E7CEC9; border-radius:3px; font-size:12px; color:#B4433A; cursor:pointer">&#215;</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:10px">
+                      <div style="display:flex; align-items:center; gap:10px">
+                        <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Behind the scenes · {{ pw.cbCount }}</span>
+                        <input type="file" accept="image/*,video/*" multiple="{{ true }}" ref="{{ pw.cbRef }}" onChange="{{ pw.cbOnFiles }}" style="display:none">
+                        <button onClick="{{ pw.cbPick }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="border-color:var(--green)">Add photos</button>
+                      </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px">
+                <sc-for list="{{ pw.cbVM }}" as="cbt" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; gap:6px">
+                    <div style="position:relative; aspect-ratio:1 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                      <sc-if value="{{ cbt.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ cbt.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                      <sc-if value="{{ cbt.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
+                      <sc-if value="{{ cbt.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
+                    </div>
+                    <div style="display:flex; gap:4px">
+                      <button onClick="{{ cbt.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
+                      <button onClick="{{ cbt.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
+                      <button onClick="{{ cbt.remove }}" title="Remove" style="flex:1; padding:5px 0; background:none; border:1px solid #E7CEC9; border-radius:3px; font-size:12px; color:#B4433A; cursor:pointer">&#215;</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end">
+                      <button onClick="{{ pw.remove }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer; color:#B4433A; border-color:#E7CEC9">Delete work</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:4px">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Behind the scenes</span>
+            <span style="font-size:11px; color:#67746F">The fly-through section · {{ pfBtsCount }}. Six to twelve photos read best.</span>
+            <input type="file" accept="image/*" multiple="{{ true }}" ref="{{ pfBtsRef }}" onChange="{{ pfBtsOnFiles }}" style="display:none">
+            <button onClick="{{ pfBtsPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="background:var(--green); color:#fff">Upload</button>
+          </div>
+          <sc-if value="{{ pfBtsEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#5C6864">No behind-the-scenes photos yet.</span></sc-if>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px">
+                <sc-for list="{{ pfBtsVM }}" as="bt" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; gap:6px">
+                    <div style="position:relative; aspect-ratio:1 / 1; background:#EEF3F1; border-radius:3px; overflow:hidden">
+                      <sc-if value="{{ bt.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ bt.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                      <sc-if value="{{ bt.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
+                      <sc-if value="{{ bt.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
+                    </div>
+                    <input value="{{ bt.caption }}" onChange="{{ bt.onCaption }}" onBlur="{{ bt.saveCaption }}" placeholder="caption" style="padding:6px 9px; border:1px solid var(--line); border-radius:3px; font-size:12px; outline:none; background:#fff; min-width:0">
+                    <div style="display:flex; gap:4px">
+                      <button onClick="{{ bt.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
+                      <button onClick="{{ bt.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
+                      <button onClick="{{ bt.remove }}" title="Remove" style="flex:1; padding:5px 0; background:none; border:1px solid #E7CEC9; border-radius:3px; font-size:12px; color:#B4433A; cursor:pointer">&#215;</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+        </div>
+      </div>
+      </sc-if>
+
       <sc-if value="{{ isShoots }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
@@ -5400,6 +5594,8 @@ const CAPS = {
   shootEdit:   ['admin', 'accounts', 'hr', 'creative'],
   hoursUnlock: ['admin'],
   albumUnlock: ['admin'],
+  // The client portfolio: whoever makes the work curates it.
+  portfolio:   ['admin', 'creative', 'hr'],
 };
 
 // Divisions Glomium's creative unit works across. Weddings keep the existing
@@ -5414,6 +5610,7 @@ const DIVISIONS = [
 ];
 const DIVISION_LABEL = DIVISIONS.reduce((m, d) => { m[d[0]] = d[1]; return m; }, {});
 const DIVISION_STORAGE_KEY = 'gl_division';
+const PF_CATS = ['wedding film', 'brand film', 'commercial', 'product film', 'event', 'music video'];
 const DIVISION_NOTE = {
   wedding: 'Albums, films and day-sheet hours for weddings and destination weddings.',
   commercial: 'Identity, palette and campaign assets for brands.',
@@ -5711,6 +5908,7 @@ class Component extends DCLogic {
     payMode: 'bank', payRef: '', slip: { ...EMPTY_SLIP },
     advances: [], advAmount: '', advOn: '', advNote: '',
     personAvail: [], availDay: '', availStatus: 'busy', availNote: '',
+    pfWorks: [], pfMedia: [], pfOpenId: null, pfStatus: '', pfStatusOk: true, pfBusy: '', pfProgress: null, pfLoaded: false, pfMissing: false, pfCopied: false,
 
     // Digital & social
     digitalTab: 'overview', digProject: 'all', digRange: '30', digMetric: 'spend',
@@ -5898,6 +6096,7 @@ class Component extends DCLogic {
     if (view === 'finPayroll') this.loadPayroll();
     if (view === 'finInventory') { this.setState({ invOpenId: null, invForm: null }); this.loadInventory(); }
     if (view === 'shoots') { this.setState({ spendStatus: '' }); this.loadShootsOnly(); }
+    if (view === 'portfolio') this.loadPortfolio();
   }
 
   // ---- Sign in / out -----------------------------------------------------------
@@ -8558,6 +8757,276 @@ class Component extends DCLogic {
   }
 
   // Studio's view of sub-shoots: the day, not the money.
+  // ---- Portfolio (Studio → Portfolio) -----------------------------------------
+  // The private client page at /portfolio.html reads what is published here.
+  async loadPortfolio() {
+    const [w, m] = await Promise.all([
+      this.sb.from('portfolio_works').select('*').order('sort_order', { ascending: true }),
+      this.sb.from('portfolio_media').select('*').order('sort_order', { ascending: true }),
+    ]);
+    const err = w.error || m.error;
+    if (err) {
+      const missing = /does not exist|schema cache|42P01|PGRST205/i.test((err.message || '') + ' ' + (err.code || ''));
+      this.setState({ pfMissing: missing, pfLoaded: true });
+      if (!missing) this.pfSay('Could not load the portfolio: ' + err.message, false);
+      return;
+    }
+    this.setState({ pfWorks: w.data || [], pfMedia: m.data || [], pfMissing: false, pfLoaded: true });
+  }
+
+  pfSay(msg, ok = true) { this.setState({ pfStatus: msg, pfStatusOk: ok }); }
+
+  pfStorePaths(urls) {
+    const k = '/object/public/' + BUCKET + '/';
+    return Array.from(new Set(urls.filter(Boolean).map(u => { const i = u.indexOf(k); return i === -1 ? null : decodeURIComponent(u.slice(i + k.length)); }).filter(Boolean)));
+  }
+  pfDropFiles(urls) {
+    const p = this.pfStorePaths(urls);
+    if (p.length) this.sb.storage.from(BUCKET).remove(p).catch(() => {});
+  }
+
+  async pfPut(blob, prefix, ext, onProg) {
+    const path = 'portfolio/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+    if (blob.size > 20 * 1024 * 1024) {
+      try { await loadLib('tus'); } catch (e) {}
+      if (!window.tus) throw new Error('Resumable uploader failed to load. Reload and retry.');
+      try { await this.sb.auth.refreshSession(); } catch (e) {}
+      const { data: sess } = await this.sb.auth.getSession();
+      const token = (sess && sess.session && sess.session.access_token) || SUPABASE_KEY;
+      await new Promise((resolve, reject) => {
+        const up = new window.tus.Upload(blob, {
+          endpoint: SUPABASE_URL + '/storage/v1/upload/resumable',
+          retryDelays: [0, 3000, 6000, 12000, 24000],
+          headers: { authorization: 'Bearer ' + token, apikey: SUPABASE_KEY, 'x-upsert': 'true' },
+          uploadDataDuringCreation: true, removeFingerprintOnSuccess: true, chunkSize: 6 * 1024 * 1024,
+          metadata: { bucketName: BUCKET, objectName: path, contentType: blob.type || 'application/octet-stream', cacheControl: '31536000' },
+          onError: err => {
+            const raw = String((err && err.message) || 'Upload failed');
+            reject(new Error(/413|maximum allowed size|payload too large/i.test(raw)
+              ? 'File is over the bucket limit (' + this.fmtBytes(blob.size) + '). Raise event-media\u2019s size limit in Supabase > Storage.'
+              : raw.slice(0, 200)));
+          },
+          onProgress: (sent, total) => onProg && onProg(Math.round(sent / total * 100)),
+          onSuccess: () => resolve(),
+        });
+        up.start();
+      });
+    } else {
+      const { error } = await this.sb.storage.from(BUCKET).upload(path, blob, { cacheControl: '31536000', upsert: false, contentType: blob.type || undefined });
+      if (error) throw new Error(error.message || 'Upload failed');
+    }
+    return this.sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  // One file in, the row fields out: photos get a view and a grid copy,
+  // videos go up as-is with a poster frame pulled locally.
+  async pfPrepare(file, label) {
+    const busy = p => this.setState({ pfBusy: label + (p ? ' · ' + p + '%' : ''), pfProgress: p || 0 });
+    busy(0);
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const isVideo = /^video\//.test(file.type || '') || /^(mp4|mov|m4v|webm)$/.test(ext);
+    if (isVideo) {
+      const url = await this.pfPut(file, 'video', ext || 'mp4', busy);
+      let poster = null;
+      try { busy(100); const fr = await this.grabVideoFrame(file, 1); if (fr) poster = await this.pfPut(fr.blob, 'poster', fr.ext); } catch (e) {}
+      return { kind: 'video', url, url_grid: poster, poster_url: poster };
+    }
+    const out = { kind: 'photo' };
+    let bmp = null;
+    try {
+      bmp = await createImageBitmap(file);
+      out.width = bmp.width; out.height = bmp.height;
+      const view = await this.resizeImage(file, 2600, 0.9, bmp);
+      const grid = await this.resizeImage(file, 1100, 0.88, bmp);
+      out.url = view ? await this.pfPut(view.blob, 'view', view.ext) : await this.pfPut(file, 'photo', ext || 'jpg');
+      out.url_grid = grid ? await this.pfPut(grid.blob, 'grid', grid.ext) : out.url;
+    } catch (e) {
+      if (!out.url) { out.url = await this.pfPut(file, 'photo', ext || 'jpg', busy); out.url_grid = out.url; }
+    } finally { if (bmp && bmp.close) bmp.close(); }
+    return out;
+  }
+
+  async pfRun(done, fn) {
+    if (this.state.pfBusy) return false;
+    this.setState({ pfBusy: 'Working…', pfProgress: 0, pfStatus: '' });
+    try { await fn(); this.setState({ pfBusy: '', pfProgress: null }); this.pfSay(done); return true; }
+    catch (e) { this.setState({ pfBusy: '', pfProgress: null }); this.pfSay(e.message || String(e), false); return false; }
+  }
+
+  async pfUploadMedia(section, workId, files) {
+    files = Array.from(files || []);
+    if (!files.length) return false;
+    return this.pfRun(files.length + (files.length > 1 ? ' files' : ' file') + ' added.', async () => {
+      let order = this.state.pfMedia.filter(m => m.section === section && (m.work_id || null) === (workId || null))
+        .reduce((a, m) => Math.max(a, m.sort_order || 0), 0);
+      for (let i = 0; i < files.length; i++) {
+        const f = await this.pfPrepare(files[i], 'Uploading ' + (i + 1) + ' of ' + files.length + ' — ' + files[i].name);
+        const { data, error } = await this.sb.from('portfolio_media').insert({ section, work_id: workId || null, sort_order: ++order, ...f }).select('*').single();
+        if (error) { this.pfDropFiles([f.url, f.url_grid, f.poster_url]); throw new Error(error.message); }
+        this.setState(s => ({ pfMedia: s.pfMedia.concat([data]) }));
+      }
+    });
+  }
+
+  async pfSetReel(file) {
+    if (!file) return;
+    const old = this.state.pfMedia.filter(m => m.section === 'reel');
+    const ok = await this.pfUploadMedia('reel', null, [file]);
+    if (ok) for (const m of old) await this.pfDeleteMedia(m, true);
+    if (ok) this.pfSay('Showreel updated.');
+  }
+
+  async pfDeleteMedia(m, quiet) {
+    if (!quiet && !window.confirm('Remove this from the portfolio?')) return;
+    const { error } = await this.sb.from('portfolio_media').delete().eq('id', m.id);
+    if (error) return this.pfSay(error.message, false);
+    this.pfDropFiles([m.url, m.url_grid, m.poster_url]);
+    this.setState(s => ({ pfMedia: s.pfMedia.filter(x => x.id !== m.id) }));
+    if (!quiet) this.pfSay('Removed.');
+  }
+
+  async pfSaveCaption(id, text) {
+    const { error } = await this.sb.from('portfolio_media').update({ caption: (text || '').trim() || null }).eq('id', id);
+    this.pfSay(error ? error.message : 'Caption saved.', !error);
+  }
+
+  // Swap two neighbours, then renumber the list so ties can never stick.
+  async pfMove(list, item, d, table) {
+    const i = list.findIndex(x => x.id === item.id), j = i + d;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    const next = list.slice(); next[i] = list[j]; next[j] = list[i];
+    const ups = next.map((x, k) => ({ id: x.id, o: k + 1, was: x.sort_order })).filter(r => r.was !== r.o);
+    const res = await Promise.all(ups.map(r => this.sb.from(table).update({ sort_order: r.o }).eq('id', r.id)));
+    const bad = res.find(r => r.error);
+    if (bad) return this.pfSay(bad.error.message, false);
+    const key = table === 'portfolio_works' ? 'pfWorks' : 'pfMedia';
+    const map = {}; ups.forEach(r => { map[r.id] = r.o; });
+    this.setState(s => ({ [key]: s[key].map(x => map[x.id] != null ? { ...x, sort_order: map[x.id] } : x) }));
+  }
+
+  async pfAddWork() {
+    const max = this.state.pfWorks.reduce((a, w) => Math.max(a, w.sort_order || 0), 0);
+    const { data, error } = await this.sb.from('portfolio_works').insert({ title: 'untitled', category: PF_CATS[0], sort_order: max + 1, published: false }).select('*').single();
+    if (error) return this.pfSay(error.message, false);
+    this.setState(s => ({ pfWorks: s.pfWorks.concat([data]), pfOpenId: data.id }));
+    this.pfSay('Work added. It stays hidden until you set it live.');
+  }
+
+  pfLocal(id, patch) { this.setState(s => ({ pfWorks: s.pfWorks.map(w => w.id === id ? { ...w, ...patch } : w) })); }
+
+  async pfPatch(id, patch) {
+    this.pfLocal(id, patch);
+    const { error } = await this.sb.from('portfolio_works').update(patch).eq('id', id);
+    this.pfSay(error ? error.message : 'Saved.', !error);
+  }
+
+  async pfWorkFile(w, field, file) {
+    if (!file) return;
+    await this.pfRun(field === 'film' ? 'Film uploaded.' : 'Cover uploaded.', async () => {
+      const f = await this.pfPrepare(file, 'Uploading ' + file.name);
+      const cur = this.state.pfWorks.find(x => x.id === w.id) || w;
+      const old = field === 'film' ? [cur.film_url, cur.film_poster_url] : [cur.cover_url, cur.cover_grid_url];
+      const patch = field === 'film'
+        ? { film_url: f.url, film_poster_url: f.poster_url || null }
+        : { cover_url: f.url, cover_grid_url: f.url_grid || f.url };
+      const { error } = await this.sb.from('portfolio_works').update(patch).eq('id', w.id);
+      if (error) { this.pfDropFiles([f.url, f.url_grid, f.poster_url]); throw new Error(error.message); }
+      this.pfLocal(w.id, patch);
+      this.pfDropFiles(old);
+    });
+  }
+
+  async pfClearFilm(w) {
+    if (!window.confirm('Remove the film from this work?')) return;
+    const { error } = await this.sb.from('portfolio_works').update({ film_url: null, film_poster_url: null }).eq('id', w.id);
+    if (error) return this.pfSay(error.message, false);
+    this.pfDropFiles([w.film_url, w.film_poster_url]);
+    this.pfLocal(w.id, { film_url: null, film_poster_url: null });
+    this.pfSay('Film removed.');
+  }
+
+  async pfDeleteWork(w) {
+    if (!window.confirm('Delete \u201c' + (w.title || 'untitled') + '\u201d and all its media from the portfolio?')) return;
+    const media = this.state.pfMedia.filter(m => m.work_id === w.id);
+    const { error } = await this.sb.from('portfolio_works').delete().eq('id', w.id);
+    if (error) return this.pfSay(error.message, false);
+    this.pfDropFiles([w.cover_url, w.cover_grid_url, w.film_url, w.film_poster_url].concat(...media.map(m => [m.url, m.url_grid, m.poster_url])));
+    this.setState(s => ({ pfWorks: s.pfWorks.filter(x => x.id !== w.id), pfMedia: s.pfMedia.filter(m => m.work_id !== w.id), pfOpenId: null }));
+    this.pfSay('Work deleted.');
+  }
+
+  portfolioVM() {
+    const s = this.state;
+    if (s.view !== 'portfolio') return { isPortfolio: false, pfWorksVM: [], pfBtsVM: [], pfCatOptsVM: [] };
+    const byOrder = (a, b) => (a.sort_order || 0) - (b.sort_order || 0) || String(a.created_at || '').localeCompare(String(b.created_at || ''));
+    const works = s.pfWorks.slice().sort(byOrder);
+    const mediaOf = (sec, wid) => s.pfMedia.filter(m => m.section === sec && (m.work_id || null) === (wid || null)).sort(byOrder);
+    const ref = k => el => { this.pfIn = this.pfIn || {}; this.pfIn[k] = el; };
+    const pick = k => () => { const el = this.pfIn && this.pfIn[k]; if (el) el.click(); };
+    const files = fn => e => { const f = Array.from(e.target.files || []); e.target.value = ''; fn(f); };
+    const thumbOf = m => m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url || '');
+    const tile = (m, list) => ({
+      thumb: thumbOf(m), hasThumb: !!thumbOf(m), noThumb: !thumbOf(m), isVideo: m.kind === 'video',
+      caption: m.caption || '',
+      left: () => this.pfMove(list, m, -1, 'portfolio_media'), right: () => this.pfMove(list, m, 1, 'portfolio_media'),
+      remove: () => this.pfDeleteMedia(m),
+      onCaption: e => { const v = e.target.value; this.setState(st => ({ pfMedia: st.pfMedia.map(x => x.id === m.id ? { ...x, caption: v } : x) })); },
+      saveCaption: e => this.pfSaveCaption(m.id, e.target.value),
+    });
+    const reel = mediaOf('reel', null).slice(-1)[0];
+    const bts = mediaOf('bts', null);
+    const origin = location.origin && location.origin !== 'null' && /^https?:/.test(location.origin) ? location.origin : 'https://album.glomium.co';
+    const link = origin + '/portfolio.html';
+    const live = works.filter(w => w.published).length;
+    return {
+      pfSrcRef: el => { if (el) { const u = el.getAttribute('data-src'); if (u && el.getAttribute('src') !== u) el.setAttribute('src', u); } },
+      isPortfolio: true, pfMissing: !!s.pfMissing, pfLoading: !s.pfLoaded,
+      pfStatus: s.pfStatus || '', pfHasStatus: !!s.pfStatus, pfStatusColor: s.pfStatusOk === false ? '#B4433A' : 'var(--green-deep)',
+      pfBusy: s.pfBusy || '', pfHasBusy: !!s.pfBusy, pfBarWidth: (s.pfProgress || 0) + '%',
+      pfLink: link, pfCopyLabel: s.pfCopied ? 'Copied' : 'Copy link',
+      pfCopy: () => { try { navigator.clipboard.writeText(link); } catch (e) {} this.setState({ pfCopied: true }); setTimeout(() => this.setState({ pfCopied: false }), 1600); },
+      pfReelHas: !!reel, pfReelEmpty: !reel, pfReelThumb: reel ? thumbOf(reel) : '', pfReelHasThumb: !!(reel && thumbOf(reel)),
+      pfReelKind: reel ? (reel.kind === 'video' ? 'Video loop' : 'Still') : '', pfReelBtn: reel ? 'Replace' : 'Upload',
+      pfReelRef: ref('reel'), pfReelPick: pick('reel'), pfReelOnFile: files(f => this.pfSetReel(f[0])),
+      pfReelRemove: () => { if (reel) this.pfDeleteMedia(reel); },
+      pfWorksEmpty: !works.length, pfWorksCount: works.length + (works.length === 1 ? ' work' : ' works') + ' · ' + live + ' live',
+      pfAddWork: () => this.pfAddWork(),
+      pfCatOptsVM: PF_CATS.map(c => ({ value: c, label: c })),
+      pfWorksVM: works.map((w, i) => {
+        const stills = mediaOf('still', w.id), cb = mediaOf('case_bts', w.id);
+        const open = s.pfOpenId === w.id;
+        const thumb = w.cover_grid_url || w.cover_url || '';
+        return {
+          no: String(i + 1).padStart(2, '0'), title: w.title || '', titleShown: w.title || 'untitled',
+          category: w.category || PF_CATS[0], story: w.story || '',
+          thumb, hasThumb: !!thumb, noThumb: !thumb,
+          pubLabel: w.published ? 'Live' : 'Hidden', pubBg: w.published ? '#E4F4EF' : '#F1F3F2', pubColor: w.published ? 'var(--green-deep)' : '#67746F',
+          togglePub: () => this.pfPatch(w.id, { published: !w.published }),
+          isOpen: open, editLabel: open ? 'Close' : 'Edit',
+          toggle: () => this.setState({ pfOpenId: open ? null : w.id }),
+          up: () => this.pfMove(works, w, -1, 'portfolio_works'), down: () => this.pfMove(works, w, 1, 'portfolio_works'),
+          onTitle: e => this.pfLocal(w.id, { title: e.target.value }),
+          saveTitle: e => this.pfPatch(w.id, { title: e.target.value.trim() || 'untitled' }),
+          onCategory: e => this.pfPatch(w.id, { category: e.target.value }),
+          onStory: e => this.pfLocal(w.id, { story: e.target.value }),
+          saveStory: e => this.pfPatch(w.id, { story: e.target.value.trim() || null }),
+          coverRef: ref('cover-' + w.id), coverPick: pick('cover-' + w.id), coverOnFile: files(f => this.pfWorkFile(w, 'cover', f[0])),
+          coverBtn: w.cover_url ? 'Replace cover' : 'Upload cover',
+          filmRef: ref('film-' + w.id), filmPick: pick('film-' + w.id), filmOnFile: files(f => this.pfWorkFile(w, 'film', f[0])),
+          filmBtn: w.film_url ? 'Replace film' : 'Upload film', hasFilm: !!w.film_url, noFilm: !w.film_url,
+          filmThumb: w.film_poster_url || '', hasFilmThumb: !!w.film_poster_url, removeFilm: () => this.pfClearFilm(w),
+          stillsRef: ref('stills-' + w.id), stillsPick: pick('stills-' + w.id), stillsOnFiles: files(f => this.pfUploadMedia('still', w.id, f)),
+          stillsVM: stills.map(m => tile(m, stills)), stillsCount: stills.length ? String(stills.length) : 'none yet',
+          cbRef: ref('cbts-' + w.id), cbPick: pick('cbts-' + w.id), cbOnFiles: files(f => this.pfUploadMedia('case_bts', w.id, f)),
+          cbVM: cb.map(m => tile(m, cb)), cbCount: cb.length ? String(cb.length) : 'none yet',
+          remove: () => this.pfDeleteWork(w),
+        };
+      }),
+      pfBtsRef: ref('bts'), pfBtsPick: pick('bts'), pfBtsOnFiles: files(f => this.pfUploadMedia('bts', null, f)),
+      pfBtsVM: bts.map(m => tile(m, bts)), pfBtsEmpty: !bts.length, pfBtsCount: bts.length ? String(bts.length) : 'none yet',
+    };
+  }
+
   shootsVM() {
     const s = this.state;
     const parents = this.spendParents();
@@ -14109,6 +14578,7 @@ class Component extends DCLogic {
       if (this.can('talent') && !this.can('people')) nav.push({ key: 'talent', label: 'Freelance' });
       // Creative books trials and recces; Finance logs what they cost.
       if (this.can('shootEdit') && !this.can('finance')) nav.push({ key: 'shoots', label: 'Shoots' });
+      if (this.can('portfolio')) nav.push({ key: 'portfolio', label: 'Portfolio' });
       // Only inside the division it belongs to.
       if (this.can('digital') && s.division === 'digital') nav.push({ key: 'digital', label: 'Digital' });
       if (this.can('peopleApprove')) nav.push({ key: 'approvals', label: 'Approvals' + (pendingRequests ? ' (' + pendingRequests + ')' : '') });
@@ -15143,7 +15613,7 @@ class Component extends DCLogic {
         color: s.view === pair[0] ? 'var(--green-deep)' : '#67746F',
       })),
 
-      isWorkspace: !picking && !wsPick && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || FIN_VIEWS.indexOf(s.view) !== -1),
+      isWorkspace: !picking && !wsPick && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || s.view === 'portfolio' || FIN_VIEWS.indexOf(s.view) !== -1),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       isMoney: onMoney,
       isApprovals: s.view === 'approvals',
@@ -15704,6 +16174,7 @@ class Component extends DCLogic {
       ...this.accessTabVM(),
       ...this.pricingVM(),
       ...this.financeVM(),
+      ...this.portfolioVM(),
       isAlbumTab: s.editorTab === 'album' && this.can('media'),
       isBillingTab: s.editorTab === 'billing' && this.can('billing'),
       isWeddingAlbumTab: s.editorTab === 'album' && this.can('media') && this.parentTable() !== 'projects',
