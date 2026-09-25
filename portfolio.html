@@ -18,30 +18,29 @@
 body { margin: 0; background: #FFFFFF; color: #1B1D1E; font-family: 'Jost', Helvetica, sans-serif; overflow-x: clip; -webkit-font-smoothing: antialiased; }
 a { color: #0A6E58; text-decoration: none; }
 a:hover { color: #10AF8B; }
-@keyframes gl-drift { 0% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(5vw,-3vh,0) scale(1.12); } 100% { transform: translate3d(0,0,0) scale(1); } }
 </style>
 </helmet>
 
 <div ref="{{ rootRef }}" style="position: relative; font-weight: 300;">
-  {{ mist }}
+  <canvas ref="{{ mistRef }}" width="160" height="90" aria-hidden="true" style="position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; pointer-events: none;"></canvas>
 
   <header ref="{{ headerRef }}" style="position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px clamp(20px, 4vw, 56px); color: #1B1D1E; transition: color 0.5s; pointer-events: none;">
-    <a href="#top" style="position: relative; display: block; height: 20px; pointer-events: auto;">
+    <a href="#top" onClick="{{ jump }}" style="position: relative; display: block; height: 20px; pointer-events: auto;">
       <img ref="{{ logoGreenRef }}" src="assets/wordmark-green.png" alt="glomium" style="display: block; height: 20px; width: auto; transition: opacity 0.5s;">
       <img ref="{{ logoWhiteRef }}" src="assets/wordmark-white.png" alt="" style="position: absolute; left: 0; top: 0; height: 20px; width: auto; opacity: 0; transition: opacity 0.5s;">
     </a>
     <nav style="display: flex; gap: clamp(16px, 3vw, 40px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: auto;">
-      <a href="#works" style="color: inherit;" style-hover="color: #10AF8B;">works</a>
-      <a href="#bts" style="color: inherit;" style-hover="color: #10AF8B;">behind</a>
-      <a href="#process" style="color: inherit;" style-hover="color: #10AF8B;">process</a>
+      <a href="#works" onClick="{{ jump }}" style="color: inherit;" style-hover="color: #10AF8B;">works</a>
+      <a href="#bts" onClick="{{ jump }}" style="color: inherit;" style-hover="color: #10AF8B;">behind</a>
+      <a href="#process" onClick="{{ jump }}" style="color: inherit;" style-hover="color: #10AF8B;">process</a>
     </nav>
   </header>
 
   <section id="top" ref="{{ heroRef }}" data-screen-label="01 reel" style="position: relative; height: 280vh;">
     <div style="position: sticky; top: 0; height: 100vh; overflow: hidden;">
-      <div ref="{{ filmBaseRef }}" style="position: absolute; inset: 0; background: linear-gradient(125deg, #BFE9DC 0%, #EAF7F2 38%, #FFFFFF 56%, #CDEFE4 100%); transform: scale(1.18);">
+      <div ref="{{ filmBaseRef }}" style="position: absolute; inset: 0; background: linear-gradient(125deg, #BFE9DC 0%, #EAF7F2 38%, #FFFFFF 56%, #CDEFE4 100%); transform: scale(1.18); will-change: transform;">
         <sc-if value="{{ reelVideo }}" hint-placeholder-val="{{ false }}"><video ref="{{ reelVideoRef }}" data-src="{{ reelUrl }}" data-poster="{{ reelPoster }}" preload="auto" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></video></sc-if>
-        <sc-if value="{{ reelPhoto }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ reelUrl }}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+        <sc-if value="{{ reelPhoto }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ reelUrl }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
         <sc-if value="{{ reelSlot }}" hint-placeholder-val="{{ false }}"><image-slot id="hero-reel" shape="rect" placeholder="showreel still or loop"></image-slot></sc-if>
       </div>
       <div ref="{{ filmUiRef }}" style="position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(0deg, rgba(8,22,17,0.5) 0%, rgba(8,22,17,0) 38%);">
@@ -56,7 +55,7 @@ a:hover { color: #10AF8B; }
       <div ref="{{ knockRef }}" style="position: absolute; inset: 0; background: #FFFFFF; mix-blend-mode: screen; display: flex; align-items: center; justify-content: center; pointer-events: none;">
         <h1 style="margin: 0; font-weight: 500; font-size: clamp(56px, 18vw, 380px); line-height: 0.8; letter-spacing: -0.02em; color: #000000; white-space: nowrap;"><span style="display: inline-block;">I</span><span style="display: inline-block;">N</span><span style="display: inline-block;">F</span><span style="display: inline-block;">I</span><span style="display: inline-block;">N</span><span data-origin="" style="display: inline-block;">I</span><span style="display: inline-block;">T</span><span style="display: inline-block;">E</span><span style="display: inline-block;">L</span><span style="display: inline-block;">Y</span></h1>
       </div>
-      <div ref="{{ heroOverlayRef }}" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+      <div ref="{{ heroOverlayRef }}" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; will-change: transform, opacity;">
         <div aria-hidden="true" style="position: relative; visibility: hidden; font-weight: 500; font-size: clamp(56px, 18vw, 380px); line-height: 0.8; letter-spacing: -0.02em; white-space: nowrap;">INFINITELY
           <div data-intro="" style="visibility: visible; position: absolute; left: 0; right: 0; bottom: calc(100% + 0.22em); text-align: center; font-size: clamp(15px, 0.1em, 34px); font-weight: 300; letter-spacing: 0.5em; line-height: 1; color: #1B1D1E;">creative</div>
           <div data-intro="" style="visibility: visible; position: absolute; left: 0; right: 0; top: calc(100% + 0.26em); display: flex; justify-content: space-between; gap: 24px; font-size: 10px; font-weight: 300; letter-spacing: 2.6px; line-height: 1.6; text-transform: uppercase; color: #8A9390;">
@@ -80,9 +79,11 @@ a:hover { color: #10AF8B; }
         </div>
         <sc-for list="{{ works }}" as="w" hint-placeholder-count="3">
           <article data-card="" onClick="{{ w.open }}" onMouseEnter="{{ showCursor }}" onMouseLeave="{{ hideCursor }}" style="position: absolute; left: 50%; top: 50%; width: {{ w.width }}; cursor: none; opacity: 0;">
-            <div style="position: relative; width: 100%; aspect-ratio: {{ w.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 40px 90px -40px rgba(10,110,88,0.45);">
-              <sc-if value="{{ w.hasCover }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ w.cover }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
-              <sc-if value="{{ w.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="work-{{ w.id }}" shape="rect" placeholder="cover still"></image-slot></sc-if>
+            <div style="position: relative; width: 100%; aspect-ratio: {{ w.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 28px 60px -34px rgba(10,110,88,0.38);">
+              <div data-par="" style="position: absolute; top: 0; bottom: 0; left: -6%; right: -6%;">
+                <sc-if value="{{ w.hasCover }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ w.cover }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+                <sc-if value="{{ w.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="work-{{ w.id }}" shape="rect" placeholder="cover still"></image-slot></sc-if>
+              </div>
               <div data-catch="" style="position: absolute; inset: 0; z-index: 2;"></div>
             </div>
             <div data-cap="" style="position: absolute; left: 0; right: 0; top: calc(100% + 14px); display: flex; justify-content: space-between; align-items: baseline; gap: 16px; opacity: 0;">
@@ -110,9 +111,9 @@ a:hover { color: #10AF8B; }
           <p style="margin: 0; max-width: 24em; font-size: 16px; line-height: 1.8; color: #4A524F;">the waiting, the light-chasing, the laughing between takes. the part nobody frames — so we did.</p>
         </div>
         <sc-for list="{{ bts }}" as="b" hint-placeholder-count="3">
-          <figure data-depth="" data-fx="{{ b.fx }}" data-fy="{{ b.fy }}" data-z="{{ b.z }}" style="position: absolute; left: 50%; top: 50%; width: {{ b.w }}; margin: 0; opacity: 0;">
-            <div style="position: relative; width: 100%; aspect-ratio: {{ b.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 30px 80px -34px rgba(10,110,88,0.4);">
-              <sc-if value="{{ b.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ b.img }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+          <figure data-depth="" data-fx="{{ b.fx }}" data-fy="{{ b.fy }}" data-z="{{ b.z }}" style="position: absolute; left: 50%; top: 50%; width: {{ b.w }}; margin: 0; opacity: 0; visibility: hidden;">
+            <div style="position: relative; width: 100%; aspect-ratio: {{ b.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 24px 56px -30px rgba(10,110,88,0.34);">
+              <sc-if value="{{ b.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ b.img }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
               <sc-if value="{{ b.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="bts-{{ b.id }}" shape="rect" placeholder="bts photo"></image-slot></sc-if>
             </div>
             <figcaption style="display: flex; gap: 12px; padding-top: 12px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
@@ -150,7 +151,7 @@ a:hover { color: #10AF8B; }
   </footer>
 
   <sc-if value="{{ hudOn }}" hint-placeholder-val="{{ true }}">
-    <div ref="{{ hudRef }}" style="position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; align-items: center; gap: 24px; padding: 20px clamp(20px, 4vw, 56px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #1B1D1E; transition: color 0.5s; pointer-events: none;">
+    <div ref="{{ hudRef }}" style="position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; align-items: center; gap: 24px; padding: 20px clamp(20px, 4vw, 56px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #1B1D1E; transition: color 0.5s; pointer-events: none; contain: layout style;">
       <span ref="{{ chapterRef }}" style="flex: 0 0 110px;">01 reel</span>
       <div ref="{{ tickRef }}" style="position: relative; flex: 1 1 auto; height: 11px;">
         <div style="position: absolute; left: 0; right: 0; top: 5px; height: 1px; background: currentColor; opacity: 0.22;"></div>
@@ -158,14 +159,14 @@ a:hover { color: #10AF8B; }
         <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
         <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
         <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
-        <div ref="{{ playheadRef }}" style="position: absolute; top: -2px; left: 0; width: 2px; height: 15px; background: #10AF8B;"></div>
+        <div ref="{{ playheadRef }}" style="position: absolute; top: -2px; left: 0; width: 2px; height: 15px; background: #10AF8B; will-change: transform;"></div>
       </div>
       <span ref="{{ tcRef }}" style="flex: 0 0 110px; text-align: right; font-variant-numeric: tabular-nums;">00:00:00:00</span>
     </div>
   </sc-if>
 
   <div ref="{{ caseRef }}" data-screen-label="case" style="position: fixed; inset: 0; z-index: 90; overflow-y: auto; overscroll-behavior: contain; background: linear-gradient(180deg, #FFFFFF 0%, #F2F8F5 42%, #FFFFFF 100%); clip-path: inset(100% 0% 0% 0%); pointer-events: none; transition: clip-path 1s cubic-bezier(.77,0,.18,1);">
-    <div style="position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px clamp(20px, 4vw, 56px); background: rgba(255,255,255,0.78); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;">
+    <div style="position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px clamp(20px, 4vw, 56px); background: rgba(255,255,255,0.86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;">
       <button onClick="{{ close }}" style="border: 0; background: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #0E8E72; cursor: pointer; padding: 0;">close</button>
       <span style="color: #8A9390; font-variant-numeric: tabular-nums;">{{ activeWork.no }} / {{ workCount }}</span>
       <div style="display: flex; gap: 28px;">
@@ -184,8 +185,8 @@ a:hover { color: #10AF8B; }
 
     <div data-rise="" style="padding: 0 clamp(20px, 4vw, 56px);">
       <div style="position: relative; width: 100%; aspect-ratio: 2.39 / 1; overflow: hidden; background: #0F1211; box-shadow: 0 60px 140px -60px rgba(10,110,88,0.5);">
-        <sc-if value="{{ activeWork.hasFilm }}" hint-placeholder-val="{{ false }}"><video ref="{{ mediaRef }}" data-src="{{ activeWork.film }}" data-poster="{{ activeWork.poster }}" controls="{{ true }}" preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0F1211; display: block;"></video></sc-if>
-        <sc-if value="{{ activeWork.posterOnly }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ activeWork.hero }}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+        <sc-if value="{{ activeWork.hasFilm }}" hint-placeholder-val="{{ false }}"><video ref="{{ mediaRef }}" data-src="{{ activeWork.film }}" data-poster="{{ activeWork.poster }}" controls="{{ true }}" playsInline="{{ true }}" preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0F1211; display: block;"></video></sc-if>
+        <sc-if value="{{ activeWork.posterOnly }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ activeWork.hero }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
         <sc-if value="{{ activeWork.filmSlot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-film" shape="rect" placeholder="film — poster frame"></image-slot></sc-if>
       </div>
     </div>
@@ -198,7 +199,7 @@ a:hover { color: #10AF8B; }
       <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 24px); align-items: start;">
         <sc-for list="{{ stills }}" as="p" hint-placeholder-count="4">
           <div style="position: relative; grid-column: {{ p.col }}; margin-top: {{ p.mt }}; aspect-ratio: {{ p.ratio }}; overflow: hidden; background: #EEF3F1;">
-            <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ p.img }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+            <sc-if value="{{ p.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ p.img }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
             <sc-if value="{{ p.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-still-{{ p.n }}" shape="rect" placeholder="still"></image-slot></sc-if>
           </div>
         </sc-for>
@@ -213,7 +214,7 @@ a:hover { color: #10AF8B; }
       <div style="display: flex; gap: clamp(12px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 clamp(20px, 4vw, 56px) 8px; scroll-padding: 0 clamp(20px, 4vw, 56px);">
         <sc-for list="{{ caseBts }}" as="c" hint-placeholder-count="4">
           <div style="position: relative; flex: 0 0 auto; width: clamp(220px, 26vw, 420px); aspect-ratio: {{ c.ratio }}; overflow: hidden; background: #EEF3F1; scroll-snap-align: start;">
-            <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ c.img }}" alt="" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+            <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ c.img }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
             <sc-if value="{{ c.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-bts-{{ c.n }}" shape="rect" placeholder="bts"></image-slot></sc-if>
           </div>
         </sc-for>
@@ -249,25 +250,30 @@ a:hover { color: #10AF8B; }
     </div>
   </sc-if>
 
-  <div ref="{{ cursorRef }}" style="position: fixed; left: 0; top: 0; z-index: 80; width: 92px; height: 92px; border-radius: 50%; background: #10AF8B; color: #FFFFFF; display: grid; place-items: center; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: none; transform: translate3d(-200px, -200px, 0) scale(0);">open</div>
+  <div ref="{{ cursorRef }}" style="position: fixed; left: 0; top: 0; z-index: 80; width: 92px; height: 92px; border-radius: 50%; background: #10AF8B; color: #FFFFFF; display: grid; place-items: center; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: none; transform: translate3d(-200px, -200px, 0) scale(0); will-change: transform;">open</div>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;workCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:3,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;content&quot;},&quot;hud&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;look&quot;},&quot;preload&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;smooth&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;drift&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;}}">
 class Component extends DCLogic {
   state = { active: null };
-  S = { hero: 0, wl: 0, wm: 0, ws: 0, bts: 0, mx: 0, my: 0, tmx: 0, tmy: 0, cx: -200, cy: -200, tx: -200, ty: -200, ring: 0, tring: 0 };
   kinds = ['wedding film', 'brand film', 'commercial', 'music video', 'event', 'wedding film', 'product film', 'brand film'];
   ratios = [[4, 5], [16, 10], [3, 4], [4, 5], [16, 10], [3, 4], [4, 5], [16, 10]];
   chapters = ['01 reel', '02 works', '03 behind', '04 process'];
 
   constructor(p) {
     super(p);
-    ['rootRef', 'headerRef', 'logoGreenRef', 'logoWhiteRef', 'heroRef', 'filmBaseRef', 'filmUiRef', 'knockRef', 'heroOverlayRef', 'cueRef',
+    ['rootRef', 'mistRef', 'headerRef', 'logoGreenRef', 'logoWhiteRef', 'heroRef', 'filmBaseRef', 'filmUiRef', 'knockRef', 'heroOverlayRef', 'cueRef',
      'worksRef', 'sceneRef', 'worksTitleRef', 'counterRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
-     'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef', 'cursorRef', 'loaderRef', 'loadNumRef', 'loadBarRef', 'loadLabelRef', 'loadMarkRef'].forEach(k => { this[k] = React.createRef(); });
+     'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef', 'cursorRef',
+     'loaderRef', 'loadNumRef', 'loadBarRef', 'loadLabelRef', 'loadMarkRef'].forEach(k => { this[k] = React.createRef(); });
+    this.S = { mx: 0, my: 0, tmx: 0, tmy: 0, cx: -200, cy: -200, tx: -200, ty: -200, ring: 0, tring: 0, vel: 0 };
+    this.Y = { cur: 0, target: 0, applied: 0, running: false, k: 0.1 };
+    this.frame = 0;
   }
 
   componentDidMount() {
+    this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.coarse = matchMedia('(pointer: coarse)').matches;
     this.onMove = (e) => { const S = this.S; S.tx = e.clientX; S.ty = e.clientY; S.tmx = e.clientX / innerWidth * 2 - 1; S.tmy = e.clientY / innerHeight * 2 - 1; };
     this.onKey = (e) => {
       if (this.state.active == null) return;
@@ -281,40 +287,90 @@ class Component extends DCLogic {
       const next = i != null && i >= 0 && i < this.works().length ? i : null;
       if (next !== this.state.active) this.setState({ active: next }, () => this.afterActive());
     };
-    this.onResize = () => this.measure();
+    // Phones resize on every address-bar show/hide; only re-measure on real changes.
+    this.onResize = () => {
+      const M = this.M;
+      if (this.coarse && M && innerWidth === M.vw && Math.abs(innerHeight - M.vh) < 160) return;
+      this.dirty = true;
+    };
+    this.onWheel = (e) => this.wheel(e);
     this.onDragIn = (e) => { const t = e.dataTransfer && e.dataTransfer.types; if (t && Array.from(t).includes('Files')) this.setCatch(false); };
     this.onDragOut = (e) => { if (e.type !== 'dragleave' || !e.relatedTarget) this.setCatch(true); };
     addEventListener('mousemove', this.onMove, { passive: true });
     addEventListener('keydown', this.onKey);
     addEventListener('hashchange', this.onHash);
     addEventListener('resize', this.onResize);
+    addEventListener('wheel', this.onWheel, { passive: false });
     addEventListener('dragenter', this.onDragIn, true);
     ['dragleave', 'drop', 'dragend'].forEach(ev => addEventListener(ev, this.onDragOut, true));
+    if (window.ResizeObserver && this.rootRef.current) { this.ro = new ResizeObserver(() => { this.dirty = true; }); this.ro.observe(this.rootRef.current); }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { this.dirty = true; });
+    this.Y.cur = this.Y.target = this.Y.applied = scrollY;
     this.measure();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.measure());
-    setTimeout(() => this.measure(), 600);
     this.onHash();
-    this.boot();
+    this.boot().catch(() => this.finishLoad());
+    this.safety = setTimeout(() => this.finishLoad(), 25000);
     this.raf = requestAnimationFrame(this.tick);
   }
+  componentDidUpdate() { this.dirty = true; }
   componentWillUnmount() {
     this.unmounted = true;
     cancelAnimationFrame(this.raf);
+    clearTimeout(this.safety);
+    if (this.ro) this.ro.disconnect();
     removeEventListener('mousemove', this.onMove);
     removeEventListener('keydown', this.onKey);
     removeEventListener('hashchange', this.onHash);
     removeEventListener('resize', this.onResize);
+    removeEventListener('wheel', this.onWheel);
     removeEventListener('dragenter', this.onDragIn, true);
     ['dragleave', 'drop', 'dragend'].forEach(ev => removeEventListener(ev, this.onDragOut, true));
     document.body.style.overflow = '';
   }
+
+  // Style writes only when the value actually changes.
+  st(el, prop, val) { if (el && el['_s_' + prop] !== val) { el['_s_' + prop] = val; el.style[prop] = val; } }
+  smoothOn() { return (this.props.smooth ?? true) && !this.reduced; }
 
   setCatch(on) {
     const r = this.rootRef.current;
     if (r) r.querySelectorAll('[data-catch]').forEach(el => { el.style.pointerEvents = on ? 'auto' : 'none'; });
   }
 
+  // Inertial wheel scrolling: the page position itself is eased, so every
+  // pinned section and every transform reads the same number each frame.
+  wheel(e) {
+    if (e.ctrlKey || e.defaultPrevented) return;
+    if (!this.L || !this.L.finished) { if (this.L && (this.props.preload ?? true)) e.preventDefault(); return; }
+    if (this.state.active != null || !this.smoothOn()) return;
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16; else if (e.deltaMode === 2) dy *= innerHeight;
+    if (Math.abs(e.deltaX) > Math.abs(dy)) return;
+    e.preventDefault();
+    const Y = this.Y;
+    if (!Y.running) { Y.cur = Y.applied = Y.target = scrollY; }
+    Y.k = 0.1;
+    Y.target = Math.max(0, Math.min(this.M ? this.M.maxY : 1e9, Y.target + dy));
+    Y.running = true;
+  }
+  jump = (e) => {
+    const href = e.currentTarget.getAttribute('href') || '';
+    const el = href.charAt(0) === '#' ? document.getElementById(href.slice(1)) : null;
+    if (!el) return;
+    e.preventDefault();
+    const top = href === '#top' ? 0 : el.getBoundingClientRect().top + scrollY;
+    if (!this.smoothOn()) { scrollTo(0, top); return; }
+    const Y = this.Y;
+    if (!Y.running) Y.cur = Y.applied = scrollY;
+    Y.k = 0.065;
+    Y.target = Math.max(0, Math.min(this.M ? this.M.maxY : top, top));
+    Y.running = true;
+  };
+
+  // Everything the frame loop needs, read once instead of every frame.
   measure() {
+    const root = this.rootRef.current;
+    if (!root) return;
     const k = this.knockRef.current;
     if (k) {
       const o = k.querySelector('[data-origin]');
@@ -336,18 +392,33 @@ class Component extends DCLogic {
         k.style.transform = prev;
       }
     }
-    const root = this.rootRef.current, tk = this.tickRef.current;
-    if (root && tk) {
-      const total = Math.max(1, root.offsetHeight - innerHeight);
-      const ticks = tk.querySelectorAll('[data-tick]');
-      [this.heroRef, this.worksRef, this.btsRef, this.processRef].forEach((s, i) => {
-        if (s.current && ticks[i]) ticks[i].style.left = Math.min(100, s.current.offsetTop / total * 100) + '%';
-      });
+    const vw = innerWidth, vh = innerHeight, sy = scrollY;
+    const box = ref => { const el = ref.current; if (!el) return { top: 0, h: 0 }; const b = el.getBoundingClientRect(); return { top: b.top + sy, h: b.height }; };
+    const M = { vw, vh, hero: box(this.heroRef), works: box(this.worksRef), bts: box(this.btsRef), process: box(this.processRef), root: box(this.rootRef) };
+    M.maxY = Math.max(0, document.documentElement.scrollHeight - vh);
+    M.chap = [M.hero.top, M.works.top, M.bts.top, M.process.top];
+    const sc = this.sceneRef.current;
+    M.cards = sc ? Array.from(sc.querySelectorAll('[data-card]')).map(el => ({ el, w: el.offsetWidth, h: el.offsetHeight, cap: el.querySelector('[data-cap]'), par: el.querySelector('[data-par]') })) : [];
+    const pad = Math.min(56, Math.max(20, vw * 0.04)), gap = Math.max(16, vw * 0.02);
+    let cum = -vw / 2 + pad, total = 0;
+    M.cards.forEach((c, i) => { c.sx = cum + c.w / 2; cum += c.w + gap; total += c.w + (i ? gap : 0); });
+    M.travel = Math.max(0, total - (vw - 2 * pad));
+    const bs = this.btsSceneRef.current;
+    M.depth = bs ? Array.from(bs.querySelectorAll('[data-depth]')).map(el => ({ el, fx: +el.dataset.fx || 0, fy: +el.dataset.fy || 0, z0: +el.dataset.z || 0, w: el.offsetWidth, h: el.offsetHeight })) : [];
+    const tk = this.tickRef.current;
+    M.tickW = tk ? tk.offsetWidth : 0;
+    if (tk) {
+      const total2 = Math.max(1, M.root.h - vh), ticks = tk.querySelectorAll('[data-tick]');
+      M.chap.forEach((top, i) => { if (ticks[i]) ticks[i].style.left = Math.min(100, (top - M.root.top) / total2 * 100) + '%'; });
     }
+    const c = this.mistRef.current;
+    if (c) { const H = Math.max(40, Math.round(160 * vh / Math.max(1, vw))); if (c.height !== H) { c.height = H; this.mctx = null; } }
+    this.M = M;
+    this.mistY = null;
   }
 
   intro() {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (this.reduced) return;
     const ease = 'cubic-bezier(.2,.8,.2,1)';
     const k = this.knockRef.current;
     if (k) k.querySelectorAll('span').forEach((s, i) => s.animate(
@@ -363,130 +434,167 @@ class Component extends DCLogic {
     if (mk) mk.animate([{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-8px) scale(1.04)' }], { duration: 3200, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
   }
 
-  tick = (t) => {
+  // A tiny canvas stretched over the viewport: soft mist for the cost of 160 pixels.
+  drawMist(now, y) {
+    const c = this.mistRef.current, M = this.M;
+    if (!c || !M) return;
+    const ctx = this.mctx || (this.mctx = c.getContext('2d', { alpha: false }));
+    if (!ctx) return;
+    const W = c.width, H = c.height, t = now * 0.001, sp = M.maxY ? y / M.maxY : 0;
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, W, H);
+    const blob = (x, yy, r, a) => {
+      const g = ctx.createRadialGradient(x, yy, 0, x, yy, r);
+      g.addColorStop(0, `rgba(16,175,139,${a})`); g.addColorStop(0.55, `rgba(16,175,139,${(a * 0.35).toFixed(3)})`); g.addColorStop(1, 'rgba(16,175,139,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    };
+    blob(W * (0.1 + 0.07 * Math.sin(t / 9)), H * (0.08 + 0.1 * Math.cos(t / 11) - sp * 0.5), W * 0.62, 0.14);
+    blob(W * (0.9 + 0.06 * Math.cos(t / 12)), H * (0.62 + 0.12 * Math.sin(t / 10) - sp * 0.3), W * 0.5, 0.09);
+    blob(W * (0.45 + 0.1 * Math.sin(t / 14)), H * (1.05 + 0.08 * Math.cos(t / 13) - sp * 0.6), W * 0.55, 0.08);
+  }
+
+  reelOn(v) {
+    if (this._reelOn === v || !this.reelEl) return;
+    this._reelOn = v;
+    if (v) { const p = this.reelEl.play(); if (p && p.catch) p.catch(() => {}); } else this.reelEl.pause();
+  }
+
+  tick = (now) => {
     this.raf = requestAnimationFrame(this.tick);
+    const dt = Math.min(64, Math.max(1, now - (this.lastT || now - 16.667)));
+    this.lastT = now;
+    const f60 = dt / 16.667;
+    if (this.dirty) { this.dirty = false; this.measure(); }
+    const M = this.M;
+    if (!M) return;
+    const Y = this.Y, S = this.S, st = (el, p, v) => this.st(el, p, v);
+    const cl = v => v < 0 ? 0 : v > 1 ? 1 : v;
+
+    let y;
+    if (Y.running) {
+      const ext = scrollY;
+      if (Math.abs(ext - Y.applied) > 3) { Y.running = false; y = Y.cur = Y.target = Y.applied = ext; }
+      else {
+        Y.cur += (Y.target - Y.cur) * (1 - Math.pow(1 - Y.k, f60));
+        if (Math.abs(Y.target - Y.cur) < 0.35) { Y.cur = Y.target; Y.running = false; }
+        scrollTo(0, Y.cur);
+        y = Y.applied = Y.cur;
+      }
+    } else { y = Y.cur = Y.target = Y.applied = scrollY; }
+    const pv = this.prevY == null ? y : this.prevY;
+    this.prevY = y;
+    S.vel += ((y - pv) / f60 - S.vel) * (1 - Math.pow(0.8, f60));
+    const vw = M.vw, vh = M.vh, open = this.state.active != null;
+
     const Ld = this.L;
     if (Ld && !this.state.loaderGone && this.loadNumRef.current) {
       const target = Ld.total ? Math.min(1, Ld.done / Ld.total) : 0;
-      Ld.shown += (target - Ld.shown) * 0.08;
+      Ld.shown += (target - Ld.shown) * (1 - Math.pow(0.92, f60));
       if (target >= 1 && Ld.shown > 0.995) Ld.shown = 1;
       const num = String(Math.round(Ld.shown * 100)).padStart(3, '0');
       if (this.loadNumRef.current.textContent !== num) this.loadNumRef.current.textContent = num;
-      if (this.loadBarRef.current) this.loadBarRef.current.style.transform = `scaleX(${Ld.shown})`;
+      st(this.loadBarRef.current, 'transform', `scaleX(${Ld.shown.toFixed(4)})`);
     }
-    const vw = innerWidth, vh = innerHeight, S = this.S;
-    const sm = (this.props.smooth ?? true) ? 0.09 : 1;
-    const cl = v => v < 0 ? 0 : v > 1 ? 1 : v;
+
+    const hTop = M.hero.top - y, hH = M.hero.h, heroIn = hTop < vh && hTop + hH > 0;
     let onFilm = false;
-
-    const H = this.heroRef.current;
-    if (H) {
-      const r = H.getBoundingClientRect();
-      S.hero += (cl(-r.top / Math.max(1, r.height - vh)) - S.hero) * sm;
-      const p = S.hero;
-      if (r.bottom > 0) {
-        const z = cl((p - 0.05) / 0.7);
-        const k = this.knockRef.current;
-        if (k) {
-          k.style.transform = `scale(${Math.exp(Math.log(46) * Math.pow(z, 2.1))})`;
-          const o = 1 - cl((p - 0.5) / 0.26);
-          k.style.opacity = String(o);
-          k.style.visibility = o <= 0 ? 'hidden' : 'visible';
-        }
-        const ov = this.heroOverlayRef.current;
-        if (ov) { ov.style.opacity = String(1 - cl(p / 0.09)); ov.style.transform = `translateY(${-p * 140}px)`; }
-        if (this.cueRef.current) this.cueRef.current.style.opacity = String(1 - cl(p / 0.05));
-        if (this.filmBaseRef.current) this.filmBaseRef.current.style.transform = `scale(${1.18 - 0.18 * cl(p / 0.85)})`;
-        if (this.filmUiRef.current) this.filmUiRef.current.style.opacity = String(cl((p - 0.72) / 0.14));
+    if (heroIn) {
+      const p = cl(-hTop / Math.max(1, hH - vh));
+      const k = this.knockRef.current;
+      if (k) {
+        const z = cl((p - 0.05) / 0.7), o = 1 - cl((p - 0.5) / 0.26);
+        st(k, 'transform', `scale(${Math.exp(Math.log(46) * Math.pow(z, 2.1)).toFixed(4)})`);
+        st(k, 'opacity', o.toFixed(3));
+        st(k, 'visibility', o <= 0 ? 'hidden' : 'visible');
+        // Promote only while moving; let it re-rasterise crisp once it rests.
+        if (p !== this.lastP) { this.lastP = p; this.knockIdle = 0; st(k, 'willChange', 'transform, opacity'); }
+        else if (++this.knockIdle === 10) st(k, 'willChange', 'auto');
       }
-      onFilm = p > 0.7 && r.bottom > vh * 0.5;
+      const ov = this.heroOverlayRef.current;
+      if (ov) { st(ov, 'opacity', (1 - cl(p / 0.09)).toFixed(3)); st(ov, 'transform', `translate3d(0, ${(-p * 140).toFixed(2)}px, 0)`); }
+      st(this.cueRef.current, 'opacity', (1 - cl(p / 0.05)).toFixed(3));
+      st(this.filmBaseRef.current, 'transform', `scale(${(1.18 - 0.18 * cl(p / 0.85)).toFixed(4)})`);
+      st(this.filmUiRef.current, 'opacity', cl((p - 0.72) / 0.14).toFixed(3));
+      onFilm = p > 0.7 && hTop + hH > vh * 0.5;
+    }
+    this.reelOn(heroIn && !open);
+
+    const wTop = M.works.top - y, wH = M.works.h, n = M.cards.length;
+    if (wTop < vh && wTop + wH > 0 && n) {
+      const px = Math.max(0, -wTop);
+      const L = vh * 1.1, Mg = vh * 0.9, SL = Math.max(1, wH - vh - L - Mg);
+      const wl = cl(px / L), wm = cl((px - L) / Mg), ws = cl((px - L - Mg) / SL);
+      const A = Math.min(vw * 0.36, vh * 0.8), D = Math.min(320, vw * 0.22);
+      const phi = (this.reduced ? 0 : now * 0.00011) + wl * Math.PI * 1.1;
+      const tiltV = Math.max(-7, Math.min(7, -S.vel * 0.09));
+      const stag = [0, 0.04, -0.02, 0.03];
+      let best = 0, bestV = -Infinity;
+      for (let i = 0; i < n; i++) {
+        const c = M.cards[i];
+        const tt = phi + i * 2 * Math.PI / n, s = Math.sin(tt), co = Math.cos(tt), den = 1 + s * s;
+        const lx = A * co / den, ly = A * s * co / den * 1.25, lz = s * D;
+        const sx = c.sx - ws * M.travel, sy = stag[i % 4] * vh - 18;
+        let mi = cl(wm * 1.4 - i * (0.4 / Math.max(1, n - 1)));
+        mi = mi < 0.5 ? 4 * mi * mi * mi : 1 - Math.pow(-2 * mi + 2, 3) / 2;
+        const x = lx + (sx - lx) * mi, yy = ly + (sy - ly) * mi, zz = lz * (1 - mi), scl = 0.34 + 0.66 * mi;
+        st(c.el, 'transform', `translate3d(${(x - c.w / 2).toFixed(2)}px, ${(yy - c.h / 2).toFixed(2)}px, ${zz.toFixed(2)}px) rotateY(${(tiltV * mi).toFixed(2)}deg) scale(${scl.toFixed(4)})`);
+        st(c.el, 'opacity', Math.min(1, 0.5 + 0.5 * ((s + 1) / 2) + mi).toFixed(3));
+        if (c.cap) st(c.cap, 'opacity', cl((mi - 0.7) / 0.3).toFixed(3));
+        if (c.par) st(c.par, 'transform', `translate3d(${(Math.max(-1, Math.min(1, x / (vw / 2))) * -5 * mi).toFixed(2)}%, 0, 0)`);
+        const v = wm < 0.5 ? zz : -Math.abs(x);
+        if (v > bestV) { bestV = v; best = i; }
+      }
+      const wt = this.worksTitleRef.current;
+      if (wt) { st(wt, 'opacity', (1 - cl(wm * 1.8)).toFixed(3)); st(wt, 'transform', `translateZ(0) scale(${(1 + wm * 0.25).toFixed(4)})`); }
+      const ct = this.counterRef.current, label = `${this.pad(best + 1)} / ${this.pad(n)}`;
+      if (ct && ct.textContent !== label) ct.textContent = label;
     }
 
-    const W = this.worksRef.current, sc = this.sceneRef.current;
-    if (W && sc) {
-      const r = W.getBoundingClientRect(), px = Math.max(0, -r.top);
-      const L = vh * 1.1, M = vh * 0.9, SL = Math.max(1, r.height - vh - L - M);
-      S.wl += (cl(px / L) - S.wl) * sm;
-      S.wm += (cl((px - L) / M) - S.wm) * sm;
-      S.ws += (cl((px - L - M) / SL) - S.ws) * sm;
-      const cards = sc.querySelectorAll('[data-card]'), n = cards.length;
-      if (r.top < vh && r.bottom > 0 && n) {
-        const A = Math.min(vw * 0.36, vh * 0.8), D = Math.min(320, vw * 0.22);
-        const phi = t * 0.00011 + S.wl * Math.PI * 1.1;
-        const pad = Math.min(56, Math.max(20, vw * 0.04)), gap = Math.max(16, vw * 0.02);
-        const ws = []; let total = 0;
-        cards.forEach((c, i) => { ws[i] = c.offsetWidth; total += ws[i] + (i ? gap : 0); });
-        const travel = Math.max(0, total - (vw - 2 * pad));
-        const stag = [0, 0.04, -0.02, 0.03];
-        let cum = -vw / 2 + pad, best = 0, bestV = -Infinity;
-        cards.forEach((c, i) => {
-          const w = ws[i], h = c.offsetHeight;
-          const tt = phi + i * 2 * Math.PI / n, s = Math.sin(tt), co = Math.cos(tt), den = 1 + s * s;
-          const lx = A * co / den, ly = A * s * co / den * 1.25, lz = s * D;
-          const sx = cum + w / 2 - S.ws * travel, sy = stag[i % 4] * vh - 18;
-          cum += w + gap;
-          let mi = cl(S.wm * 1.4 - i * (0.4 / Math.max(1, n - 1)));
-          mi = mi < 0.5 ? 4 * mi * mi * mi : 1 - Math.pow(-2 * mi + 2, 3) / 2;
-          const x = lx + (sx - lx) * mi, y = ly + (sy - ly) * mi, zz = lz * (1 - mi), scl = 0.34 + 0.66 * mi;
-          c.style.transform = `translate3d(${x - w / 2}px, ${y - h / 2}px, ${zz}px) scale(${scl})`;
-          c.style.opacity = String(Math.min(1, 0.5 + 0.5 * ((s + 1) / 2) + mi));
-          const cap = c.firstElementChild && c.lastElementChild;
-          if (cap && cap.hasAttribute('data-cap')) cap.style.opacity = String(cl((mi - 0.7) / 0.3));
-          const v = S.wm < 0.5 ? zz : -Math.abs(x);
-          if (v > bestV) { bestV = v; best = i; }
-        });
-        const wt = this.worksTitleRef.current;
-        if (wt) { wt.style.opacity = String(1 - cl(S.wm * 1.8)); wt.style.transform = `translateZ(0) scale(${1 + S.wm * 0.25})`; }
-        const ct = this.counterRef.current, label = `${this.pad(best + 1)} / ${this.pad(n)}`;
-        if (ct && ct.textContent !== label) ct.textContent = label;
-      }
-    }
-
-    const B = this.btsRef.current, bs = this.btsSceneRef.current;
-    if (B && bs) {
-      const r = B.getBoundingClientRect();
-      S.bts += (cl(-r.top / Math.max(1, r.height - vh)) - S.bts) * sm;
-      S.mx += (S.tmx - S.mx) * 0.05; S.my += (S.tmy - S.my) * 0.05;
-      if (r.top < vh && r.bottom > 0) {
-        bs.style.transform = `rotateY(${S.mx * 3}deg) rotateX(${-S.my * 2}deg)`;
-        const items = bs.querySelectorAll('[data-depth]');
-        const travel = 1400 + Math.max(0, items.length - 2) * 450;
-        items.forEach(el => {
-          const z = parseFloat(el.dataset.z) + S.bts * travel;
-          const o = Math.min(cl((z + 4600) / 1700), 1 - cl((z - 200) / 380));
-          el.style.opacity = String(o);
-          el.style.visibility = o <= 0.01 ? 'hidden' : 'visible';
-          el.style.transform = `translate3d(${parseFloat(el.dataset.fx) * vw - el.offsetWidth / 2}px, ${parseFloat(el.dataset.fy) * vh - el.offsetHeight / 2}px, ${z}px)`;
-        });
+    const bTop = M.bts.top - y, bH = M.bts.h;
+    const km = 1 - Math.pow(0.95, f60);
+    S.mx += (S.tmx - S.mx) * km; S.my += (S.tmy - S.my) * km;
+    if (bTop < vh && bTop + bH > 0 && M.depth.length) {
+      const p = cl(-bTop / Math.max(1, bH - vh));
+      st(this.btsSceneRef.current, 'transform', `rotateY(${(S.mx * 3).toFixed(3)}deg) rotateX(${(-S.my * 2).toFixed(3)}deg)`);
+      const travel = 1400 + Math.max(0, M.depth.length - 2) * 450;
+      for (const d of M.depth) {
+        const z = d.z0 + p * travel;
+        const o = Math.min(cl((z + 4600) / 1700), 1 - cl((z - 200) / 380));
+        st(d.el, 'opacity', o.toFixed(3));
+        st(d.el, 'visibility', o <= 0.01 ? 'hidden' : 'visible');
+        if (o > 0.01) st(d.el, 'transform', `translate3d(${(d.fx * vw - d.w / 2).toFixed(1)}px, ${(d.fy * vh - d.h / 2).toFixed(1)}px, ${z.toFixed(1)}px)`);
       }
     }
 
-    S.cx += (S.tx - S.cx) * 0.2; S.cy += (S.ty - S.cy) * 0.2; S.ring += (S.tring - S.ring) * 0.16;
-    const cu = this.cursorRef.current;
-    if (cu) cu.style.transform = `translate3d(${S.cx - 46}px, ${S.cy - 46}px, 0) scale(${S.ring})`;
+    if (!this.coarse) {
+      const kc = 1 - Math.pow(0.8, f60), kr = 1 - Math.pow(0.84, f60);
+      S.cx += (S.tx - S.cx) * kc; S.cy += (S.ty - S.cy) * kc; S.ring += (S.tring - S.ring) * kr;
+      if (Math.abs(S.ring - S.tring) < 0.002) S.ring = S.tring;
+      st(this.cursorRef.current, 'transform', S.ring === 0 ? 'translate3d(-200px, -200px, 0) scale(0)' : `translate3d(${(S.cx - 46).toFixed(1)}px, ${(S.cy - 46).toFixed(1)}px, 0) scale(${S.ring.toFixed(3)})`);
+    }
 
     if (onFilm !== this.lastOnFilm) {
       this.lastOnFilm = onFilm;
       const col = onFilm ? '#FFFFFF' : '#1B1D1E';
-      if (this.headerRef.current) this.headerRef.current.style.color = col;
-      if (this.hudRef.current) this.hudRef.current.style.color = col;
-      if (this.logoGreenRef.current) this.logoGreenRef.current.style.opacity = onFilm ? '0' : '1';
-      if (this.logoWhiteRef.current) this.logoWhiteRef.current.style.opacity = onFilm ? '1' : '0';
+      st(this.headerRef.current, 'color', col);
+      st(this.hudRef.current, 'color', col);
+      st(this.logoGreenRef.current, 'opacity', onFilm ? '0' : '1');
+      st(this.logoWhiteRef.current, 'opacity', onFilm ? '1' : '0');
     }
 
-    const root = this.rootRef.current;
-    if (root && this.hudRef.current) {
-      const rr = root.getBoundingClientRect();
-      const gp = cl(-rr.top / Math.max(1, rr.height - vh));
-      if (this.playheadRef.current) this.playheadRef.current.style.left = `calc(${gp * 100}% - 1px)`;
+    if (this.hudRef.current) {
+      const gp = cl((y - M.root.top) / Math.max(1, M.root.h - vh));
+      st(this.playheadRef.current, 'transform', `translate3d(${(gp * M.tickW - 1).toFixed(1)}px, 0, 0)`);
       const f = Math.round(gp * 180 * 24);
       const tc = `00:${this.pad(Math.floor(f / 1440))}:${this.pad(Math.floor(f / 24) % 60)}:${this.pad(f % 24)}`;
       if (this.tcRef.current && this.tcRef.current.textContent !== tc) this.tcRef.current.textContent = tc;
       let ch = 0;
-      [this.heroRef, this.worksRef, this.btsRef, this.processRef].forEach((s, i) => { if (s.current && s.current.getBoundingClientRect().top <= vh * 0.5) ch = i; });
+      M.chap.forEach((top, i) => { if (top - y <= vh * 0.5) ch = i; });
       const chEl = this.chapterRef.current;
       if (chEl && chEl.textContent !== this.chapters[ch]) chEl.textContent = this.chapters[ch];
     }
+
+    const drift = (this.props.drift ?? true) && !this.reduced;
+    if (!open && (drift ? (this.frame++ & 1) === 0 : this.mistY !== y)) { this.mistY = y; this.drawMist(drift ? now : 0, y); }
   };
 
   pad(n) { return String(n).padStart(2, '0'); }
@@ -495,7 +603,7 @@ class Component extends DCLogic {
   async boot() {
     const on = this.props.preload ?? true;
     this.L = { done: 0, total: 2, shown: 0, t0: performance.now(), finished: !on };
-    if (!on) { this.loadDb().then(() => this.prefetchRest()); this.intro(); return; }
+    if (!on) { this.intro(); await this.loadDb(); this.prefetchRest(); return; }
     try { scrollTo(0, 0); } catch (e) {}
     document.body.style.overflow = 'hidden';
     const mk = this.loadMarkRef.current;
@@ -544,15 +652,15 @@ class Component extends DCLogic {
     });
   }
   finishLoad() {
-    if (this.L.finished || this.unmounted) return;
+    if (!this.L || this.L.finished || this.unmounted) return;
     this.L.finished = true;
+    clearTimeout(this.safety);
     document.body.style.overflow = this.state.active != null ? 'hidden' : '';
     if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
     if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
-    this.measure();
+    this.dirty = true;
     this.intro();
-    const v = this.reelEl;
-    if (v && v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+    this._reelOn = null;
     setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); } }, 1200);
   }
   // After the reveal, warm every case page's images one at a time.
@@ -587,7 +695,7 @@ class Component extends DCLogic {
       const [works, media] = await Promise.all([
         get('portfolio_works?select=*&published=eq.true&order=sort_order.asc,created_at.asc'),
         get('portfolio_media?select=*&order=sort_order.asc,created_at.asc')]);
-      await new Promise(r => this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.measure(); this.onHash(); r(); }));
+      await new Promise(r => this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.dirty = true; this.onHash(); r(); }));
     } catch (e) { await new Promise(r => this.setState({ db: { works: [], media: [] } }, r)); }
   }
   works() {
@@ -609,6 +717,7 @@ class Component extends DCLogic {
   }
   open(i) {
     this.S.tring = 0;
+    this.Y.running = false;
     try { history.replaceState(null, '', i == null ? location.pathname + location.search : `#work-${this.pad(i + 1)}`); } catch (e) {}
     this.setState({ active: i }, () => this.afterActive());
   }
@@ -616,9 +725,9 @@ class Component extends DCLogic {
   afterActive() {
     const c = this.caseRef.current, on = this.state.active != null, was = this.wasOpen;
     this.wasOpen = on;
-    document.body.style.overflow = on ? 'hidden' : '';
+    if (!this.L || this.L.finished) document.body.style.overflow = on ? 'hidden' : '';
     if (!c) return;
-    c.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
+    c.querySelectorAll('video').forEach(v => { try { v.pause(); v.preload = on ? 'auto' : 'metadata'; } catch (e) {} });
     c.style.clipPath = on ? 'inset(0% 0% 0% 0%)' : 'inset(100% 0% 0% 0%)';
     c.style.pointerEvents = on ? 'auto' : 'none';
     if (on) {
@@ -631,12 +740,6 @@ class Component extends DCLogic {
 
   renderVals() {
     const works = this.works(), n = works.length, a = this.state.active ?? 0;
-    const drift = this.props.drift ?? true;
-    const blob = (pos, size, alpha, dur, delay) => React.createElement('div', { style: { position: 'absolute', width: size, height: size, borderRadius: '50%', background: `radial-gradient(circle, rgba(16,175,139,${alpha}), transparent 65%)`, filter: 'blur(80px)', ...pos, animation: drift ? `gl-drift ${dur}s ease-in-out ${delay}s infinite` : 'none' } });
-    const mist = React.createElement('div', { 'aria-hidden': true, style: { position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none', background: '#FFFFFF' } },
-      blob({ top: '-22vw', left: '-18vw' }, '62vw', 0.13, 28, 0),
-      blob({ top: '38vh', right: '-24vw' }, '55vw', 0.09, 34, -10),
-      blob({ bottom: '-30vw', left: '24vw' }, '58vw', 0.07, 40, -20));
     const slot = !this.hosted(), db = this.state.db;
     const spots = [
       [-0.27, -0.14, 'clamp(150px, 22vw, 420px)', '4 / 5'], [0.26, 0.12, 'clamp(170px, 26vw, 480px)', '3 / 2'],
@@ -670,18 +773,24 @@ class Component extends DCLogic {
       return { n: i + 1, ratio: ['4 / 5', '3 / 4', '4 / 5', '1 / 1', '4 / 5'][i % 5], img, hasImg: !!img, slot: !m && slot }; });
     const reelRow = db ? db.media.filter(m => m.section === 'reel').slice(-1)[0] : null;
     return {
-      mist, bts, steps, stills,
+      bts, steps, stills,
       caseBts, caseStory: aw.story || '',
       btsHeight: `${Math.round(120 + bts.length * 25)}vh`,
       reelVideo: !!reelRow && reelRow.kind === 'video', reelPhoto: !!reelRow && reelRow.kind === 'photo', reelSlot: !reelRow && slot,
       reelUrl: reelRow ? reelRow.url : '', reelPoster: reelRow ? (reelRow.poster_url || '') : '',
       mediaRef: el => this.applySrc(el),
-      reelVideoRef: el => { if (el) this.reelEl = el; this.applySrc(el); if (el && !el._gl) { el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); const p = el.play(); if (p && p.catch) p.catch(() => {}); } },
+      reelVideoRef: el => {
+        if (!el) return;
+        if (this.reelEl !== el) { this.reelEl = el; this._reelOn = null; }
+        this.applySrc(el);
+        if (!el._gl) { el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); el.setAttribute('muted', ''); }
+      },
       works: works.map((w, i) => ({ ...w, open: () => this.open(i) })),
       workCount: this.pad(n),
       worksHeight: `${110 + 90 + n * 42 + 100}vh`,
       hudOn: this.props.hud ?? true,
-      rootRef: this.rootRef, headerRef: this.headerRef, logoGreenRef: this.logoGreenRef, logoWhiteRef: this.logoWhiteRef,
+      jump: this.jump,
+      rootRef: this.rootRef, mistRef: this.mistRef, headerRef: this.headerRef, logoGreenRef: this.logoGreenRef, logoWhiteRef: this.logoWhiteRef,
       heroRef: this.heroRef, filmBaseRef: this.filmBaseRef, filmUiRef: this.filmUiRef, knockRef: this.knockRef, heroOverlayRef: this.heroOverlayRef, cueRef: this.cueRef,
       worksRef: this.worksRef, sceneRef: this.sceneRef, worksTitleRef: this.worksTitleRef, counterRef: this.counterRef,
       btsRef: this.btsRef, btsSceneRef: this.btsSceneRef, processRef: this.processRef, markRef: this.markRef,

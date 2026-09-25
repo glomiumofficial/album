@@ -2965,7 +2965,7 @@
               <button onClick="{{ pfReelPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ pfReelBtn }}</button>
             </div>
           </div>
-          <span style="font-size:12px; line-height:1.6; color:#5C6864">16:9 · 3840 × 2160 px (1920 × 1080 minimum). Video: MP4 (H.264), silent, a 10–30 s loop, under 50 MB. Keep the subject inside the centre band — phones only show that part.</span>
+          <span style="font-size:12px; line-height:1.6; color:#5C6864">16:9 · 3840 × 2160 px (1920 × 1080 minimum). Video: MP4 (H.264), silent, a 10–30 s loop, ideally under 30 MB, exported with Fast Start on. Keep the subject inside the centre band — phones only show that part.</span>
           <sc-if value="{{ pfReelHas }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap">
               <div style="position:relative; width:min(100%, 520px); aspect-ratio:16 / 9; background:#EEF3F1; border-radius:3px; overflow:hidden">
@@ -3028,7 +3028,7 @@
                       </div>
                       <div style="display:flex; flex-direction:column; gap:10px">
                         <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Film</span>
-                        <span style="font-size:12px; line-height:1.6; color:#5C6864">16:9 or 2.39:1 · 3840 × 2160 px (1920 × 1080 minimum) · MP4 (H.264). Shown in full, never cropped.</span>
+                        <span style="font-size:12px; line-height:1.6; color:#5C6864">16:9 or 2.39:1 · 3840 × 2160 px (1920 × 1080 minimum) · MP4 (H.264) with Fast Start (“optimise for web”) on. Shown in full, never cropped.</span>
                         <div style="position:relative; width:100%; max-width:360px; aspect-ratio:16 / 9; background:#EEF3F1; border-radius:3px; overflow:hidden">
                           <sc-if value="{{ pw.hasFilmThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.filmThumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                           <sc-if value="{{ pw.noFilm }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:12px; color:#67746F">No film yet</span></sc-if>
@@ -8856,12 +8856,49 @@ class Component extends DCLogic {
 
   // One file in, the row fields out: photos get a view and a grid copy,
   // videos go up as-is with a poster frame pulled locally.
-  async pfPrepare(file, label) {
+  // Reads the MP4/MOV box layout: films whose index sits after the media
+  // (Fast Start off) can't play until fully downloaded; HEVC/ProRes won't play in many browsers.
+  async pfInspectVideo(file, section) {
+    const out = [];
+    const read = async (o, n) => new Uint8Array(await file.slice(o, o + n).arrayBuffer());
+    const u32 = (b, i) => ((b[i] << 24) >>> 0) + (b[i + 1] << 16) + (b[i + 2] << 8) + b[i + 3];
+    const typ = (b, i) => String.fromCharCode(b[i], b[i + 1], b[i + 2], b[i + 3]);
+    try {
+      let off = 0, moov = null, mdatFirst = false, guard = 0;
+      while (off < file.size && guard++ < 64) {
+        const h = await read(off, 16);
+        if (h.length < 8) break;
+        let size = u32(h, 0);
+        const t = typ(h, 4);
+        if (!/^[a-z0-9 ]{4}$/i.test(t)) break;
+        if (size === 1) size = u32(h, 8) * 4294967296 + u32(h, 12);
+        else if (size === 0) size = file.size - off;
+        if (size < 8) break;
+        if (t === 'mdat' && !moov) mdatFirst = true;
+        if (t === 'moov') { moov = [off, size]; break; }
+        off += size;
+      }
+      if (moov) {
+        const b = await read(moov[0], Math.min(moov[1], 8 * 1024 * 1024));
+        let s = '';
+        for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
+        if (/hvc1|hev1/.test(s)) out.push('It is HEVC (H.265), which some browsers can\u2019t play \u2014 re-export as H.264.');
+        else if (/apcn|apch|apcs|apco|ap4h|ap4x/.test(s)) out.push('It is ProRes, which browsers can\u2019t play \u2014 re-export as H.264 MP4.');
+        if (mdatFirst) out.push('Fast Start is off, so it won\u2019t start playing until the whole file has downloaded \u2014 re-export with Fast Start / \u201coptimise for web\u201d on.');
+      }
+    } catch (e) {}
+    if (section === 'reel' && file.size > 40 * 1024 * 1024) out.push('The reel is ' + this.fmtBytes(file.size) + '; under 30 MB loops more smoothly.');
+    return out;
+  }
+
+  async pfPrepare(file, label, section) {
     const busy = p => this.setState({ pfBusy: label + (p ? ' · ' + p + '%' : ''), pfProgress: p || 0 });
     busy(0);
     const ext = (file.name.split('.').pop() || '').toLowerCase();
     const isVideo = /^video\//.test(file.type || '') || /^(mp4|mov|m4v|webm)$/.test(ext);
     if (isVideo) {
+      const notes = await this.pfInspectVideo(file, section);
+      if (this.pfWarn) this.pfWarn.push(...notes);
       const url = await this.pfPut(file, 'video', ext || 'mp4', busy);
       let poster = null;
       try { busy(100); const fr = await this.grabVideoFrame(file, 1); if (fr) poster = await this.pfPut(fr.blob, 'poster', fr.ext); } catch (e) {}
@@ -8884,8 +8921,13 @@ class Component extends DCLogic {
 
   async pfRun(done, fn) {
     if (this.state.pfBusy) return false;
+    this.pfWarn = [];
     this.setState({ pfBusy: 'Working…', pfProgress: 0, pfStatus: '' });
-    try { await fn(); this.setState({ pfBusy: '', pfProgress: null }); this.pfSay(done); return true; }
+    try {
+      await fn(); this.setState({ pfBusy: '', pfProgress: null });
+      if (this.pfWarn.length) this.pfSay(done + ' Heads up: ' + this.pfWarn.join(' '), 'warn'); else this.pfSay(done);
+      return true;
+    }
     catch (e) { this.setState({ pfBusy: '', pfProgress: null }); this.pfSay(e.message || String(e), false); return false; }
   }
 
@@ -8896,7 +8938,7 @@ class Component extends DCLogic {
       let order = this.state.pfMedia.filter(m => m.section === section && (m.work_id || null) === (workId || null))
         .reduce((a, m) => Math.max(a, m.sort_order || 0), 0);
       for (let i = 0; i < files.length; i++) {
-        const f = await this.pfPrepare(files[i], 'Uploading ' + (i + 1) + ' of ' + files.length + ' — ' + files[i].name);
+        const f = await this.pfPrepare(files[i], 'Uploading ' + (i + 1) + ' of ' + files.length + ' — ' + files[i].name, section);
         const { data, error } = await this.sb.from('portfolio_media').insert({ section, work_id: workId || null, sort_order: ++order, ...f }).select('*').single();
         if (error) { this.pfDropFiles([f.url, f.url_grid, f.poster_url]); throw new Error(error.message); }
         this.setState(s => ({ pfMedia: s.pfMedia.concat([data]) }));
@@ -8909,7 +8951,7 @@ class Component extends DCLogic {
     const old = this.state.pfMedia.filter(m => m.section === 'reel');
     const ok = await this.pfUploadMedia('reel', null, [file]);
     if (ok) for (const m of old) await this.pfDeleteMedia(m, true);
-    if (ok) this.pfSay('Showreel updated.');
+    if (ok && !(this.pfWarn && this.pfWarn.length)) this.pfSay('Showreel updated.');
   }
 
   async pfDeleteMedia(m, quiet) {
@@ -8960,7 +9002,7 @@ class Component extends DCLogic {
     if (!file) return;
     let warn = '';
     const ok = await this.pfRun(field === 'film' ? 'Film uploaded.' : 'Cover uploaded.', async () => {
-      const f = await this.pfPrepare(file, 'Uploading ' + file.name);
+      const f = await this.pfPrepare(file, 'Uploading ' + file.name, field);
       if (spec && f.width) {
         const c = pfFit(spec, f.width, f.height);
         warn = [c.crop ? 'it is ' + c.actual + ' and this spot is ' + spec.r + ', so the edges will be cropped' : '',
