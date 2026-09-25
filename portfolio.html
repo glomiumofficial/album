@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="robots" content="noindex, nofollow">
+<title>glomium — selected works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300&amp;display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+body { margin: 0; background: #FFFFFF; color: #1B1D1E; font-family: 'Jost', Helvetica, sans-serif; overflow-x: clip; -webkit-font-smoothing: antialiased; }
+a { color: #0A6E58; text-decoration: none; }
+a:hover { color: #10AF8B; }
+@keyframes gl-drift { 0% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(5vw,-3vh,0) scale(1.12); } 100% { transform: translate3d(0,0,0) scale(1); } }
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" style="position: relative; font-weight: 300;">
+  {{ mist }}
+
+  <header ref="{{ headerRef }}" style="position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px clamp(20px, 4vw, 56px); color: #1B1D1E; transition: color 0.5s; pointer-events: none;">
+    <a href="#top" style="position: relative; display: block; height: 20px; pointer-events: auto;">
+      <img ref="{{ logoGreenRef }}" src="assets/wordmark-green.png" alt="glomium" style="display: block; height: 20px; width: auto; transition: opacity 0.5s;">
+      <img ref="{{ logoWhiteRef }}" src="assets/wordmark-white.png" alt="" style="position: absolute; left: 0; top: 0; height: 20px; width: auto; opacity: 0; transition: opacity 0.5s;">
+    </a>
+    <nav style="display: flex; gap: clamp(16px, 3vw, 40px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: auto;">
+      <a href="#works" style="color: inherit;" style-hover="color: #10AF8B;">works</a>
+      <a href="#bts" style="color: inherit;" style-hover="color: #10AF8B;">behind</a>
+      <a href="#process" style="color: inherit;" style-hover="color: #10AF8B;">process</a>
+    </nav>
+  </header>
+
+  <section id="top" ref="{{ heroRef }}" data-screen-label="01 reel" style="position: relative; height: 280vh;">
+    <div style="position: sticky; top: 0; height: 100vh; overflow: hidden;">
+      <div ref="{{ filmBaseRef }}" style="position: absolute; inset: 0; background: linear-gradient(125deg, #BFE9DC 0%, #EAF7F2 38%, #FFFFFF 56%, #CDEFE4 100%); transform: scale(1.18);">
+        <image-slot id="hero-reel" shape="rect" placeholder="showreel still or loop"></image-slot>
+      </div>
+      <div ref="{{ filmUiRef }}" style="position: absolute; inset: 0; opacity: 0; pointer-events: none; background: linear-gradient(0deg, rgba(8,22,17,0.5) 0%, rgba(8,22,17,0) 38%);">
+        <div style="position: absolute; left: clamp(20px, 4vw, 56px); right: clamp(20px, 4vw, 56px); bottom: 72px; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; color: #FFFFFF;">
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;">01 — showreel</span>
+            <span style="font-size: clamp(30px, 4.4vw, 68px); font-weight: 200; line-height: 1; letter-spacing: -0.02em;">every frame, on purpose.</span>
+          </div>
+          <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;">keep scrolling</span>
+        </div>
+      </div>
+      <div ref="{{ knockRef }}" style="position: absolute; inset: 0; background: #FFFFFF; mix-blend-mode: screen; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+        <h1 style="margin: 0; font-weight: 500; font-size: clamp(56px, 18vw, 380px); line-height: 0.8; letter-spacing: -0.02em; color: #000000; white-space: nowrap;"><span style="display: inline-block;">I</span><span style="display: inline-block;">N</span><span style="display: inline-block;">F</span><span style="display: inline-block;">I</span><span style="display: inline-block;">N</span><span data-origin="" style="display: inline-block;">I</span><span style="display: inline-block;">T</span><span style="display: inline-block;">E</span><span style="display: inline-block;">L</span><span style="display: inline-block;">Y</span></h1>
+      </div>
+      <div ref="{{ heroOverlayRef }}" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+        <div aria-hidden="true" style="position: relative; visibility: hidden; font-weight: 500; font-size: clamp(56px, 18vw, 380px); line-height: 0.8; letter-spacing: -0.02em; white-space: nowrap;">INFINITELY
+          <div data-intro="" style="visibility: visible; position: absolute; left: 0; right: 0; bottom: calc(100% + 0.22em); text-align: center; font-size: clamp(15px, 0.1em, 34px); font-weight: 300; letter-spacing: 0.5em; line-height: 1; color: #1B1D1E;">creative</div>
+          <div data-intro="" style="visibility: visible; position: absolute; left: 0; right: 0; top: calc(100% + 0.26em); display: flex; justify-content: space-between; gap: 24px; font-size: 10px; font-weight: 300; letter-spacing: 2.6px; line-height: 1.6; text-transform: uppercase; color: #8A9390;">
+            <span>a private reel</span>
+            <span>for our clients</span>
+          </div>
+        </div>
+      </div>
+      <div ref="{{ cueRef }}" style="position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390; pointer-events: none;">
+        <span>scroll</span>
+        <div style="width: 1px; height: 44px; background: #E2E7E5; overflow: hidden;"><div data-cue="" style="width: 1px; height: 100%; background: #10AF8B; transform-origin: top;"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="works" ref="{{ worksRef }}" data-screen-label="02 works" style="position: relative; height: {{ worksHeight }};">
+    <div style="position: sticky; top: 0; height: 100vh; overflow: hidden; perspective: 1600px;">
+      <div ref="{{ sceneRef }}" style="position: absolute; inset: 0; transform-style: preserve-3d;">
+        <div ref="{{ worksTitleRef }}" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; transform: translateZ(0);">
+          <h2 style="margin: 0; font-weight: 200; font-size: clamp(48px, 12vw, 230px); line-height: 1; letter-spacing: -0.035em; white-space: nowrap; color: #1B1D1E;">selected <span style="font-style: italic; color: #10AF8B;">works</span></h2>
+        </div>
+        <sc-for list="{{ works }}" as="w" hint-placeholder-count="3">
+          <article data-card="" onClick="{{ w.open }}" onMouseEnter="{{ showCursor }}" onMouseLeave="{{ hideCursor }}" style="position: absolute; left: 50%; top: 50%; width: {{ w.width }}; cursor: none; opacity: 0;">
+            <div style="position: relative; width: 100%; aspect-ratio: {{ w.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 40px 90px -40px rgba(10,110,88,0.45);">
+              <image-slot id="work-{{ w.id }}" shape="rect" placeholder="cover still"></image-slot>
+              <div data-catch="" style="position: absolute; inset: 0; z-index: 2;"></div>
+            </div>
+            <div data-cap="" style="position: absolute; left: 0; right: 0; top: calc(100% + 14px); display: flex; justify-content: space-between; align-items: baseline; gap: 16px; opacity: 0;">
+              <div style="display: flex; gap: 14px; align-items: baseline;">
+                <span style="font-size: 10px; letter-spacing: 2.6px; color: #10AF8B;">{{ w.no }}</span>
+                <span style="font-size: 19px; color: #1B1D1E;">{{ w.title }}</span>
+              </div>
+              <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">{{ w.kind }}</span>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+      <div style="position: absolute; top: 84px; left: clamp(20px, 4vw, 56px); right: clamp(20px, 4vw, 56px); display: flex; justify-content: space-between; gap: 24px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390; pointer-events: none;">
+        <span>02 — selected works</span>
+        <span ref="{{ counterRef }}" style="font-variant-numeric: tabular-nums;">01 / {{ workCount }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="bts" ref="{{ btsRef }}" data-screen-label="03 behind the scenes" style="position: relative; height: 340vh;">
+    <div style="position: sticky; top: 0; height: 100vh; overflow: hidden; perspective: 1000px;">
+      <div ref="{{ btsSceneRef }}" style="position: absolute; inset: 0; transform-style: preserve-3d;">
+        <div data-depth="" data-fx="0" data-fy="0" data-z="-150" style="position: absolute; left: 50%; top: 50%; width: 92vw; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; pointer-events: none;">
+          <h2 style="margin: 0; font-weight: 200; font-size: clamp(44px, 9.5vw, 180px); line-height: 1; letter-spacing: -0.035em; white-space: nowrap; color: #1B1D1E;">behind <span style="font-style: italic; color: #10AF8B;">the</span> scenes</h2>
+          <p style="margin: 0; max-width: 24em; font-size: 16px; line-height: 1.8; color: #4A524F;">the waiting, the light-chasing, the laughing between takes. the part nobody frames — so we did.</p>
+        </div>
+        <sc-for list="{{ bts }}" as="b" hint-placeholder-count="3">
+          <figure data-depth="" data-fx="{{ b.fx }}" data-fy="{{ b.fy }}" data-z="{{ b.z }}" style="position: absolute; left: 50%; top: 50%; width: {{ b.w }}; margin: 0; opacity: 0;">
+            <div style="position: relative; width: 100%; aspect-ratio: {{ b.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 30px 80px -34px rgba(10,110,88,0.4);">
+              <image-slot id="bts-{{ b.id }}" shape="rect" placeholder="bts photo"></image-slot>
+            </div>
+            <figcaption style="display: flex; gap: 12px; padding-top: 12px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
+              <span style="color: #10AF8B;">{{ b.no }}</span>
+              <span>{{ b.caption }}</span>
+            </figcaption>
+          </figure>
+        </sc-for>
+      </div>
+      <div style="position: absolute; top: 84px; left: clamp(20px, 4vw, 56px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390; pointer-events: none;">03 — behind the scenes</div>
+    </div>
+  </section>
+
+  <section id="process" ref="{{ processRef }}" data-screen-label="04 process" style="position: relative; padding: clamp(120px, 16vw, 220px) clamp(20px, 4vw, 56px); display: flex; flex-wrap: wrap; gap: clamp(40px, 6vw, 96px); align-items: flex-start;">
+    <div style="flex: 1 1 280px; position: sticky; top: 120px; display: flex; flex-direction: column; gap: 22px;">
+      <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">04 — process</span>
+      <h2 style="margin: 0; font-weight: 200; font-size: clamp(44px, 6.4vw, 110px); line-height: 0.95; letter-spacing: -0.03em;">how we <span style="font-style: italic; color: #10AF8B;">work</span></h2>
+    </div>
+    <ol style="flex: 2 1 520px; list-style: none; margin: 0; padding: 0; border-top: 1px solid #E2E7E5;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+        <li style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 28px; padding: clamp(26px, 3.2vw, 44px) 0; border-bottom: 1px solid #E2E7E5; transition: padding 0.5s cubic-bezier(.2,.8,.2,1), border-color 0.5s;" style-hover="padding-left: 22px; border-bottom-color: #10AF8B;">
+          <span style="flex: 0 0 40px; font-size: 10px; letter-spacing: 2.6px; color: #10AF8B;">{{ s.no }}</span>
+          <span style="flex: 1 1 200px; font-size: clamp(34px, 4.4vw, 76px); font-weight: 200; line-height: 1; letter-spacing: -0.02em; color: #1B1D1E;">{{ s.verb }}</span>
+          <span style="flex: 1 1 260px; font-size: 16px; line-height: 1.8; color: #4A524F; text-wrap: pretty;">{{ s.line }}</span>
+        </li>
+      </sc-for>
+    </ol>
+  </section>
+
+  <footer style="position: relative; padding: clamp(100px, 12vw, 180px) clamp(20px, 4vw, 56px) 110px; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center;">
+    <img ref="{{ markRef }}" src="assets/infinity.svg" alt="" style="width: clamp(80px, 9vw, 140px); height: auto;">
+    <div style="font-size: 16px; line-height: 1.8; color: #4A524F;">with love,<br>team glomium.</div>
+    <div style="width: 48px; height: 1px; background: #E2E7E5;"></div>
+    <div style="font-size: 11px; letter-spacing: 2.6px; color: #8A9390;">creative INFINITELY</div>
+  </footer>
+
+  <sc-if value="{{ hudOn }}" hint-placeholder-val="{{ true }}">
+    <div ref="{{ hudRef }}" style="position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; align-items: center; gap: 24px; padding: 20px clamp(20px, 4vw, 56px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #1B1D1E; transition: color 0.5s; pointer-events: none;">
+      <span ref="{{ chapterRef }}" style="flex: 0 0 110px;">01 reel</span>
+      <div ref="{{ tickRef }}" style="position: relative; flex: 1 1 auto; height: 11px;">
+        <div style="position: absolute; left: 0; right: 0; top: 5px; height: 1px; background: currentColor; opacity: 0.22;"></div>
+        <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
+        <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
+        <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
+        <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
+        <div ref="{{ playheadRef }}" style="position: absolute; top: -2px; left: 0; width: 2px; height: 15px; background: #10AF8B;"></div>
+      </div>
+      <span ref="{{ tcRef }}" style="flex: 0 0 110px; text-align: right; font-variant-numeric: tabular-nums;">00:00:00:00</span>
+    </div>
+  </sc-if>
+
+  <div ref="{{ caseRef }}" data-screen-label="case" style="position: fixed; inset: 0; z-index: 90; overflow-y: auto; overscroll-behavior: contain; background: linear-gradient(180deg, #FFFFFF 0%, #F2F8F5 42%, #FFFFFF 100%); clip-path: inset(100% 0% 0% 0%); pointer-events: none; transition: clip-path 1s cubic-bezier(.77,0,.18,1);">
+    <div style="position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px clamp(20px, 4vw, 56px); background: rgba(255,255,255,0.78); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;">
+      <button onClick="{{ close }}" style="border: 0; background: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #0E8E72; cursor: pointer; padding: 0;">close</button>
+      <span style="color: #8A9390; font-variant-numeric: tabular-nums;">{{ activeWork.no }} / {{ workCount }}</span>
+      <div style="display: flex; gap: 28px;">
+        <button onClick="{{ prev }}" style="border: 0; background: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #1B1D1E; cursor: pointer; padding: 0;" style-hover="color: #10AF8B;">prev</button>
+        <button onClick="{{ next }}" style="border: 0; background: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #1B1D1E; cursor: pointer; padding: 0;" style-hover="color: #10AF8B;">next</button>
+      </div>
+    </div>
+
+    <div style="padding: clamp(56px, 9vw, 130px) clamp(20px, 4vw, 56px) clamp(40px, 5vw, 64px); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 40px;">
+      <div style="flex: 1 1 520px; display: flex; flex-direction: column; gap: 22px;">
+        <span data-rise="" style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #10AF8B;">{{ activeWork.no }} — {{ activeWork.kind }}</span>
+        <h2 data-rise="" style="margin: 0; font-weight: 200; font-size: clamp(56px, 11vw, 200px); line-height: 0.9; letter-spacing: -0.04em;">{{ activeWork.title }}</h2>
+      </div>
+      <p data-rise="" style="flex: 0 1 360px; margin: 0; font-size: 16px; line-height: 1.8; color: #4A524F; text-wrap: pretty;">a few lines on the story — who it was for, what we wanted it to feel like, and how we made it.</p>
+    </div>
+
+    <div data-rise="" style="padding: 0 clamp(20px, 4vw, 56px);">
+      <div style="position: relative; width: 100%; aspect-ratio: 2.39 / 1; overflow: hidden; background: #0F1211; box-shadow: 0 60px 140px -60px rgba(10,110,88,0.5);">
+        <image-slot id="case-{{ activeWork.id }}-film" shape="rect" placeholder="film — poster frame"></image-slot>
+      </div>
+    </div>
+
+    <div style="padding: clamp(100px, 12vw, 170px) clamp(20px, 4vw, 56px) 0; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; justify-content: space-between; gap: 24px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
+        <span>stills</span>
+        <span>{{ activeWork.title }}</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 24px); align-items: start;">
+        <sc-for list="{{ stills }}" as="p" hint-placeholder-count="4">
+          <div style="position: relative; grid-column: {{ p.col }}; margin-top: {{ p.mt }}; aspect-ratio: {{ p.ratio }}; overflow: hidden; background: #EEF3F1;">
+            <image-slot id="case-{{ activeWork.id }}-still-{{ p.n }}" shape="rect" placeholder="still"></image-slot>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding: clamp(100px, 12vw, 170px) 0 0; display: flex; flex-direction: column; gap: 40px;">
+      <div style="padding: 0 clamp(20px, 4vw, 56px); display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap;">
+        <h3 style="margin: 0; font-weight: 200; font-size: clamp(36px, 5vw, 80px); line-height: 1; letter-spacing: -0.03em;">behind <span style="font-style: italic; color: #10AF8B;">the</span> scenes</h3>
+        <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">swipe</span>
+      </div>
+      <div style="display: flex; gap: clamp(12px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 clamp(20px, 4vw, 56px) 8px; scroll-padding: 0 clamp(20px, 4vw, 56px);">
+        <sc-for list="{{ caseBts }}" as="c" hint-placeholder-count="4">
+          <div style="position: relative; flex: 0 0 auto; width: clamp(220px, 26vw, 420px); aspect-ratio: {{ c.ratio }}; overflow: hidden; background: #EEF3F1; scroll-snap-align: start;">
+            <image-slot id="case-{{ activeWork.id }}-bts-{{ c.n }}" shape="rect" placeholder="bts"></image-slot>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <button onClick="{{ next }}" style="display: flex; flex-direction: column; gap: 20px; width: 100%; margin-top: clamp(110px, 13vw, 180px); padding: clamp(56px, 9vw, 120px) clamp(20px, 4vw, 56px); border: 0; border-top: 1px solid #E2E7E5; background: transparent; text-align: left; font-family: inherit; cursor: pointer; color: #1B1D1E; transition: color 0.4s;" style-hover="color: #10AF8B;">
+      <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">next — {{ nextWork.no }}</span>
+      <span style="font-size: clamp(48px, 9vw, 160px); font-weight: 200; line-height: 0.95; letter-spacing: -0.04em;">{{ nextWork.title }}</span>
+      <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #10AF8B;">{{ nextWork.kind }}</span>
+    </button>
+  </div>
+
+  <div ref="{{ cursorRef }}" style="position: fixed; left: 0; top: 0; z-index: 80; width: 92px; height: 92px; border-radius: 50%; background: #10AF8B; color: #FFFFFF; display: grid; place-items: center; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: none; transform: translate3d(-200px, -200px, 0) scale(0);">open</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;workCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:3,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;content&quot;},&quot;hud&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;look&quot;},&quot;smooth&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;drift&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;}}">
+class Component extends DCLogic {
+  state = { active: null };
+  S = { hero: 0, wl: 0, wm: 0, ws: 0, bts: 0, mx: 0, my: 0, tmx: 0, tmy: 0, cx: -200, cy: -200, tx: -200, ty: -200, ring: 0, tring: 0 };
+  kinds = ['wedding film', 'brand film', 'commercial', 'music video', 'event', 'wedding film', 'product film', 'brand film'];
+  ratios = [[4, 5], [16, 10], [3, 4], [4, 5], [16, 10], [3, 4], [4, 5], [16, 10]];
+  chapters = ['01 reel', '02 works', '03 behind', '04 process'];
+
+  constructor(p) {
+    super(p);
+    ['rootRef', 'headerRef', 'logoGreenRef', 'logoWhiteRef', 'heroRef', 'filmBaseRef', 'filmUiRef', 'knockRef', 'heroOverlayRef', 'cueRef',
+     'worksRef', 'sceneRef', 'worksTitleRef', 'counterRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
+     'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef', 'cursorRef'].forEach(k => { this[k] = React.createRef(); });
+  }
+
+  componentDidMount() {
+    this.onMove = (e) => { const S = this.S; S.tx = e.clientX; S.ty = e.clientY; S.tmx = e.clientX / innerWidth * 2 - 1; S.tmy = e.clientY / innerHeight * 2 - 1; };
+    this.onKey = (e) => {
+      if (this.state.active == null) return;
+      if (e.key === 'Escape') this.open(null);
+      if (e.key === 'ArrowRight') this.step(1);
+      if (e.key === 'ArrowLeft') this.step(-1);
+    };
+    this.onHash = () => {
+      const m = /^#work-(\d+)$/.exec(location.hash);
+      const i = m ? parseInt(m[1], 10) - 1 : null;
+      const next = i != null && i >= 0 && i < this.works().length ? i : null;
+      if (next !== this.state.active) this.setState({ active: next }, () => this.afterActive());
+    };
+    this.onResize = () => this.measure();
+    this.onDragIn = (e) => { const t = e.dataTransfer && e.dataTransfer.types; if (t && Array.from(t).includes('Files')) this.setCatch(false); };
+    this.onDragOut = (e) => { if (e.type !== 'dragleave' || !e.relatedTarget) this.setCatch(true); };
+    addEventListener('mousemove', this.onMove, { passive: true });
+    addEventListener('keydown', this.onKey);
+    addEventListener('hashchange', this.onHash);
+    addEventListener('resize', this.onResize);
+    addEventListener('dragenter', this.onDragIn, true);
+    ['dragleave', 'drop', 'dragend'].forEach(ev => addEventListener(ev, this.onDragOut, true));
+    this.measure();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => this.measure());
+    setTimeout(() => this.measure(), 600);
+    this.onHash();
+    this.intro();
+    this.raf = requestAnimationFrame(this.tick);
+  }
+  componentWillUnmount() {
+    cancelAnimationFrame(this.raf);
+    removeEventListener('mousemove', this.onMove);
+    removeEventListener('keydown', this.onKey);
+    removeEventListener('hashchange', this.onHash);
+    removeEventListener('resize', this.onResize);
+    removeEventListener('dragenter', this.onDragIn, true);
+    ['dragleave', 'drop', 'dragend'].forEach(ev => removeEventListener(ev, this.onDragOut, true));
+    document.body.style.overflow = '';
+  }
+
+  setCatch(on) {
+    const r = this.rootRef.current;
+    if (r) r.querySelectorAll('[data-catch]').forEach(el => { el.style.pointerEvents = on ? 'auto' : 'none'; });
+  }
+
+  measure() {
+    const k = this.knockRef.current;
+    if (k) {
+      const o = k.querySelector('[data-origin]');
+      if (o) {
+        const prev = k.style.transform; k.style.transform = 'none';
+        const kr = k.getBoundingClientRect(), r = o.getBoundingClientRect();
+        let oy = r.top + r.height * 0.55 - kr.top;
+        try {
+          const cs = getComputedStyle(o), fs = parseFloat(cs.fontSize), lh = parseFloat(cs.lineHeight) || fs * 0.8;
+          const c = document.createElement('canvas').getContext('2d');
+          c.font = `500 ${fs}px Jost`;
+          const m = c.measureText('I');
+          if (m.fontBoundingBoxAscent) {
+            const base = r.top + (lh - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+            oy = base - m.actualBoundingBoxAscent / 2 - kr.top;
+          }
+        } catch (e) {}
+        k.style.transformOrigin = `${r.left + r.width / 2 - kr.left}px ${oy}px`;
+        k.style.transform = prev;
+      }
+    }
+    const root = this.rootRef.current, tk = this.tickRef.current;
+    if (root && tk) {
+      const total = Math.max(1, root.offsetHeight - innerHeight);
+      const ticks = tk.querySelectorAll('[data-tick]');
+      [this.heroRef, this.worksRef, this.btsRef, this.processRef].forEach((s, i) => {
+        if (s.current && ticks[i]) ticks[i].style.left = Math.min(100, s.current.offsetTop / total * 100) + '%';
+      });
+    }
+  }
+
+  intro() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ease = 'cubic-bezier(.2,.8,.2,1)';
+    const k = this.knockRef.current;
+    if (k) k.querySelectorAll('span').forEach((s, i) => s.animate(
+      [{ opacity: 0, transform: 'translateY(38%)' }, { opacity: 1, transform: 'none' }],
+      { duration: 1400, delay: 150 + i * 70, easing: ease, fill: 'both' }));
+    const ov = this.heroOverlayRef.current;
+    if (ov) ov.querySelectorAll('[data-intro]').forEach((el, i) => el.animate(
+      [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 1200, delay: 900 + i * 200, easing: ease, fill: 'both' }));
+    const cue = this.cueRef.current && this.cueRef.current.querySelector('[data-cue]');
+    if (cue) cue.animate([{ transform: 'scaleY(0)', transformOrigin: 'top' }, { transform: 'scaleY(1)', transformOrigin: 'top', offset: 0.5 }, { transform: 'scaleY(1)', transformOrigin: 'bottom', offset: 0.5001 }, { transform: 'scaleY(0)', transformOrigin: 'bottom' }], { duration: 2200, iterations: Infinity, easing: 'ease-in-out' });
+    const mk = this.markRef.current;
+    if (mk) mk.animate([{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-8px) scale(1.04)' }], { duration: 3200, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+  }
+
+  tick = (t) => {
+    this.raf = requestAnimationFrame(this.tick);
+    const vw = innerWidth, vh = innerHeight, S = this.S;
+    const sm = (this.props.smooth ?? true) ? 0.09 : 1;
+    const cl = v => v < 0 ? 0 : v > 1 ? 1 : v;
+    let onFilm = false;
+
+    const H = this.heroRef.current;
+    if (H) {
+      const r = H.getBoundingClientRect();
+      S.hero += (cl(-r.top / Math.max(1, r.height - vh)) - S.hero) * sm;
+      const p = S.hero;
+      if (r.bottom > 0) {
+        const z = cl((p - 0.05) / 0.7);
+        const k = this.knockRef.current;
+        if (k) {
+          k.style.transform = `scale(${Math.exp(Math.log(46) * Math.pow(z, 2.1))})`;
+          const o = 1 - cl((p - 0.5) / 0.26);
+          k.style.opacity = String(o);
+          k.style.visibility = o <= 0 ? 'hidden' : 'visible';
+        }
+        const ov = this.heroOverlayRef.current;
+        if (ov) { ov.style.opacity = String(1 - cl(p / 0.09)); ov.style.transform = `translateY(${-p * 140}px)`; }
+        if (this.cueRef.current) this.cueRef.current.style.opacity = String(1 - cl(p / 0.05));
+        if (this.filmBaseRef.current) this.filmBaseRef.current.style.transform = `scale(${1.18 - 0.18 * cl(p / 0.85)})`;
+        if (this.filmUiRef.current) this.filmUiRef.current.style.opacity = String(cl((p - 0.72) / 0.14));
+      }
+      onFilm = p > 0.7 && r.bottom > vh * 0.5;
+    }
+
+    const W = this.worksRef.current, sc = this.sceneRef.current;
+    if (W && sc) {
+      const r = W.getBoundingClientRect(), px = Math.max(0, -r.top);
+      const L = vh * 1.1, M = vh * 0.9, SL = Math.max(1, r.height - vh - L - M);
+      S.wl += (cl(px / L) - S.wl) * sm;
+      S.wm += (cl((px - L) / M) - S.wm) * sm;
+      S.ws += (cl((px - L - M) / SL) - S.ws) * sm;
+      const cards = sc.querySelectorAll('[data-card]'), n = cards.length;
+      if (r.top < vh && r.bottom > 0 && n) {
+        const A = Math.min(vw * 0.36, vh * 0.8), D = Math.min(320, vw * 0.22);
+        const phi = t * 0.00011 + S.wl * Math.PI * 1.1;
+        const pad = Math.min(56, Math.max(20, vw * 0.04)), gap = Math.max(16, vw * 0.02);
+        const ws = []; let total = 0;
+        cards.forEach((c, i) => { ws[i] = c.offsetWidth; total += ws[i] + (i ? gap : 0); });
+        const travel = Math.max(0, total - (vw - 2 * pad));
+        const stag = [0, 0.04, -0.02, 0.03];
+        let cum = -vw / 2 + pad, best = 0, bestV = -Infinity;
+        cards.forEach((c, i) => {
+          const w = ws[i], h = c.offsetHeight;
+          const tt = phi + i * 2 * Math.PI / n, s = Math.sin(tt), co = Math.cos(tt), den = 1 + s * s;
+          const lx = A * co / den, ly = A * s * co / den * 1.25, lz = s * D;
+          const sx = cum + w / 2 - S.ws * travel, sy = stag[i % 4] * vh - 18;
+          cum += w + gap;
+          let mi = cl(S.wm * 1.4 - i * (0.4 / Math.max(1, n - 1)));
+          mi = mi < 0.5 ? 4 * mi * mi * mi : 1 - Math.pow(-2 * mi + 2, 3) / 2;
+          const x = lx + (sx - lx) * mi, y = ly + (sy - ly) * mi, zz = lz * (1 - mi), scl = 0.34 + 0.66 * mi;
+          c.style.transform = `translate3d(${x - w / 2}px, ${y - h / 2}px, ${zz}px) scale(${scl})`;
+          c.style.opacity = String(Math.min(1, 0.5 + 0.5 * ((s + 1) / 2) + mi));
+          const cap = c.firstElementChild && c.lastElementChild;
+          if (cap && cap.hasAttribute('data-cap')) cap.style.opacity = String(cl((mi - 0.7) / 0.3));
+          const v = S.wm < 0.5 ? zz : -Math.abs(x);
+          if (v > bestV) { bestV = v; best = i; }
+        });
+        const wt = this.worksTitleRef.current;
+        if (wt) { wt.style.opacity = String(1 - cl(S.wm * 1.8)); wt.style.transform = `translateZ(0) scale(${1 + S.wm * 0.25})`; }
+        const ct = this.counterRef.current, label = `${this.pad(best + 1)} / ${this.pad(n)}`;
+        if (ct && ct.textContent !== label) ct.textContent = label;
+      }
+    }
+
+    const B = this.btsRef.current, bs = this.btsSceneRef.current;
+    if (B && bs) {
+      const r = B.getBoundingClientRect();
+      S.bts += (cl(-r.top / Math.max(1, r.height - vh)) - S.bts) * sm;
+      S.mx += (S.tmx - S.mx) * 0.05; S.my += (S.tmy - S.my) * 0.05;
+      if (r.top < vh && r.bottom > 0) {
+        bs.style.transform = `rotateY(${S.mx * 3}deg) rotateX(${-S.my * 2}deg)`;
+        bs.querySelectorAll('[data-depth]').forEach(el => {
+          const z = parseFloat(el.dataset.z) + S.bts * 4900;
+          const o = Math.min(cl((z + 4600) / 1700), 1 - cl((z - 200) / 380));
+          el.style.opacity = String(o);
+          el.style.visibility = o <= 0.01 ? 'hidden' : 'visible';
+          el.style.transform = `translate3d(${parseFloat(el.dataset.fx) * vw - el.offsetWidth / 2}px, ${parseFloat(el.dataset.fy) * vh - el.offsetHeight / 2}px, ${z}px)`;
+        });
+      }
+    }
+
+    S.cx += (S.tx - S.cx) * 0.2; S.cy += (S.ty - S.cy) * 0.2; S.ring += (S.tring - S.ring) * 0.16;
+    const cu = this.cursorRef.current;
+    if (cu) cu.style.transform = `translate3d(${S.cx - 46}px, ${S.cy - 46}px, 0) scale(${S.ring})`;
+
+    if (onFilm !== this.lastOnFilm) {
+      this.lastOnFilm = onFilm;
+      const col = onFilm ? '#FFFFFF' : '#1B1D1E';
+      if (this.headerRef.current) this.headerRef.current.style.color = col;
+      if (this.hudRef.current) this.hudRef.current.style.color = col;
+      if (this.logoGreenRef.current) this.logoGreenRef.current.style.opacity = onFilm ? '0' : '1';
+      if (this.logoWhiteRef.current) this.logoWhiteRef.current.style.opacity = onFilm ? '1' : '0';
+    }
+
+    const root = this.rootRef.current;
+    if (root && this.hudRef.current) {
+      const rr = root.getBoundingClientRect();
+      const gp = cl(-rr.top / Math.max(1, rr.height - vh));
+      if (this.playheadRef.current) this.playheadRef.current.style.left = `calc(${gp * 100}% - 1px)`;
+      const f = Math.round(gp * 180 * 24);
+      const tc = `00:${this.pad(Math.floor(f / 1440))}:${this.pad(Math.floor(f / 24) % 60)}:${this.pad(f % 24)}`;
+      if (this.tcRef.current && this.tcRef.current.textContent !== tc) this.tcRef.current.textContent = tc;
+      let ch = 0;
+      [this.heroRef, this.worksRef, this.btsRef, this.processRef].forEach((s, i) => { if (s.current && s.current.getBoundingClientRect().top <= vh * 0.5) ch = i; });
+      const chEl = this.chapterRef.current;
+      if (chEl && chEl.textContent !== this.chapters[ch]) chEl.textContent = this.chapters[ch];
+    }
+  };
+
+  pad(n) { return String(n).padStart(2, '0'); }
+  works() {
+    const n = Math.max(3, Math.min(12, this.props.workCount ?? 8));
+    return Array.from({ length: n }, (_, i) => {
+      const [a, b] = this.ratios[i % 8];
+      return { id: this.pad(i + 1), no: this.pad(i + 1), title: 'project title', kind: this.kinds[i % 8],
+        ratio: `${a} / ${b}`, width: `min(calc(46vh * ${a / b}), 78vw)` };
+    });
+  }
+  open(i) {
+    this.S.tring = 0;
+    try { history.replaceState(null, '', i == null ? location.pathname + location.search : `#work-${this.pad(i + 1)}`); } catch (e) {}
+    this.setState({ active: i }, () => this.afterActive());
+  }
+  step(d) { const n = this.works().length; this.open(((this.state.active ?? 0) + d + n) % n); }
+  afterActive() {
+    const c = this.caseRef.current, on = this.state.active != null, was = this.wasOpen;
+    this.wasOpen = on;
+    document.body.style.overflow = on ? 'hidden' : '';
+    if (!c) return;
+    c.style.clipPath = on ? 'inset(0% 0% 0% 0%)' : 'inset(100% 0% 0% 0%)';
+    c.style.pointerEvents = on ? 'auto' : 'none';
+    if (on) {
+      c.scrollTop = 0;
+      c.querySelectorAll('[data-rise]').forEach((el, i) => el.animate(
+        [{ opacity: 0, transform: 'translateY(48px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 1100, delay: (was ? 60 : 420) + i * 90, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both' }));
+    }
+  }
+
+  renderVals() {
+    const works = this.works(), n = works.length, a = this.state.active ?? 0;
+    const drift = this.props.drift ?? true;
+    const blob = (pos, size, alpha, dur, delay) => React.createElement('div', { style: { position: 'absolute', width: size, height: size, borderRadius: '50%', background: `radial-gradient(circle, rgba(16,175,139,${alpha}), transparent 65%)`, filter: 'blur(80px)', ...pos, animation: drift ? `gl-drift ${dur}s ease-in-out ${delay}s infinite` : 'none' } });
+    const mist = React.createElement('div', { 'aria-hidden': true, style: { position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none', background: '#FFFFFF' } },
+      blob({ top: '-22vw', left: '-18vw' }, '62vw', 0.13, 28, 0),
+      blob({ top: '38vh', right: '-24vw' }, '55vw', 0.09, 34, -10),
+      blob({ bottom: '-30vw', left: '24vw' }, '58vw', 0.07, 40, -20));
+    const bts = [
+      [-0.27, -0.14, -700, 'clamp(150px, 22vw, 420px)', '4 / 5', 'setting up'],
+      [0.26, 0.12, -1150, 'clamp(170px, 26vw, 480px)', '3 / 2', 'first light'],
+      [-0.2, 0.2, -1600, 'clamp(140px, 18vw, 340px)', '3 / 4', 'the crew'],
+      [0.22, -0.18, -2050, 'clamp(150px, 22vw, 420px)', '4 / 5', 'golden hour'],
+      [-0.28, 0.02, -2500, 'clamp(180px, 28vw, 520px)', '16 / 10', 'on the move'],
+      [0.3, 0.06, -2950, 'clamp(140px, 18vw, 340px)', '3 / 4', 'between takes'],
+      [-0.12, -0.2, -3400, 'clamp(150px, 22vw, 420px)', '1 / 1', 'the quiet part'],
+      [0.16, 0.2, -3850, 'clamp(170px, 26vw, 480px)', '3 / 2', 'in the edit'],
+      [-0.24, 0.16, -4300, 'clamp(150px, 22vw, 420px)', '4 / 5', 'wrap']
+    ].map((b, i) => ({ id: i + 1, no: this.pad(i + 1), fx: b[0], fy: b[1], z: b[2], w: b[3], ratio: b[4], caption: b[5] }));
+    const steps = [
+      ['listen', 'we start with you — the people, the brand, the feeling worth keeping.'],
+      ['plan', 'moodboards, shot lists, locations and timings, so the day itself can be easy.'],
+      ['shoot', 'a small, quiet crew. we direct lightly and watch closely.'],
+      ['edit', 'colour, sound and pace, cut until it feels right — not just looks right.'],
+      ['deliver', 'films and stills, delivered privately and ready to share.']
+    ].map((s, i) => ({ no: this.pad(i + 1), verb: s[0], line: s[1] }));
+    const stills = [
+      ['1 / span 7', '3 / 2', '0px'], ['9 / span 4', '4 / 5', '14vw'], ['2 / span 4', '4 / 5', '-6vw'],
+      ['7 / span 6', '16 / 10', '6vw'], ['1 / span 12', '21 / 9', '0px'], ['4 / span 6', '4 / 3', '0px']
+    ].map((s, i) => ({ n: i + 1, col: s[0], ratio: s[1], mt: s[2] }));
+    return {
+      mist, bts, steps, stills,
+      caseBts: ['4 / 5', '3 / 4', '4 / 5', '1 / 1', '4 / 5'].map((ratio, i) => ({ n: i + 1, ratio })),
+      works: works.map((w, i) => ({ ...w, open: () => this.open(i) })),
+      workCount: this.pad(n),
+      worksHeight: `${110 + 90 + n * 42 + 100}vh`,
+      hudOn: this.props.hud ?? true,
+      rootRef: this.rootRef, headerRef: this.headerRef, logoGreenRef: this.logoGreenRef, logoWhiteRef: this.logoWhiteRef,
+      heroRef: this.heroRef, filmBaseRef: this.filmBaseRef, filmUiRef: this.filmUiRef, knockRef: this.knockRef, heroOverlayRef: this.heroOverlayRef, cueRef: this.cueRef,
+      worksRef: this.worksRef, sceneRef: this.sceneRef, worksTitleRef: this.worksTitleRef, counterRef: this.counterRef,
+      btsRef: this.btsRef, btsSceneRef: this.btsSceneRef, processRef: this.processRef, markRef: this.markRef,
+      hudRef: this.hudRef, chapterRef: this.chapterRef, tickRef: this.tickRef, playheadRef: this.playheadRef, tcRef: this.tcRef,
+      caseRef: this.caseRef, cursorRef: this.cursorRef,
+      showCursor: () => { this.S.tring = 1; }, hideCursor: () => { this.S.tring = 0; },
+      activeWork: works[a], nextWork: works[(a + 1) % n],
+      close: () => this.open(null), prev: () => this.step(-1), next: () => this.step(1)
+    };
+  }
+}
+</script>
+</body>
+</html>

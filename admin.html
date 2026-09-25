@@ -2331,7 +2331,7 @@
               <span style="font-size:10px; padding:3px 9px; border-radius:10px; background:{{ r.stateBg }}; color:{{ r.stateColor }}; letter-spacing:.08em; text-transform:uppercase; min-width:70px; text-align:center">{{ r.stateLabel }}</span>
               <div style="display:flex; gap:6px">
                 <sc-if value="{{ r.canPay }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ r.pay }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Pay</button>
+                  <button onClick="{{ r.pay }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">Make payslip</button>
                 </sc-if>
                 <sc-if value="{{ r.canMarkPaid }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ r.markPaid }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer">Mark paid</button>
@@ -2343,7 +2343,7 @@
             </div>
           </sc-for>
         </div>
-        <span style="font-size:11px; color:#67746F; line-height:1.7">Pay repeats last month's payslip. Edit amounts in Payslip.</span>
+        <span style="font-size:11px; color:#67746F; line-height:1.7">A payslip repeats last month's fixed pay — overtime, kit and advance recovery start at zero. Add them in Payslip, then mark paid once transferred.</span>
       </div>
       </sc-if>
 
@@ -7426,7 +7426,7 @@ class Component extends DCLogic {
     const now = new Date();
     const fy = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
     const year = String(fy).slice(2) + String(fy + 1).slice(2);
-    const prefix = type === 'proforma' ? 'PRO' : 'INV';
+    const prefix = type === 'proforma' ? 'PRO' : type === 'credit' ? 'CN' : 'INV';
     // Counting rows re-issues a number that a deleted invoice already used, so read
     // the highest number actually issued this year instead.
     const { data, error } = await this.sb.from('invoices').select('number')
@@ -7441,9 +7441,17 @@ class Component extends DCLogic {
   // Two people raising an invoice in the same second both read the same "last
   // number". The column is unique, so the second insert fails — take the next
   // number and try again instead of surfacing a duplicate-key error.
+  // A tax invoice number is taken only when the invoice is issued. A draft holds
+  // a placeholder, so deleting it never leaves a gap in the GST series.
+  draftNo() { return 'DRAFT-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase(); }
+  isDraftNo(n) { return /^DRAFT-/.test(String(n || '')); }
+  invNo(inv) { return this.isDraftNo(inv.number) ? 'Draft' : inv.number; }
+
   async insertInvoice(row) {
+    const draft = row.type === 'tax' && row.status === 'draft';
+    if (draft) row.number = this.draftNo();
     for (let attempt = 0; attempt < 4; attempt++) {
-      if (attempt > 0) row.number = await this.nextInvoiceNumber(row.type);
+      if (attempt > 0) row.number = draft ? this.draftNo() : await this.nextInvoiceNumber(row.type);
       const res = await this.sb.from('invoices').insert(row).select('id, number').single();
       if (!res.error || res.error.code !== '23505') return res;
     }
@@ -7468,7 +7476,7 @@ class Component extends DCLogic {
       const discount = parseFloat(s.newInvDiscount || 0) || 0;
       const taxable = Math.max(0, subtotal - discount);
       const clientState = (s.editClientState || ev.client_state || '').trim();
-      const gstMode = s.newInvGstOverride === 'auto' ? (clientState.toLowerCase() === 'kerala' ? 'cgst_sgst' : 'igst') : s.newInvGstOverride;
+      const gstMode = s.newInvGstOverride === 'auto' ? (!clientState || /kerala|^\s*32\b|\bkl\b/i.test(clientState) ? 'cgst_sgst' : 'igst') : s.newInvGstOverride;
       const rate = 18, half = rate / 2;
       const cgst = gstMode === 'cgst_sgst' ? +(taxable * half / 100).toFixed(2) : 0;
       const sgst = cgst;
@@ -7489,7 +7497,7 @@ class Component extends DCLogic {
       };
       const { error } = await this.insertInvoice(row);
       if (error) throw error;
-      this.setState({ invStatus: 'Generated ' + row.number + '.', showInvoiceForm: false, newInvAddons: [] });
+      this.setState({ invStatus: type === 'tax' ? 'Draft saved — it takes its number when issued.' : 'Generated ' + row.number + '.', showInvoiceForm: false, newInvAddons: [] });
       this.loadInvoices(ev.id);
     } catch (e) { this.setState({ invStatus: e.message || 'Failed to generate.' }); }
     setTimeout(() => this.setState({ invStatus: '' }), 2500);
@@ -7680,9 +7688,11 @@ class Component extends DCLogic {
     const prev = live.filter(x => String(x.period || '') < month)[0];
     if (prev && prev.components && Object.keys(prev.components).length) {
       const comp = Object.assign({}, prev.components);
+      // One-off lines never carry over: overtime, kit, advance recovery, other.
+      ['ot', 'kit', 'adv', 'other'].forEach(k => { delete comp[k]; });
       const gross = SLIP_EARN.reduce((t, r) => t + Number(comp[r[0]] || 0), 0);
       const ded = SLIP_DED.reduce((t, r) => t + Number(comp[r[0]] || 0), 0);
-      if (gross > 0) return { components: comp, gross, deductions: ded, from: 'as ' + prev.period };
+      if (gross > 0) return { components: comp, gross, deductions: ded, from: 'fixed pay as ' + prev.period };
     }
     const sal = Number(p.monthly_salary || 0);
     return { components: sal ? { basic: sal } : {}, gross: sal, deductions: 0, from: sal ? 'profile salary' : '' };
@@ -7694,15 +7704,15 @@ class Component extends DCLogic {
     const rows = people.map(p => {
       const t = this.payrollTemplate(p, month);
       return { person_id: p.id, kind: 'salary', period: month, gross: t.gross, deductions: t.deductions,
-        components: t.components, paid_on: today, paid_mode: p.upi_id ? 'upi' : 'bank' };
+        components: t.components, paid_mode: p.upi_id ? 'upi' : 'bank' };
     }).filter(r => r.gross > 0);
     if (!rows.length) { this.setState({ prStatus: 'Nobody to pay — set a monthly salary on their profile first.' }); return; }
-    if (rows.length > 1 && !window.confirm('Record ' + rows.length + ' salaries for ' + this.monthLabel(month) + ', paid today, ' + fmtINR(rows.reduce((t, r) => t + r.gross - r.deductions, 0)) + ' net?')) return;
+    if (rows.length > 1 && !window.confirm('Create ' + rows.length + ' payslips for ' + this.monthLabel(month) + ', ' + fmtINR(rows.reduce((t, r) => t + r.gross - r.deductions, 0)) + ' net? Mark each paid once the transfer goes out.')) return;
     this.setState({ prBusy: true, prStatus: 'Saving…' });
     const { error } = await this.sb.from('people_payments').insert(rows);
     this.setState({ prBusy: false, prStatus: error
       ? (/period_uq|duplicate key/i.test(error.message || '') ? 'Someone already has a payslip for this month — reload and pay the rest.' : error.message)
-      : (rows.length === 1 ? 'Salary recorded.' : rows.length + ' salaries recorded.') });
+      : (rows.length === 1 ? 'Payslip made — mark paid once transferred.' : rows.length + ' payslips made — mark each paid once transferred.') });
     this.loadPayroll(month);
   }
 
@@ -7730,6 +7740,7 @@ class Component extends DCLogic {
     const s = this.state;
     const month = s.prMonth || this.toIso(new Date()).slice(0, 7);
     const canEdit = this.can('moneyEdit');
+    const curMonth = this.toIso(new Date()).slice(0, 7);
     const sum = this.payrollSummary(month);
     const rows = sum.people.map(p => {
       const slip = (s.prSlips || []).find(x => x.person_id === p.id && x.period === month && x.status !== 'void');
@@ -7745,7 +7756,7 @@ class Component extends DCLogic {
         stateLabel: state === 'paid' ? 'Paid' : state === 'unpaid' ? 'Slip made' : 'Due',
         stateBg: state === 'paid' ? '#DDEFE8' : state === 'unpaid' ? '#FDF9F0' : '#F7E9E7',
         stateColor: state === 'paid' ? '#0A6E58' : state === 'unpaid' ? '#8A6D3B' : '#B4433A',
-        canPay: canEdit && state === 'none' && t.gross > 0, pay: () => this.runPayroll([p]),
+        canPay: canEdit && state === 'none' && t.gross > 0 && month <= curMonth, pay: () => this.runPayroll([p]),
         canMarkPaid: canEdit && state === 'unpaid', markPaid: () => this.markSlipPaid(slip),
         canOpen: this.can('people'), open: () => this.openFinPerson(p),
       };
@@ -7759,8 +7770,8 @@ class Component extends DCLogic {
       prPrev: () => this.loadPayroll(shift(-1)), prNext: () => this.loadPayroll(shift(1)),
       prTotalsLabel: sum.people.length + (sum.people.length === 1 ? ' person' : ' people') + ' · ' + fmtINR(sum.paid) + ' paid · ' + fmtINR(sum.due) + ' still to pay',
       prRowsVM: rows, prEmpty: !rows.length,
-      prCanRunAll: canEdit && payable.length > 1 && !s.prBusy,
-      prRunAllLabel: 'Pay all due (' + payable.length + ')',
+      prCanRunAll: canEdit && payable.length > 1 && !s.prBusy && month <= curMonth,
+      prRunAllLabel: 'Make all payslips (' + payable.length + ')',
       prRunAll: () => this.runPayroll(payable),
     };
   }
@@ -8176,7 +8187,7 @@ class Component extends DCLogic {
         }
       }
       this.setState({ niOpen: false, niRec: null, niKey: '', niBusy: false, niStatus: '', finInvFilter: 'draft',
-        niDone: 'Generated ' + inv.number + ' · ' + fmtINR(t.total) + ' incl. GST · saved as draft.' });
+        niDone: (type === 'tax' ? 'Draft saved' : 'Generated ' + inv.number) + ' · ' + fmtINR(t.total) + ' incl. GST · issue it to take the number.' });
       setTimeout(() => this.setState({ niDone: '' }), 4000);
       this.loadFinInvoices();
     } catch (e) {
@@ -8454,7 +8465,7 @@ class Component extends DCLogic {
       : i.events ? (i.events.couple_names || '—') : (i.bill_name || '—');
     const rows = (s.finInvList || []).map(i => {
       const got = rcv[i.id] || 0, bal = Number(i.total || 0) - got;
-      const state = i.status === 'cancelled' ? 'cancelled' : i.type === 'proforma' ? 'proforma' : i.status === 'draft' ? 'draft' : bal <= 1 ? 'paid' : 'unpaid';
+      const state = i.status === 'cancelled' ? 'cancelled' : i.type === 'credit' ? 'credit' : i.type === 'proforma' ? 'proforma' : i.status === 'draft' ? 'draft' : bal <= 1 ? 'paid' : 'unpaid';
       return { i, got, bal, state, name: nameOf(i) };
     });
     const f = s.finInvFilter || 'unpaid';
@@ -8464,14 +8475,16 @@ class Component extends DCLogic {
     const count = k => rows.filter(x => k === 'all' || x.state === k).length;
     const STATE = {
       unpaid: ['Unpaid', '#F7E9E7', '#B4433A'], draft: ['Draft', '#EEEEEE', '#5C6864'],
-      paid: ['Paid', '#DDEFE8', '#0A6E58'], proforma: ['Proforma', '#EFE9DA', '#8A6D3B'], cancelled: ['Cancelled', '#EEEEEE', '#5C6864'],
+      paid: ['Paid', '#DDEFE8', '#0A6E58'], proforma: ['Proforma', '#EFE9DA', '#8A6D3B'], cancelled: ['Cancelled', '#EEEEEE', '#5C6864'], credit: ['Credit note', '#E4EEF7', '#2F5D86'],
     };
-    const totalShown = shown.filter(x => x.state !== 'cancelled').reduce((t, x) => t + Number(x.i.total || 0), 0);
+    const byInvId = {};
+    (s.finInvList || []).forEach(i => { byInvId[i.id] = i; });
+    const totalShown = shown.filter(x => x.state !== 'cancelled' && x.state !== 'credit').reduce((t, x) => t + Number(x.i.total || 0), 0);
     const balShown = shown.filter(x => x.state === 'unpaid').reduce((t, x) => t + x.bal, 0);
     return {
       ...this.newInvoiceVM(),
       isFinInvoices: true,
-      finInvFilterVM: [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['cancelled', 'Cancelled'], ['all', 'All']].map(c =>
+      finInvFilterVM: [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['cancelled', 'Cancelled'], ['credit', 'Credit notes'], ['all', 'All']].map(c =>
         Object.assign({ label: c[1] + ' (' + count(c[0]) + ')', go: () => this.setState({ finInvFilter: c[0] }) }, this.finChip(f === c[0]))),
       finInvQuery: s.finInvQuery || '', onFinInvQuery: e => this.setState({ finInvQuery: e.target.value }),
       finInvSummary: shown.length + (shown.length === 1 ? ' invoice · ' : ' invoices · ') + fmtINR(totalShown)
@@ -8479,20 +8492,22 @@ class Component extends DCLogic {
       finNoInvoices: !shown.length && !(s.finStatus || '').startsWith('Loading'),
       finInvRowsVM: shown.map(x => {
         const st = STATE[x.state];
-        const late = x.state === 'unpaid' && x.i.due_date && x.i.due_date < today;
+        const due = x.i.due_date || (x.i.issue_date ? this.addDays(x.i.issue_date, 7) : null);
+        const late = x.state === 'unpaid' && due && due < today;
         return {
-          client: x.name, number: x.i.number,
+          client: x.name, number: this.invNo(x.i),
           dateLabel: 'Issued ' + fmtDay(x.i.issue_date) + (x.i.due_date ? ' · due ' + fmtDay(x.i.due_date) : ''),
           dateColor: late ? '#B4433A' : '#67746F',
           stateLabel: st[0], stateBg: st[1], stateColor: st[2],
           totalFmt: fmtINR(x.i.total),
-          subLabel: x.state === 'cancelled' ? (x.i.cancel_reason || 'Cancelled') : x.state === 'proforma' ? 'Quote' : x.state === 'draft' ? 'Not issued — not owed yet' : x.got <= 0 ? 'Nothing received' : x.bal > 1 ? fmtINR(x.bal) + ' outstanding' : 'Received in full',
+          subLabel: x.state === 'credit' ? 'Against ' + ((byInvId[x.i.credit_for] || {}).number || 'an invoice') : x.state === 'cancelled' ? (x.i.cancel_reason || 'Cancelled') : x.state === 'proforma' ? 'Quote' : x.state === 'draft' ? 'Not issued — not owed yet' : x.got <= 0 ? 'Nothing received' : x.bal > 1 ? fmtINR(x.bal) + ' outstanding' : 'Received in full',
           subColor: x.state === 'unpaid' ? '#B4433A' : '#67746F',
           canLog: x.state === 'unpaid' && this.can('moneyEdit'),
           canIssue: x.state === 'draft' && x.i.type === 'tax' && this.can('moneyEdit'),
           issue: () => this.markInvoiceIssued(x.i),
           canCancel: (x.state === 'draft' || x.state === 'unpaid' || x.state === 'proforma') && this.can('moneyEdit'),
-          cancelLabel: x.i.status === 'draft' ? 'Delete draft' : 'Cancel',
+          canCreditNote: x.state === 'unpaid' && x.i.type === 'tax',
+          cancelLabel: x.i.status === 'draft' && this.isDraftNo(x.i.number) ? 'Delete draft' : 'Cancel',
           cancel: () => this.cancelInvoice(x.i),
           logPayment: () => this.goLogPayment(x.i),
           preview: () => this.openInvoicePreview(x.i),
@@ -8941,7 +8956,7 @@ class Component extends DCLogic {
     const disc = Number(discount || 0);
     const taxable = Math.max(0, subtotal - disc);
     const gstMode = gstOverride === 'auto' || !gstOverride
-      ? ((clientState || '').trim().toLowerCase() === 'kerala' ? 'cgst_sgst' : 'igst')
+      ? (!(clientState || '').trim() || /kerala|^\s*32\b|\bkl\b/i.test(clientState) ? 'cgst_sgst' : 'igst')
       : gstOverride;
     const rate = 18, half = rate / 2;
     const cgst = gstMode === 'cgst_sgst' ? +(taxable * half / 100).toFixed(2) : 0;
@@ -8981,7 +8996,7 @@ class Component extends DCLogic {
       });
       if (error) throw error;
       if (!silent) {
-        this.setState({ invStatus: 'Generated ' + number + ' for ' + label + '.' });
+        this.setState({ invStatus: 'Draft saved for ' + label + ' — it takes its number when issued.' });
         this.loadInvoices(pr.id, pr);
         setTimeout(() => this.setState({ invStatus: '' }), 2500);
       }
@@ -9055,23 +9070,68 @@ class Component extends DCLogic {
   // Issued invoices are never deleted: the number has been used and GST needs an
   // unbroken series. They are cancelled instead, which keeps the number, frees
   // any sold lines, and drops the invoice out of every receivable.
+  async issueInvoice(inv, extra) {
+    const today = this.toIso(new Date());
+    const patch = Object.assign({ status: 'sent', sent_at: new Date().toISOString() }, extra || {});
+    if (inv.type === 'tax' && this.isDraftNo(inv.number)) {
+      const terms = inv.issue_date && inv.due_date ? Math.round((new Date(inv.due_date) - new Date(inv.issue_date)) / 86400000) : 7;
+      patch.issue_date = today;
+      patch.due_date = this.addDays(today, Math.max(0, terms));
+    }
+    for (let attempt = 0; attempt < 4; attempt++) {
+      if (inv.type === 'tax' && this.isDraftNo(inv.number)) patch.number = await this.nextInvoiceNumber('tax');
+      const res = await this.sb.from('invoices').update(patch).eq('id', inv.id).eq('status', 'draft').select('*').maybeSingle();
+      if (res.error && res.error.code === '23505') continue;
+      if (res.error) return { error: res.error };
+      if (!res.data) return { error: { message: 'This invoice was issued meanwhile — reload.' } };
+      return { data: res.data };
+    }
+    return { error: { message: 'Could not get a free invoice number — try again.' } };
+  }
+
   async markInvoiceIssued(inv) {
     if (inv.status !== 'draft') return;
-    if (!window.confirm('Mark ' + inv.number + ' as issued? Use this when it went to the client another way (WhatsApp, print). From now it counts as owed.')) return;
-    const { error } = await this.sb.from('invoices').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', inv.id);
-    this.afterInvoiceChange(error, inv.number + ' is issued.');
+    if (!window.confirm('Issue this ' + (inv.type === 'proforma' ? 'proforma' : 'invoice') + '? It takes the next number, is dated today and counts as owed. Use this when it went to the client another way (WhatsApp, print).')) return;
+    const { data, error } = await this.issueInvoice(inv);
+    this.afterInvoiceChange(error, data ? data.number + ' is issued.' : '');
   }
 
   async cancelInvoice(inv) {
-    if (inv.status === 'draft') return this.deleteInvoice(inv);
+    // Older drafts already hold an INV number; those are cancelled, not deleted.
+    if (inv.status === 'draft' && !(inv.type === 'tax' && !this.isDraftNo(inv.number))) return this.deleteInvoice(inv);
     if (inv.status === 'cancelled') return;
     const { data: rc } = await this.sb.from('payments_received').select('id').eq('invoice_id', inv.id).limit(1);
     if (rc && rc.length) { this.afterInvoiceChange({ message: inv.number + ' has payments logged. Reverse them in Money in first, or raise a credit note.' }); return; }
-    const why = window.prompt('Cancel ' + inv.number + '? The number stays used. Reason:', '');
+    const credit = inv.type === 'tax' && inv.status !== 'draft';
+    const why = window.prompt(credit
+      ? 'Cancel ' + inv.number + '? A credit note for the full ' + fmtINR(inv.total) + ' is issued against it (report it in GSTR-1). Reason:'
+      : 'Cancel ' + inv.number + '? The number stays used. Reason:', '');
     if (why === null) return;
-    const { error } = await this.sb.from('invoices').update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: why || null }).eq('id', inv.id);
+    let cnNo = '';
+    if (credit) {
+      const { data: full, error: rErr } = await this.sb.from('invoices').select('*').eq('id', inv.id).single();
+      if (rErr) { this.afterInvoiceChange(rErr); return; }
+      const today = this.toIso(new Date());
+      const cn = {
+        project_id: full.project_id || null, event_id: full.event_id || null, type: 'credit', status: 'sent',
+        number: await this.nextInvoiceNumber('credit'), issue_date: today, due_date: null, credit_for: full.id,
+        bill_name: full.bill_name, bill_couple: full.bill_couple, bill_gstin: full.bill_gstin, bill_pan: full.bill_pan, bill_email: full.bill_email,
+        place_of_supply: full.place_of_supply, gst_mode: full.gst_mode, gst_rate: full.gst_rate, line_items: full.line_items,
+        discount: full.discount, subtotal: full.subtotal, taxable_value: full.taxable_value,
+        cgst_amount: full.cgst_amount, sgst_amount: full.sgst_amount, igst_amount: full.igst_amount, total: full.total,
+        advance_pct: 0, advance_amount: 0, balance_amount: 0,
+        notes: 'Credit note against ' + full.number + ' dated ' + fmtDay(full.issue_date) + (why ? ' — ' + why : '') + '.',
+      };
+      const res = await this.insertInvoice(cn);
+      if (res.error) {
+        this.afterInvoiceChange(/credit|check constraint|type/i.test(res.error.message || '') ? { message: 'Run album-system/credit-notes.sql in Supabase first.' } : res.error);
+        return;
+      }
+      cnNo = res.data.number;
+    }
+    const { error } = await this.sb.from('invoices').update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: (cnNo ? cnNo + (why ? ' · ' : '') : '') + (why || '') || null }).eq('id', inv.id);
     if (!error) await this.sb.from('project_price_lines').update({ invoice_id: null }).eq('invoice_id', inv.id);
-    this.afterInvoiceChange(error && /cancel|check constraint/i.test(error.message || '') ? { message: 'Run album-system/finance-audit-2026-09.sql in Supabase first.' } : error, inv.number + ' cancelled.');
+    this.afterInvoiceChange(error && /cancel|check constraint/i.test(error.message || '') ? { message: 'Run album-system/finance-audit-2026-09.sql in Supabase first.' } : error, inv.number + ' cancelled' + (cnNo ? ' · credit note ' + cnNo + ' issued.' : '.'));
   }
 
   afterInvoiceChange(error, okMsg) {
@@ -9085,7 +9145,8 @@ class Component extends DCLogic {
 
   async deleteInvoice(inv) {
     if (inv.status && inv.status !== 'draft') { this.afterInvoiceChange({ message: inv.number + ' has been issued — cancel it instead, so the number series stays unbroken.' }); return; }
-    if (!window.confirm('Delete draft ' + inv.number + '?')) return;
+    if (inv.type === 'tax' && !this.isDraftNo(inv.number)) { this.afterInvoiceChange({ message: inv.number + ' already holds a GST number — cancel it instead.' }); return; }
+    if (!window.confirm('Delete this draft?')) return;
     const { error } = await this.sb.from('invoices').delete().eq('id', inv.id);
     if (error) {
       this.setState({ invStatus: /violates foreign key|still referenced/i.test(error.message || '')
@@ -9198,8 +9259,16 @@ class Component extends DCLogic {
     const clientEmail = s.editClientEmail || ev.client_email;
     if (!clientEmail) { this.setState({ invStatus: 'Add and save a client email first.' }); setTimeout(() => this.setState({ invStatus: '' }), 2500); return; }
     this.setState({ pdfBusy: true, invStatus: 'Preparing PDF…' });
-    let stage = 'rendering the PDF';
+    let stage = 'issuing the invoice number';
     try {
+      if (inv.status === 'draft' && inv.type === 'tax' && this.isDraftNo(inv.number)) {
+        const r = await this.issueInvoice(inv);
+        if (r.error) throw new Error(r.error.message);
+        Object.assign(inv, r.data);
+        this.setState({ previewInvoice: Object.assign({}, r.data) });
+        await new Promise(res => setTimeout(res, 250));
+      }
+      stage = 'rendering the PDF';
       const blob = await this.getInvoicePdfBlob();
       const sizeMB = blob.size / 1048576;
 
@@ -9218,7 +9287,7 @@ class Component extends DCLogic {
       } catch (upe) { console.warn('[invoice] storage upload failed, sending anyway:', upe); }
 
       const name = s.editClientName || 'there';
-      const label = inv.type === 'proforma' ? 'Proforma Invoice' : 'Tax Invoice';
+      const label = inv.type === 'proforma' ? 'Proforma Invoice' : inv.type === 'credit' ? 'Credit Note' : 'Tax Invoice';
       const subject = (label + ' ' + inv.number + ' — ' + ev.couple_names).toLowerCase();
       const invoiceDate = inv.issue_date
         ? new Date(inv.issue_date + 'T00:00:00').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -14586,7 +14655,7 @@ class Component extends DCLogic {
         summaryLabel: [
           ag.pay_basis === 'fixed' ? 'Fixed fee' : ag.pay_basis === 'salaried' ? 'Salaried'
             : ag.pay_basis === 'deliverable' ? 'Per deliverable' : 'Hourly',
-          Number(ag.tds_rate || 0) > 0 ? 'net ' + fmtINR(Number(ag.amount_owed || 0) * (1 - Number(ag.tds_rate || 0) / 100)) : '',
+          Number(ag.tds_rate || 0) > 0 ? 'net ' + fmtINR(Number(ag.paid_amount != null ? ag.paid_amount : (ag.amount_owed || 0)) * (1 - Number(ag.tds_rate || 0) / 100)) : '',
           ag.paid_ref ? 'Ref ' + ag.paid_ref : '',
         ].filter(Boolean).join(' · '),
         breakdownVM: [
@@ -14598,8 +14667,8 @@ class Component extends DCLogic {
           Number(ag.per_diem || 0) > 0 ? { label: 'Per diem', value: fmtINR(ag.per_diem) + ' × ' + (ag.days_logged || 0) + 'd', color: '#16231F' } : null,
           { label: 'Gross', value: fmtINR(ag.paid_amount != null ? ag.paid_amount : ag.amount_owed), color: '#16231F' },
           Number(ag.tds_rate || 0) > 0 ? { label: 'TDS ' + String(ag.tds_section || '').toUpperCase() + ' @' + Number(ag.tds_rate) + '%',
-            value: '−' + fmtINR(Number(ag.amount_owed || 0) * Number(ag.tds_rate || 0) / 100), color: '#8A6D3B' } : null,
-          Number(ag.tds_rate || 0) > 0 ? { label: 'Net payable', value: fmtINR(Number(ag.amount_owed || 0) * (1 - Number(ag.tds_rate || 0) / 100)), color: '#0A6E58' } : null,
+            value: '−' + fmtINR(Number(ag.paid_amount != null ? ag.paid_amount : (ag.amount_owed || 0)) * Number(ag.tds_rate || 0) / 100), color: '#8A6D3B' } : null,
+          Number(ag.tds_rate || 0) > 0 ? { label: 'Net payable', value: fmtINR(Number(ag.paid_amount != null ? ag.paid_amount : (ag.amount_owed || 0)) * (1 - Number(ag.tds_rate || 0) / 100)), color: '#0A6E58' } : null,
           ag.paid_at ? { label: 'Paid on', value: fmtDay(String(ag.paid_at).slice(0, 10)), color: '#16231F' } : null,
           ag.paid_mode ? { label: 'Mode', value: RECEIPT_MODE_LABEL[ag.paid_mode] || ag.paid_mode, color: '#16231F' } : null,
           ag.paid_note ? { label: 'Note', value: ag.paid_note, color: '#5C6864' } : null,
@@ -15429,13 +15498,14 @@ class Component extends DCLogic {
 
     const invoicesVM = s.invoices.map(inv => ({
       ...inv,
+      number: this.invNo(inv),
       periodLabel: inv.period_label || '',
       hasPeriod: !!inv.period_label,
       deliveryLabel: inv.delivery_due ? (inv.delivered_on ? 'Delivered ' + fmtDay(inv.delivered_on) : 'Due ' + fmtDay(inv.delivery_due)) : '',
       hasDelivery: !!inv.delivery_due,
       deliveryColor: inv.delivered_on ? '#0A6E58' : (inv.delivery_due && inv.delivery_due < todayIso ? '#B4433A' : '#5C6864'),
-      typeLabel: inv.type === 'proforma' ? 'Proforma' : 'Tax invoice',
-      typeBg: inv.type === 'proforma' ? '#EFE9DA' : '#DDEFE8', typeColor: inv.type === 'proforma' ? '#8A6D3B' : '#0A6E58',
+      typeLabel: inv.type === 'proforma' ? 'Proforma' : inv.type === 'credit' ? 'Credit note' : 'Tax invoice',
+      typeBg: inv.type === 'proforma' ? '#EFE9DA' : inv.type === 'credit' ? '#E4EEF7' : '#DDEFE8', typeColor: inv.type === 'proforma' ? '#8A6D3B' : inv.type === 'credit' ? '#2F5D86' : '#0A6E58',
       status: inv.status.charAt(0).toUpperCase() + inv.status.slice(1),
       statusBg: inv.status === 'paid' ? '#DDEFE8' : inv.status === 'sent' ? '#E4EEF7' : '#EEEEEE',
       statusColor: inv.status === 'paid' ? '#0A6E58' : inv.status === 'sent' ? '#2C5F8A' : '#5C6864',
@@ -15471,7 +15541,7 @@ class Component extends DCLogic {
 
     const pInv = s.previewInvoice;
     const previewVals = pInv ? {
-      previewInvoiceNumber: pInv.number, previewTypeLabel: pInv.type === 'proforma' ? 'Proforma Invoice' : 'Tax Invoice',
+      previewInvoiceNumber: this.isDraftNo(pInv.number) ? 'Draft — numbered on issue' : pInv.number, previewTypeLabel: pInv.type === 'proforma' ? 'Proforma Invoice' : pInv.type === 'credit' ? 'Credit Note' : 'Tax Invoice',
       previewIsProforma: pInv.type === 'proforma',
       previewIssueDate: pInv.issue_date ? new Date(pInv.issue_date + 'T00:00:00').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—',
       previewPlaceOfSupply: pInv.place_of_supply || '—',
