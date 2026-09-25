@@ -56,6 +56,26 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ isWsPicker }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(24px,5vh,44px); padding:clamp(24px,6vw,64px)">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center">
+        <span style="font-size:17px; font-weight:300; color:var(--green)">Glomium Workspace</span>
+        <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#67746F">Choose a workspace</span>
+      </div>
+      <div style="width:100%; max-width:620px; display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">
+        <sc-for list="{{ wsCardsVM }}" as="wc" hint-placeholder-count="2">
+          <button onClick="{{ wc.go }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:28px 26px; background:#FFFFFF; border:1px solid {{ wc.border }}; border-radius:4px; cursor:pointer; text-align:left" style-hover="border-color:var(--green)">
+            <span style="font-size:18px; font-weight:400; color:var(--green-deep)">{{ wc.label }}</span>
+            <span style="font-size:12px; line-height:1.5; color:#5C6864; text-wrap:pretty">{{ wc.note }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ canCancelWsPicker }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ cancelWsPicker }}" style="padding:10px 18px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#5C6864; cursor:pointer">Cancel</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ isPicker }}" hint-placeholder-val="{{ false }}">
     <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(24px,5vh,44px); padding:clamp(24px,6vw,64px)">
       <div style="display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center">
@@ -82,11 +102,7 @@
       <div style="display:flex; align-items:center; gap:16px; padding:20px clamp(20px,5vw,60px); border-bottom:1px solid var(--line); flex-wrap:wrap">
         <span style="font-size:17px; font-weight:300; color:var(--green)">Glomium Workspace</span>
         <sc-if value="{{ showWsSwitch }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex; border:1px solid var(--green); border-radius:10px; overflow:hidden">
-            <sc-for list="{{ wsSwitchVM }}" as="w" hint-placeholder-count="2">
-              <button onClick="{{ w.go }}" style="padding:8px 16px; background:{{ w.bg }}; border:none; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:{{ w.color }}; cursor:pointer">{{ w.label }}</button>
-            </sc-for>
-          </div>
+          <button onClick="{{ openWsPicker }}" style="display:flex; align-items:center; gap:8px; padding:8px 14px; background:var(--green); border:1px solid var(--green); border-radius:10px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:var(--green-deep)">{{ wsLabel }} <span style="font-size:10px; color:#D6EFE8">Switch</span></button>
         </sc-if>
         <sc-if value="{{ showDivisionPicker }}" hint-placeholder-val="{{ true }}">
         <button onClick="{{ openDivisionPicker }}" style="display:flex; align-items:center; gap:8px; padding:8px 14px; background:#F3FAF8; border:1px solid var(--line); border-radius:10px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ divisionLabel }} <span style="font-size:10px; color:#67746F">Switch</span></button>
@@ -2701,8 +2717,129 @@
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
           <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Invoices</span>
           <span style="font-size:12px; color:#5C6864">{{ finInvSummary }}</span>
+          <span style="font-size:12px; color:#0A6E58">{{ niDone }}</span>
           <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ finStatus }}</span>
+          <sc-if value="{{ canNewInvoice }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ openNewInvoice }}" style="padding:9px 16px; background:var(--green); border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:var(--green-deep)">+ New invoice</button>
+          </sc-if>
         </div>
+
+        <sc-if value="{{ niOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:22px; padding:clamp(18px,3vw,28px); border:1px solid var(--green); border-radius:4px; background:#FFFFFF">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">New invoice</span>
+              <span style="font-size:12px; color:#B4433A">{{ niStatus }}</span>
+              <button onClick="{{ closeNewInvoice }}" style="margin-left:auto; padding:7px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5C6864; cursor:pointer">Close</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Project</span>
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <input value="{{ niQuery }}" onChange="{{ onNiQuery }}" placeholder="Search client or project" style="flex:0 1 220px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)">
+                <select value="{{ niKey }}" onChange="{{ onNiPick }}" style="flex:1 1 300px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; color:#16231F">
+                  <option value="">Choose a project — {{ niOptsCount }}</option>
+                  <sc-for list="{{ niOptsVM }}" as="o" hint-placeholder-count="0">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </select>
+              </div>
+            </div>
+
+            <sc-if value="{{ niHasRec }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:22px">
+                <div style="display:grid; gap:14px 22px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); padding:14px 16px; background:#F3FAF8; border-radius:3px">
+                  <sc-for list="{{ niFactsVM }}" as="fc" hint-placeholder-count="4">
+                    <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">{{ fc.label }}</span>
+                      <span style="font-size:13px; color:#16231F; overflow-wrap:anywhere">{{ fc.value }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="display:flex; gap:18px; flex-wrap:wrap">
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Type</span>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap">
+                      <sc-for list="{{ niTypeVM }}" as="ty" hint-placeholder-count="2">
+                        <button onClick="{{ ty.go }}" style="padding:8px 14px; background:{{ ty.bg }}; border:1px solid {{ ty.border }}; border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:{{ ty.color }}; cursor:pointer">{{ ty.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">GST</span>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap">
+                      <sc-for list="{{ niGstVM }}" as="g" hint-placeholder-count="3">
+                        <button onClick="{{ g.go }}" style="padding:8px 14px; background:{{ g.bg }}; border:1px solid {{ g.border }}; border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:{{ g.color }}; cursor:pointer">{{ g.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Bill to</span>
+                  <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Name<input value="{{ niBillName }}" onChange="{{ onNiBillName }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">GSTIN<input value="{{ niGstin }}" onChange="{{ onNiGstin }}" placeholder="Unregistered if blank" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">PAN<input value="{{ niPan }}" onChange="{{ onNiPan }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Email<input value="{{ niEmail }}" onChange="{{ onNiEmail }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">State (place of supply)<input value="{{ niState }}" onChange="{{ onNiState }}" placeholder="Kerala" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Invoice date<input type="date" value="{{ niIssue }}" onChange="{{ onNiIssue }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Due date<input type="date" value="{{ niDue }}" onChange="{{ onNiDue }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                  </div>
+                </div>
+
+                <sc-if value="{{ niHasLines }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap">
+                      <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Unbilled sold lines</span>
+                      <sc-if value="{{ niProforma }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px; color:#8A6D3B">A proforma is a quote — sold lines only go on a tax invoice.</span></sc-if>
+                    </div>
+                    <sc-for list="{{ niLinesVM }}" as="ln" hint-placeholder-count="0">
+                      <label style="display:flex; align-items:center; gap:12px; padding:11px 14px; border:1px solid var(--line); border-radius:3px; cursor:pointer">
+                        <input type="checkbox" checked="{{ ln.checked }}" disabled="{{ ln.disabled }}" onChange="{{ ln.toggle }}" style="width:16px; height:16px; accent-color:#0E8E72">
+                        <div style="flex:1; display:flex; flex-direction:column; gap:2px; min-width:0">
+                          <span style="font-size:13px; color:#16231F; overflow-wrap:anywhere">{{ ln.desc }}</span>
+                          <span style="font-size:11px; color:{{ ln.whenColor }}">{{ ln.whenLabel }}</span>
+                        </div>
+                        <span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums">{{ ln.amountFmt }}</span>
+                      </label>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <div style="display:flex; flex-direction:column; gap:8px">
+                  <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#67746F">Other lines</span>
+                  <sc-for list="{{ niCustomVM }}" as="cl" hint-placeholder-count="0">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap">
+                      <input value="{{ cl.desc }}" onChange="{{ cl.onDesc }}" placeholder="Description" style="flex:1 1 260px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)">
+                      <input type="number" value="{{ cl.amount }}" onChange="{{ cl.onAmount }}" placeholder="Amount ₹" style="flex:0 1 140px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)">
+                      <button onClick="{{ cl.remove }}" style="padding:0 12px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; color:#B4433A; cursor:pointer">Remove</button>
+                    </div>
+                  </sc-for>
+                  <button onClick="{{ niAddLine }}" style="align-self:flex-start; padding:8px 14px; background:none; border:1px dashed var(--line); border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">+ Add line</button>
+                </div>
+
+                <div style="display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); align-items:start">
+                  <div style="display:flex; flex-direction:column; gap:10px">
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Discount ₹<input type="number" value="{{ niDiscount }}" onChange="{{ onNiDiscount }}" placeholder="0" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                    <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#5C6864">Notes<textarea value="{{ niNotes }}" onChange="{{ onNiNotes }}" rows="3" style="padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-size:13px; outline:none; background:#fff; resize:vertical; font-family:inherit" style-focus="border-color:var(--green)"></textarea></label>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:8px; padding:16px; border:1px solid var(--line); border-radius:3px">
+                    <sc-for list="{{ niTotalsVM }}" as="tt" hint-placeholder-count="3">
+                      <div style="display:flex; justify-content:space-between; gap:12px; font-size:13px; color:#4A524F"><span>{{ tt.label }}</span><span style="font-variant-numeric:tabular-nums">{{ tt.value }}</span></div>
+                    </sc-for>
+                    <div style="display:flex; justify-content:space-between; gap:12px; padding-top:10px; border-top:1px solid var(--line); font-size:16px; color:#16231F"><span>Total</span><span style="font-variant-numeric:tabular-nums">{{ niTotalFmt }}</span></div>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+                  <button onClick="{{ niGenerate }}" disabled="{{ niBusy }}" style="padding:12px 22px; background:var(--green); border:1px solid var(--green); border-radius:3px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:var(--green-deep)">{{ niGenerateLabel }}</button>
+                  <span style="font-size:11px; color:#67746F">Saved as a draft — preview, then issue or email it from the list.</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
           <sc-for list="{{ finInvFilterVM }}" as="f" hint-placeholder-count="5">
             <button onClick="{{ f.go }}" style="padding:8px 14px; background:{{ f.bg }}; border:1px solid {{ f.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ f.color }}; cursor:pointer">{{ f.label }}</button>
@@ -5520,7 +5657,7 @@ class Component extends DCLogic {
     view: 'login',
     email: '', password: '', authError: '', signingIn: false, roleError: '',
     events: [], newCouple: '', newDate: '', newVenue: '', newSlug: '', creating: false, createError: '',
-    division: null, pickingDivision: false,
+    division: null, pickingDivision: false, wsChosen: false, pickingWs: false,
     projects: [], newClientName: '', newProjTitle: '', newSector: '', creatingProject: false, createProjectError: '',
     linkProjects: [], linkPick: '',
     editProjClient: '', editProjTitle: '', editSector: '', editTagline: '', editBrief: '',
@@ -5720,6 +5857,12 @@ class Component extends DCLogic {
     });
   }
 
+  // Asked once per sign-in for anyone who holds both workspaces.
+  chooseWorkspace(ws) {
+    try { localStorage.setItem(WS_STORAGE_KEY, ws); } catch (e) {}
+    this.setState({ workspace: ws, wsChosen: true, pickingWs: false, pickingDivision: ws === 'studio' }, () => this.goWorkspace(ws === 'finance' ? 'finance' : 'dashboard'));
+  }
+
   switchWorkspace(ws) {
     if (ws === this.activeWorkspace()) return;
     try { localStorage.setItem(WS_STORAGE_KEY, ws); } catch (e) {}
@@ -5764,7 +5907,7 @@ class Component extends DCLogic {
   async doSignOut() {
     await this.sb.auth.signOut();
     this.setState({
-      view: 'login', email: '', password: '', role: null, current: null, media: [],
+      view: 'login', email: '', password: '', role: null, current: null, media: [], wsChosen: false, pickingWs: false,
       invoices: [], assignments: [], costing: null, people: [], payouts: [], workload: [],
       moneyInvoices: [], receipts: [], invoiceReceipts: [], moneyOpen: null, receiptPreview: null,
       personForm: null, personId: null, personDocs: [], personAvail: [], personRates: [],
@@ -7935,6 +8078,169 @@ class Component extends DCLogic {
 
   openFinRecord(r) { if (r.kind === 'project') this.openProject(r.rec); else this.openEvent(r.rec); }
 
+  // ---- New invoice, raised straight from Finance → Invoices ----------------------
+  // Pick the project, its client details and unbilled sold lines come across;
+  // anything else is added as a free line. Same numbering, GST split and
+  // line-stamping guard as the project page.
+  async openNewInvoice() {
+    this.setState({ niOpen: true, niStatus: 'Loading projects…', niKey: '', niQuery: '', niRec: null, niKind: '',
+      niLines: [], niChecked: [], niCustom: [], niType: 'tax', niGst: 'auto', niDiscount: '', niNotes: '', niBusy: false });
+    const [pr, ev] = await Promise.all([
+      this.sb.from('projects').select('*').order('created_at', { ascending: false }).limit(800),
+      this.sb.from('events').select('*').order('created_at', { ascending: false }).limit(800),
+    ]);
+    const recs = [
+      ...(pr.data || []).map(r => ({ key: 'p:' + r.id, kind: 'project', rec: r,
+        label: (r.client_name || '—') + (r.project_title ? ' · ' + r.project_title : '') })),
+      ...(ev.data || []).map(r => ({ key: 'e:' + r.id, kind: 'event', rec: r,
+        label: (r.couple_names || r.client_name || '—') + (r.event_date ? ' · ' + fmtDay(r.event_date) : '') + ' · Wedding' })),
+    ];
+    const err = pr.error || ev.error;
+    this.setState({ niRecords: recs, niStatus: err ? 'Could not load projects: ' + err.message : '' });
+  }
+
+  closeNewInvoice() { this.setState({ niOpen: false, niRec: null, niKey: '', niStatus: '' }); }
+
+  async niPick(key) {
+    const r = (this.state.niRecords || []).find(x => x.key === key);
+    if (!r) { this.setState({ niKey: '', niRec: null, niLines: [], niChecked: [], niCustom: [] }); return; }
+    const c = r.rec, today = this.toIso(new Date());
+    const terms = Number(c.payment_terms_days == null ? 7 : c.payment_terms_days);
+    const pkg = Number(c.package_price || 0);
+    this.setState({
+      niKey: key, niRec: c, niKind: r.kind, niLines: [], niChecked: [], niStatus: r.kind === 'project' ? 'Reading sold lines…' : '',
+      niBillName: c.client_name || c.couple_names || '', niGstin: c.client_gstin || '', niPan: c.client_pan || '',
+      niEmail: c.client_email || '', niState: c.client_state || '',
+      niIssue: today, niDue: this.addDays(today, terms), niDiscount: '', niGst: 'auto',
+      niNotes: 'Payment due by ' + fmtDay(this.addDays(today, terms)) + '.',
+      niCustom: r.kind === 'event' && pkg ? [{ id: Date.now(), desc: PACKAGE_DESC, amount: String(pkg) }] : [],
+    });
+    if (r.kind !== 'project') return;
+    const { data, error } = await this.sb.from('project_price_lines').select('*').eq('project_id', c.id).is('invoice_id', null).order('bill_on', { ascending: true });
+    if (this.state.niKey !== key) return;
+    const lines = error ? [] : (data || []);
+    const patch = { niLines: lines, niChecked: lines.filter(l => l.bill_on && l.bill_on <= today).map(l => l.id), niStatus: '' };
+    // A project priced only as a package, with no sold lines, bills its package.
+    if (!lines.length && pkg) patch.niCustom = [{ id: Date.now(), desc: c.project_title || 'Professional services', amount: String(pkg) }];
+    this.setState(patch);
+  }
+
+  niItems() {
+    const s = this.state;
+    const sold = s.niType === 'tax' ? (s.niLines || []).filter(l => (s.niChecked || []).indexOf(l.id) !== -1) : [];
+    const extra = (s.niCustom || []).filter(a => (a.desc || '').trim() && Number(a.amount));
+    const lineItems = [
+      ...sold.map(l => ({ desc: this.priceLineDesc(l), amount: Number(l.amount) })),
+      ...extra.map(a => ({ desc: a.desc.trim(), amount: parseFloat(a.amount) || 0 })),
+    ];
+    return { sold, lineItems, t: this.invoiceTotals(lineItems, parseFloat(s.niDiscount || 0) || 0, s.niState, s.niGst) };
+  }
+
+  async niGenerate() {
+    const s = this.state, c = s.niRec;
+    if (!c) return this.setState({ niStatus: 'Choose a project first.' });
+    const name = (s.niBillName || '').trim();
+    if (!name) return this.setState({ niStatus: 'Add the name to bill.' });
+    const { sold, lineItems, t } = this.niItems();
+    if (!lineItems.length || t.subtotal <= 0) return this.setState({ niStatus: 'Add at least one line with an amount.' });
+    this.setState({ niBusy: true, niStatus: 'Generating…' });
+    try {
+      const type = s.niType === 'proforma' ? 'proforma' : 'tax';
+      const number = await this.nextInvoiceNumber(type);
+      const { data: inv, error } = await this.insertInvoice({
+        [s.niKind === 'project' ? 'project_id' : 'event_id']: c.id, type, number, status: 'draft',
+        issue_date: s.niIssue || this.toIso(new Date()), due_date: s.niDue || null,
+        bill_name: name, bill_couple: c.project_title || c.couple_names || c.client_name,
+        bill_gstin: (s.niGstin || '').trim(), bill_pan: (s.niPan || '').trim(), bill_email: (s.niEmail || '').trim(),
+        place_of_supply: (s.niState || '').trim() || '—', gst_mode: t.gstMode, gst_rate: t.rate, line_items: lineItems,
+        discount: t.discount, subtotal: t.subtotal, taxable_value: t.taxable,
+        cgst_amount: t.cgst, sgst_amount: t.sgst, igst_amount: t.igst, total: t.total,
+        advance_pct: 0, advance_amount: 0, balance_amount: t.total, notes: s.niNotes || '',
+      });
+      if (error) throw error;
+      if (sold.length) {
+        const ids = sold.map(l => l.id);
+        const { data: stamped, error: sErr } = await this.sb.from('project_price_lines')
+          .update({ invoice_id: inv.id }).in('id', ids).is('invoice_id', null).select('id');
+        if (sErr || !stamped || stamped.length !== ids.length) {
+          await this.sb.from('invoices').delete().eq('id', inv.id);
+          throw new Error(sErr ? sErr.message : 'Some of these lines were billed meanwhile — nothing was created. Pick the project again.');
+        }
+      }
+      this.setState({ niOpen: false, niRec: null, niKey: '', niBusy: false, niStatus: '', finInvFilter: 'draft',
+        niDone: 'Generated ' + inv.number + ' · ' + fmtINR(t.total) + ' incl. GST · saved as draft.' });
+      setTimeout(() => this.setState({ niDone: '' }), 4000);
+      this.loadFinInvoices();
+    } catch (e) {
+      this.setState({ niBusy: false, niStatus: e.message || 'Failed to generate.' });
+    }
+  }
+
+  newInvoiceVM() {
+    const s = this.state;
+    const canNew = this.can('moneyEdit');
+    const base = { canNewInvoice: canNew && !s.niOpen, openNewInvoice: () => this.openNewInvoice(), niDone: s.niDone || '', niOpen: !!s.niOpen && canNew };
+    if (!base.niOpen) return Object.assign(base, { niOptsVM: [], niLinesVM: [], niCustomVM: [], niTotalsVM: [], niTypeVM: [], niGstVM: [], niFactsVM: [] });
+    const q = (s.niQuery || '').trim().toLowerCase();
+    const recs = (s.niRecords || []).filter(r => !q || r.key === s.niKey || r.label.toLowerCase().includes(q));
+    const c = s.niRec;
+    const set = k => e => this.setState({ [k]: e.target.value });
+    const chip = on => ({ bg: on ? 'var(--green)' : '#FFFFFF', color: on ? '#FFFFFF' : 'var(--green-deep)', border: on ? 'var(--green)' : 'var(--line)' });
+    const { t } = this.niItems();
+    const today = this.toIso(new Date());
+    const proforma = s.niType === 'proforma';
+    const divs = c && (c.divisions && c.divisions.length ? c.divisions : c.division ? [c.division] : []);
+    return Object.assign(base, {
+      closeNewInvoice: () => this.closeNewInvoice(),
+      niStatus: s.niStatus || '', niBusy: !!s.niBusy, niGenerateLabel: s.niBusy ? 'Generating…' : (proforma ? 'Generate proforma' : 'Generate invoice'),
+      niGenerate: () => this.niGenerate(),
+      niQuery: s.niQuery || '', onNiQuery: set('niQuery'),
+      niKey: s.niKey || '', onNiPick: e => this.niPick(e.target.value),
+      niOptsVM: recs.map(r => ({ value: r.key, label: r.label })),
+      niOptsCount: recs.length + (recs.length === 1 ? ' match' : ' matches'),
+      niHasRec: !!c, niNoRec: !c,
+      niFactsVM: c ? [
+        ['Client', c.client_name || c.couple_names],
+        ['Project', c.project_title || c.couple_names],
+        ['Division', s.niKind === 'event' ? 'Wedding' : divs.map(d => DIVISION_LABEL[d] || d).join(', ')],
+        ['Date', c.event_date ? fmtDay(c.event_date) : c.start_date ? fmtDay(c.start_date) : null],
+        ['Package', Number(c.package_price || 0) ? fmtINR(c.package_price) : null],
+        ['Terms', (c.payment_terms_days == null ? 7 : c.payment_terms_days) + ' days'],
+      ].filter(f => f[1]).map(f => ({ label: f[0], value: f[1] })) : [],
+      niTypeVM: [['tax', 'Tax invoice'], ['proforma', 'Proforma / quote']].map(o => Object.assign({ label: o[1], go: () => this.setState({ niType: o[0] }) }, chip((s.niType || 'tax') === o[0]))),
+      niGstVM: [['auto', 'Auto'], ['cgst_sgst', 'CGST + SGST'], ['igst', 'IGST']].map(o => Object.assign({ label: o[1], go: () => this.setState({ niGst: o[0] }) }, chip((s.niGst || 'auto') === o[0]))),
+      niBillName: s.niBillName || '', onNiBillName: set('niBillName'),
+      niGstin: s.niGstin || '', onNiGstin: set('niGstin'), niPan: s.niPan || '', onNiPan: set('niPan'),
+      niEmail: s.niEmail || '', onNiEmail: set('niEmail'), niState: s.niState || '', onNiState: set('niState'),
+      niIssue: s.niIssue || '', onNiIssue: set('niIssue'), niDue: s.niDue || '', onNiDue: set('niDue'),
+      niDiscount: s.niDiscount || '', onNiDiscount: set('niDiscount'), niNotes: s.niNotes || '', onNiNotes: set('niNotes'),
+      niHasLines: (s.niLines || []).length > 0, niProforma: proforma,
+      niLinesVM: (s.niLines || []).map(l => {
+        const on = !proforma && (s.niChecked || []).indexOf(l.id) !== -1;
+        return {
+          desc: this.priceLineDesc(l), amountFmt: fmtINR(l.amount), checked: on, disabled: proforma,
+          whenLabel: l.bill_on ? (l.bill_on <= today ? 'Due ' : 'Bills on ') + fmtDay(l.bill_on) : 'No billing date',
+          whenColor: l.bill_on && l.bill_on <= today ? '#8A6D3B' : '#67746F',
+          toggle: () => this.setState(st => ({ niChecked: (st.niChecked || []).indexOf(l.id) !== -1 ? st.niChecked.filter(x => x !== l.id) : [...(st.niChecked || []), l.id] })),
+        };
+      }),
+      niCustomVM: (s.niCustom || []).map(a => ({
+        desc: a.desc, amount: a.amount,
+        onDesc: e => { const v = e.target.value; this.setState(st => ({ niCustom: st.niCustom.map(x => x.id === a.id ? Object.assign({}, x, { desc: v }) : x) })); },
+        onAmount: e => { const v = e.target.value; this.setState(st => ({ niCustom: st.niCustom.map(x => x.id === a.id ? Object.assign({}, x, { amount: v }) : x) })); },
+        remove: () => this.setState(st => ({ niCustom: st.niCustom.filter(x => x.id !== a.id) })),
+      })),
+      niAddLine: () => this.setState(st => ({ niCustom: [...(st.niCustom || []), { id: Date.now() + Math.random(), desc: '', amount: '' }] })),
+      niTotalsVM: [
+        ['Subtotal', fmtINR(t.subtotal)],
+        t.discount ? ['Discount', '− ' + fmtINR(t.discount)] : null,
+        ['Taxable value', fmtINR(t.taxable)],
+        t.gstMode === 'cgst_sgst' ? ['CGST 9% + SGST 9%', fmtINR(t.cgst * 2)] : ['IGST 18%', fmtINR(t.igst)],
+      ].filter(Boolean).map(x => ({ label: x[0], value: x[1] })),
+      niTotalFmt: fmtINR(t.total),
+    });
+  }
+
   async openFinInvoiceParent(inv) {
     const table = inv.project_id ? 'projects' : 'events';
     const { data, error } = await this.sb.from(table).select('*').eq('id', inv.project_id || inv.event_id).maybeSingle();
@@ -7996,6 +8302,14 @@ class Component extends DCLogic {
     const ws = this.activeWorkspace();
     const out = {
       showWsSwitch: this.can('finance') && this.can('studio'),
+      wsLabel: ws === 'finance' ? 'Finance' : 'Studio',
+      openWsPicker: () => this.setState({ pickingWs: true }),
+      canCancelWsPicker: !!s.wsChosen,
+      cancelWsPicker: () => this.setState({ pickingWs: false }),
+      wsCardsVM: [['studio', 'Studio', 'Albums, projects, crew, schedule and digital.'], ['finance', 'Finance', 'Billing, invoices, payroll, expenses, commitments and inventory.']].map(w => ({
+        label: w[1], note: w[2], go: () => this.chooseWorkspace(w[0]),
+        border: s.wsChosen && ws === w[0] ? 'var(--green)' : 'var(--line)',
+      })),
       wsSwitchVM: [['studio', 'Studio'], ['finance', 'Finance']].map(w => ({
         label: w[1], go: () => this.switchWorkspace(w[0]),
         bg: ws === w[0] ? 'var(--green)' : '#FFFFFF', color: ws === w[0] ? '#FFFFFF' : 'var(--green-deep)',
@@ -8003,6 +8317,7 @@ class Component extends DCLogic {
       showDivisionPicker: ws !== 'finance',
       editorIsStudio: ws !== 'finance',
       finStatus: s.finStatus || '',
+      niOpen: false, canNewInvoice: false, niOptsVM: [], niLinesVM: [], niCustomVM: [], niTotalsVM: [], niTypeVM: [], niGstVM: [], niFactsVM: [],
       isFinOverview: false, isFinProjects: false, isFinInvoices: false, isFinPeople: false, isShoots: false,
       finKpisVM: [], finBillSoonVM: [], finOverdueVM: [], finLowMarginVM: [], finRowsVM: [], finDivisionOptsVM: [],
       finInvRowsVM: [], finInvFilterVM: [], finPeopleVM: [], finPeopleChipsVM: [], isFinMaster: false, isFinInventory: false, isFinPayroll: false, prRowsVM: [], invListVM: [], invCatChipsVM: [], invCatOptsVM: [], invStatusOptsVM: [], invInfoVM: [],
@@ -8146,6 +8461,7 @@ class Component extends DCLogic {
     const totalShown = shown.filter(x => x.state !== 'cancelled').reduce((t, x) => t + Number(x.i.total || 0), 0);
     const balShown = shown.filter(x => x.state === 'unpaid').reduce((t, x) => t + x.bal, 0);
     return {
+      ...this.newInvoiceVM(),
       isFinInvoices: true,
       finInvFilterVM: [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['cancelled', 'Cancelled'], ['all', 'All']].map(c =>
         Object.assign({ label: c[1] + ' (' + count(c[0]) + ')', go: () => this.setState({ finInvFilter: c[0] }) }, this.finChip(f === c[0]))),
@@ -13664,7 +13980,8 @@ class Component extends DCLogic {
     const s = this.state;
     const role = s.role || 'none';
     // No division chosen yet — or an explicit switch — takes over the whole screen.
-    const picking = s.view !== 'login' && (!s.division || s.pickingDivision);
+    const wsPick = s.view !== 'login' && this.can('finance') && this.can('studio') && (!s.wsChosen || s.pickingWs);
+    const picking = !wsPick && s.view !== 'login' && this.activeWorkspace() !== 'finance' && (!s.division || s.pickingDivision);
     const crewRoleOptions = CREW_ROLES.map(([value, label]) => ({ value, label }));
     // A role typed by hand is stored as its own slug, so an unknown key reads back
     // as the words that were typed rather than as raw snake_case.
@@ -14659,7 +14976,7 @@ class Component extends DCLogic {
       }));
 
     return {
-      isPicker: picking,
+      isPicker: picking, isWsPicker: wsPick,
       canCancelPicker: picking && !!s.division,
       cancelPicker: () => this.setState({ pickingDivision: false }),
       openDivisionPicker: () => this.openDivisionPicker(),
@@ -14737,7 +15054,7 @@ class Component extends DCLogic {
         color: s.view === pair[0] ? 'var(--green-deep)' : '#67746F',
       })),
 
-      isWorkspace: !picking && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || FIN_VIEWS.indexOf(s.view) !== -1),
+      isWorkspace: !picking && !wsPick && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || FIN_VIEWS.indexOf(s.view) !== -1),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       isMoney: onMoney,
       isApprovals: s.view === 'approvals',
