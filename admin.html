@@ -119,6 +119,14 @@
         </div>
       </div>
 
+      <sc-if value="{{ hasFinSub }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; gap:26px; flex-wrap:wrap; padding:0 clamp(20px,5vw,60px); border-bottom:1px solid var(--line)">
+          <sc-for list="{{ finSubVM }}" as="fs" hint-placeholder-count="0">
+            <button onClick="{{ fs.go }}" style="padding:14px 0 12px; background:none; border:none; border-bottom:2px solid {{ fs.border }}; margin-bottom:-1px; font-size:12px; letter-spacing:.06em; color:{{ fs.color }}; cursor:pointer" style-hover="color:var(--green-deep)">{{ fs.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
       <sc-if value="{{ hasRoleError }}" hint-placeholder-val="{{ false }}">
         <div style="padding:12px clamp(20px,5vw,60px); background:#F9EFED; border-bottom:1px solid #E7CEC9">
           <span style="font-size:12px; color:#B4433A">Could not read your role, so the panel is showing its most limited view — this is a connection problem, not a permissions one. {{ roleError }}</span>
@@ -2335,7 +2343,7 @@
             </div>
           </sc-for>
         </div>
-        <span style="font-size:11px; color:#67746F; line-height:1.7">Pay records this month's payslip, paid today, repeating the person's last payslip (basic, HRA, PF, PT…) — or their profile salary if it is the first. To change an amount, open Payslip and edit it there. A paid payslip is never deleted; void it on the person's Pay tab.</span>
+        <span style="font-size:11px; color:#67746F; line-height:1.7">Pay repeats last month's payslip. Edit amounts in Payslip.</span>
       </div>
       </sc-if>
 
@@ -7577,7 +7585,7 @@ class Component extends DCLogic {
     const open = s.invOpenId ? items.find(it => it.id === s.invOpenId) : null;
     const set = k => e => this.setInv(k, e.target.value);
     const base = {
-      isFinInventory: true, invMissing: !!s.invMissing, invStatus: s.invStatus || '', invCanEdit: canEdit,
+      isFinInventory: true, invMissing: !!s.invMissing && s.role === 'admin', invStatus: s.invStatus || '', invCanEdit: canEdit,
       invIsList: !open && !f, invIsInfo: !!open && !f, invIsForm: !!f,
       invBack: () => this.setState({ invOpenId: null, invForm: null, invStatus: '' }),
       invNew: () => this.setState({ invForm: this.blankInvItem(), invOpenId: null, invStatus: '' }),
@@ -7997,7 +8005,7 @@ class Component extends DCLogic {
         { label: 'Dues · next 30 days', value: fmtINR(due30), color: due30 > 0 ? '#8A6D3B' : '#16231F', note: overdueAmt > 0 ? fmtINR(overdueAmt) + ' already late' : 'Salaries, loans, rent and other standing costs' },
       ],
       mClientsVM, mNoClients: !mClientsVM.length, mClientCount: mClientsVM.length + (mClientsVM.length === 1 ? ' client' : ' clients'),
-      mDuesVM, mNoDues: !mDuesVM.length, finCmMissing: !!s.finCmMissing,
+      mDuesVM, mNoDues: !mDuesVM.length, finCmMissing: !!s.finCmMissing && s.role === 'admin',
       mCommitmentsVM,
       mExpensesVM, mNoExpenses: !mExpensesVM.length, mInvoicesVM, mNoInvoices: !mInvoicesVM.length,
       goExpenses: () => this.goWorkspace('spend'), goInvoices: () => this.goWorkspace('finInvoices'),
@@ -8430,7 +8438,7 @@ class Component extends DCLogic {
         { label: 'Draft invoices', value: String(drafts.length), color: '#16231F', note: drafts.length ? fmtINR(drafts.reduce((t, i) => t + Number(i.total || 0), 0)) + ' raised, not issued — not owed yet' : 'None waiting' },
         { label: 'Margin', value: fmtINR(mSum), color: mSum < 0 ? '#B4433A' : '#0A6E58', note: priced.length ? pct(pSum ? mSum / pSum * 100 : 0) + ' across ' + priced.length + ' priced ' + (priced.length === 1 ? 'project' : 'projects') : 'Price a project to see margin' },
       ],
-      finBillingMissing: !!s.finBillingMissing,
+      finBillingMissing: !!s.finBillingMissing && s.role === 'admin',
       finBillSoonVM: billSoon, finNoBillSoon: !billSoon.length,
       finOverdueVM: overdue, finNoOverdue: !overdue.length,
       finLowMarginVM: low, finHasLowMargin: low.length > 0,
@@ -14010,14 +14018,19 @@ class Component extends DCLogic {
     const ws = this.activeWorkspace();
     const nav = [];
     const pendingRequests = s.changeRequests.filter(r => r.status === 'pending').length;
+    let finGroups = [];
     if (ws === 'finance') {
-      nav.push({ key: 'finance', label: 'Overview' }, { key: 'finMaster', label: 'Master' }, { key: 'finProjects', label: 'Projects & pricing' }, { key: 'finInvoices', label: 'Invoices' });
-      if (this.can('money')) nav.push({ key: 'money', label: 'Money in' });
-      if (this.can('payouts')) nav.push({ key: 'payouts', label: 'Payouts' });
-      if (this.can('spend')) nav.push({ key: 'spend', label: 'Expenses & shoots' });
-      nav.push({ key: 'finPayroll', label: 'Payroll' });
-      nav.push({ key: 'finPeople', label: 'People pay' });
-      nav.push({ key: 'finInventory', label: 'Inventory' });
+      // Five questions, not ten screens: where do we stand, what are the jobs
+      // worth, what came in, what went out, who and what do we hold.
+      const sub = (key, label, ok) => ok === false ? null : { key, label };
+      finGroups = [
+        ['Overview', [sub('finance', 'Overview')]],
+        ['Projects', [sub('finProjects', 'Jobs & pricing'), sub('finMaster', 'Clients & dues')]],
+        ['Money in', [sub('finInvoices', 'Invoices'), sub('money', 'Payments received', this.can('money'))]],
+        ['Money out', [sub('spend', 'Expenses & shoots', this.can('spend')), sub('payouts', 'Crew payouts', this.can('payouts')), sub('finPayroll', 'Payroll')]],
+        ['People & assets', [sub('finPeople', 'People pay'), sub('finInventory', 'Inventory')]],
+      ].map(g => ({ label: g[0], subs: g[1].filter(Boolean) })).filter(g => g.subs.length);
+      finGroups.forEach(g => nav.push({ key: g.subs[0].key, label: g.label, members: g.subs.map(x => x.key) }));
     } else {
       if (this.can('albums')) nav.push({ key: 'dashboard', label: s.division && s.division !== 'wedding' ? 'Projects' : 'Albums' });
       if (this.can('albums')) nav.push({ key: 'schedule', label: 'Schedule' });
@@ -14034,12 +14047,19 @@ class Component extends DCLogic {
     // A pay profile opened from Finance is still Finance's People pay.
     const navKey = (s.view === 'talent' && this.can('people')) ? 'people'
       : (ws === 'finance' && s.view === 'people') ? 'finPeople' : s.view;
+    const navOn = n => n.members ? n.members.indexOf(navKey) !== -1 : navKey === n.key;
     const navVM = nav.map(n => ({
       label: n.label, go: () => this.goWorkspace(n.key),
-      bg: navKey === n.key ? 'var(--green)' : 'none',
-      border: navKey === n.key ? 'var(--green)' : 'var(--line)',
-      color: navKey === n.key ? '#FFFFFF' : 'var(--green-deep)',
+      bg: navOn(n) ? 'var(--green)' : 'none',
+      border: navOn(n) ? 'var(--green)' : 'var(--line)',
+      color: navOn(n) ? '#FFFFFF' : 'var(--green-deep)',
     }));
+    const finGroup = finGroups.find(g => g.subs.some(x => x.key === navKey));
+    const finSubVM = finGroup && finGroup.subs.length > 1 ? finGroup.subs.map(x => ({
+      label: x.label, go: () => this.goWorkspace(x.key),
+      color: navKey === x.key ? 'var(--green-deep)' : '#67746F',
+      border: navKey === x.key ? 'var(--green)' : 'transparent',
+    })) : [];
 
     const tabs = [];
     const inFinance = ws === 'finance';
@@ -15069,7 +15089,7 @@ class Component extends DCLogic {
       personWorkVM, hasPersonWork: personWorkVM.length > 0,
       roleLabel: STAFF_ROLE_LABEL[role] || role, roleMissing: role === 'none' && !s.roleError,
       roleError: s.roleError || '', hasRoleError: !!s.roleError,
-      navVM, editorTabsVM, isCrewTab: s.editorTab === 'crew' && this.can('people'),
+      navVM, finSubVM, hasFinSub: finSubVM.length > 0, editorTabsVM, isCrewTab: s.editorTab === 'crew' && this.can('people'),
       hasEditorTabs: editorTabsVM.length > 0, hasNoEditorTabs: editorTabsVM.length === 0,
       // Weddings are named by the couple, projects by the client. Reading the
       // wedding fields for a project showed the last-opened album's name.
