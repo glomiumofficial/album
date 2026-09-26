@@ -5757,7 +5757,7 @@ const DIVISION_NOTE = {
   digital: 'Social handling, post sets and always-on content.',
   press: 'Press conferences, launches and corporate coverage.',
 };
-const MEDIA_SECTIONS = [['logo', 'Logo suite'], ['social', 'Social posts'], ['banner', 'Banners & outdoor'], ['film', 'Films & reels'], ['motion', 'Motion graphics'], ['print', 'Print & packaging']];
+const MEDIA_SECTIONS = [['logo', 'Logo suite'], ['photo', 'Photography'], ['product', 'Product shots'], ['social', 'Social posts'], ['banner', 'Posters & banners'], ['film', 'Films & reels'], ['motion', 'Motion graphics'], ['print', 'Print & packaging']];
 // A digital client delivers a different set — hoardings and packaging are a
 // branding job, not an always-on social account. The section keys are fixed by
 // a database constraint, so these reuse existing keys under the names digital
@@ -6511,7 +6511,7 @@ class Component extends DCLogic {
     if (/production_status_check/.test(m)) return 'Run album-system/planning-stage.sql in Supabase — the database does not allow the Planning stage yet.';
     if (/work_nature/.test(m)) return 'Run album-system/projects-schema.sql in Supabase (latest version) — the work_nature column is missing on projects.';
     if (/post_no/.test(m)) return 'Run album-system/project-media-posts.sql in Supabase — the database does not have post sets yet.';
-    if (/project_media_section_check/.test(m)) return 'Run album-system/project-media-motion.sql in Supabase — the database does not allow the Motion graphics section yet.';
+    if (/project_media_section_check/.test(m)) return 'Run album-system/project-media-photo.sql in Supabase — the database does not allow this media section yet.';
     if (/relation "?projects"?|project_media/.test(m)) return 'Run album-system/projects-schema.sql in Supabase — the projects tables do not exist yet.';
     return m;
   }
@@ -16818,7 +16818,9 @@ class Component extends DCLogic {
             : isFilm ? 'Reels and campaign films.'
             : isMotion ? 'Looping motion pieces — .mp4 only, shown in an Instagram post box (4:5). A light copy is made for silent looping; the file you upload is what the lightbox plays and what downloads.'
             : key === 'social' ? 'Each post is its own swipeable carousel on the project page. Add photos into a post, or start a new one.'
-            : key === 'banner' ? 'Hoardings and wide artwork, shown full-bleed.'
+            : key === 'photo' ? 'Campaign and editorial stills. A landscape first frame opens the section full width; the rest fall into two columns, never cropped.'
+            : key === 'product' ? 'Product shots, shown whole on a white ground in a square grid — nothing is cropped.'
+            : key === 'banner' ? 'Posters, hoardings and wide artwork, shown full-bleed.'
             : 'Packaging, collateral and guideline pages.',
           setInputRef: el => { this.projInputs = this.projInputs || {}; this.projInputs[key] = el; },
           trigger: () => { const el = this.projInputs && this.projInputs[key]; if (el) el.click(); },

@@ -39,11 +39,29 @@
 
 <div style="position:relative; width:100%; background:#FFFFFF">
 
-  <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
-    <div style="min-height:100vh; display:grid; place-items:center">
-      <span style="font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--green-deep)">Loading</span>
+<sc-if value="{{ loaderOn }}" hint-placeholder-val="{{ true }}">
+    <div ref="{{ loaderRef }}" style="position:fixed; inset:0; z-index:2000; background:#FFFFFF; clip-path:inset(0% 0% 0% 0%); transition:clip-path 1.1s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column; justify-content:space-between; padding:22px clamp(18px,4vw,48px) clamp(28px,5vh,48px); overflow:hidden">
+      <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(62vw 62vw at 12% 8%, rgba(16,175,139,0.13), transparent 65%), radial-gradient(52vw 52vw at 92% 86%, rgba(16,175,139,0.08), transparent 65%)"></div>
+      <div style="position:relative; display:flex; justify-content:space-between; align-items:center; gap:24px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#5F6C68">
+        <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto">
+        <span>private preview</span>
+      </div>
+      <div style="position:relative; display:flex; justify-content:center">
+        <img ref="{{ loadMarkRef }}" src="assets/infinity.svg" alt="" style="width:clamp(72px,8vw,120px); height:auto">
+      </div>
+      <div style="position:relative; display:flex; flex-direction:column; gap:18px">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px">
+          <span ref="{{ loadNumRef }}" style="font-weight:200; font-size:clamp(64px,12vw,200px); line-height:.8; letter-spacing:-.04em; font-variant-numeric:tabular-nums; color:#16231F">000</span>
+          <span ref="{{ loadLabelRef }}" style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#5F6C68; text-align:right">preparing your project</span>
+        </div>
+        <div style="position:relative; height:1px; background:#E2E7E5; overflow:hidden">
+          <div ref="{{ loadBarRef }}" style="position:absolute; inset:0; background:#10AF8B; transform-origin:left; transform:scaleX(0)"></div>
+        </div>
+      </div>
     </div>
   </sc-if>
+
+  <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}"><div style="min-height:100vh"></div></sc-if>
 
   <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
     <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
@@ -70,7 +88,11 @@
     <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:30; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px clamp(18px,4vw,48px); opacity:0; pointer-events:none; background:rgba(255,255,255,.97); border-bottom:1px solid var(--line); transition:opacity .35s ease">
       <span style="flex:0 1 auto; min-width:0; font-size:13px; letter-spacing:.02em; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ clientName }}</span>
       <div style="flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:clamp(12px,1.8vw,24px); overflow-x:auto; scrollbar-width:none">
-        <sc-for list="{{ navVM }}" as="nv" hint-placeholder-count="0">
+        <sc-for list="{{ navBrand }}" as="nv" hint-placeholder-count="0">
+          <a href="{{ nv.href }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)">{{ nv.label }}</a>
+        </sc-for>
+        <sc-if value="{{ navBoth }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="flex:0 0 1px; height:12px; background:rgba(22,35,31,.18)"></span></sc-if>
+        <sc-for list="{{ navWork }}" as="nv" hint-placeholder-count="0">
           <a href="{{ nv.href }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)">{{ nv.label }}</a>
         </sc-for>
       </div>
@@ -82,15 +104,15 @@
 
       <div style="position:absolute; top:clamp(20px,3.4vh,34px); left:clamp(18px,4vw,48px); right:clamp(18px,4vw,48px); display:flex; align-items:center; justify-content:space-between; gap:14px">
         <span style="font-size:11px; letter-spacing:.22em; color:rgba(255,255,255,.92)"><span style="text-transform:lowercase">creative</span> <span style="text-transform:uppercase">INFINITELY</span></span>
-        <span style="font-size:9px; letter-spacing:.24em; text-transform:uppercase; color:rgba(255,255,255,.6)">Private preview</span>
+        <span style="font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:rgba(255,255,255,.78)">Private preview</span>
       </div>
 
       <div style="position:absolute; left:clamp(18px,4vw,48px); right:clamp(18px,4vw,48px); bottom:clamp(34px,8vh,74px); display:flex; align-items:flex-end; justify-content:space-between; gap:clamp(18px,4vw,60px); flex-wrap:wrap">
-        <div style="display:flex; flex-direction:column; gap:clamp(10px,1.6vh,18px); max-width:16ch; min-width:min(100%,300px); animation:glm-rise .8s ease both">
+        <div style="display:flex; flex-direction:column; gap:clamp(10px,1.6vh,18px); max-width:16ch; min-width:min(100%,300px)" data-rise="">
           <span style="font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:rgba(255,255,255,.72)">{{ divisionLabel }}</span>
           <h1 style="margin:0; font-size:clamp(38px,8.4vw,104px); font-weight:200; letter-spacing:-.01em; line-height:.96; color:#FFFFFF; text-wrap:balance">{{ clientName }}</h1>
         </div>
-        <div style="display:flex; flex-direction:column; gap:9px; max-width:34ch; padding-bottom:6px; animation:glm-rise .9s .1s ease both">
+        <div style="display:flex; flex-direction:column; gap:9px; max-width:34ch; padding-bottom:6px" data-rise="">
           <sc-if value="{{ hasTitle }}" hint-placeholder-val="{{ false }}">
             <span style="font-size:clamp(14px,1.7vw,19px); font-weight:300; line-height:1.45; color:#EEF7F4; text-wrap:pretty">{{ projectTitle }}</span>
           </sc-if>
@@ -111,8 +133,25 @@
       </div>
     </sc-if>
 
+<sc-if value="{{ hasBrandPart }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(80px,14vh,170px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(18px,3vh,30px)">
+        <div style="display:flex; align-items:center; gap:16px">
+          <span style="font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:var(--green-deep); white-space:nowrap">Part one</span>
+          <span style="flex:1; height:1px; background:var(--line)"></span>
+        </div>
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:clamp(20px,4vw,60px); flex-wrap:wrap">
+          <h2 style="margin:0; font-size:clamp(52px,10vw,150px); font-weight:200; letter-spacing:-.035em; line-height:.9; color:var(--ink)">The brand</h2>
+          <div style="display:flex; flex-wrap:wrap; gap:10px 24px; max-width:44ch; padding-bottom:12px">
+            <sc-for list="{{ navBrand }}" as="pn" hint-placeholder-count="3">
+              <a href="{{ pn.href }}" style="display:flex; gap:8px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)"><span style="color:var(--green-deep); font-variant-numeric:tabular-nums">{{ pn.n }}</span>{{ pn.label }}</a>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ hasBrief }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-brief" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(56px,11vh,140px) clamp(18px,4vw,48px) clamp(60px,10vh,120px); display:flex; flex-wrap:wrap; gap:clamp(30px,5vw,70px)">
+      <div id="sec-brief" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(56px,11vh,140px) clamp(18px,4vw,48px) clamp(60px,10vh,120px); display:flex; flex-wrap:wrap; gap:clamp(30px,5vw,70px)">
         <div style="flex:1 1 260px; max-width:420px; display:flex; flex-direction:column; gap:clamp(18px,3vh,28px)">
           <div style="display:flex; align-items:baseline; gap:14px">
             <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nBrief }}</span>
@@ -137,7 +176,7 @@
     </sc-if>
 
     <sc-if value="{{ hasLogos }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-identity" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-identity" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nIdentity }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Identity</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ logoCountLabel }}</span>
@@ -155,7 +194,7 @@
     </sc-if>
 
     <sc-if value="{{ hasPalette }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-colour" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-colour" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nColour }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Colour</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ paletteHint }}</span>
@@ -196,7 +235,7 @@
     </sc-if>
 
     <sc-if value="{{ hasFonts }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-type" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-type" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nType }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Typography</h2>
       </div>
@@ -214,8 +253,65 @@
       </div>
     </sc-if>
 
+<sc-if value="{{ hasWorkPart }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(80px,14vh,170px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(18px,3vh,30px)">
+        <div style="display:flex; align-items:center; gap:16px">
+          <span style="font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:var(--green-deep); white-space:nowrap">{{ partWorkLabel }}</span>
+          <span style="flex:1; height:1px; background:var(--line)"></span>
+        </div>
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:clamp(20px,4vw,60px); flex-wrap:wrap">
+          <h2 style="margin:0; font-size:clamp(52px,10vw,150px); font-weight:200; letter-spacing:-.035em; line-height:.9; color:var(--ink)">The work</h2>
+          <div style="display:flex; flex-wrap:wrap; gap:10px 24px; max-width:44ch; padding-bottom:12px">
+            <sc-for list="{{ navWork }}" as="pn" hint-placeholder-count="3">
+              <a href="{{ pn.href }}" style="display:flex; gap:8px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)"><span style="color:var(--green-deep); font-variant-numeric:tabular-nums">{{ pn.n }}</span>{{ pn.label }}</a>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasPhotos }}" hint-placeholder-val="{{ false }}">
+      <div id="sec-photo" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nPhoto }}</span>
+        <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Photography</h2>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ photoCountLabel }}</span>
+      </div>
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(10px,1.4vw,20px)">
+        <sc-for list="{{ photoLeadVM }}" as="ph" hint-placeholder-count="0">
+          <figure style="margin:0; display:flex; flex-direction:column; gap:10px">
+            <div onClick="{{ ph.open }}" style="overflow:hidden; background:#F3F6F5; cursor:zoom-in"><img ref="{{ ph.setLeadRef }}" alt="{{ ph.name }}" decoding="async" style="width:100%; display:block; transition:transform 1.4s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.015)"></div>
+            <sc-if value="{{ ph.hasLabel }}" hint-placeholder-val="{{ false }}"><figcaption style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ ph.label }}</figcaption></sc-if>
+          </figure>
+        </sc-for>
+        <div style="columns:2 300px; column-gap:clamp(10px,1.4vw,20px)">
+          <sc-for list="{{ photoRestVM }}" as="ph" hint-placeholder-count="2">
+            <figure style="margin:0 0 clamp(10px,1.4vw,20px); break-inside:avoid; display:flex; flex-direction:column; gap:10px">
+              <div onClick="{{ ph.open }}" style="overflow:hidden; background:#F3F6F5; cursor:zoom-in"><img ref="{{ ph.setColRef }}" alt="{{ ph.name }}" loading="lazy" decoding="async" style="width:100%; display:block; transition:transform 1.4s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.015)"></div>
+              <sc-if value="{{ ph.hasLabel }}" hint-placeholder-val="{{ false }}"><figcaption style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ ph.label }}</figcaption></sc-if>
+            </figure>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasProducts }}" hint-placeholder-val="{{ false }}">
+      <div id="sec-product" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nProduct }}</span>
+        <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Product</h2>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ productCountLabel }}</span>
+      </div>
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:grid; gap:1px; grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr))">
+        <sc-for list="{{ productVM }}" as="pd" hint-placeholder-count="3">
+          <figure onClick="{{ pd.open }}" style="margin:0; position:relative; aspect-ratio:1 / 1; box-shadow:0 0 0 1px var(--line); background:#FFFFFF; display:flex; align-items:center; justify-content:center; padding:clamp(22px,3.2vw,48px); cursor:zoom-in; overflow:hidden">
+            <img ref="{{ pd.setImgRef }}" alt="{{ pd.name }}" loading="lazy" decoding="async" style="max-width:100%; max-height:100%; object-fit:contain; display:block; transition:transform .9s cubic-bezier(.2,.7,.2,1)" style-hover="transform:scale(1.04)">
+            <sc-if value="{{ pd.hasLabel }}" hint-placeholder-val="{{ false }}"><figcaption style="position:absolute; left:14px; right:14px; bottom:12px; font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:#5F6C68; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ pd.label }}</figcaption></sc-if>
+          </figure>
+        </sc-for>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ hasFilms }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-films" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-films" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nFilms }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Films &amp; reels</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ filmCountLabel }}</span>
@@ -257,7 +353,7 @@
     </sc-if>
 
     <sc-if value="{{ hasMotion }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-motion" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-motion" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nMotion }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Motion graphics</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ motionCountLabel }}</span>
@@ -277,9 +373,9 @@
     </sc-if>
 
     <sc-if value="{{ hasBanners }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-banners" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-banners" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nBanners }}</span>
-        <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Banners &amp; outdoor</h2>
+        <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Posters &amp; banners</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ bannerCountLabel }}</span>
       </div>
       <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(18px,3vw,40px)">
@@ -297,7 +393,7 @@
     </sc-if>
 
     <sc-if value="{{ hasSocial }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-social" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-social" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nSocial }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Social</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ socialCountLabel }}</span>
@@ -355,7 +451,7 @@
     </sc-if>
 
     <sc-if value="{{ hasPrint }}" hint-placeholder-val="{{ false }}">
-      <div id="sec-print" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+      <div id="sec-print" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nPrint }}</span>
         <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Print &amp; packaging</h2>
         <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ printCountLabel }}</span>
@@ -519,8 +615,9 @@ class Component extends DCLogic {
     project: null, media: [],
     copied: '',
     lightboxOpen: false, lightboxIndex: 0,
-    postIdx: {}, plb: null,
+    postIdx: {}, plb: null, loaderGone: false,
   };
+  loaderRef = React.createRef(); loadNumRef = React.createRef(); loadBarRef = React.createRef(); loadLabelRef = React.createRef(); loadMarkRef = React.createRef();
 
   // R-02: width descriptors come from stored dimensions only.
   srcsetFor(m, g, v) {
@@ -599,8 +696,8 @@ class Component extends DCLogic {
   // ---- Boot ---------------------------------------------------------------
 
   componentDidMount() {
-    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     this._films = {};
+    this.startLoader();
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
     const q = new URLSearchParams(window.location.search);
@@ -612,13 +709,120 @@ class Component extends DCLogic {
     if (q.get('demo') === '1' || (!q.has('project') && !slug)) {
       this.setState({ project: DEMO, media: [], loading: false });
       this.loadBrandFonts(DEMO);
+      this.warmFirstScreen();
       return;
     }
-    if (!slug) { this.setState({ loading: false, notFound: true }); return; }
-    this.load(slug);
+    if (!slug) { this.setState({ loading: false, notFound: true }); this.warmFirstScreen(); return; }
+    this.boot(slug);
+  }
+
+  // The Supabase script loads from the CDN and can land after mount on a slow
+  // line. Touching it early threw inside componentDidMount, so the page never
+  // left its loading state. Wait for it; give up with a retry after 10 s.
+  async boot(slug) {
+    for (let t = 0; !window.supabase && t < 100 && !this.unmounted; t++) await new Promise(r => setTimeout(r, 100));
+    if (this.unmounted) return;
+    if (!window.supabase) { this.setState({ loading: false, slug, loadError: 'The connection dropped before the page arrived. Your link is fine — try again.' }); this.warmFirstScreen(); return; }
+    if (!this.sb) this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    await this.load(slug);
+    this.warmFirstScreen();
+  }
+
+  // ---- Loader: the same 000–100 count as the album and portfolio. Holds until
+  // the cover, the first logos and the brand's own typefaces are in, capped at
+  // 14 s for a slow line and 25 s no matter what.
+  startLoader() {
+    this.L = { done: 0, total: 2, shown: 0, t0: performance.now(), finished: false };
+    document.body.style.overflow = 'hidden';
+    this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mk = this.loadMarkRef.current;
+    if (mk && mk.animate && !this.reduced) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    let last = performance.now();
+    const tick = now => {
+      if (this.unmounted || this.state.loaderGone) return;
+      const f60 = Math.min(4, (now - last) / 16.67); last = now;
+      const L = this.L, target = L.total ? Math.min(1, L.done / L.total) : 0;
+      L.shown += (target - L.shown) * (1 - Math.pow(0.92, f60));
+      if (target >= 1 && L.shown > 0.995) L.shown = 1;
+      const num = String(Math.round(L.shown * 100)).padStart(3, '0');
+      if (this.loadNumRef.current && this.loadNumRef.current.textContent !== num) this.loadNumRef.current.textContent = num;
+      if (this.loadBarRef.current) this.loadBarRef.current.style.transform = 'scaleX(' + L.shown.toFixed(4) + ')';
+      this._loadRaf = requestAnimationFrame(tick);
+    };
+    this._loadRaf = requestAnimationFrame(tick);
+    this.safety = setTimeout(() => this.finishLoad(), 25000);
+  }
+  async warmFirstScreen() {
+    const L = this.L;
+    if (!L || L.finished || L.warming) return;
+    L.warming = true; L.done++;
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const s = this.state, pr = s.project, urls = [];
+    if (pr) {
+      urls.push(pr.cover_url_view || pr.cover_url);
+      s.media.filter(m => m.section === 'logo').slice(0, 6).forEach(m => urls.push(m.url_grid || m.url_view || m.url));
+    }
+    const list = Array.from(new Set(urls.filter(Boolean)));
+    L.total += list.length;
+    const bump = () => { L.done++; };
+    const img = u => new Promise(res => {
+      const i = new Image(); i.decoding = 'async';
+      i.onload = () => (i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(res);
+      i.onerror = res; i.src = u;
+    }).then(bump);
+    const fonts = Promise.all(this._fontWaits || []).then(() => document.fonts && document.fonts.ready).then(bump, bump);
+    await Promise.race([Promise.all([fonts].concat(list.map(img))), sleep(14000)]);
+    await sleep(Math.max(0, 1200 - (performance.now() - L.t0)));
+    L.done = L.total;
+    await sleep(600);
+    this.finishLoad();
+  }
+  finishLoad() {
+    const L = this.L;
+    if (!L || L.finished || this.unmounted) return;
+    L.finished = true;
+    clearTimeout(this.safety);
+    if (!this.state.lightboxOpen && !this.state.plb) document.body.style.overflow = '';
+    if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
+    if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
+    if (!this.reduced) {
+      const ease = 'cubic-bezier(.2,.8,.2,1)';
+      if (this.coverEl && this.coverEl.animate) this.coverEl.animate([{ transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 2600, easing: ease });
+      document.querySelectorAll('[data-rise]').forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], { duration: 1000, delay: 380 + i * 120, easing: ease, fill: 'both' }));
+    }
+    setTimeout(() => { if (!this.unmounted) this.setState({ loaderGone: true }, () => this.wireReveal()); }, 1200);
+  }
+  // Section heads rise once as they come into view. Nothing is hidden up front,
+  // so a missed observer never leaves a blank section.
+  wireReveal() {
+    if (this._revealIO === undefined) {
+      this._revealIO = window.IntersectionObserver && !this.reduced ? new IntersectionObserver(es => es.forEach(e => {
+        if (!e.isIntersecting) return;
+        this._revealIO.unobserve(e.target);
+        if (this.state.loaderGone) e.target.animate([{ opacity: 0, transform: 'translateY(18px)' }, { opacity: 1, transform: 'none' }], { duration: 900, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+      }), { rootMargin: '0px 0px 8% 0px' }) : null;
+    }
+    if (!this._revealIO) return;
+    document.querySelectorAll('[data-reveal]:not([data-rv])').forEach(el => { el.setAttribute('data-rv', ''); this._revealIO.observe(el); });
+  }
+  // Aspect reserved before the file lands; srcset from stored dimensions.
+  smartImg(el, m, sizes) {
+    const g = m.url_grid || m.url_view || m.url, v = m.url_view || m.url;
+    if (!el || !g || el._arFor === g) return;
+    el._arFor = g;
+    const known = m.width > 0 && m.height > 0;
+    el.style.aspectRatio = known ? m.width + ' / ' + m.height : '4 / 5';
+    if (!known) el.addEventListener('load', () => { if (el._arFor === g && el.naturalWidth) el.style.aspectRatio = el.naturalWidth + ' / ' + el.naturalHeight; }, { once: true });
+    const set = this.srcsetFor(m, g, v);
+    if (set) { el.sizes = sizes; el.srcset = set; } else el.removeAttribute('srcset');
+    el.src = g;
   }
 
   componentWillUnmount() {
+    this.unmounted = true;
+    cancelAnimationFrame(this._loadRaf);
+    clearTimeout(this.safety);
+    if (this._revealIO) this._revealIO.disconnect();
     window.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('keydown', this.onKeyDown);
     if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
@@ -628,6 +832,7 @@ class Component extends DCLogic {
   // The title tag is a stream-time literal, so it has to be re-set once the
   // project name arrives — and on every update after that.
   componentDidUpdate() {
+    if (this.state.loaderGone) this.wireReveal();
     const p = this.state.project;
     const t = p ? 'creative INFINITELY — ' + p.client_name : 'creative INFINITELY';
     if (document.title !== t) document.title = t;
@@ -673,7 +878,7 @@ class Component extends DCLogic {
       || msg.includes('could not find the function') || msg.includes('does not exist');
   }
 
-  retry = () => { if (this.state.slug) this.load(this.state.slug); };
+  retry = () => { if (!this.sb) { window.location.reload(); return; } if (this.state.slug) this.load(this.state.slug); };
 
   async load(slug) {
     const OFFLINE = 'The connection dropped before the page arrived. Your link is fine — try again.';
@@ -783,6 +988,7 @@ class Component extends DCLogic {
       el.rel = 'stylesheet'; el.setAttribute('data-brand-font', fam);
       el.onerror = () => { el.onerror = null; el.href = base + '&display=swap'; };
       el.href = base + ':wght@' + [...wts].sort((a, b) => a - b).join(';') + '&display=swap';
+      (this._fontWaits = this._fontWaits || []).push(new Promise(r => { el.addEventListener('load', r); el.addEventListener('error', () => setTimeout(r, 1500)); }));
       document.head.appendChild(el);
     });
   }
@@ -830,7 +1036,7 @@ class Component extends DCLogic {
   // One flat list across every section, so the arrows walk the whole project.
   // Page order, so the arrows walk the project the way it reads.
   viewable() {
-    return ['logo', 'film', 'motion', 'banner', 'print', 'guideline']
+    return ['logo', 'photo', 'product', 'film', 'motion', 'banner', 'print', 'guideline']
       .flatMap(sec => this.state.media.filter(m => m.url && m.section === sec));
   }
 
@@ -956,6 +1162,8 @@ class Component extends DCLogic {
             el._io.observe(el);
           } else go();
         },
+        setLeadRef: el => this.smartImg(el, m, 'min(100vw, 1464px)'),
+        setColRef: el => this.smartImg(el, m, '(min-width: 700px) 50vw, 100vw'),
         setGroundRef: el => { if (el) el.style.background = m.ground === 'dark' ? '#111C19' : '#FFFFFF'; },
         setLabelRef: el => { if (el) el.style.color = m.ground === 'dark' ? 'rgba(255,255,255,.72)' : '#5F6C68'; },
       };
@@ -1008,17 +1216,23 @@ class Component extends DCLogic {
 
     // Sections are numbered by what this project actually has, so a project
     // with no films never shows a gap in the sequence.
-    const present = [
+    const photoVM = this.mediaVM('photo'), productVM = this.mediaVM('product');
+    const brandSecs = [
       ['brief', !!p.brief, 'Brief', '#sec-brief'],
       ['identity', logosVM.length > 0, 'Identity', '#sec-identity'],
       ['colour', paletteVM.length > 0, 'Colour', '#sec-colour'],
       ['type', fontsVM.length > 0, 'Type', '#sec-type'],
+    ].filter(x => x[1]);
+    const workSecs = [
+      ['photo', photoVM.length > 0, 'Photography', '#sec-photo'],
+      ['product', productVM.length > 0, 'Product', '#sec-product'],
       ['films', filmsVM.length > 0, 'Films', '#sec-films'],
       ['motion', motionVM.length > 0, 'Motion', '#sec-motion'],
-      ['banners', bannersVM.length > 0, 'Banners', '#sec-banners'],
+      ['banners', bannersVM.length > 0, 'Posters', '#sec-banners'],
       ['social', socialVM.length > 0, 'Social', '#sec-social'],
       ['print', printVM.length > 0, 'Print', '#sec-print'],
     ].filter(x => x[1]);
+    const present = brandSecs.concat(workSecs);
     const num = {};
     present.forEach((x, i) => { num[x[0]] = String(i + 1).padStart(2, '0'); });
 
@@ -1055,12 +1269,26 @@ class Component extends DCLogic {
       heroMeta, hasHeroMeta: !!heroMeta,
       footerMeta, hasFooterMeta: !!footerMeta,
       metaVM,
-      navVM: present.map(x => ({ label: x[2], href: x[3] })),
+      navBrand: brandSecs.map(x => ({ label: x[2], href: x[3], n: num[x[0]] })),
+      navWork: workSecs.map(x => ({ label: x[2], href: x[3], n: num[x[0]] })),
+      navBoth: brandSecs.length > 0 && workSecs.length > 0,
+      hasBrandPart: brandSecs.length > 0, hasWorkPart: workSecs.length > 0,
+      partWorkLabel: brandSecs.length ? 'Part two' : 'Part one',
+      nPhoto: num.photo, nProduct: num.product,
+      ...(() => {
+        const lead = photoVM.length && photoVM[0].width > 0 && photoVM[0].width / photoVM[0].height >= 1.2 ? photoVM.slice(0, 1) : [];
+        return { photoLeadVM: lead, photoRestVM: photoVM.slice(lead.length) };
+      })(),
+      hasPhotos: photoVM.length > 0, photoCountLabel: count(photoVM.length, 'frame', 'frames'),
+      productVM, hasProducts: productVM.length > 0, productCountLabel: count(productVM.length, 'shot', 'shots'),
+      loaderOn: !s.loaderGone,
+      loaderRef: this.loaderRef, loadNumRef: this.loadNumRef, loadBarRef: this.loadBarRef, loadLabelRef: this.loadLabelRef, loadMarkRef: this.loadMarkRef,
       nBrief: num.brief, nIdentity: num.identity, nColour: num.colour, nType: num.type,
       nFilms: num.films, nBanners: num.banners, nSocial: num.social, nPrint: num.print,
       nMotion: num.motion,
       setCoverRef: el => {
         const u = p.cover_url_view || p.cover_url;
+        if (el) this.coverEl = el;
         if (el && u && el.getAttribute('src') !== u) { el.src = u; el.style.display = 'block'; }
       },
 

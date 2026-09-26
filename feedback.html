@@ -162,7 +162,10 @@ class Component extends DCLogic {
     firstName: '', project: '', shootDate: '', status: '', scores: {}, wouldReturn: null, texts: {},
   };
 
-  componentDidMount() {
+  // The Supabase script can land after mount on a slow line; wait for it.
+  async componentDidMount() {
+    for (let t = 0; !window.supabase && t < 100; t++) await new Promise(r => setTimeout(r, 100));
+    if (!window.supabase) { this.setState({ loading: false, found: false }); return; }
     this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     this.load();
   }
