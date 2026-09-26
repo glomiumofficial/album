@@ -89,11 +89,11 @@
       <span style="flex:0 1 auto; min-width:0; font-size:13px; letter-spacing:.02em; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ clientName }}</span>
       <div style="flex:0 1 auto; min-width:0; display:flex; align-items:center; gap:clamp(12px,1.8vw,24px); overflow-x:auto; scrollbar-width:none">
         <sc-for list="{{ navBrand }}" as="nv" hint-placeholder-count="0">
-          <a href="{{ nv.href }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)">{{ nv.label }}</a>
+          <a href="{{ nv.href }}" onClick="{{ nv.go }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)">{{ nv.label }}</a>
         </sc-for>
         <sc-if value="{{ navBoth }}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="flex:0 0 1px; height:12px; background:rgba(22,35,31,.18)"></span></sc-if>
         <sc-for list="{{ navWork }}" as="nv" hint-placeholder-count="0">
-          <a href="{{ nv.href }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)">{{ nv.label }}</a>
+          <a href="{{ nv.href }}" onClick="{{ nv.go }}" style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)">{{ nv.label }}</a>
         </sc-for>
       </div>
     </div>
@@ -133,7 +133,33 @@
       </div>
     </sc-if>
 
-<sc-if value="{{ hasBrandPart }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ hasSwitch }}" hint-placeholder-val="{{ false }}">
+      <div id="sec-switch" style="scroll-margin-top:52px; max-width:1560px; margin:0 auto; padding:clamp(64px,12vh,150px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(18px,3vh,28px)">
+        <div style="display:flex; align-items:center; gap:16px">
+          <span style="font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:var(--green-deep); white-space:nowrap; font-variant-numeric:tabular-nums">{{ switchKicker }}</span>
+          <span style="flex:1; height:1px; background:var(--line)"></span>
+          <span style="font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:#5F6C68; white-space:nowrap">{{ switchHint }}</span>
+        </div>
+        <div role="tablist" aria-label="brand or work" style="position:relative; display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:end; gap:clamp(10px,2vw,32px); padding-bottom:clamp(14px,2vh,22px)">
+          <button role="tab" aria-selected="{{ isBrand }}" onClick="{{ pickBrand }}" style="justify-self:start; border:0; background:none; padding:0; font:inherit; font-size:clamp(40px,9.4vw,150px); font-weight:200; letter-spacing:-.035em; line-height:.9; color:{{ brandInk }}; cursor:pointer; text-align:left; transition:color .6s cubic-bezier(.2,.8,.2,1)" style-hover="color:#16231F">The brand</button>
+          <button onClick="{{ flip }}" aria-label="switch to {{ otherLabel }}" title="switch to {{ otherLabel }}" style="align-self:center; width:clamp(48px,5vw,72px); height:clamp(48px,5vw,72px); border-radius:50%; border:1px solid #0E8E72; background:#FFFFFF; color:#0E8E72; display:grid; place-items:center; cursor:pointer; transition:background .35s ease, color .35s ease" style-hover="background:#0E8E72; color:#FFFFFF">
+            <svg viewBox="0 0 24 24" width="42%" height="42%" fill="none" stroke="currentColor" stroke-width="1.2" style="transform:rotate({{ flipDeg }}deg); transition:transform .9s cubic-bezier(.7,0,.2,1)"><path d="M4 8h15l-4-4M20 16H5l4 4"></path></svg>
+          </button>
+          <button role="tab" aria-selected="{{ isWork }}" onClick="{{ pickWork }}" style="justify-self:end; border:0; background:none; padding:0; font:inherit; font-size:clamp(40px,9.4vw,150px); font-weight:200; letter-spacing:-.035em; line-height:.9; color:{{ workInk }}; cursor:pointer; text-align:right; transition:color .6s cubic-bezier(.2,.8,.2,1)" style-hover="color:#16231F">The work</button>
+          <span aria-hidden="true" style="position:absolute; left:0; right:0; bottom:0; height:1px; background:var(--line)"></span>
+          <span aria-hidden="true" style="position:absolute; bottom:0; left:{{ barLeft }}; width:{{ barWidth }}; height:1px; background:#10AF8B; transition:left .8s cubic-bezier(.7,0,.2,1), width .8s cubic-bezier(.7,0,.2,1)"></span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px 24px; justify-content:{{ subAlign }}">
+          <sc-for list="{{ partNav }}" as="pn" hint-placeholder-count="3">
+            <a href="{{ pn.href }}" onClick="{{ pn.go }}" style="display:flex; gap:8px; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68; white-space:nowrap" style-hover="color:var(--green-deep)"><span style="color:var(--green-deep); font-variant-numeric:tabular-nums">{{ pn.n }}</span>{{ pn.label }}</a>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <div ref="{{ partRef }}">
+    <sc-if value="{{ showBrand }}" hint-placeholder-val="{{ true }}">
+    <sc-if value="{{ brandHead }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1560px; margin:0 auto; padding:clamp(80px,14vh,170px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(18px,3vh,30px)">
         <div style="display:flex; align-items:center; gap:16px">
           <span style="font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:var(--green-deep); white-space:nowrap">Part one</span>
@@ -253,7 +279,9 @@
       </div>
     </sc-if>
 
-<sc-if value="{{ hasWorkPart }}" hint-placeholder-val="{{ false }}">
+</sc-if>
+    <sc-if value="{{ showWork }}" hint-placeholder-val="{{ false }}">
+    <sc-if value="{{ workHead }}" hint-placeholder-val="{{ false }}">
       <div style="max-width:1560px; margin:0 auto; padding:clamp(80px,14vh,170px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(18px,3vh,30px)">
         <div style="display:flex; align-items:center; gap:16px">
           <span style="font-size:10px; letter-spacing:.3em; text-transform:uppercase; color:var(--green-deep); white-space:nowrap">{{ partWorkLabel }}</span>
@@ -470,6 +498,9 @@
       </div>
     </sc-if>
 
+</sc-if>
+    </div>
+
     <footer style="margin-top:clamp(60px,12vh,150px); border-top:1px solid var(--line)">
       <div style="max-width:1560px; margin:0 auto; padding:clamp(46px,9vh,110px) clamp(18px,4vw,48px) clamp(26px,4vh,44px); display:grid; gap:clamp(26px,4vw,60px); grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); align-items:end">
         <div style="display:flex; flex-direction:column; gap:12px">
@@ -617,6 +648,30 @@ class Component extends DCLogic {
     lightboxOpen: false, lightboxIndex: 0,
     postIdx: {}, plb: null, loaderGone: false,
   };
+  partRef = React.createRef();
+  // Brand ⇄ work. The outgoing part slides away, the page settles back on the
+  // switch, the incoming part slides in from the side it was named on.
+  setPart(next, then) {
+    const cur = this.state.part || 'brand';
+    if (next === cur) { if (then) then(); return; }
+    const el = this.partRef.current, dir = next === 'work' ? -1 : 1, ease = 'cubic-bezier(.7,0,.2,1)';
+    const sw = document.getElementById('sec-switch');
+    const swap = () => this.setState({ part: next }, () => {
+      if (!then && sw && sw.getBoundingClientRect().top < 0) window.scrollTo({ top: sw.getBoundingClientRect().top + window.scrollY - 52, behavior: 'instant' });
+      if (el && el.animate && !this.reduced) el.animate([{ opacity: 0, transform: 'translateX(' + (-dir * 4) + 'vw)' }, { opacity: 1, transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      try { history.replaceState(null, '', location.pathname + location.search + (next === 'work' ? '#work' : '')); } catch (e) {}
+      if (then) requestAnimationFrame(then);
+    });
+    if (el && el.animate && !this.reduced) { const a = el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(' + (dir * 4) + 'vw)' }], { duration: 320, easing: ease, fill: 'forwards' }); a.onfinish = () => { swap(); a.cancel(); }; }
+    else swap();
+  }
+  goTo(part, href) {
+    return e => {
+      if (!this.state.hasBoth) return;
+      e.preventDefault();
+      this.setPart(part, () => { const t = document.querySelector(href); if (t) window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - 52, behavior: this.reduced ? 'auto' : 'smooth' }); });
+    };
+  }
   loaderRef = React.createRef(); loadNumRef = React.createRef(); loadBarRef = React.createRef(); loadLabelRef = React.createRef(); loadMarkRef = React.createRef();
 
   // R-02: width descriptors come from stored dimensions only.
@@ -1269,8 +1324,30 @@ class Component extends DCLogic {
       heroMeta, hasHeroMeta: !!heroMeta,
       footerMeta, hasFooterMeta: !!footerMeta,
       metaVM,
-      navBrand: brandSecs.map(x => ({ label: x[2], href: x[3], n: num[x[0]] })),
-      navWork: workSecs.map(x => ({ label: x[2], href: x[3], n: num[x[0]] })),
+      ...(() => {
+        const both = brandSecs.length > 0 && workSecs.length > 0;
+        if (both !== !!s.hasBoth) setTimeout(() => { if (!this.unmounted && this.state.hasBoth !== both) this.setState({ hasBoth: both, part: s.part || (location.hash === '#work' ? 'work' : 'brand') }); }, 0);
+        const part = both ? (s.part || (location.hash === '#work' ? 'work' : 'brand')) : (brandSecs.length ? 'brand' : 'work');
+        const isB = part === 'brand';
+        const nb = brandSecs.map(x => ({ label: x[2], href: x[3], n: num[x[0]], go: this.goTo('brand', x[3]) }));
+        const nw = workSecs.map(x => ({ label: x[2], href: x[3], n: num[x[0]], go: this.goTo('work', x[3]) }));
+        return {
+          navBrand: nb, navWork: nw, hasSwitch: both,
+          showBrand: brandSecs.length > 0 && (!both || isB), showWork: workSecs.length > 0 && (!both || !isB),
+          brandHead: !both, workHead: !both,
+          isBrand: isB ? 'true' : 'false', isWork: isB ? 'false' : 'true',
+          brandInk: isB ? '#16231F' : '#C3CCC9', workInk: isB ? '#C3CCC9' : '#16231F',
+          barLeft: isB ? '0%' : '62%', barWidth: '38%', flipDeg: isB ? 0 : 180,
+          subAlign: isB ? 'flex-start' : 'flex-end',
+          switchKicker: isB ? '01 / 02' : '02 / 02',
+          switchHint: isB ? brandSecs.length + ' chapters · the identity' : workSecs.length + ' chapters · what we made',
+          otherLabel: isB ? 'the work' : 'the brand',
+          partNav: isB ? nb : nw,
+          pickBrand: () => this.setPart('brand'), pickWork: () => this.setPart('work'),
+          flip: () => this.setPart(isB ? 'work' : 'brand'),
+          partRef: this.partRef,
+        };
+      })(),
       navBoth: brandSecs.length > 0 && workSecs.length > 0,
       hasBrandPart: brandSecs.length > 0, hasWorkPart: workSecs.length > 0,
       partWorkLabel: brandSecs.length ? 'Part two' : 'Part one',
