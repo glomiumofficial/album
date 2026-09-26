@@ -815,9 +815,22 @@ class Component extends DCLogic {
     const s = this.state, pr = s.project, urls = [];
     if (pr) {
       urls.push(pr.cover_url_view || pr.cover_url);
-      s.media.filter(m => m.section === 'logo').slice(0, 6).forEach(m => urls.push(m.url_grid || m.url_view || m.url));
+      // The loader holds for what the first screen of the opening part shows:
+      // the first frames of each of its sections (posters for moving work).
+      const still = m => (m.section === 'film' || m.section === 'motion') ? m.thumb_url : (m.url_grid || m.url_view || m.url);
+      const openWork = location.hash === '#work' || !s.media.some(m => m.section === 'logo');
+      const first = openWork
+        ? [['photo', 3], ['product', 4], ['film', 2], ['motion', 2], ['banner', 1], ['social', 3], ['print', 2]]
+        : [['logo', 6]];
+      first.forEach(([sec, n]) => s.media.filter(m => m.section === sec).slice(0, n).forEach(m => urls.push(still(m))));
+      // Everything else warms quietly after the reveal, the other part first,
+      // so the brand ⇄ work switch lands on pictures, not blank frames.
+      const heldSet = new Set(urls);
+      const order = openWork ? ['logo', 'photo', 'product', 'film', 'motion', 'banner', 'social', 'print', 'guideline'] : ['photo', 'product', 'film', 'motion', 'banner', 'social', 'print', 'logo', 'guideline'];
+      this._later = [];
+      order.forEach(sec => s.media.filter(m => m.section === sec).forEach(m => { const u = still(m); if (u && !heldSet.has(u)) this._later.push(u); }));
     }
-    const list = Array.from(new Set(urls.filter(Boolean)));
+    const list = Array.from(new Set(urls.filter(Boolean))).slice(0, 14);
     L.total += list.length;
     const bump = () => { L.done++; };
     const img = u => new Promise(res => {
@@ -831,6 +844,19 @@ class Component extends DCLogic {
     L.done = L.total;
     await sleep(600);
     this.finishLoad();
+    this.warmLater();
+  }
+  // Two at a time at low priority; skipped on Data Saver / 2G.
+  warmLater() {
+    const c = navigator.connection, q = Array.from(new Set(this._later || []));
+    if (!q.length || (c && (c.saveData || /2g/.test(c.effectiveType || '')))) return;
+    const next = () => {
+      if (this.unmounted || !q.length) return;
+      const u = q.shift(), i = new Image();
+      try { i.fetchPriority = 'low'; } catch (e) {}
+      i.decoding = 'async'; i.onload = i.onerror = next; i.src = u;
+    };
+    setTimeout(() => { next(); next(); }, 900);
   }
   finishLoad() {
     const L = this.L;
