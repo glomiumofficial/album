@@ -64,6 +64,28 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ adminLoaderOn }}" hint-placeholder-val="{{ false }}">
+    <div ref="{{ alRef }}" style="position:fixed; inset:0; z-index:5000; background:#FFFFFF; clip-path:inset(0% 0% 0% 0%); transition:clip-path 1.1s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column; justify-content:space-between; padding:22px clamp(20px,4vw,56px) clamp(28px,5vh,48px); overflow:hidden">
+      <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(62vw 62vw at 12% 8%, rgba(16,175,139,0.13), transparent 65%), radial-gradient(52vw 52vw at 92% 86%, rgba(16,175,139,0.08), transparent 65%)"></div>
+      <div style="position:relative; display:flex; justify-content:space-between; align-items:center; gap:24px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">
+        <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto">
+        <span>workspace</span>
+      </div>
+      <div style="position:relative; display:flex; justify-content:center">
+        <img ref="{{ alMarkRef }}" src="assets/infinity.svg" alt="" style="width:clamp(72px,8vw,120px); height:auto">
+      </div>
+      <div style="position:relative; display:flex; flex-direction:column; gap:18px">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px">
+          <span ref="{{ alNumRef }}" style="font-weight:200; font-size:clamp(64px,12vw,200px); line-height:0.8; letter-spacing:-0.04em; font-variant-numeric:tabular-nums; color:#1B1D1E">000</span>
+          <span ref="{{ alLabelRef }}" style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">signing you in</span>
+        </div>
+        <div style="position:relative; height:1px; background:#E2E7E5; overflow:hidden">
+          <div ref="{{ alBarRef }}" style="position:absolute; inset:0; background:#10AF8B; transform-origin:left; transform:scaleX(0)"></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ isWsPicker }}" hint-placeholder-val="{{ false }}">
     <div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(24px,5vh,44px); padding:clamp(24px,6vw,64px)">
       <div style="display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center">
@@ -5904,6 +5926,43 @@ class Component extends DCLogic {
 //   boot → auth → events → lifecycle → schedule → media → billing
 //   → people → crew → hours → payouts → settings → render
 // Nothing reads production_status directly; the lifecycle section owns it.
+  alRef = React.createRef(); alMarkRef = React.createRef(); alNumRef = React.createRef(); alLabelRef = React.createRef(); alBarRef = React.createRef();
+
+  // Same 000→100 loader as the portfolio. It creeps toward 90 while the role is
+  // fetched, runs to 100 once it lands, then wipes up. Capped at 12s.
+  startLoader() {
+    if (this.AL && !this.AL.gone) return;
+    const AL = this.AL = { shown: 0, t0: performance.now(), last: performance.now(), done: false, gone: false };
+    this.setState({ adminLoader: true }, () => {
+      const mk = this.alMarkRef.current;
+      if (mk && mk.animate) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    });
+    const tick = now => {
+      if (AL.gone || this.AL !== AL) return;
+      const f60 = Math.min(4, (now - AL.last) / 16.67); AL.last = now;
+      const el = now - AL.t0;
+      if (!AL.done && (this.state.role != null || this.state.view === 'login' || el > 30000)) AL.done = true;
+      if (!AL.done && el > 9000 && !AL.slow && this.alLabelRef.current) { AL.slow = true; this.alLabelRef.current.textContent = 'still connecting'; }
+      const target = AL.done ? 1 : Math.min(0.9, el / 2600 * 0.9);
+      AL.shown += (target - AL.shown) * (1 - Math.pow(AL.done ? 0.88 : 0.93, f60));
+      if (AL.done && AL.shown > 0.995) AL.shown = 1;
+      const num = String(Math.round(AL.shown * 100)).padStart(3, '0');
+      if (this.alNumRef.current && this.alNumRef.current.textContent !== num) this.alNumRef.current.textContent = num;
+      if (this.alBarRef.current) this.alBarRef.current.style.transform = 'scaleX(' + AL.shown.toFixed(4) + ')';
+      if (AL.shown >= 1 && el > 1400) {
+        AL.gone = true;
+        setTimeout(() => {
+          if (this.alLabelRef.current) this.alLabelRef.current.textContent = 'ready';
+          if (this.alRef.current) this.alRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
+          setTimeout(() => { if (this.AL === AL) this.setState({ adminLoader: false }); }, 1150);
+        }, 350);
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
   state = {
     view: 'login',
     email: '', password: '', authError: '', signingIn: false, roleError: '',
@@ -6020,11 +6079,11 @@ class Component extends DCLogic {
     this.sb = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
     this.setState({ bootError: '' });
     const { data } = await this.sb.auth.getSession();
-    if (data.session) { this.setState({ view: 'dashboard' }); this.loadRole(); this.loadForDivision(storedDivision); }
+    if (data.session) { this.startLoader(); this.setState({ view: 'dashboard' }); this.loadRole().catch(e => this.setState({ role: 'none', roleError: String((e && e.message) || e) })); this.loadForDivision(storedDivision); }
     this.sb.auth.onAuthStateChange((_e, session) => {
       // The role belongs to the session, not the page — refetch it on every sign-in,
       // or a second user signing in on this browser inherits the first one's access.
-      if (session && this.state.view === 'login') { this.setState({ view: 'dashboard' }); this.loadRole(); this.loadForDivision(storedDivision); }
+      if (session && this.state.view === 'login') { this.startLoader(); this.setState({ view: 'dashboard' }); this.loadRole().catch(e => this.setState({ role: 'none', roleError: String((e && e.message) || e) })); this.loadForDivision(storedDivision); }
       if (!session) this.setState({ view: 'login', role: null, people: [], payouts: [], personForm: null, personId: null });
     });
     this.loadSettings();
@@ -6075,8 +6134,10 @@ class Component extends DCLogic {
 
   async loadRole() {
     const { data: u } = await this.sb.auth.getUser();
-    const uid = u && u.user ? u.user.id : null;
-    if (!uid) return;
+    let uid = u && u.user ? u.user.id : null;
+    if (!uid) { const { data: ss } = await this.sb.auth.getSession(); uid = ss && ss.session && ss.session.user ? ss.session.user.id : null; }
+    // Leaving role null here held the sign-in loader (and a blank panel) forever.
+    if (!uid) { this.setState({ role: 'none', roleError: 'Could not confirm your sign-in — reload the page.' }); return; }
     const { data, error } = await this.sb.from('staff_roles').select('role').eq('auth_id', uid).maybeSingle();
     // A failed lookup is not the same as having no role: one is a broken
     // connection, the other is an account nobody has approved yet.
@@ -14634,8 +14695,11 @@ class Component extends DCLogic {
     const s = this.state;
     const role = s.role || 'none';
     // No division chosen yet — or an explicit switch — takes over the whole screen.
-    const wsPick = s.view !== 'login' && this.can('finance') && this.can('studio') && (!s.wsChosen || s.pickingWs);
-    const picking = !wsPick && s.view !== 'login' && this.activeWorkspace() !== 'finance' && (!s.division || s.pickingDivision);
+    // Until the role arrives we cannot know which workspaces exist — showing the
+    // division picker first and then yanking to Studio/Finance read as a bounce.
+    const roleLoading = s.view !== 'login' && s.role == null;
+    const wsPick = !roleLoading && s.view !== 'login' && this.can('finance') && this.can('studio') && (!s.wsChosen || s.pickingWs);
+    const picking = !roleLoading && !wsPick && s.view !== 'login' && this.activeWorkspace() !== 'finance' && (!s.division || s.pickingDivision);
     const crewRoleOptions = CREW_ROLES.map(([value, label]) => ({ value, label }));
     // A role typed by hand is stored as its own slug, so an unknown key reads back
     // as the words that were typed rather than as raw snake_case.
@@ -15643,7 +15707,7 @@ class Component extends DCLogic {
       }));
 
     return {
-      isPicker: picking, isWsPicker: wsPick,
+      isPicker: picking, isWsPicker: wsPick, adminLoaderOn: !!s.adminLoader, alRef: this.alRef, alMarkRef: this.alMarkRef, alNumRef: this.alNumRef, alLabelRef: this.alLabelRef, alBarRef: this.alBarRef,
       canCancelPicker: picking && !!s.division,
       cancelPicker: () => this.setState({ pickingDivision: false }),
       openDivisionPicker: () => this.openDivisionPicker(),
@@ -15721,7 +15785,7 @@ class Component extends DCLogic {
         color: s.view === pair[0] ? 'var(--green-deep)' : '#67746F',
       })),
 
-      isWorkspace: !picking && !wsPick && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || s.view === 'portfolio' || FIN_VIEWS.indexOf(s.view) !== -1),
+      isWorkspace: !roleLoading && !picking && !wsPick && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || s.view === 'portfolio' || FIN_VIEWS.indexOf(s.view) !== -1),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       isMoney: onMoney,
       isApprovals: s.view === 'approvals',

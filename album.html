@@ -220,7 +220,6 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
-    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
     window.addEventListener('resize', this.onResize);
@@ -260,7 +259,12 @@ class Component extends DCLogic {
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const bump = () => { this.L.done++; };
     const fonts = (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(bump, bump);
-    if (slug) await Promise.race([this.load(slug), sleep(8000)]);
+    // The Supabase script loads async from the CDN; on a slow line it can land
+    // after mount, and touching it early threw and froze the loader at 000.
+    for (let t = 0; !window.supabase && t < 100; t++) await sleep(100);
+    if (window.supabase && !this.sb) this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (slug && !this.sb) this.setState({ loading: false, slug, loadError: 'The connection dropped before the album arrived. Your link is fine — try again.' });
+    else if (slug) await Promise.race([this.load(slug), sleep(8000)]);
     else this.setState({ loading: false, notFound: true });
     bump();
     const s = this.state, urls = [];
@@ -411,7 +415,11 @@ class Component extends DCLogic {
       || msg.includes('could not find the function') || msg.includes('does not exist');
   }
 
-  retry = () => { if (this.state.slug) this.load(this.state.slug); };
+  retry = () => {
+    if (!this.state.slug) return;
+    if (!this.sb && window.supabase) this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (this.sb) this.load(this.state.slug); else window.location.reload();
+  };
 
   async load(slug) {
     const OFFLINE = 'The connection dropped before the album arrived. Your link is fine — try again.';
