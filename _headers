@@ -1,0 +1,37 @@
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Robots-Tag: noindex, nofollow
+  Strict-Transport-Security: max-age=31536000
+
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/admin.html
+  Cache-Control: no-cache
+
+/album.html
+  Cache-Control: no-cache
+
+/commercial.html
+  Cache-Control: no-cache
+
+/feedback.html
+  Cache-Control: no-store
+
+/portfolio.html
+  Cache-Control: no-cache
+
+/image-slot.js
+  Cache-Control: no-cache
+
+/support.js
+  Cache-Control: no-cache
+
+/assets/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400

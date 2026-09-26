@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="assets/infinity.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Glomium Albums — Admin</title>
 <meta name="description" content="glomium admin.">
@@ -6118,6 +6119,7 @@ class Component extends DCLogic {
     window.addEventListener('resize', this._onPreviewResize);
     this._onKey = e => {
       if (e.key === 'Escape' && this.state.showInvoicePreview && !this.state.pdfBusy) this.closeInvoicePreview();
+      if (e.key === 'Escape' && this.state.pe && this.state.pe.open) this.peClose();
     };
     window.addEventListener('keydown', this._onKey);
     this.boot();
@@ -9037,6 +9039,8 @@ class Component extends DCLogic {
     busy(0);
     const ext = (file.name.split('.').pop() || '').toLowerCase();
     const isVideo = /^video\//.test(file.type || '') || /^(mp4|mov|m4v|webm)$/.test(ext);
+    if (!isVideo && !/^image\//.test(file.type || '') && !/^(jpe?g|png|webp|heic|heif|avif|gif)$/.test(ext)) throw new Error(file.name + ' is not a photo or video.');
+    if (!isVideo && file.size > 80 * 1024 * 1024) throw new Error(file.name + ' is over 80 MB — export a JPEG first.');
     if (isVideo) {
       const notes = await this.pfInspectVideo(file, section);
       if (this.pfWarn) this.pfWarn.push(...notes);

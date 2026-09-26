@@ -1,0 +1,27 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/a/*"
+  to = "/album.html?event=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/p/*"
+  to = "/commercial.html?project=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/f/*"
+  to = "/feedback.html?t=:splat"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/work"
+  to = "/portfolio.html"
+  status = 200

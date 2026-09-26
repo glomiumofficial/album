@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" href="assets/infinity.svg" type="image/svg+xml">
 <title>glomium — selected works</title>
 <meta name="description" content="glomium — selected works. weddings, brand films, commercials, events and music videos. creative infinitely.">
 <meta property="og:title" content="glomium — selected works">
@@ -30,7 +33,10 @@ a:hover { color: #10AF8B; }
 </helmet>
 
 <div ref="{{ rootRef }}" style="position: relative; font-weight: 300;">
-  <canvas ref="{{ mistRef }}" width="160" height="90" aria-hidden="true" style="position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; pointer-events: none;"></canvas>
+  <div aria-hidden="true" style="position: fixed; inset: 0; z-index: 0; pointer-events: none; isolation: isolate;">
+    <canvas ref="{{ mistRef }}" width="160" height="90" style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;"></canvas>
+    <div ref="{{ grainRef }}" style="position: absolute; inset: 0; mix-blend-mode: overlay;"></div>
+  </div>
 
   <header ref="{{ headerRef }}" style="position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px clamp(20px, 4vw, 56px); color: #1B1D1E; transition: color 0.5s; pointer-events: none;">
     <a href="#top" onClick="{{ jump }}" style="position: relative; display: block; height: 20px; pointer-events: auto;">
@@ -86,9 +92,9 @@ a:hover { color: #10AF8B; }
           <h2 style="margin: 0; font-weight: 200; font-size: clamp(48px, 12vw, 230px); line-height: 1; letter-spacing: -0.035em; white-space: nowrap; color: #1B1D1E;">selected <span style="font-style: italic; color: #10AF8B;">works</span></h2>
         </div>
         <sc-for list="{{ works }}" as="w" hint-placeholder-count="3">
-          <article data-card="" onClick="{{ w.open }}" onMouseEnter="{{ showCursor }}" onMouseLeave="{{ hideCursor }}" style="position: absolute; left: 50%; top: 50%; width: {{ w.width }}; cursor: none; opacity: 0;">
-            <div style="position: relative; width: 100%; aspect-ratio: {{ w.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 28px 60px -34px rgba(10,110,88,0.38);">
-              <div data-par="" style="position: absolute; top: 0; bottom: 0; left: -6%; right: -6%;">
+          <article data-card="" tabIndex="0" role="button" aria-label="open {{ w.title }}" onKeyDown="{{ w.key }}" onFocus="{{ cardFocus }}" style-focus="outline: 1px solid #10AF8B; outline-offset: 8px;" onClick="{{ w.open }}" onMouseEnter="{{ w.enter }}" onMouseLeave="{{ hideCursor }}" style="position: absolute; left: 50%; top: 50%; width: {{ w.width }}; cursor: none; opacity: 0;">
+            <div style="position: relative; width: 100%; aspect-ratio: {{ w.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 28px 60px -34px rgba(14,18,17,0.34);">
+              <div data-par="" style="position: absolute; top: 0; bottom: 0; left: -4%; right: -4%;">
                 <sc-if value="{{ w.hasCover }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ w.cover }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
                 <sc-if value="{{ w.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="work-{{ w.id }}" shape="rect" placeholder="cover still"></image-slot></sc-if>
               </div>
@@ -120,7 +126,7 @@ a:hover { color: #10AF8B; }
         </div>
         <sc-for list="{{ bts }}" as="b" hint-placeholder-count="3">
           <figure data-depth="" data-fx="{{ b.fx }}" data-fy="{{ b.fy }}" data-z="{{ b.z }}" style="position: absolute; left: 50%; top: 50%; width: {{ b.w }}; margin: 0; opacity: 0; visibility: hidden;">
-            <div style="position: relative; width: 100%; aspect-ratio: {{ b.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 24px 56px -30px rgba(10,110,88,0.34);">
+            <div style="position: relative; width: 100%; aspect-ratio: {{ b.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 24px 56px -30px rgba(14,18,17,0.3);">
               <sc-if value="{{ b.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ b.img }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
               <sc-if value="{{ b.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="bts-{{ b.id }}" shape="rect" placeholder="bts photo"></image-slot></sc-if>
             </div>
@@ -136,7 +142,7 @@ a:hover { color: #10AF8B; }
   </section>
 
   <section id="process" ref="{{ processRef }}" data-screen-label="04 process" style="position: relative; padding: clamp(120px, 16vw, 220px) clamp(20px, 4vw, 56px); display: flex; flex-wrap: wrap; gap: clamp(40px, 6vw, 96px); align-items: flex-start;">
-    <div style="flex: 1 1 280px; position: sticky; top: 120px; display: flex; flex-direction: column; gap: 22px;">
+    <div style="flex: 1 1 280px; position: {{ procPos }}; top: 120px; display: flex; flex-direction: column; gap: 22px;">
       <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">04 — process</span>
       <h2 style="margin: 0; font-weight: 200; font-size: clamp(44px, 6.4vw, 110px); line-height: 0.95; letter-spacing: -0.03em;">how we <span style="font-style: italic; color: #10AF8B;">work</span></h2>
     </div>
@@ -158,6 +164,13 @@ a:hover { color: #10AF8B; }
     <div style="font-size: 11px; letter-spacing: 2.6px; color: #8A9390;">creative INFINITELY</div>
   </footer>
 
+  <sc-if value="{{ dbFail }}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); z-index: 45; display: flex; align-items: center; gap: 20px; padding: 14px 22px; background: #FFFFFF; border: 1px solid #E2E7E5; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #4A524F; white-space: nowrap;">
+      <span>the works didn’t load</span>
+      <button onClick="{{ retry }}" style="border: 0; background: none; padding: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #0A6E58; cursor: pointer;" style-hover="color: #10AF8B;">try again</button>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ hudOn }}" hint-placeholder-val="{{ true }}">
     <div ref="{{ hudRef }}" style="position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; align-items: center; gap: 24px; padding: 20px clamp(20px, 4vw, 56px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #1B1D1E; transition: color 0.5s; pointer-events: none; contain: layout style;">
       <span ref="{{ chapterRef }}" style="flex: 0 0 110px;">01 reel</span>
@@ -173,7 +186,7 @@ a:hover { color: #10AF8B; }
     </div>
   </sc-if>
 
-  <div ref="{{ caseRef }}" data-screen-label="case" style="position: fixed; inset: 0; z-index: 90; overflow-y: auto; overscroll-behavior: contain; background: linear-gradient(180deg, #FFFFFF 0%, #F2F8F5 42%, #FFFFFF 100%); clip-path: inset(100% 0% 0% 0%); pointer-events: none; transition: clip-path 1s cubic-bezier(.77,0,.18,1);">
+  <div ref="{{ caseRef }}" data-screen-label="case" role="dialog" aria-modal="true" aria-label="case study" style="position: fixed; inset: 0; z-index: 90; overflow-y: auto; overscroll-behavior: contain; background: linear-gradient(180deg, #FFFFFF 0%, #F2F8F5 42%, #FFFFFF 100%); clip-path: inset(100% 0% 0% 0%); pointer-events: none; transition: clip-path 1s cubic-bezier(.77,0,.18,1);">
     <div style="position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px clamp(20px, 4vw, 56px); background: rgba(255,255,255,0.86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;">
       <button onClick="{{ close }}" style="border: 0; background: none; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #0E8E72; cursor: pointer; padding: 0;">close</button>
       <span style="color: #8A9390; font-variant-numeric: tabular-nums;">{{ activeWork.no }} / {{ workCount }}</span>
@@ -192,9 +205,9 @@ a:hover { color: #10AF8B; }
     </div>
 
     <div data-rise="" style="padding: 0 clamp(20px, 4vw, 56px);">
-      <div style="position: relative; width: 100%; aspect-ratio: 2.39 / 1; overflow: hidden; background: #0F1211; box-shadow: 0 60px 140px -60px rgba(10,110,88,0.5);">
-        <sc-if value="{{ activeWork.hasFilm }}" hint-placeholder-val="{{ false }}"><video ref="{{ mediaRef }}" data-src="{{ activeWork.film }}" data-poster="{{ activeWork.poster }}" controls="{{ true }}" playsInline="{{ true }}" preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0F1211; display: block;"></video></sc-if>
-        <sc-if value="{{ activeWork.posterOnly }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ activeWork.hero }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+      <div ref="{{ frameRef }}" style="position: relative; width: 100%; aspect-ratio: 16 / 9; margin: 0 auto; overflow: hidden; background: #0B0C0C; box-shadow: 0 60px 140px -60px rgba(14,18,17,0.42);">
+        <sc-if value="{{ caseFilm }}" hint-placeholder-val="{{ false }}"><video ref="{{ mediaRef }}" onLoadedMetadata="{{ fitFrame }}" data-src="{{ activeWork.film }}" data-poster="{{ activeWork.poster }}" controls="{{ true }}" playsInline="{{ true }}" preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0B0C0C; display: block;"></video></sc-if>
+        <sc-if value="{{ casePoster }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" onLoad="{{ fitFrame }}" data-src="{{ activeWork.hero }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
         <sc-if value="{{ activeWork.filmSlot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-film" shape="rect" placeholder="film — poster frame"></image-slot></sc-if>
       </div>
     </div>
@@ -217,12 +230,12 @@ a:hover { color: #10AF8B; }
     <div style="padding: clamp(100px, 12vw, 170px) 0 0; display: flex; flex-direction: column; gap: 40px;">
       <div style="padding: 0 clamp(20px, 4vw, 56px); display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap;">
         <h3 style="margin: 0; font-weight: 200; font-size: clamp(36px, 5vw, 80px); line-height: 1; letter-spacing: -0.03em;">behind <span style="font-style: italic; color: #10AF8B;">the</span> scenes</h3>
-        <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">swipe</span>
+        <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">{{ swipeLabel }}</span>
       </div>
-      <div style="display: flex; gap: clamp(12px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 clamp(20px, 4vw, 56px) 8px; scroll-padding: 0 clamp(20px, 4vw, 56px);">
+      <div ref="{{ stripRef }}" style="display: flex; gap: clamp(12px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; user-select: none; -webkit-user-select: none; padding: 0 clamp(20px, 4vw, 56px) 8px; scroll-padding: 0 clamp(20px, 4vw, 56px);">
         <sc-for list="{{ caseBts }}" as="c" hint-placeholder-count="4">
           <div style="position: relative; flex: 0 0 auto; width: clamp(220px, 26vw, 420px); aspect-ratio: {{ c.ratio }}; overflow: hidden; background: #EEF3F1; scroll-snap-align: start;">
-            <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ c.img }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+            <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ c.img }}" alt="" draggable="false" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
             <sc-if value="{{ c.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-bts-{{ c.n }}" shape="rect" placeholder="bts"></image-slot></sc-if>
           </div>
         </sc-for>
@@ -269,13 +282,19 @@ class Component extends DCLogic {
   kinds = ['wedding film', 'brand film', 'commercial', 'music video', 'event', 'wedding film', 'product film', 'brand film'];
   ratios = [[4, 5], [16, 10], [3, 4], [4, 5], [16, 10], [3, 4], [4, 5], [16, 10]];
   chapters = ['01 reel', '02 works', '03 behind', '04 process'];
+  spots = [
+    [-0.27, -0.14, 'clamp(150px, 22vw, 420px)', '4 / 5'], [0.26, 0.12, 'clamp(170px, 26vw, 480px)', '3 / 2'],
+    [-0.2, 0.2, 'clamp(140px, 18vw, 340px)', '3 / 4'], [0.22, -0.18, 'clamp(150px, 22vw, 420px)', '4 / 5'],
+    [-0.28, 0.02, 'clamp(180px, 28vw, 520px)', '16 / 10'], [0.3, 0.06, 'clamp(140px, 18vw, 340px)', '3 / 4'],
+    [-0.12, -0.2, 'clamp(150px, 22vw, 420px)', '1 / 1'], [0.16, 0.2, 'clamp(170px, 26vw, 480px)', '3 / 2'],
+    [-0.24, 0.16, 'clamp(150px, 22vw, 420px)', '4 / 5']];
 
   constructor(p) {
     super(p);
     ['rootRef', 'mistRef', 'headerRef', 'logoGreenRef', 'logoWhiteRef', 'heroRef', 'filmBaseRef', 'filmUiRef', 'knockRef', 'heroOverlayRef', 'cueRef',
      'worksRef', 'sceneRef', 'worksTitleRef', 'counterRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
      'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef', 'cursorRef',
-     'loaderRef', 'loadNumRef', 'loadBarRef', 'loadLabelRef', 'loadMarkRef'].forEach(k => { this[k] = React.createRef(); });
+     'loaderRef', 'loadNumRef', 'loadBarRef', 'loadLabelRef', 'loadMarkRef', 'grainRef', 'frameRef'].forEach(k => { this[k] = React.createRef(); });
     this.S = { mx: 0, my: 0, tmx: 0, tmy: 0, cx: -200, cy: -200, tx: -200, ty: -200, ring: 0, tring: 0, vel: 0 };
     this.Y = { cur: 0, target: 0, applied: 0, running: false, k: 0.1 };
     this.frame = 0;
@@ -299,6 +318,7 @@ class Component extends DCLogic {
     };
     // Phones resize on every address-bar show/hide; only re-measure on real changes.
     this.onResize = () => {
+      this.layout();
       const M = this.M;
       if (this.coarse && M && innerWidth === M.vw && Math.abs(innerHeight - M.vh) < 160) return;
       this.dirty = true;
@@ -315,8 +335,11 @@ class Component extends DCLogic {
     ['dragleave', 'drop', 'dragend'].forEach(ev => addEventListener(ev, this.onDragOut, true));
     if (window.ResizeObserver && this.rootRef.current) { this.ro = new ResizeObserver(() => { this.dirty = true; }); this.ro.observe(this.rootRef.current); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { this.dirty = true; });
+    this.layout();
+    this.grain();
     this.Y.cur = this.Y.target = this.Y.applied = scrollY;
     this.measure();
+    this.setInert(false);
     this.onHash();
     this.boot().catch(() => this.finishLoad());
     this.safety = setTimeout(() => this.finishLoad(), 25000);
@@ -549,7 +572,7 @@ class Component extends DCLogic {
         st(c.el, 'transform', `translate3d(${(x - c.w / 2).toFixed(2)}px, ${(yy - c.h / 2).toFixed(2)}px, ${zz.toFixed(2)}px) rotateY(${(tiltV * mi).toFixed(2)}deg) scale(${scl.toFixed(4)})`);
         st(c.el, 'opacity', Math.min(1, 0.5 + 0.5 * ((s + 1) / 2) + mi).toFixed(3));
         if (c.cap) st(c.cap, 'opacity', cl((mi - 0.7) / 0.3).toFixed(3));
-        if (c.par) st(c.par, 'transform', `translate3d(${(Math.max(-1, Math.min(1, x / (vw / 2))) * -5 * mi).toFixed(2)}%, 0, 0)`);
+        if (c.par) st(c.par, 'transform', `translate3d(${(Math.max(-1, Math.min(1, x / (vw / 2))) * -3.5 * mi).toFixed(2)}%, 0, 0)`);
         const v = wm < 0.5 ? zz : -Math.abs(x);
         if (v > bestV) { bestV = v; best = i; }
       }
@@ -557,6 +580,7 @@ class Component extends DCLogic {
       if (wt) { st(wt, 'opacity', (1 - cl(wm * 1.8)).toFixed(3)); st(wt, 'transform', `translateZ(0) scale(${(1 + wm * 0.25).toFixed(4)})`); }
       const ct = this.counterRef.current, label = `${this.pad(best + 1)} / ${this.pad(n)}`;
       if (ct && ct.textContent !== label) ct.textContent = label;
+      if (best !== this.lastBest) { this.lastBest = best; const r = this.state.db && this.state.db.works[best]; if (r) this.warm([this.heroSrc(r)]); }
     }
 
     const bTop = M.bts.top - y, bH = M.bts.h;
@@ -617,15 +641,15 @@ class Component extends DCLogic {
     try { scrollTo(0, 0); } catch (e) {}
     document.body.style.overflow = 'hidden';
     const mk = this.loadMarkRef.current;
-    if (mk && mk.animate) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    if (mk && mk.animate && !this.reduced) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const bump = () => { this.L.done++; };
     const fonts = (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(bump, bump);
     await Promise.race([this.loadDb(), sleep(8000)]); bump();
     const db = this.state.db || { works: [], media: [] };
     const urls = [];
-    db.works.forEach(w => urls.push(w.cover_url || w.cover_grid_url));
-    db.media.forEach(m => { if (m.section === 'bts' && !m.work_id) urls.push(m.kind === 'video' ? m.poster_url : (m.url || m.url_grid)); });
+    db.works.forEach((w, i) => urls.push(this.coverSrc(w, i)));
+    db.media.filter(m => m.section === 'bts' && !m.work_id).forEach((m, i) => urls.push(this.btsSrc(m, i)));
     const reel = db.media.filter(m => m.section === 'reel').slice(-1)[0];
     if (reel) urls.push(reel.kind === 'photo' ? reel.url : reel.poster_url);
     const list = Array.from(new Set(urls.filter(Boolean)));
@@ -644,18 +668,20 @@ class Component extends DCLogic {
     await sleep(750);
     this.finishLoad();
   }
+  // First frame is enough to reveal; the rest streams. iOS low-power never
+  // buffers without play(), so this is capped rather than left to hang.
   waitReel() {
     return new Promise(res => {
-      const t0 = Date.now();
+      const t0 = Date.now(), cap = setTimeout(res, 6000);
+      const done = () => { clearTimeout(cap); res(); };
       const check = () => {
         const v = this.reelEl;
         if (v) {
-          if (v.readyState >= 4) return res();
-          v.addEventListener('canplaythrough', () => res(), { once: true });
-          v.addEventListener('error', () => res(), { once: true });
+          if (v.readyState >= 3) return done();
+          ['canplay', 'error', 'stalled'].forEach(ev => v.addEventListener(ev, done, { once: true }));
           return;
         }
-        if (Date.now() - t0 > 3000) return res();
+        if (Date.now() - t0 > 3000) return done();
         setTimeout(check, 100);
       };
       check();
@@ -673,20 +699,94 @@ class Component extends DCLogic {
     this._reelOn = null;
     setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); } }, 1200);
   }
-  // After the reveal, warm every case page's images one at a time.
-  async prefetchRest() {
+  // After the reveal, warm only what is likely next. The rest loads on intent:
+  // hovering a card, centring it in the strip, or opening the case before it.
+  prefetchRest() {
     const db = this.state.db;
-    if (!db) return;
-    const urls = [];
-    db.works.forEach(w => urls.push(w.film_poster_url, w.cover_url));
-    db.media.forEach(m => {
-      if (m.section === 'still') urls.push(m.url || m.url_grid);
-      if (m.section === 'case_bts') urls.push(m.kind === 'video' ? m.poster_url : (m.url_grid || m.url));
-    });
-    for (const u of Array.from(new Set(urls.filter(Boolean)))) {
-      if (this.unmounted) return;
-      await new Promise(r => { const i = new Image(); i.onload = i.onerror = r; i.src = u; });
+    if (!db || !db.works.length || this.lean(true)) return;
+    this.warmWork(0, 2);
+    if (db.works[1]) this.warm([this.heroSrc(db.works[1])]);
+  }
+  lean(strict) {
+    const c = navigator.connection;
+    if (!c) return false;
+    if (c.saveData) return true;
+    const t = c.effectiveType || '';
+    return /2g/.test(t) || (!!strict && t === '3g');
+  }
+  warm(urls) {
+    if (this.lean()) return;
+    const done = this.warmed || (this.warmed = new Set());
+    this.wq = (this.wq || []).concat(urls.filter(u => u && !done.has(u)));
+    if (!this.wBusy && this.L && this.L.finished) this.pump();
+  }
+  async pump() {
+    this.wBusy = true;
+    while (this.wq.length && !this.unmounted) {
+      const u = this.wq.shift();
+      if (this.warmed.has(u)) continue;
+      this.warmed.add(u);
+      await new Promise(r => { const i = new Image(); i.decoding = 'async'; i.onload = i.onerror = r; i.src = u; });
     }
+    this.wBusy = false;
+  }
+  warmWork(i, limit) {
+    const db = this.state.db, r = db && db.works[i];
+    if (!r) return;
+    const mine = sec => db.media.filter(m => m.work_id === r.id && m.section === sec);
+    const st = mine('still').slice(0, limit || 99).map((m, k) => this.stillSrc(m, k));
+    const cb = limit ? [] : mine('case_bts').map(m => m.kind === 'video' ? m.poster_url : (m.url_grid || m.url));
+    this.warm([this.heroSrc(r)].concat(st, cb));
+  }
+  heroSrc(r) { return r.film_url ? (r.film_poster_url || r.cover_url) : r.cover_url; }
+  // Serve the 1100 px grid file wherever it is sharp enough at this screen's
+  // pixel density, and the 2600 px view file only where it is not.
+  fitSrc(grid, view, cssW, a) {
+    const need = cssW * Math.min(2, window.devicePixelRatio || 1), gw = a >= 1 ? 1100 : 1100 * a;
+    return (grid && (!view || need <= gw * 1.08)) ? grid : (view || grid || '');
+  }
+  coverSrc(r, i) {
+    const [x, y] = this.ratios[i % 8], a = x / y;
+    return this.fitSrc(r.cover_grid_url, r.cover_url, Math.min(innerHeight * 0.46 * a, innerWidth * 0.78) * 1.08, a);
+  }
+  btsSrc(m, i) {
+    if (m.kind === 'video') return m.poster_url || '';
+    const sp = this.spots[i % 9], [mn, v, mx] = sp[2].match(/[\d.]+/g).map(Number), [x, y] = sp[3].split('/').map(Number);
+    return this.fitSrc(m.url_grid, m.url, Math.min(mx, Math.max(mn, innerWidth * v / 100)) * 1.25, x / y);
+  }
+  stillPats() {
+    return this.state.narrow
+      ? [['1 / span 12', '3 / 2', '0px'], ['1 / span 6', '4 / 5', '0px'], ['7 / span 6', '4 / 5', '10vw'],
+         ['1 / span 12', '16 / 10', '0px'], ['1 / span 12', '21 / 9', '0px'], ['2 / span 10', '4 / 3', '0px']]
+      : [['1 / span 7', '3 / 2', '0px'], ['9 / span 4', '4 / 5', '14vw'], ['2 / span 4', '4 / 5', '-6vw'],
+         ['7 / span 6', '16 / 10', '6vw'], ['1 / span 12', '21 / 9', '0px'], ['4 / span 6', '4 / 3', '0px']];
+  }
+  stillSrc(m, i) {
+    const pt = this.stillPats()[i % 6], span = +((/span (\d+)/.exec(pt[0]) || [0, 12])[1]), [x, y] = pt[1].split('/').map(Number);
+    const vw = document.documentElement.clientWidth || innerWidth, pad = Math.min(56, Math.max(20, vw * 0.04));
+    return this.fitSrc(m.url_grid, m.url, (vw - 2 * pad) * span / 12, x / y);
+  }
+  // Phones get their own stills rhythm; the process heading stops pinning once
+  // the two columns stack, or it slides over the list.
+  layout() {
+    const vw = document.documentElement.clientWidth || innerWidth;
+    const pad = Math.min(56, Math.max(20, vw * 0.04)), gap = Math.min(96, Math.max(40, vw * 0.06));
+    const narrow = vw < 720, stack = vw - 2 * pad < 800 + gap;
+    if (narrow !== this.state.narrow || stack !== this.state.stack) this.setState({ narrow, stack });
+  }
+  // One-device-pixel grain, overlay-blended over the mist only: dithers the
+  // 8-bit banding in the soft gradients and leaves pure white untouched.
+  grain() {
+    const el = this.grainRef.current;
+    if (!el) return;
+    if (this.coarse) { el.style.display = 'none'; return; }
+    const N = 128, c = document.createElement('canvas'); c.width = c.height = N;
+    const x = c.getContext('2d'), d = x.createImageData(N, N);
+    for (let i = 0; i < d.data.length; i += 4) { const v = 128 + Math.round((Math.random() + Math.random() - 1) * 8); d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+    x.putImageData(d, 0, 0);
+    const k = N / (window.devicePixelRatio || 1);
+    el.style.backgroundImage = 'url(' + c.toDataURL() + ')';
+    el.style.backgroundSize = k + 'px ' + k + 'px';
   }
   // src arrives via data-src so the raw template never requests '{{ … }}'.
   applySrc(el) {
@@ -700,19 +800,19 @@ class Component extends DCLogic {
   hosted() { return /(^|\.)glomium\.co$|github\.io$/.test(location.hostname); }
   async loadDb() {
     const URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co', KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
-    const get = q => fetch(URL + '/rest/v1/' + q, { headers: { apikey: KEY } }).then(r => r.ok ? r.json() : []);
+    const get = q => fetch(URL + '/rest/v1/' + q, { headers: { apikey: KEY } }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
     try {
       const [works, media] = await Promise.all([
-        get('portfolio_works?select=*&published=eq.true&order=sort_order.asc,created_at.asc'),
-        get('portfolio_media?select=*&order=sort_order.asc,created_at.asc')]);
+        get('portfolio_works?select=id,title,category,story,cover_url,cover_grid_url,film_url,film_poster_url,sort_order&published=eq.true&order=sort_order.asc,created_at.asc'),
+        get('portfolio_media?select=id,work_id,section,kind,url,url_grid,poster_url,caption,width,height,sort_order&order=sort_order.asc,created_at.asc')]);
       await new Promise(r => this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.dirty = true; this.onHash(); r(); }));
-    } catch (e) { await new Promise(r => this.setState({ db: { works: [], media: [] } }, r)); }
+    } catch (e) { await new Promise(r => this.setState({ db: { works: [], media: [] }, dbFail: true }, r)); }
   }
   works() {
     const db = this.state.db, slot = !this.hosted();
     const shape = i => { const [a, b] = this.ratios[i % 8]; return { ratio: `${a} / ${b}`, width: `min(calc(46vh * ${a / b}), 78vw)` }; };
     if (db && db.works.length) return db.works.map((r, i) => {
-      const cover = r.cover_url || r.cover_grid_url || '';
+      const cover = this.coverSrc(r, i);
       const mine = sec => db.media.filter(m => m.work_id === r.id && m.section === sec);
       return { id: this.pad(i + 1), no: this.pad(i + 1), title: r.title || 'untitled', kind: r.category || '', ...shape(i),
         cover, hasCover: !!cover, slot: false,
@@ -732,15 +832,28 @@ class Component extends DCLogic {
     this.setState({ active: i }, () => this.afterActive());
   }
   step(d) { const n = this.works().length; this.open(((this.state.active ?? 0) + d + n) % n); }
+  // Closed, the case page is invisible but still in the DOM: keep it out of the
+  // tab order. Open, keep everything behind it out instead.
+  setInert(on) {
+    const c = this.caseRef.current, root = this.rootRef.current;
+    if (c) { c.inert = !on; c.setAttribute('aria-hidden', on ? 'false' : 'true'); }
+    if (root) root.querySelectorAll(':scope > header, :scope > section, :scope > footer').forEach(el => { el.inert = on; });
+  }
   afterActive() {
     const c = this.caseRef.current, on = this.state.active != null, was = this.wasOpen;
     this.wasOpen = on;
     if (!this.L || this.L.finished) document.body.style.overflow = on ? 'hidden' : '';
     if (!c) return;
+    if (on !== was) {
+      this.setInert(on);
+      if (on) { this.lastFocus = document.activeElement; const b = c.querySelector('button'); if (b) b.focus({ preventScroll: true }); }
+      else if (this.lastFocus && this.lastFocus.focus) { this.lastFocus.focus({ preventScroll: true }); this.lastFocus = null; }
+    }
     c.querySelectorAll('video').forEach(v => { try { v.pause(); v.preload = on ? 'auto' : 'metadata'; } catch (e) {} });
     c.style.clipPath = on ? 'inset(0% 0% 0% 0%)' : 'inset(100% 0% 0% 0%)';
     c.style.pointerEvents = on ? 'auto' : 'none';
     if (on) {
+      this.warmWork((this.state.active + 1) % this.works().length);
       c.scrollTop = 0;
       c.querySelectorAll('[data-rise]').forEach((el, i) => el.animate(
         [{ opacity: 0, transform: 'translateY(48px)' }, { opacity: 1, transform: 'none' }],
@@ -751,15 +864,10 @@ class Component extends DCLogic {
   renderVals() {
     const works = this.works(), n = works.length, a = this.state.active ?? 0;
     const slot = !this.hosted(), db = this.state.db;
-    const spots = [
-      [-0.27, -0.14, 'clamp(150px, 22vw, 420px)', '4 / 5'], [0.26, 0.12, 'clamp(170px, 26vw, 480px)', '3 / 2'],
-      [-0.2, 0.2, 'clamp(140px, 18vw, 340px)', '3 / 4'], [0.22, -0.18, 'clamp(150px, 22vw, 420px)', '4 / 5'],
-      [-0.28, 0.02, 'clamp(180px, 28vw, 520px)', '16 / 10'], [0.3, 0.06, 'clamp(140px, 18vw, 340px)', '3 / 4'],
-      [-0.12, -0.2, 'clamp(150px, 22vw, 420px)', '1 / 1'], [0.16, 0.2, 'clamp(170px, 26vw, 480px)', '3 / 2'],
-      [-0.24, 0.16, 'clamp(150px, 22vw, 420px)', '4 / 5']];
+    const spots = this.spots;
     const btsDb = db ? db.media.filter(m => m.section === 'bts' && !m.work_id) : [];
     const btsSrc = btsDb.length
-      ? btsDb.map(m => ({ img: m.kind === 'video' ? (m.poster_url || '') : (m.url || m.url_grid), caption: m.caption || '' }))
+      ? btsDb.map((m, i) => ({ img: this.btsSrc(m, i), caption: m.caption || '' }))
       : ['setting up', 'first light', 'the crew', 'golden hour', 'on the move', 'between takes', 'the quiet part', 'in the edit', 'wrap'].map(c => ({ img: '', caption: c }));
     const bts = btsSrc.map((b, i) => { const sp = spots[i % 9];
       return { id: i + 1, no: this.pad(i + 1), fx: sp[0], fy: sp[1], z: -700 - i * 450, w: sp[2], ratio: sp[3], caption: b.caption,
@@ -771,20 +879,42 @@ class Component extends DCLogic {
       ['edit', 'colour, sound and pace, cut until it feels right — not just looks right.'],
       ['deliver', 'films and stills, delivered privately and ready to share.']
     ].map((s, i) => ({ no: this.pad(i + 1), verb: s[0], line: s[1] }));
-    const pat = [
-      ['1 / span 7', '3 / 2', '0px'], ['9 / span 4', '4 / 5', '14vw'], ['2 / span 4', '4 / 5', '-6vw'],
-      ['7 / span 6', '16 / 10', '6vw'], ['1 / span 12', '21 / 9', '0px'], ['4 / span 6', '4 / 3', '0px']];
+    const pat = this.stillPats();
     const aw = works[a] || works[0];
+    if (this.state.active != null) this.everOpened = true;
+    const live = !!this.everOpened;
     const stills = (aw.stills || Array.from({ length: 6 }, () => null)).map((m, i) => { const p = pat[i % 6];
-      const img = m ? (m.url || m.url_grid) : '';
+      const img = m && live ? this.stillSrc(m, i) : '';
       return { n: i + 1, col: p[0], ratio: p[1], mt: p[2], img, hasImg: !!img, slot: !m && slot }; });
     const caseBts = (aw.bts || Array.from({ length: 5 }, () => null)).map((m, i) => {
-      const img = m ? (m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url)) : '';
+      const img = m && live ? (m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url)) : '';
       return { n: i + 1, ratio: ['4 / 5', '3 / 4', '4 / 5', '1 / 1', '4 / 5'][i % 5], img, hasImg: !!img, slot: !m && slot }; });
     const reelRow = db ? db.media.filter(m => m.section === 'reel').slice(-1)[0] : null;
     return {
       bts, steps, stills,
       caseBts, caseStory: aw.story || '',
+      caseFilm: !!aw.hasFilm && live, casePoster: !!aw.posterOnly && live,
+      procPos: this.state.stack ? 'static' : 'sticky',
+      swipeLabel: this.coarse ? 'swipe' : 'drag',
+      frameRef: this.frameRef, grainRef: this.grainRef,
+      fitFrame: e => {
+        const el = e.currentTarget, f = this.frameRef.current, w = el.videoWidth || el.naturalWidth, h = el.videoHeight || el.naturalHeight;
+        if (!f || !w || !h) return;
+        const r = Math.max(0.6, Math.min(2.76, w / h)).toFixed(4);
+        f.style.aspectRatio = r;
+        f.style.width = 'min(100%, calc(80vh * ' + r + '))';
+      },
+      stripRef: el => {
+        if (!el || el._gl) return;
+        el._gl = 1;
+        if (matchMedia('(pointer: coarse)').matches) return;
+        let d = null;
+        el.style.cursor = 'grab';
+        el.addEventListener('dragstart', e => e.preventDefault());
+        el.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button !== 0) return; d = { x: e.clientX, s: el.scrollLeft }; el.style.scrollSnapType = 'none'; el.style.cursor = 'grabbing'; });
+        addEventListener('pointermove', e => { if (d) el.scrollLeft = d.s - (e.clientX - d.x); });
+        addEventListener('pointerup', () => { if (!d) return; d = null; el.style.cursor = 'grab'; el.style.scrollSnapType = 'x mandatory'; });
+      },
       btsHeight: `${Math.round(120 + bts.length * 25)}vh`,
       reelVideo: !!reelRow && reelRow.kind === 'video', reelPhoto: !!reelRow && reelRow.kind === 'photo', reelSlot: !reelRow && slot,
       reelUrl: reelRow ? reelRow.url : '', reelPoster: reelRow ? (reelRow.poster_url || '') : '',
@@ -795,7 +925,9 @@ class Component extends DCLogic {
         this.applySrc(el);
         if (!el._gl) { el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); el.setAttribute('muted', ''); }
       },
-      works: works.map((w, i) => ({ ...w, open: () => this.open(i) })),
+      dbFail: !!this.state.dbFail, retry: () => location.reload(),
+      cardFocus: e => { let p = e.currentTarget.parentElement; while (p && p !== document.body) { if (p.scrollLeft || p.scrollTop) { p.scrollLeft = 0; p.scrollTop = 0; } p = p.parentElement; } },
+      works: works.map((w, i) => ({ ...w, open: () => this.open(i), key: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.open(i); } }, enter: () => { this.S.tring = 1; this.warmWork(i); } })),
       workCount: this.pad(n),
       worksHeight: `${110 + 90 + n * 42 + 100}vh`,
       hudOn: this.props.hud ?? true,

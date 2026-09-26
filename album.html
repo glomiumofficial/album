@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="assets/infinity.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>creative INFINITELY</title>
 <meta name="description" content="glomium — your album. creative infinitely.">
@@ -242,7 +243,7 @@ class Component extends DCLogic {
     try { window.scrollTo(0, 0); } catch (e) {}
     document.body.style.overflow = 'hidden';
     const mk = this.loadMarkRef.current;
-    if (mk && mk.animate) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    if (mk && mk.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
     let last = performance.now();
     const tick = now => {
       if (this.unmounted || this.state.loaderGone) return;
@@ -297,10 +298,11 @@ class Component extends DCLogic {
     setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); } }, 1200);
   }
 
-  // After the reveal, warm every remaining photo two at a time at low priority,
-  // so scrolling and the lightbox never wait. Skipped when the viewer has
-  // Data Saver on.
-  async prefetchRest() {
+  // After the reveal, warm photos a few screens ahead of the reader, two at a
+  // time at low priority, and extend the window as they scroll. Warming the
+  // whole album up front cost hundreds of MB per visit on large weddings.
+  // Skipped on Data Saver / 2G.
+  prefetchRest() {
     const c = navigator.connection;
     if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return;
     const urls = [];
@@ -308,15 +310,27 @@ class Component extends DCLogic {
       if (m.kind === 'video') { if (m.thumb_url) urls.push(m.thumb_url); return; }
       urls.push(m.full_bleed ? (m.url_view || m.url) : (m.url_grid || m.url));
     });
-    const list = Array.from(new Set(urls.filter(Boolean)));
-    let i = 0;
+    this.warmList = Array.from(new Set(urls.filter(Boolean)));
+    this.warmAt = 0; this.warmLimit = 0;
+    this.warmAhead();
+  }
+  warmAhead() {
+    const list = this.warmList;
+    if (!list || this.unmounted) return;
+    const doc = document.documentElement, h = Math.max(1, doc.scrollHeight);
+    const frac = Math.min(1, (window.scrollY + window.innerHeight * 3) / h);
+    const ahead = this.state.isMobile ? 18 : 30;
+    const limit = Math.min(list.length, Math.ceil(frac * list.length) + ahead);
+    if (limit <= this.warmLimit) return;
+    this.warmLimit = limit;
     const worker = async () => {
-      while (!this.unmounted && i < list.length) {
-        const u = list[i++];
+      while (!this.unmounted && this.warmAt < this.warmLimit) {
+        const u = list[this.warmAt++];
         await new Promise(r => { const im = new Image(); try { im.fetchPriority = 'low'; } catch (e) {} im.onload = im.onerror = r; im.src = u; });
       }
+      this.warmers--;
     };
-    await Promise.all([worker(), worker()]);
+    while ((this.warmers || 0) < 2) { this.warmers = (this.warmers || 0) + 1; worker(); }
   }
 
   // Single source of truth for the tab title. The <helmet> title is a static
@@ -347,6 +361,7 @@ class Component extends DCLogic {
     if (this._scrollRaf) return;
     this._scrollRaf = requestAnimationFrame(() => {
       this._scrollRaf = 0;
+      if (this.warmList) this.warmAhead();
       const past = window.scrollY > window.innerHeight * 0.85;
       if (past === this._barOn) return;
       const bar = this.topbarEl || (this.topbarEl = document.querySelector('[data-el="topbar"]'));
@@ -454,10 +469,9 @@ class Component extends DCLogic {
   share() {
     const url = window.location.href;
     if (navigator.share) { navigator.share({ title: this.state.event.couple_names, url }).catch(() => {}); return; }
-    navigator.clipboard.writeText(url).then(() => {
-      this.setState({ shareLabel: 'Link copied!' });
-      setTimeout(() => this.setState({ shareLabel: 'Share album' }), 1800);
-    });
+    const done = label => { this.setState({ shareLabel: label }); setTimeout(() => { if (!this.unmounted) this.setState({ shareLabel: 'Share album' }); }, 1800); };
+    if (!navigator.clipboard || !navigator.clipboard.writeText) { window.prompt('Copy this link', url); return; }
+    navigator.clipboard.writeText(url).then(() => done('Link copied!'), () => window.prompt('Copy this link', url));
   }
 
   openLightbox(idx) {
@@ -597,6 +611,7 @@ class Component extends DCLogic {
   async downloadUrl(url, name) {
     try {
       const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const blob = await res.blob();
       const obj = URL.createObjectURL(blob);
       const a = document.createElement('a');

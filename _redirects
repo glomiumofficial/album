@@ -1,0 +1,5 @@
+/a/*   /album.html?event=:splat      200
+/p/*   /commercial.html?project=:splat  200
+/f/*   /feedback.html?t=:splat       200
+/admin /admin.html                 200
+/work  /portfolio.html              200

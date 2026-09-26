@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="assets/infinity.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>creative INFINITELY</title>
 <meta name="description" content="glomium — your film. creative infinitely.">
@@ -869,7 +870,7 @@ class Component extends DCLogic {
   }
 
   async copyHex(hex) {
-    try { await navigator.clipboard.writeText(hex); } catch (e) { /* clipboard blocked — the hex is on screen anyway */ }
+    try { await navigator.clipboard.writeText(hex); } catch (e) { return; /* clipboard blocked — the hex is on screen anyway; don't claim it was copied */ }
     this.setState({ copied: hex });
     clearTimeout(this._copyTimer);
     this._copyTimer = setTimeout(() => this.setState({ copied: '' }), 1600);
