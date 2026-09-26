@@ -1,11 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>creative INFINITELY</title>
+<meta name="description" content="glomium — your album. creative infinitely.">
+<meta property="og:title" content="glomium — your album">
+<meta property="og:description" content="glomium — your album. creative infinitely.">
+<meta name="robots" content="noindex, nofollow">
+<style>noscript{display:none!important}</style>
 <script src="./support.js"></script>
 </head>
 <body>
+<noscript style="display:none"><main style="font-family:Helvetica,sans-serif;max-width:640px;margin:80px auto;padding:0 24px;color:#1B1D1E"><h1 style="font-weight:300">glomium — your album</h1><p>your album is loading. please enable javascript to view it.</p><p>creative infinitely.</p></main></noscript>
+<template id="dc-src">
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,12 +35,6 @@
 </helmet>
 
 <div style="position:relative; width:100%; background:#FFFFFF">
-
-  <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
-    <div style="min-height:100vh; display:grid; place-items:center">
-      <span style="font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Loading album…</span>
-    </div>
-  </sc-if>
 
   <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
     <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
@@ -142,6 +144,28 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ loaderOn }}" hint-placeholder-val="{{ true }}">
+    <div ref="{{ loaderRef }}" style="position:fixed; inset:0; z-index:1200; background:#FFFFFF; clip-path:inset(0% 0% 0% 0%); transition:clip-path 1.1s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column; justify-content:space-between; padding:22px clamp(20px,4vw,56px) clamp(28px,5vh,48px); overflow:hidden">
+      <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(62vw 62vw at 12% 8%, rgba(16,175,139,0.13), transparent 65%), radial-gradient(52vw 52vw at 92% 86%, rgba(16,175,139,0.08), transparent 65%)"></div>
+      <div style="position:relative; display:flex; justify-content:space-between; align-items:center; gap:24px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">
+        <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto">
+        <span>your album</span>
+      </div>
+      <div style="position:relative; display:flex; justify-content:center">
+        <img ref="{{ loadMarkRef }}" src="assets/infinity.svg" alt="" style="width:clamp(72px,8vw,120px); height:auto">
+      </div>
+      <div style="position:relative; display:flex; flex-direction:column; gap:18px">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:24px">
+          <span ref="{{ loadNumRef }}" style="font-weight:200; font-size:clamp(64px,12vw,200px); line-height:0.8; letter-spacing:-0.04em; font-variant-numeric:tabular-nums; color:#1B1D1E">000</span>
+          <span ref="{{ loadLabelRef }}" style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">preparing your album</span>
+        </div>
+        <div style="position:relative; height:1px; background:#E2E7E5; overflow:hidden">
+          <div ref="{{ loadBarRef }}" style="position:absolute; inset:0; background:#10AF8B; transform-origin:left; transform:scaleX(0)"></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed; inset:0; z-index:1000; background:rgba(10,14,13,.97); display:flex; flex-direction:column">
       <div style="display:flex; align-items:center; justify-content:space-between; padding:clamp(10px,2vh,16px) clamp(10px,4vw,36px); flex-wrap:wrap; gap:clamp(6px,1vw,10px)">
@@ -174,6 +198,8 @@
 </div>
 
 </x-dc>
+</template>
+<script>(function(){var t=document.getElementById('dc-src');t.parentNode.insertBefore(t.content.cloneNode(true),t);t.remove();})();</script>
 <script type="text/x-dc" data-dc-script>
 const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
@@ -183,8 +209,10 @@ class Component extends DCLogic {
     loading: true, notFound: false, loadError: '', slug: '', event: null, media: [], shareLabel: 'Share album',
     lightboxOpen: false, lightboxIndex: 0, slideshowPlaying: false,
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
-    videoShareId: null, isFullscreen: false,
+    videoShareId: null, isFullscreen: false, loaderGone: false,
   };
+
+  loaderRef = React.createRef(); loadNumRef = React.createRef(); loadBarRef = React.createRef(); loadLabelRef = React.createRef(); loadMarkRef = React.createRef();
 
   onResize = () => {
     const m = window.innerWidth < 768;
@@ -203,8 +231,88 @@ class Component extends DCLogic {
     requestAnimationFrame(() => this.syncTitle());
     setTimeout(() => this.syncTitle(), 400);
     const slug = (new URLSearchParams(window.location.search).get('event') || '').trim();
-    if (!slug) { this.setState({ loading: false, notFound: true }); return; }
-    this.load(slug);
+    this.safety = setTimeout(() => this.finishLoad(), 25000);
+    this.boot(slug).catch(() => this.finishLoad());
+  }
+
+  // Same loader as the portfolio: hold the album behind a counter until the
+  // cover and the first screen of photos are decoded, capped so a slow line
+  // still gets in; then warm the rest of the album quietly in the background.
+  async boot(slug) {
+    this.L = { done: 0, total: 2, shown: 0, t0: performance.now(), finished: false };
+    try { window.scrollTo(0, 0); } catch (e) {}
+    document.body.style.overflow = 'hidden';
+    const mk = this.loadMarkRef.current;
+    if (mk && mk.animate) mk.animate([{ opacity: 0.3, transform: 'scale(0.96)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 1100, iterations: Infinity, direction: 'alternate', easing: 'ease-in-out' });
+    let last = performance.now();
+    const tick = now => {
+      if (this.unmounted || this.state.loaderGone) return;
+      const f60 = Math.min(4, (now - last) / 16.67); last = now;
+      const L = this.L, target = L.total ? Math.min(1, L.done / L.total) : 0;
+      L.shown += (target - L.shown) * (1 - Math.pow(0.92, f60));
+      if (target >= 1 && L.shown > 0.995) L.shown = 1;
+      const num = String(Math.round(L.shown * 100)).padStart(3, '0');
+      if (this.loadNumRef.current && this.loadNumRef.current.textContent !== num) this.loadNumRef.current.textContent = num;
+      if (this.loadBarRef.current) this.loadBarRef.current.style.transform = 'scaleX(' + L.shown.toFixed(4) + ')';
+      this._loadRaf = requestAnimationFrame(tick);
+    };
+    this._loadRaf = requestAnimationFrame(tick);
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const bump = () => { this.L.done++; };
+    const fonts = (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(bump, bump);
+    if (slug) await Promise.race([this.load(slug), sleep(8000)]);
+    else this.setState({ loading: false, notFound: true });
+    bump();
+    const s = this.state, urls = [];
+    if (s.event) {
+      urls.push(s.event.cover_url_view || s.event.cover_url);
+      s.media.filter(m => m.kind !== 'video').slice(0, this.state.isMobile ? 9 : 12)
+        .forEach(m => urls.push(m.full_bleed ? (m.url_view || m.url) : (m.url_grid || m.url)));
+    }
+    const list = Array.from(new Set(urls.filter(Boolean)));
+    this.L.total += list.length;
+    const img = u => new Promise(res => {
+      const i = new Image(); i.decoding = 'async';
+      i.onload = () => (i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(res);
+      i.onerror = res; i.src = u;
+    }).then(bump);
+    await Promise.race([Promise.all([fonts].concat(list.map(img))), sleep(14000)]);
+    await sleep(Math.max(0, 1400 - (performance.now() - this.L.t0)));
+    this.L.done = this.L.total;
+    await sleep(650);
+    this.finishLoad();
+  }
+
+  finishLoad() {
+    if (!this.L || this.L.finished || this.unmounted) return;
+    this.L.finished = true;
+    clearTimeout(this.safety);
+    document.body.style.overflow = this.state.lightboxOpen ? 'hidden' : '';
+    if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
+    if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
+    setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); } }, 1200);
+  }
+
+  // After the reveal, warm every remaining photo two at a time at low priority,
+  // so scrolling and the lightbox never wait. Skipped when the viewer has
+  // Data Saver on.
+  async prefetchRest() {
+    const c = navigator.connection;
+    if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return;
+    const urls = [];
+    this.state.media.forEach(m => {
+      if (m.kind === 'video') { if (m.thumb_url) urls.push(m.thumb_url); return; }
+      urls.push(m.full_bleed ? (m.url_view || m.url) : (m.url_grid || m.url));
+    });
+    const list = Array.from(new Set(urls.filter(Boolean)));
+    let i = 0;
+    const worker = async () => {
+      while (!this.unmounted && i < list.length) {
+        const u = list[i++];
+        await new Promise(r => { const im = new Image(); try { im.fetchPriority = 'low'; } catch (e) {} im.onload = im.onerror = r; im.src = u; });
+      }
+    };
+    await Promise.all([worker(), worker()]);
   }
 
   // Single source of truth for the tab title. The <helmet> title is a static
@@ -224,6 +332,9 @@ class Component extends DCLogic {
     window.removeEventListener('resize', this.onResize);
     document.removeEventListener('fullscreenchange', this.onFsChange);
     if (this._scrollRaf) cancelAnimationFrame(this._scrollRaf);
+    this.unmounted = true;
+    clearTimeout(this.safety);
+    cancelAnimationFrame(this._loadRaf);
     this.stopSlideshow();
   }
 
@@ -669,6 +780,8 @@ class Component extends DCLogic {
       toggleSlideshow: () => this.toggleSlideshow(),
       slideshowLabel: s.slideshowPlaying ? 'Pause' : 'Slideshow',
       downloadCurrent: () => this.downloadCurrent(),
+      loaderOn: !s.loaderGone,
+      loaderRef: this.loaderRef, loadNumRef: this.loadNumRef, loadBarRef: this.loadBarRef, loadLabelRef: this.loadLabelRef, loadMarkRef: this.loadMarkRef,
       shareCurrent: () => this.shareCurrent(),
     };
   }
