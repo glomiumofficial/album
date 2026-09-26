@@ -3023,7 +3023,7 @@
                   <div style="flex:0 0 72px; height:54px; background:#EEF3F1; border-radius:3px; overflow:hidden">
                     <sc-if value="{{ pw.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ pw.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                   </div>
-                  <span style="font-size:11px; letter-spacing:.12em; color:var(--green)">{{ pw.no }}</span>
+                  <select value="{{ pw.pos }}" onChange="{{ pw.onPos }}" title="Position in the strip" style="padding:4px 4px; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.08em; color:var(--green); background:#fff; cursor:pointer"><sc-for list="{{ pw.posOpts }}" as="po" hint-placeholder-count="1"><option value="{{ po.value }}">{{ po.label }}</option></sc-for></select>
                   <div style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:1 1 160px">
                     <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ pw.titleShown }}</span>
                     <span style="font-size:11px; color:#67746F">{{ pw.category }}</span>
@@ -3054,7 +3054,10 @@
                         </div>
                         <sc-if value="{{ pw.hasCoverWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#9A6A12">{{ pw.coverWarn }}</span></sc-if>
                         <input type="file" accept="image/*" ref="{{ pw.coverRef }}" onChange="{{ pw.coverOnFile }}" style="display:none">
-                        <button onClick="{{ pw.coverPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; align-self:flex-start" style-hover="background:var(--green); color:#fff">{{ pw.coverBtn }}</button>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap">
+                          <button onClick="{{ pw.coverPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green); color:#fff">{{ pw.coverBtn }}</button>
+                          <sc-if value="{{ pw.hasThumb }}" hint-placeholder-val="{{ false }}"><button onClick="{{ pw.coverEdit }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit photo</button></sc-if>
+                        </div>
                       </div>
                       <div style="display:flex; flex-direction:column; gap:10px">
                         <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F">Film</span>
@@ -3085,11 +3088,14 @@
                       <sc-if value="{{ st.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ st.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                       <sc-if value="{{ st.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
                       <sc-if value="{{ st.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
+                      <span style="position:absolute; right:6px; top:6px; min-width:22px; padding:2px 6px; border-radius:10px; background:rgba(255,255,255,.92); color:#16231F; font-size:10px; letter-spacing:.06em; text-align:center">{{ st.no }}</span>
                     </div>
                     <span style="font-size:10px; letter-spacing:.04em; color:#67746F">{{ st.spec }}</span>
                     <sc-if value="{{ st.hasWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; color:#9A6A12">{{ st.warn }}</span></sc-if>
+                    <sc-if value="{{ st.canEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ st.edit }}" style="padding:5px 0; background:none; border:1px solid {{ st.editBorder }}; border-radius:3px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit photo</button></sc-if>
                     <div style="display:flex; gap:4px">
                       <button onClick="{{ st.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
+                      <select value="{{ st.pos }}" onChange="{{ st.onPos }}" title="Position" style="flex:1.3; min-width:0; padding:4px 2px; border:1px solid var(--line); border-radius:3px; font-size:11px; color:var(--green-deep); background:#fff; text-align:center; cursor:pointer"><sc-for list="{{ st.posOpts }}" as="po" hint-placeholder-count="1"><option value="{{ po.value }}">{{ po.label }}</option></sc-for></select>
                       <button onClick="{{ st.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
                       <button onClick="{{ st.remove }}" title="Remove" style="flex:1; padding:5px 0; background:none; border:1px solid #E7CEC9; border-radius:3px; font-size:12px; color:#B4433A; cursor:pointer">&#215;</button>
                     </div>
@@ -3112,11 +3118,14 @@
                       <sc-if value="{{ cbt.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ cbt.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                       <sc-if value="{{ cbt.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
                       <sc-if value="{{ cbt.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
+                      <span style="position:absolute; right:6px; top:6px; min-width:22px; padding:2px 6px; border-radius:10px; background:rgba(255,255,255,.92); color:#16231F; font-size:10px; letter-spacing:.06em; text-align:center">{{ cbt.no }}</span>
                     </div>
                     <span style="font-size:10px; letter-spacing:.04em; color:#67746F">{{ cbt.spec }}</span>
                     <sc-if value="{{ cbt.hasWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; color:#9A6A12">{{ cbt.warn }}</span></sc-if>
+                    <sc-if value="{{ cbt.canEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cbt.edit }}" style="padding:5px 0; background:none; border:1px solid {{ cbt.editBorder }}; border-radius:3px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit photo</button></sc-if>
                     <div style="display:flex; gap:4px">
                       <button onClick="{{ cbt.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
+                      <select value="{{ cbt.pos }}" onChange="{{ cbt.onPos }}" title="Position" style="flex:1.3; min-width:0; padding:4px 2px; border:1px solid var(--line); border-radius:3px; font-size:11px; color:var(--green-deep); background:#fff; text-align:center; cursor:pointer"><sc-for list="{{ cbt.posOpts }}" as="po" hint-placeholder-count="1"><option value="{{ po.value }}">{{ po.label }}</option></sc-for></select>
                       <button onClick="{{ cbt.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
                       <button onClick="{{ cbt.remove }}" title="Remove" style="flex:1; padding:5px 0; background:none; border:1px solid #E7CEC9; border-radius:3px; font-size:12px; color:#B4433A; cursor:pointer">&#215;</button>
                     </div>
@@ -3151,12 +3160,15 @@
                       <sc-if value="{{ bt.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ bt.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
                       <sc-if value="{{ bt.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#67746F">Video</span></sc-if>
                       <sc-if value="{{ bt.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:10px; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.08em; text-transform:uppercase">Video</span></sc-if>
+                      <span style="position:absolute; right:6px; top:6px; min-width:22px; padding:2px 6px; border-radius:10px; background:rgba(255,255,255,.92); color:#16231F; font-size:10px; letter-spacing:.06em; text-align:center">{{ bt.no }}</span>
                     </div>
                     <span style="font-size:10px; letter-spacing:.04em; color:#67746F">{{ bt.spec }}</span>
                     <sc-if value="{{ bt.hasWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; color:#9A6A12">{{ bt.warn }}</span></sc-if>
+                    <sc-if value="{{ bt.canEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ bt.edit }}" style="padding:5px 0; background:none; border:1px solid {{ bt.editBorder }}; border-radius:3px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit photo</button></sc-if>
                     <input value="{{ bt.caption }}" onChange="{{ bt.onCaption }}" onBlur="{{ bt.saveCaption }}" placeholder="caption" style="padding:6px 9px; border:1px solid var(--line); border-radius:3px; font-size:12px; outline:none; background:#fff; min-width:0">
                     <div style="display:flex; gap:4px">
                       <button onClick="{{ bt.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
+                      <select value="{{ bt.pos }}" onChange="{{ bt.onPos }}" title="Position" style="flex:1.3; min-width:0; padding:4px 2px; border:1px solid var(--line); border-radius:3px; font-size:11px; color:var(--green-deep); background:#fff; text-align:center; cursor:pointer"><sc-for list="{{ bt.posOpts }}" as="po" hint-placeholder-count="1"><option value="{{ po.value }}">{{ po.label }}</option></sc-for></select>
                       <button onClick="{{ bt.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:3px; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
                       <button onClick="{{ bt.remove }}" title="Remove" style="flex:1; padding:5px 0; background:none; border:1px solid #E7CEC9; border-radius:3px; font-size:12px; color:#B4433A; cursor:pointer">&#215;</button>
                     </div>
@@ -3165,6 +3177,56 @@
               </div>
         </div>
       </div>
+      <sc-if value="{{ peOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ peBackdrop }}" style="position:fixed; inset:0; z-index:9000; background:rgba(14,22,20,.6); display:grid; place-items:center; padding:20px">
+          <div style="width:min(940px,100%); max-height:calc(100vh - 40px); overflow:auto; background:#fff; border-radius:4px; padding:20px; display:flex; flex-direction:column; gap:14px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--green-deep)">Edit photo</span>
+              <span style="font-size:11px; color:#67746F">{{ peSpec }}</span>
+              <button onClick="{{ peClose }}" title="Close" style="margin-left:auto; padding:5px 11px; background:none; border:1px solid var(--line); border-radius:3px; font-size:13px; color:var(--green-deep); cursor:pointer">&#215;</button>
+            </div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap">
+              <sc-for list="{{ peModesVM }}" as="pm" hint-placeholder-count="5">
+                <button onClick="{{ pm.pick }}" style="padding:7px 13px; border:1px solid {{ pm.border }}; background:{{ pm.bg }}; color:{{ pm.color }}; border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer">{{ pm.label }}</button>
+              </sc-for>
+            </div>
+            <span style="font-size:12px; line-height:1.6; color:#5C6864">{{ peHint }}</span>
+            <div style="display:grid; place-items:center; padding:14px; background:#EEF3F1; border-radius:3px; min-height:220px">
+              <sc-if value="{{ peLoading }}" hint-placeholder-val="{{ true }}"><span style="font-size:12px; color:#67746F">Loading photo…</span></sc-if>
+              <sc-if value="{{ peReady }}" hint-placeholder-val="{{ false }}"><canvas ref="{{ peCanvasRef }}" onPointerDown="{{ peDown }}" onPointerMove="{{ peMove }}" onPointerUp="{{ peUp }}" onPointerCancel="{{ peUp }}" style="display:block; width:100%; max-width:{{ peStageMax }}; aspect-ratio:{{ peStageRatio }}; cursor:{{ peCursor }}; touch-action:none; background:#fff"></canvas></sc-if>
+            </div>
+            <sc-if value="{{ peHasZoom }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex; align-items:center; gap:12px">
+                <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F; min-width:48px">{{ peZoomLabel }}</span>
+                <input type="range" min="{{ peZoomMin }}" max="{{ peZoomMax }}" step="0.01" value="{{ peZoomVal }}" onChange="{{ peOnZoom }}" style="flex:1; accent-color:#0E8E72">
+              </label>
+            </sc-if>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+              <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F; min-width:48px">Tone</span>
+              <sc-for list="{{ peToneVM }}" as="pt" hint-placeholder-count="6">
+                <button onClick="{{ pt.pick }}" style="padding:6px 12px; border:1px solid {{ pt.border }}; background:{{ pt.bg }}; color:{{ pt.color }}; border-radius:3px; font-size:11px; letter-spacing:.06em; cursor:pointer">{{ pt.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ peHasBg }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+                <span style="font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#67746F; min-width:48px">Space</span>
+                <sc-for list="{{ peBgVM }}" as="pb" hint-placeholder-count="3">
+                  <button onClick="{{ pb.pick }}" style="padding:6px 12px; border:1px solid {{ pb.border }}; background:{{ pb.bg }}; color:{{ pb.color }}; border-radius:3px; font-size:11px; letter-spacing:.06em; cursor:pointer">{{ pb.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:14px">
+              <span style="font-size:11px; color:#67746F">{{ peOut }}</span>
+              <sc-if value="{{ peLow }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px; color:#9A6A12">will look soft at this size</span></sc-if>
+              <div style="display:flex; gap:8px; margin-left:auto">
+                <button onClick="{{ peReset }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Reset</button>
+                <button onClick="{{ peClose }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Cancel</button>
+                <button onClick="{{ peSave }}" disabled="{{ peSaveDisabled }}" style="padding:9px 18px; background:#0E8E72; border:1px solid #0E8E72; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#fff; cursor:pointer">{{ peSaveLabel }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
       </sc-if>
 
       <sc-if value="{{ isShoots }}" hint-placeholder-val="{{ false }}">
@@ -5664,6 +5726,14 @@ const PF_COVER = ['4:5', '16:10', '3:4', '4:5', '16:10', '3:4', '4:5', '16:10'];
 const PF_STILL = ['3:2', '4:5', '4:5', '16:10', '21:9', '4:3'];
 const PF_CBTS = ['4:5', '3:4', '4:5', '1:1', '4:5'];
 const PF_BTS = ['4:5', '3:2', '3:4', '4:5', '16:10', '3:4', '1:1', '3:2', '4:5'];
+const PE_TONES = [
+  ['none', 'original', '', []],
+  ['bw', 'black & white', 'grayscale(1) contrast(1.08)', [['gray', 1], ['contrast', 1.08]]],
+  ['noir', 'noir', 'grayscale(1) contrast(1.35) brightness(.95)', [['gray', 1], ['contrast', 1.35], ['bright', 0.95]]],
+  ['warm', 'warm', 'sepia(.22) saturate(1.1) contrast(1.02)', [['sepia', 0.22], ['sat', 1.1], ['contrast', 1.02]]],
+  ['cool', 'cool', 'saturate(.85) brightness(1.03) hue-rotate(-8deg)', [['sat', 0.85], ['bright', 1.03]]],
+  ['fade', 'fade', 'contrast(.86) brightness(1.06) saturate(.78)', [['contrast', 0.86], ['bright', 1.06], ['sat', 0.78]]],
+];
 function pfSpec(r, long) {
   const [w, h] = PF_SIZE[r], k = long ? long / Math.max(w, h) : 1, [x, y] = r.split(':');
   const W = Math.round(w * k), H = Math.round(h * k);
@@ -9005,16 +9075,24 @@ class Component extends DCLogic {
   async pfUploadMedia(section, workId, files) {
     files = Array.from(files || []);
     if (!files.length) return false;
-    return this.pfRun(files.length + (files.length > 1 ? ' files' : ' file') + ' added.', async () => {
-      let order = this.state.pfMedia.filter(m => m.section === section && (m.work_id || null) === (workId || null))
-        .reduce((a, m) => Math.max(a, m.sort_order || 0), 0);
+    let last = null, at = 0;
+    const ok = await this.pfRun(files.length + (files.length > 1 ? ' files' : ' file') + ' added.', async () => {
+      const peers = this.state.pfMedia.filter(m => m.section === section && (m.work_id || null) === (workId || null));
+      at = peers.length;
+      let order = peers.reduce((a, m) => Math.max(a, m.sort_order || 0), 0);
       for (let i = 0; i < files.length; i++) {
         const f = await this.pfPrepare(files[i], 'Uploading ' + (i + 1) + ' of ' + files.length + ' — ' + files[i].name, section);
         const { data, error } = await this.sb.from('portfolio_media').insert({ section, work_id: workId || null, sort_order: ++order, ...f }).select('*').single();
         if (error) { this.pfDropFiles([f.url, f.url_grid, f.poster_url]); throw new Error(error.message); }
         this.setState(s => ({ pfMedia: s.pfMedia.concat([data]) }));
+        last = data;
       }
     });
+    if (ok && files.length === 1 && last && last.kind === 'photo') {
+      const sp = this.pfSecSpec(section, at);
+      if (sp && pfFit(sp, last.width, last.height).crop) this.pfEditOpen({ kind: 'media', m: last, spec: sp });
+    }
+    return ok;
   }
 
   async pfSetReel(file) {
@@ -9029,7 +9107,7 @@ class Component extends DCLogic {
     if (!quiet && !window.confirm('Remove this from the portfolio?')) return;
     const { error } = await this.sb.from('portfolio_media').delete().eq('id', m.id);
     if (error) return this.pfSay(error.message, false);
-    this.pfDropFiles([m.url, m.url_grid, m.poster_url]);
+    this.pfDropFiles([m.url, m.url_grid, m.poster_url, m.url_source]);
     this.setState(s => ({ pfMedia: s.pfMedia.filter(x => x.id !== m.id) }));
     if (!quiet) this.pfSay('Removed.');
   }
@@ -9037,6 +9115,21 @@ class Component extends DCLogic {
   async pfSaveCaption(id, text) {
     const { error } = await this.sb.from('portfolio_media').update({ caption: (text || '').trim() || null }).eq('id', id);
     this.pfSay(error ? error.message : 'Caption saved.', !error);
+  }
+
+  // Move an item straight to position n (1-based), then renumber the whole list.
+  async pfMoveTo(list, item, n, table) {
+    const i = list.findIndex(x => x.id === item.id); n = Math.max(1, Math.min(list.length, n | 0));
+    if (i < 0 || i === n - 1) return;
+    const next = list.filter(x => x.id !== item.id); next.splice(n - 1, 0, item);
+    const ups = next.map((x, k) => ({ id: x.id, o: k + 1, was: x.sort_order })).filter(r => r.was !== r.o);
+    const res = await Promise.all(ups.map(r => this.sb.from(table).update({ sort_order: r.o }).eq('id', r.id)));
+    const bad = res.find(r => r.error);
+    if (bad) return this.pfSay(bad.error.message, false);
+    const key = table === 'portfolio_works' ? 'pfWorks' : 'pfMedia';
+    const map = {}; ups.forEach(r => { map[r.id] = r.o; });
+    this.setState(s => ({ [key]: s[key].map(x => map[x.id] != null ? { ...x, sort_order: map[x.id] } : x) }));
+    this.pfSay('Moved to ' + String(n).padStart(2, '0') + '.');
   }
 
   // Swap two neighbours, then renumber the list so ties can never stick.
@@ -9071,25 +9164,28 @@ class Component extends DCLogic {
 
   async pfWorkFile(w, field, file, spec) {
     if (!file) return;
-    let warn = '';
+    let warn = '', crop = false;
     const ok = await this.pfRun(field === 'film' ? 'Film uploaded.' : 'Cover uploaded.', async () => {
       const f = await this.pfPrepare(file, 'Uploading ' + file.name, field);
       if (spec && f.width) {
         const c = pfFit(spec, f.width, f.height);
+        crop = c.crop;
         warn = [c.crop ? 'it is ' + c.actual + ' and this spot is ' + spec.r + ', so the edges will be cropped' : '',
                 c.low ? 'at ' + f.width + ' × ' + f.height + ' px it will look soft (aim for ' + spec.w + ' × ' + spec.h + ')' : ''].filter(Boolean).join('; ');
       }
       const cur = this.state.pfWorks.find(x => x.id === w.id) || w;
-      const old = field === 'film' ? [cur.film_url, cur.film_poster_url] : [cur.cover_url, cur.cover_grid_url];
+      const old = field === 'film' ? [cur.film_url, cur.film_poster_url] : [cur.cover_url, cur.cover_grid_url, cur.cover_source_url];
       const patch = field === 'film'
         ? { film_url: f.url, film_poster_url: f.poster_url || null }
         : { cover_url: f.url, cover_grid_url: f.url_grid || f.url };
+      if (field !== 'film' && 'cover_source_url' in cur) { patch.cover_source_url = null; patch.cover_edit = null; }
       const { error } = await this.sb.from('portfolio_works').update(patch).eq('id', w.id);
       if (error) { this.pfDropFiles([f.url, f.url_grid, f.poster_url]); throw new Error(error.message); }
       this.pfLocal(w.id, patch);
       this.pfDropFiles(old);
     });
     if (ok && warn) this.pfSay('Cover uploaded, but ' + warn + '.', 'warn');
+    if (ok && crop) { const w2 = this.state.pfWorks.find(x => x.id === w.id); if (w2) this.pfEditOpen({ kind: 'cover', w: w2, spec }); }
   }
 
   async pfClearFilm(w) {
@@ -9106,14 +9202,258 @@ class Component extends DCLogic {
     const media = this.state.pfMedia.filter(m => m.work_id === w.id);
     const { error } = await this.sb.from('portfolio_works').delete().eq('id', w.id);
     if (error) return this.pfSay(error.message, false);
-    this.pfDropFiles([w.cover_url, w.cover_grid_url, w.film_url, w.film_poster_url].concat(...media.map(m => [m.url, m.url_grid, m.poster_url])));
+    this.pfDropFiles([w.cover_url, w.cover_grid_url, w.cover_source_url, w.film_url, w.film_poster_url].concat(...media.map(m => [m.url, m.url_grid, m.poster_url, m.url_source])));
     this.setState(s => ({ pfWorks: s.pfWorks.filter(x => x.id !== w.id), pfMedia: s.pfMedia.filter(m => m.work_id !== w.id), pfOpenId: null }));
     this.pfSay('Work deleted.');
   }
 
+  // ---- Photo editor: bakes the chosen framing into a new file at the spot's exact shape,
+  // so portfolio.html needs no change. The untouched original is kept in url_source /
+  // cover_source_url (when those columns exist) so re-editing never compounds.
+  peWmax() { const i = this.peImg, sp = this.state.pe.spec; return Math.min(1, (sp.w / sp.h) * i.height / i.width); }
+  peH(w) { const i = this.peImg, sp = this.state.pe.spec; return w * i.width / ((sp.w / sp.h) * i.height); }
+  peClamp(r) {
+    const wm = this.peWmax(), cl = (v, a, b) => Math.max(a, Math.min(b, v));
+    const w = cl(r.w, wm / 8, wm), h = this.peH(w);
+    return { w, x: cl(r.x, 0, 1 - w), y: cl(r.y, 0, 1 - h) };
+  }
+  peCentered(w) { return this.peClamp({ w, x: (1 - w) / 2, y: (1 - this.peH(w)) / 2 }); }
+  pfSecSpec(section, i) {
+    const t = { still: [PF_STILL], case_bts: [PF_CBTS, 1200], bts: [PF_BTS, 1600] }[section];
+    return t ? pfSpec(t[0][i % t[0].length], t[1]) : null;
+  }
+  async pfEditOpen(t) {
+    if (this.state.pfBusy) return;
+    const src = t.kind === 'cover' ? (t.w.cover_source_url || t.w.cover_url) : (t.m.url_source || t.m.url);
+    if (!src || !t.spec) return;
+    this.peT = t;
+    this.setState({ pe: { open: true, loading: true, spec: t.spec, mode: 'fill' } });
+    try {
+      const r = await fetch(src, { mode: 'cors', cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const bmp = await createImageBitmap(await r.blob());
+      if (this.peImg && this.peImg.close) this.peImg.close();
+      this.peImg = bmp;
+      const prev = t.kind === 'cover' ? t.w.cover_edit : t.m.edit;
+      const p = prev && prev.r === t.spec.r ? prev : {};
+      this.setState({ pe: { open: true, loading: false, spec: t.spec, mode: 'fill', z: 0.85, px: 0.5, py: 0.5, bg: 'blur', rect: { x: 0, y: 0, w: 1 } } }, () => {
+        const rect = p.rect ? this.peClamp(p.rect) : this.peCentered(this.peWmax());
+        this.peSet({ mode: p.mode || 'fill', rect, z: p.z || 0.85, px: p.px != null ? p.px : 0.5, py: p.py != null ? p.py : 0.5, bg: p.bg || 'blur', tone: p.tone || 'bw' });
+      });
+    } catch (err) { this.peClose(); this.pfSay('Could not open this photo for editing: ' + (err.message || err), false); }
+  }
+  peClose() {
+    if (this.state.pe && this.state.pe.saving) return;
+    if (this.peRO) { this.peRO.disconnect(); this.peRO = null; }
+    if (this.peImg && this.peImg.close) this.peImg.close();
+    this.peImg = null; this.peT = null; this.peCanvas = null; this.peDrag = null;
+    this.setState({ pe: null });
+  }
+  peSet(patch) { this.setState(s => ({ pe: s.pe ? { ...s.pe, ...patch } : s.pe }), () => this.peDraw()); }
+  peMode(k, reset) {
+    const e = this.state.pe; if (!e || !this.peImg) return;
+    const wm = this.peWmax();
+    let rect = reset ? this.peCentered(wm) : e.rect;
+    const around = w => { const cx = rect.x + rect.w / 2, cy = rect.y + this.peH(rect.w) / 2; return this.peClamp({ w, x: cx - w / 2, y: cy - this.peH(w) / 2 }); };
+    if (k === 'fill') rect = around(wm);
+    if (k === 'zoom' && rect.w > wm * 0.98) rect = around(wm / 1.5);
+    this.peSet(reset ? { mode: k, rect, z: 0.85, px: 0.5, py: 0.5 } : { mode: k, rect });
+  }
+  peZoom(v) {
+    const e = this.state.pe; if (!e || !this.peImg) return;
+    if (e.mode === 'fit') return this.peSet({ z: v });
+    const r = e.rect, cx = r.x + r.w / 2, cy = r.y + this.peH(r.w) / 2, w = this.peWmax() / v;
+    this.peSet({ rect: this.peClamp({ w, x: cx - w / 2, y: cy - this.peH(w) / 2 }) });
+  }
+  peTone(ctx, W, H, tone) {
+    const t = PE_TONES.find(x => x[0] === tone);
+    if (!t || !t[2]) return;
+    if (typeof ctx.filter === 'string') {
+      const c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(ctx.canvas, 0, 0);
+      ctx.save(); ctx.clearRect(0, 0, W, H); ctx.filter = t[2]; ctx.drawImage(c, 0, 0); ctx.restore();
+      return;
+    }
+    const d = ctx.getImageData(0, 0, W, H), p = d.data;
+    for (let i = 0; i < p.length; i += 4) {
+      let r = p[i], g = p[i + 1], b = p[i + 2];
+      for (const [op, a] of t[3]) {
+        if (op === 'gray') { const l = 0.2126 * r + 0.7152 * g + 0.0722 * b; r = r + (l - r) * a; g = g + (l - g) * a; b = b + (l - b) * a; }
+        else if (op === 'sepia') { const sr = .393 * r + .769 * g + .189 * b, sg = .349 * r + .686 * g + .168 * b, sb = .272 * r + .534 * g + .131 * b; r += (sr - r) * a; g += (sg - g) * a; b += (sb - b) * a; }
+        else if (op === 'sat') { const l = 0.2126 * r + 0.7152 * g + 0.0722 * b; r = l + (r - l) * a; g = l + (g - l) * a; b = l + (b - l) * a; }
+        else if (op === 'contrast') { r = (r - 128) * a + 128; g = (g - 128) * a + 128; b = (b - 128) * a + 128; }
+        else if (op === 'bright') { r *= a; g *= a; b *= a; }
+      }
+      p[i] = r < 0 ? 0 : r > 255 ? 255 : r; p[i + 1] = g < 0 ? 0 : g > 255 ? 255 : g; p[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+    }
+    ctx.putImageData(d, 0, 0);
+  }
+  peCoverDraw(ctx, img, W, H, k) {
+    const s = Math.max(W / img.width, H / img.height) * (k || 1), dw = img.width * s, dh = img.height * s;
+    ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+  peRender(ctx, W, H, e) { this.peRenderBase(ctx, W, H, e); this.peTone(ctx, W, H, e.tone); }
+  peRenderBase(ctx, W, H, e) {
+    const img = this.peImg, iw = img.width, ih = img.height;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.clearRect(0, 0, W, H);
+    if (e.mode === 'scale') { ctx.drawImage(img, 0, 0, W, H); return; }
+    if (e.mode === 'fit') {
+      if (e.bg === 'blur') {
+        if (typeof ctx.filter === 'string') {
+          ctx.save(); ctx.filter = 'blur(' + Math.round(Math.max(W, H) * 0.035) + 'px) brightness(.94)'; this.peCoverDraw(ctx, img, W, H, 1.15); ctx.restore();
+        } else {
+          const t = document.createElement('canvas'); t.width = 24; t.height = Math.max(1, Math.round(24 * H / W));
+          this.peCoverDraw(t.getContext('2d'), img, t.width, t.height, 1.1); ctx.drawImage(t, 0, 0, W, H);
+        }
+      } else { ctx.fillStyle = e.bg === 'black' ? '#0B0D0C' : '#FFFFFF'; ctx.fillRect(0, 0, W, H); }
+      const s = Math.min(W / iw, H / ih) * e.z, dw = iw * s, dh = ih * s;
+      ctx.drawImage(img, (W - dw) * e.px, (H - dh) * e.py, dw, dh);
+      return;
+    }
+    const r = e.rect, h = this.peH(r.w);
+    ctx.drawImage(img, r.x * iw, r.y * ih, r.w * iw, h * ih, 0, 0, W, H);
+  }
+  peDraw() {
+    const c = this.peCanvas, e = this.state.pe, img = this.peImg;
+    if (!c || !e || !img || e.loading) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), cw = Math.round(c.clientWidth * dpr), ch = Math.round(c.clientHeight * dpr);
+    if (!cw || !ch) return;
+    if (c.width !== cw) c.width = cw; if (c.height !== ch) c.height = ch;
+    const ctx = c.getContext('2d');
+    if (e.mode !== 'crop') return this.peRender(ctx, cw, ch, e);
+    ctx.imageSmoothingQuality = 'high'; ctx.clearRect(0, 0, cw, ch); ctx.drawImage(img, 0, 0, cw, ch); this.peTone(ctx, cw, ch, e.tone);
+    const r = e.rect, bx = r.x * cw, by = r.y * ch, bw = r.w * cw, bh = this.peH(r.w) * ch;
+    ctx.fillStyle = 'rgba(12,18,16,.58)';
+    ctx.fillRect(0, 0, cw, by); ctx.fillRect(0, by + bh, cw, ch - by - bh); ctx.fillRect(0, by, bx, bh); ctx.fillRect(bx + bw, by, cw - bx - bw, bh);
+    ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.lineWidth = dpr;
+    ctx.beginPath();
+    for (let i = 1; i < 3; i++) { ctx.moveTo(bx + bw * i / 3, by); ctx.lineTo(bx + bw * i / 3, by + bh); ctx.moveTo(bx, by + bh * i / 3); ctx.lineTo(bx + bw, by + bh * i / 3); }
+    ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5 * dpr; ctx.strokeRect(bx, by, bw, bh);
+    const k = 14 * dpr; ctx.fillStyle = '#fff'; ctx.fillRect(bx + bw - k, by + bh - k, k, k);
+  }
+  peDownH(ev) {
+    const c = this.peCanvas, e = this.state.pe; if (!c || !e || !this.peImg || e.mode === 'scale') return;
+    try { c.setPointerCapture(ev.pointerId); } catch (x) {}
+    const b = c.getBoundingClientRect(); let handle = false;
+    if (e.mode === 'crop') {
+      const r = e.rect, hx = (r.x + r.w) * b.width, hy = (r.y + this.peH(r.w)) * b.height;
+      handle = Math.abs(ev.clientX - b.left - hx) < 22 && Math.abs(ev.clientY - b.top - hy) < 22;
+    }
+    this.peDrag = { x: ev.clientX, y: ev.clientY, w: b.width, h: b.height, rect: { ...e.rect }, px: e.px, py: e.py, z: e.z, handle };
+  }
+  peMoveH(ev) {
+    const d = this.peDrag, e = this.state.pe; if (!d || !e) return;
+    const dx = ev.clientX - d.x, dy = ev.clientY - d.y, r = d.rect, cl = (v, a, b) => Math.max(a, Math.min(b, v));
+    if (e.mode === 'fit') {
+      const img = this.peImg, s = Math.min(d.w / img.width, d.h / img.height) * d.z, fx = d.w - img.width * s, fy = d.h - img.height * s;
+      return this.peSet({ px: fx > 1 ? cl(d.px + dx / fx, 0, 1) : d.px, py: fy > 1 ? cl(d.py + dy / fy, 0, 1) : d.py });
+    }
+    let rect;
+    if (e.mode === 'crop' && d.handle) {
+      const k = r.w / this.peH(r.w), wm = this.peWmax();
+      const w = Math.max(r.w + dx / d.w, (this.peH(r.w) + dy / d.h) * k);
+      rect = { x: r.x, y: r.y, w: cl(w, wm / 8, Math.min(wm, 1 - r.x, (1 - r.y) * k)) };
+    } else if (e.mode === 'crop') rect = { ...r, x: r.x + dx / d.w, y: r.y + dy / d.h };
+    else rect = { ...r, x: r.x - dx / d.w * r.w, y: r.y - dy / d.h * this.peH(r.w) };
+    this.peSet({ rect: this.peClamp(rect) });
+  }
+  peOutSize(e) {
+    const img = this.peImg, iw = img.width, ih = img.height, sp = e.spec, A = sp.w / sp.h;
+    const L = Math.min(Math.max(sp.w, sp.h), 2600);
+    let W = A >= 1 ? L : L * A;
+    if (e.mode === 'scale') W = Math.min(W, iw, ih * A);
+    else if (e.mode === 'fit') { const s = Math.min(W / iw, (W / A) / ih) * e.z; if (s > 1) W = W / s; }
+    else W = Math.min(W, e.rect.w * iw);
+    W = Math.max(1, Math.round(W));
+    return [W, Math.max(1, Math.round(W / A))];
+  }
+  async peSave() {
+    const e = this.state.pe, t = this.peT;
+    if (!e || e.saving || !this.peImg || !t || this.state.pfBusy) return;
+    const [W, H] = this.peOutSize(e);
+    const c = document.createElement('canvas'); c.width = W; c.height = H; this.peRender(c.getContext('2d'), W, H, e);
+    const gk = Math.min(1, 1100 / Math.max(W, H)), g = document.createElement('canvas');
+    g.width = Math.max(1, Math.round(W * gk)); g.height = Math.max(1, Math.round(H * gk));
+    const gc = g.getContext('2d'); gc.imageSmoothingQuality = 'high'; gc.drawImage(c, 0, 0, g.width, g.height);
+    const enc = (cv, q) => new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('Could not encode the photo.')), 'image/jpeg', q));
+    const edit = { mode: e.mode, rect: e.rect, z: e.z, px: e.px, py: e.py, bg: e.bg, tone: e.tone, r: e.spec.r };
+    this.setState(s => ({ pe: { ...s.pe, saving: true } }));
+    const ok = await this.pfRun('Photo updated.', async () => {
+      this.setState({ pfBusy: 'Saving edited photo…' });
+      const [vb, gb] = await Promise.all([enc(c, 0.9), enc(g, 0.88)]);
+      const view = await this.pfPut(vb, 'view', 'jpg'), grid = await this.pfPut(gb, 'grid', 'jpg');
+      if (t.kind === 'cover') {
+        const w = this.state.pfWorks.find(x => x.id === t.w.id) || t.w, has = 'cover_source_url' in w, src = w.cover_source_url || w.cover_url;
+        const patch = { cover_url: view, cover_grid_url: grid };
+        if (has) { patch.cover_source_url = src; patch.cover_edit = edit; }
+        const { error } = await this.sb.from('portfolio_works').update(patch).eq('id', w.id);
+        if (error) { this.pfDropFiles([view, grid]); throw new Error(error.message); }
+        this.pfDropFiles([w.cover_url, w.cover_grid_url].filter(u => u && (!has || u !== src)));
+        this.pfLocal(w.id, patch);
+        if (!has) this.pfWarn.push('The original was replaced, so a later edit starts from this version.');
+      } else {
+        const m = this.state.pfMedia.find(x => x.id === t.m.id) || t.m, has = 'url_source' in m, src = m.url_source || m.url;
+        const patch = { url: view, url_grid: grid, width: W, height: H };
+        if (has) { patch.url_source = src; patch.edit = edit; }
+        const { error } = await this.sb.from('portfolio_media').update(patch).eq('id', m.id);
+        if (error) { this.pfDropFiles([view, grid]); throw new Error(error.message); }
+        this.pfDropFiles([m.url, m.url_grid].filter(u => u && (!has || u !== src)));
+        this.setState(s => ({ pfMedia: s.pfMedia.map(x => x.id === m.id ? { ...x, ...patch } : x) }));
+        if (!has) this.pfWarn.push('The original was replaced, so a later edit starts from this version.');
+      }
+    });
+    this.setState(s => ({ pe: s.pe ? { ...s.pe, saving: false } : s.pe }));
+    if (ok) this.peClose();
+  }
+  peVM() {
+    const e = this.state.pe;
+    if (!e || !e.open) return { peOpen: false };
+    const img = this.peImg, sp = e.spec, A = sp.w / sp.h, ready = !e.loading && !!img && !!e.rect;
+    const HINT = {
+      crop: 'Drag the frame to choose what stays; pull the white corner to tighten it. The frame keeps this spot’s shape.',
+      scale: 'Stretches the whole photo into the spot. Nothing is cut, but people and circles distort if the shapes differ a lot.',
+      fill: 'Fills the spot edge to edge with the smallest crop. Drag to choose which part shows.',
+      zoom: 'Fills the spot and zooms in. Drag to move, slide to zoom.',
+      fit: 'Shows the whole photo inside the spot and fills the space around it. Drag to place it, slide to shrink it.',
+    };
+    const chip = (on) => ({ bg: on ? '#0E8E72' : '#fff', color: on ? '#fff' : 'var(--green-deep)', border: on ? '#0E8E72' : 'var(--line)' });
+    const stageA = ready && e.mode === 'crop' ? img.width / img.height : A;
+    const out = ready ? this.peOutSize(e) : null;
+    const isFit = e.mode === 'fit';
+    return {
+      peOpen: true, peLoading: !ready, peReady: ready,
+      peSpec: 'this spot · ' + sp.label,
+      peModesVM: [['crop', 'Crop'], ['scale', 'Scale'], ['fill', 'Fill'], ['zoom', 'Zoom fill'], ['fit', 'Zoom out fill']]
+        .map(([k, l]) => ({ label: l, pick: () => this.peMode(k), ...chip(e.mode === k) })),
+      peHint: HINT[e.mode] || '',
+      peStageRatio: stageA.toFixed(4), peStageMax: 'calc(60vh * ' + stageA.toFixed(4) + ')',
+      peCursor: e.mode === 'scale' ? 'default' : 'move',
+      peCanvasRef: el => {
+        if (el === this.peCanvas) return;
+        if (this.peRO) { this.peRO.disconnect(); this.peRO = null; }
+        this.peCanvas = el;
+        if (el) { if (window.ResizeObserver) { this.peRO = new ResizeObserver(() => this.peDraw()); this.peRO.observe(el); } requestAnimationFrame(() => this.peDraw()); }
+      },
+      peDown: ev => this.peDownH(ev), peMove: ev => this.peMoveH(ev), peUp: () => { this.peDrag = null; },
+      peHasZoom: ready && (e.mode === 'zoom' || e.mode === 'crop' || isFit),
+      peZoomLabel: isFit ? 'Size' : 'Zoom', peZoomMin: isFit ? 0.3 : 1, peZoomMax: isFit ? 1 : 6,
+      peZoomVal: ready ? (isFit ? e.z : Math.min(6, this.peWmax() / e.rect.w)) : 1,
+      peOnZoom: ev => this.peZoom(+ev.target.value),
+      peHasBg: ready && isFit,
+      peBgVM: [['blur', 'blurred photo'], ['white', 'white'], ['black', 'black']].map(([k, l]) => ({ label: l, pick: () => this.peSet({ bg: k }), ...chip(e.bg === k) })),
+      peToneVM: PE_TONES.map(([k, l]) => ({ label: l, pick: () => this.peSet({ tone: k }), ...chip((e.tone || 'none') === k) })),
+      peOut: out ? 'saves at ' + out[0] + ' × ' + out[1] + ' px' : '',
+      peLow: !!out && Math.max(out[0], out[1]) < Math.max(sp.w, sp.h) * 0.6,
+      peBackdrop: ev => { if (ev.target === ev.currentTarget) this.peClose(); },
+      peClose: () => this.peClose(), peReset: () => this.peMode(e.mode, true), peSave: () => this.peSave(),
+      peSaveLabel: e.saving ? 'Saving…' : 'Save', peSaveDisabled: !!e.saving || !ready,
+    };
+  }
+
   portfolioVM() {
     const s = this.state;
-    if (s.view !== 'portfolio') return { isPortfolio: false, pfWorksVM: [], pfBtsVM: [], pfCatOptsVM: [] };
+    if (s.view !== 'portfolio') return { isPortfolio: false, peOpen: false, pfWorksVM: [], pfBtsVM: [], pfCatOptsVM: [] };
     const byOrder = (a, b) => (a.sort_order || 0) - (b.sort_order || 0) || String(a.created_at || '').localeCompare(String(b.created_at || ''));
     const works = s.pfWorks.slice().sort(byOrder);
     const mediaOf = (sec, wid) => s.pfMedia.filter(m => m.section === sec && (m.work_id || null) === (wid || null)).sort(byOrder);
@@ -9130,6 +9470,11 @@ class Component extends DCLogic {
       thumb: thumbOf(m), hasThumb: !!thumbOf(m), noThumb: !thumbOf(m), isVideo: m.kind === 'video',
       caption: m.caption || '',
       left: () => this.pfMove(list, m, -1, 'portfolio_media'), right: () => this.pfMove(list, m, 1, 'portfolio_media'),
+      no: String(list.indexOf(m) + 1).padStart(2, '0'), pos: list.indexOf(m) + 1,
+      posOpts: list.map((_, k) => ({ value: k + 1, label: String(k + 1).padStart(2, '0') })),
+      onPos: e => this.pfMoveTo(list, m, +e.target.value, 'portfolio_media'),
+      canEdit: m.kind !== 'video' && !!m.url, editBorder: warn ? 'var(--green)' : 'var(--line)',
+      edit: () => this.pfEditOpen({ kind: 'media', m, spec: sp }),
       remove: () => this.pfDeleteMedia(m),
       onCaption: e => { const v = e.target.value; this.setState(st => ({ pfMedia: st.pfMedia.map(x => x.id === m.id ? { ...x, caption: v } : x) })); },
       saveCaption: e => this.pfSaveCaption(m.id, e.target.value),
@@ -9166,7 +9511,9 @@ class Component extends DCLogic {
           coverWarn: cf.crop ? 'This cover is ' + cf.actual + '. It will be cropped to ' + csp.r + '.' : '', hasCoverWarn: !!cf.crop,
           coverLoad: e => { const el = e.target, d = [el.naturalWidth, el.naturalHeight]; this.pfDims = this.pfDims || {}; const o = this.pfDims[w.id];
             if (d[0] && (!o || o[0] !== d[0] || o[1] !== d[1])) { this.pfDims[w.id] = d; this.forceUpdate(); } },
-          no: String(i + 1).padStart(2, '0'), title: w.title || '', titleShown: w.title || 'untitled',
+          no: String(i + 1).padStart(2, '0'), pos: i + 1,
+          posOpts: works.map((_, k) => ({ value: k + 1, label: String(k + 1).padStart(2, '0') })),
+          onPos: e => this.pfMoveTo(works, w, +e.target.value, 'portfolio_works'), title: w.title || '', titleShown: w.title || 'untitled',
           category: w.category || PF_CATS[0], story: w.story || '',
           thumb, hasThumb: !!thumb, noThumb: !thumb,
           pubLabel: w.published ? 'Live' : 'Hidden', pubBg: w.published ? '#E4F4EF' : '#F1F3F2', pubColor: w.published ? 'var(--green-deep)' : '#67746F',
@@ -9180,7 +9527,7 @@ class Component extends DCLogic {
           onStory: e => this.pfLocal(w.id, { story: e.target.value }),
           saveStory: e => this.pfPatch(w.id, { story: e.target.value.trim() || null }),
           coverRef: ref('cover-' + w.id), coverPick: pick('cover-' + w.id), coverOnFile: files(f => this.pfWorkFile(w, 'cover', f[0], csp)),
-          coverBtn: w.cover_url ? 'Replace cover' : 'Upload cover',
+          coverBtn: w.cover_url ? 'Replace cover' : 'Upload cover', coverEdit: () => this.pfEditOpen({ kind: 'cover', w, spec: csp }),
           filmRef: ref('film-' + w.id), filmPick: pick('film-' + w.id), filmOnFile: files(f => this.pfWorkFile(w, 'film', f[0])),
           filmBtn: w.film_url ? 'Replace film' : 'Upload film', hasFilm: !!w.film_url, noFilm: !w.film_url,
           filmThumb: w.film_poster_url || '', hasFilmThumb: !!w.film_poster_url, removeFilm: () => this.pfClearFilm(w),
@@ -9192,6 +9539,7 @@ class Component extends DCLogic {
         };
       }),
       pfBtsRef: ref('bts'), pfBtsPick: pick('bts'), pfBtsOnFiles: files(f => this.pfUploadMedia('bts', null, f)),
+      ...this.peVM(),
       pfBtsVM: bts.map(m => tile(m, bts, PF_BTS, 1600)), pfBtsEmpty: !bts.length, pfBtsCount: bts.length ? String(bts.length) : 'none yet',
     };
   }
