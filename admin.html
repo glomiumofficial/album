@@ -5757,7 +5757,7 @@ const DIVISION_NOTE = {
   digital: 'Social handling, post sets and always-on content.',
   press: 'Press conferences, launches and corporate coverage.',
 };
-const MEDIA_SECTIONS = [['logo', 'Logo suite'], ['photo', 'Photography'], ['product', 'Product shots'], ['social', 'Social posts'], ['banner', 'Posters & banners'], ['film', 'Films & reels'], ['motion', 'Motion graphics'], ['print', 'Print & packaging']];
+const MEDIA_SECTIONS = [['logo', 'Logo suite'], ['photo', 'Photography'], ['product', 'Product shots'], ['social', 'Social posts'], ['banner', 'Posters & banners'], ['film', 'Films & reels'], ['motion', 'Motion graphics'], ['print', 'Print & packaging'], ['guideline', 'Brand profile (PDF)']];
 // A digital client delivers a different set — hoardings and packaging are a
 // branding job, not an always-on social account. The section keys are fixed by
 // a database constraint, so these reuse existing keys under the names digital
@@ -6789,9 +6789,45 @@ class Component extends DCLogic {
 
   // Files go up one at a time: a percentage can only honestly describe one
   // transfer, and a dropped connection then costs one file rather than five.
+  // A PDF is turned into one JPEG per page here, in the browser, so the client
+  // page gets fast, sharp images instead of a heavy PDF viewer.
+  async pdfToPages(file, section) {
+    this.setProjMedia(section, { status: 'reading ' + file.name + '…', progress: 0 });
+    if (!this._pdfjs) {
+      const lib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
+      lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+      this._pdfjs = lib;
+    }
+    const doc = await this._pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+    const base = file.name.replace(/\.pdf$/i, ''), pages = [];
+    try {
+      for (let n = 1; n <= doc.numPages; n++) {
+        this.setProjMedia(section, { status: 'rendering page ' + n + ' of ' + doc.numPages + '…', progress: Math.round(n / doc.numPages * 100) });
+        const pg = await doc.getPage(n), v1 = pg.getViewport({ scale: 1 });
+        const scale = Math.min(6, 3000 / Math.max(v1.width, v1.height)), vp = pg.getViewport({ scale });
+        const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+        const ctx = c.getContext('2d'); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, c.width, c.height);
+        await pg.render({ canvasContext: ctx, viewport: vp }).promise;
+        const blob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('Could not render page ' + n)), 'image/jpeg', 0.92));
+        pages.push(new File([blob], base + ' — page ' + String(n).padStart(2, '0') + '.jpg', { type: 'image/jpeg' }));
+        c.width = c.height = 0; pg.cleanup();
+      }
+    } finally { doc.destroy(); }
+    return pages;
+  }
+
   async uploadProjectMediaBatch(section, files, postNo) {
     if (this.albumLocked() || !files.length) return;
     this._dimsMissing = false;
+    files = Array.from(files);
+    if (files.some(f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf')) {
+      if (section !== 'guideline') { this.setProjMedia(section, { status: 'PDFs go in Brand profile.', progress: null }); return; }
+      try {
+        const out = [];
+        for (const f of files) out.push(...((/\.pdf$/i.test(f.name) || f.type === 'application/pdf') ? await this.pdfToPages(f, section) : [f]));
+        files = out;
+      } catch (e) { this.setProjMedia(section, { status: 'Could not read the PDF: ' + (e.message || e), progress: null }); return; }
+    }
     for (let i = 0; i < files.length; i++) {
       const prefix = (postNo ? 'post ' + postNo + ' · ' : '') + (files.length > 1 ? (i + 1) + ' of ' + files.length + ' · ' : '');
       const ok = await this.uploadProjectMedia(section, files[i], prefix, postNo);
@@ -16812,12 +16848,13 @@ class Component extends DCLogic {
           uploading: pct != null,
           pctLabel: pct == null ? '' : pct + '%',
           barWidth: (pct == null ? 0 : pct) + '%',
-          accept: isMotion ? 'video/mp4' : isFilm ? 'video/*' : 'image/*',
+          accept: isMotion ? 'video/mp4' : isFilm ? 'video/*' : key === 'guideline' ? 'application/pdf,.pdf,image/*' : 'image/*',
           isEmpty: items.length === 0,
           emptyHint: isLogo ? 'Primary mark, wordmark, lockups. Flip any tile to a dark ground to show the reversed version.'
             : isFilm ? 'Reels and campaign films.'
             : isMotion ? 'Looping motion pieces — .mp4 only, shown in an Instagram post box (4:5). A light copy is made for silent looping; the file you upload is what the lightbox plays and what downloads.'
             : key === 'social' ? 'Each post is its own swipeable carousel on the project page. Add photos into a post, or start a new one.'
+            : key === 'guideline' ? 'Drop the exported PDF. Every page becomes a sharp image and the project page shows it as a page-by-page book in the brand part. Re-uploading adds pages — delete the old ones first.'
             : key === 'photo' ? 'Campaign and editorial stills. A landscape first frame opens the section full width; the rest fall into two columns, never cropped.'
             : key === 'product' ? 'Product shots, shown whole on a white ground in a square grid — nothing is cropped.'
             : key === 'banner' ? 'Posters, hoardings and wide artwork, shown full-bleed.'

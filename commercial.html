@@ -201,6 +201,35 @@
       </div>
     </sc-if>
 
+    <sc-if value="{{ hasProfile }}" hint-placeholder-val="{{ false }}">
+      <div id="sec-profile" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+        <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nProfile }}</span>
+        <h2 style="margin:0; flex:1 1 200px; font-size:clamp(24px,3.6vw,40px); font-weight:200; letter-spacing:-.005em; color:var(--ink)">Brand profile</h2>
+        <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#5F6C68">{{ profileCountLabel }}</span>
+      </div>
+      <div style="max-width:1560px; margin:0 auto; padding:clamp(22px,3.6vh,38px) clamp(18px,4vw,48px) 0; display:flex; flex-direction:column; gap:clamp(14px,2vh,22px)">
+        <div tabIndex="0" onKeyDown="{{ profKey }}" onTouchStart="{{ profTouchStart }}" onTouchEnd="{{ profTouchEnd }}" aria-label="brand profile, use arrow keys to turn pages" style="position:relative; background:#F3F6F5; display:grid; place-items:center; padding:clamp(12px,2.4vw,36px); outline:none" style-focus="box-shadow:inset 0 0 0 1px #10AF8B">
+          <img ref="{{ setProfRef }}" onClick="{{ profOpen }}" alt="{{ profAlt }}" decoding="async" style="display:block; max-width:100%; max-height:min(78vh, 1100px); width:auto; height:auto; box-shadow:0 30px 70px -40px rgba(14,18,17,.4); cursor:zoom-in; background:#FFFFFF">
+        </div>
+        <div style="display:flex; align-items:center; gap:16px">
+          <button onClick="{{ profPrev }}" disabled="{{ profPrevOff }}" aria-label="previous page" style="width:44px; height:44px; border-radius:50%; border:1px solid #0E8E72; background:#FFFFFF; color:#0E8E72; font-size:16px; cursor:pointer; opacity:{{ profPrevOp }}; transition:background .3s ease, color .3s ease" style-hover="background:#0E8E72; color:#FFFFFF">&#8592;</button>
+          <span style="font-size:11px; letter-spacing:.2em; color:var(--ink); font-variant-numeric:tabular-nums; min-width:64px; text-align:center">{{ profCounter }}</span>
+          <button onClick="{{ profNext }}" disabled="{{ profNextOff }}" aria-label="next page" style="width:44px; height:44px; border-radius:50%; border:1px solid #0E8E72; background:#FFFFFF; color:#0E8E72; font-size:16px; cursor:pointer; opacity:{{ profNextOp }}; transition:background .3s ease, color .3s ease" style-hover="background:#0E8E72; color:#FFFFFF">&#8594;</button>
+          <div style="flex:1; height:1px; background:var(--line); position:relative; overflow:hidden">
+            <span style="position:absolute; left:0; top:0; bottom:0; width:{{ profProgress }}; background:#10AF8B; transition:width .5s cubic-bezier(.2,.8,.2,1)"></span>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px">
+          <sc-for list="{{ profThumbs }}" as="pt" hint-placeholder-count="4">
+            <button onClick="{{ pt.pick }}" aria-label="page {{ pt.n }}" style="flex:0 0 auto; border:0; padding:0; background:none; cursor:pointer; display:flex; flex-direction:column; gap:6px; align-items:flex-start; opacity:{{ pt.op }}; transition:opacity .3s ease" style-hover="opacity:1">
+              <img ref="{{ pt.setRef }}" alt="" loading="lazy" decoding="async" style="height:clamp(64px,8vw,96px); width:auto; display:block; background:#FFFFFF; box-shadow:0 0 0 1px {{ pt.ring }}">
+              <span style="font-size:9px; letter-spacing:.2em; color:#5F6C68; font-variant-numeric:tabular-nums">{{ pt.n }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ hasLogos }}" hint-placeholder-val="{{ false }}">
       <div id="sec-identity" data-reveal="" style="scroll-margin-top:60px; max-width:1560px; margin:0 auto; padding:clamp(46px,8vh,96px) clamp(18px,4vw,48px) clamp(16px,2.6vh,26px); display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
         <span style="font-size:11px; letter-spacing:.24em; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ nIdentity }}</span>
@@ -817,11 +846,11 @@ class Component extends DCLogic {
       urls.push(pr.cover_url_view || pr.cover_url);
       // The loader holds for what the first screen of the opening part shows:
       // the first frames of each of its sections (posters for moving work).
-      const still = m => (m.section === 'film' || m.section === 'motion') ? m.thumb_url : (m.url_grid || m.url_view || m.url);
-      const openWork = location.hash === '#work' || !s.media.some(m => m.section === 'logo');
+      const still = m => (m.section === 'film' || m.section === 'motion') ? m.thumb_url : m.section === 'guideline' ? (m.url_view || m.url) : (m.url_grid || m.url_view || m.url);
+      const openWork = location.hash === '#work' || !s.media.some(m => m.section === 'logo' || m.section === 'guideline');
       const first = openWork
         ? [['photo', 3], ['product', 4], ['film', 2], ['motion', 2], ['banner', 1], ['social', 3], ['print', 2]]
-        : [['logo', 6]];
+        : [['guideline', 2], ['logo', 6]];
       first.forEach(([sec, n]) => s.media.filter(m => m.section === sec).slice(0, n).forEach(m => urls.push(still(m))));
       // Everything else warms quietly after the reveal, the other part first,
       // so the brand ⇄ work switch lands on pictures, not blank frames.
@@ -1117,7 +1146,7 @@ class Component extends DCLogic {
   // One flat list across every section, so the arrows walk the whole project.
   // Page order, so the arrows walk the project the way it reads.
   viewable() {
-    return ['logo', 'photo', 'product', 'film', 'motion', 'banner', 'print', 'guideline']
+    return ['guideline', 'logo', 'photo', 'product', 'film', 'motion', 'banner', 'print']
       .flatMap(sec => this.state.media.filter(m => m.url && m.section === sec));
   }
 
@@ -1289,7 +1318,8 @@ class Component extends DCLogic {
     const logosVM = this.mediaVM('logo');
     const socialVM = this.mediaVM('social');
     const bannersVM = this.mediaVM('banner');
-    const printVM = this.mediaVM('print').concat(this.mediaVM('guideline'));
+    const printVM = this.mediaVM('print');
+    const profile = this.state.media.filter(m => m.section === 'guideline' && m.url);
     const filmsVM = this.mediaVM('film');
     const filmFeatureVM = filmsVM.slice(0, 1);
     const filmsRestVM = filmsVM.slice(1);
@@ -1300,6 +1330,7 @@ class Component extends DCLogic {
     const photoVM = this.mediaVM('photo'), productVM = this.mediaVM('product');
     const brandSecs = [
       ['brief', !!p.brief, 'Brief', '#sec-brief'],
+      ['profile', profile.length > 0, 'Profile', '#sec-profile'],
       ['identity', logosVM.length > 0, 'Identity', '#sec-identity'],
       ['colour', paletteVM.length > 0, 'Colour', '#sec-colour'],
       ['type', fontsVM.length > 0, 'Type', '#sec-type'],
@@ -1388,7 +1419,38 @@ class Component extends DCLogic {
       loaderRef: this.loaderRef, loadNumRef: this.loadNumRef, loadBarRef: this.loadBarRef, loadLabelRef: this.loadLabelRef, loadMarkRef: this.loadMarkRef,
       nBrief: num.brief, nIdentity: num.identity, nColour: num.colour, nType: num.type,
       nFilms: num.films, nBanners: num.banners, nSocial: num.social, nPrint: num.print,
-      nMotion: num.motion,
+      nMotion: num.motion, nProfile: num.profile,
+      ...(() => {
+        const n = profile.length, i = Math.min(this.state.profIdx || 0, Math.max(0, n - 1)), cur = profile[i];
+        const big = m => m && (m.url_view || m.url);
+        const go = k => { const j = Math.max(0, Math.min(n - 1, k)); if (j !== (this.state.profIdx || 0)) this.setState({ profIdx: j }); };
+        if (cur && n > i + 1) { const w = new Image(); w.decoding = 'async'; w.src = big(profile[i + 1]); }
+        return {
+          hasProfile: n > 0, profileCountLabel: count(n, 'page', 'pages'),
+          profCounter: String(i + 1).padStart(2, '0') + ' / ' + String(n).padStart(2, '0'),
+          profProgress: (n ? (i + 1) / n * 100 : 0).toFixed(2) + '%',
+          profAlt: cur ? (cur.name || 'brand profile page ' + (i + 1)) : '',
+          profPrev: () => go(i - 1), profNext: () => go(i + 1),
+          profPrevOff: i <= 0, profNextOff: i >= n - 1, profPrevOp: i <= 0 ? 0.35 : 1, profNextOp: i >= n - 1 ? 0.35 : 1,
+          profKey: e => { if (e.key === 'ArrowRight') { e.preventDefault(); go(i + 1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); go(i - 1); } },
+          profTouchStart: e => { this._ptx = e.touches[0].clientX; },
+          profTouchEnd: e => { const dx = e.changedTouches[0].clientX - (this._ptx || 0); if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); },
+          profOpen: () => cur && this.openLightbox(cur.id),
+          setProfRef: el => {
+            if (!el || !cur) return;
+            const u = big(cur);
+            if (el.getAttribute('src') === u) return;
+            if (cur.width > 0 && cur.height > 0) el.style.aspectRatio = cur.width + ' / ' + cur.height;
+            if (el.animate && !this.reduced && el.getAttribute('src')) el.animate([{ opacity: 0.25 }, { opacity: 1 }], { duration: 420, easing: 'ease-out' });
+            el.src = u;
+          },
+          profThumbs: profile.map((m, k) => ({
+            n: String(k + 1).padStart(2, '0'), op: k === i ? 1 : 0.55, ring: k === i ? '#10AF8B' : 'var(--line)',
+            pick: () => go(k),
+            setRef: el => { const u = m.url_grid || m.url_view || m.url; if (el && u && el.getAttribute('src') !== u) el.src = u; },
+          })),
+        };
+      })(),
       setCoverRef: el => {
         const u = p.cover_url_view || p.cover_url;
         if (el) this.coverEl = el;
