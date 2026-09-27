@@ -85,35 +85,63 @@ a:hover { color: #10AF8B; }
     </div>
   </section>
 
-  <section id="works" ref="{{ worksRef }}" data-screen-label="02 works" style="position: relative; height: {{ worksHeight }};">
-    <div style="position: sticky; top: 0; height: 100vh; overflow: hidden; perspective: 1600px;">
-      <div ref="{{ sceneRef }}" style="position: absolute; inset: 0; transform-style: preserve-3d;">
-        <div ref="{{ worksTitleRef }}" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; transform: translateZ(0);">
-          <h2 style="margin: 0; font-weight: 200; font-size: clamp(48px, 12vw, 230px); line-height: 1; letter-spacing: -0.035em; white-space: nowrap; color: #1B1D1E;">selected <span style="font-style: italic; color: #10AF8B;">works</span></h2>
+  <section id="works" ref="{{ worksRef }}" data-screen-label="02 works" style="position: relative; padding: clamp(140px, 16vw, 240px) clamp(20px, 4vw, 56px) clamp(120px, 14vw, 200px);">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: last baseline; gap: 36px 64px;">
+      <div data-reveal="" style="display: flex; flex-direction: column; gap: 22px; min-width: 0;">
+        <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">02 — selected works</span>
+        <h2 style="margin: 0; font-weight: 200; font-size: clamp(44px, 10vw, 190px); line-height: 0.92; letter-spacing: -0.04em; white-space: nowrap; color: #1B1D1E;">selected <span style="font-style: italic; color: #10AF8B;">works</span></h2>
+      </div>
+      <sc-if value="{{ hasCats }}" hint-placeholder-val="{{ false }}">
+        <div data-reveal="" data-k="1" role="group" aria-label="filter works" style="flex: 0 1 400px; display: flex; flex-wrap: wrap; column-gap: 0.34em; font-size: 16px; line-height: 1.8;">
+          <sc-for list="{{ cats }}" as="c" hint-placeholder-count="4">
+            <span style="display: inline-flex; align-items: baseline;"><button onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="border: 0; background: none; padding: 0; font: inherit; color: {{ c.color }}; cursor: pointer; text-decoration-line: {{ c.line }}; text-decoration-color: #10AF8B; text-decoration-thickness: 1px; text-underline-offset: 6px; transition: color 0.4s;" style-hover="color: #0E8E72;">{{ c.label }}</button><span aria-hidden="true" style="color: #8A9390;">{{ c.sep }}</span></span>
+          </sc-for>
         </div>
-        <sc-for list="{{ works }}" as="w" hint-placeholder-count="3">
-          <article data-card="" tabIndex="0" role="button" aria-label="open {{ w.title }}" onKeyDown="{{ w.key }}" onFocus="{{ cardFocus }}" style-focus="outline: 1px solid #10AF8B; outline-offset: 8px;" onClick="{{ w.open }}" onMouseEnter="{{ w.enter }}" onMouseLeave="{{ hideCursor }}" style="position: absolute; left: 50%; top: 50%; width: {{ w.width }}; cursor: none; opacity: 0;">
-            <div style="position: relative; width: 100%; aspect-ratio: {{ w.ratio }}; overflow: hidden; background: #EEF3F1; box-shadow: 0 28px 60px -34px rgba(14,18,17,0.34);">
-              <div data-par="" style="position: absolute; top: 0; bottom: 0; left: -4%; right: -4%;">
-                <sc-if value="{{ w.hasCover }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ w.cover }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
-                <sc-if value="{{ w.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="work-{{ w.id }}" shape="rect" placeholder="cover still"></image-slot></sc-if>
+      </sc-if>
+    </div>
+    <div ref="{{ gridRef }}" style="display: flex; flex-direction: column; gap: clamp(72px, 9vw, 150px); margin-top: clamp(64px, 8vw, 120px);">
+      <sc-for list="{{ rows }}" as="row" hint-placeholder-count="3">
+        <div style="display: flex; align-items: flex-start; gap: clamp(14px, 1.8vw, 28px);">
+          <sc-for list="{{ row.items }}" as="it" hint-placeholder-count="2">
+            <article data-card="" data-reveal="" data-k="{{ it.k }}" tabIndex="0" role="button" aria-label="open {{ it.title }}" onClick="{{ it.open }}" onKeyDown="{{ it.key }}" onMouseEnter="{{ it.enter }}" onMouseLeave="{{ it.leave }}" style="flex: {{ it.grow }} 1 0px; min-width: 0; cursor: pointer; outline: none;" style-focus="outline: 1px solid #10AF8B; outline-offset: 10px;">
+              <div style="position: relative; width: {{ it.fw }}; aspect-ratio: {{ it.ratio }}; max-height: {{ it.maxH }}; margin: {{ it.bleed }}; overflow: hidden; background: #EEF3F1;">
+                <div data-settle="" style="position: absolute; inset: 0;">
+                  <div data-zoom="" style="position: absolute; inset: 0; transition: transform 1.6s cubic-bezier(.2,.8,.2,1);">
+                    <sc-if value="{{ it.hasCover }}" hint-placeholder-val="{{ false }}"><img ref="{{ coverRef }}" data-src="{{ it.cover }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.9s;"></sc-if>
+                    <sc-if value="{{ it.hasPreview }}" hint-placeholder-val="{{ false }}"><video ref="{{ previewRef }}" data-film="{{ it.preview }}" preload="none" aria-hidden="true" tabIndex="-1" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.9s;"></video></sc-if>
+                    <sc-if value="{{ it.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="work-{{ it.id }}" shape="rect" placeholder="cover still"></image-slot></sc-if>
+                  </div>
+                </div>
+                <div data-catch="" style="position: absolute; inset: 0; z-index: 2;"></div>
               </div>
-              <div data-catch="" style="position: absolute; inset: 0; z-index: 2;"></div>
-            </div>
-            <div data-cap="" style="position: absolute; left: 0; right: 0; top: calc(100% + 14px); display: flex; justify-content: space-between; align-items: baseline; gap: 16px; opacity: 0;">
-              <div style="display: flex; gap: 14px; align-items: baseline;">
-                <span style="font-size: 10px; letter-spacing: 2.6px; color: #10AF8B;">{{ w.no }}</span>
-                <span style="font-size: 19px; color: #1B1D1E;">{{ w.title }}</span>
-              </div>
-              <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">{{ w.kind }}</span>
-            </div>
-          </article>
-        </sc-for>
-      </div>
-      <div style="position: absolute; top: 84px; left: clamp(20px, 4vw, 56px); right: clamp(20px, 4vw, 56px); display: flex; justify-content: space-between; gap: 24px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390; pointer-events: none;">
-        <span>02 — selected works</span>
-        <span ref="{{ counterRef }}" style="font-variant-numeric: tabular-nums;">01 / {{ workCount }}</span>
-      </div>
+              <sc-if value="{{ it.lead }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: last baseline; gap: 20px 56px; padding-top: 26px;">
+                  <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; gap: 14px; align-items: baseline; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase;">
+                      <span style="color: #10AF8B; font-variant-numeric: tabular-nums;">{{ it.no }}</span>
+                      <span style="color: #8A9390;">{{ it.kind }}</span>
+                    </div>
+                    <span data-title="" style="font-size: clamp(30px, 3.6vw, 60px); font-weight: 200; line-height: 1.02; letter-spacing: -0.025em; color: #1B1D1E; text-wrap: balance; transition: color 0.5s;">{{ it.title }}</span>
+                  </div>
+                  <sc-if value="{{ it.hasStory }}" hint-placeholder-val="{{ false }}">
+                    <p style="flex: 0 1 380px; margin: 0; font-size: 16px; line-height: 1.8; color: #4A524F; text-wrap: pretty;">{{ it.story }}</p>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{ it.plain }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 20px; padding-top: 16px;">
+                  <div style="display: flex; gap: 14px; align-items: baseline; min-width: 0;">
+                    <span style="font-size: 10px; letter-spacing: 2.6px; color: #10AF8B; font-variant-numeric: tabular-nums;">{{ it.no }}</span>
+                    <span data-title="" style="font-size: 19px; line-height: 1.35; color: #1B1D1E; transition: color 0.5s;">{{ it.title }}</span>
+                  </div>
+                  <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">{{ it.kind }}</span>
+                </div>
+              </sc-if>
+            </article>
+          </sc-for>
+          <sc-if value="{{ row.spacer }}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="flex: {{ row.spacer }} 1 0px;"></div></sc-if>
+        </div>
+      </sc-for>
     </div>
   </section>
 
@@ -271,16 +299,16 @@ a:hover { color: #10AF8B; }
     </div>
   </sc-if>
 
-  <div ref="{{ cursorRef }}" style="position: fixed; left: 0; top: 0; z-index: 80; width: 92px; height: 92px; border-radius: 50%; background: #10AF8B; color: #FFFFFF; display: grid; place-items: center; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: none; transform: translate3d(-200px, -200px, 0) scale(0); will-change: transform;">open</div>
 </div>
 </x-dc>
 </template>
 <script>(function(){var t=document.getElementById('dc-src');t.parentNode.insertBefore(t.content.cloneNode(true),t);t.remove();})();</script>
-<script type="text/x-dc" data-dc-script data-props="{&quot;workCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:3,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;content&quot;},&quot;hud&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;look&quot;},&quot;preload&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;smooth&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;drift&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;workCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8,&quot;min&quot;:3,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;content&quot;},&quot;hud&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;look&quot;},&quot;preload&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;smooth&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;drift&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;},&quot;hoverFilm&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;motion&quot;}}">
 class Component extends DCLogic {
   state = { active: null };
   kinds = ['wedding film', 'brand film', 'commercial', 'music video', 'event', 'wedding film', 'product film', 'brand film'];
-  ratios = [[4, 5], [16, 10], [3, 4], [4, 5], [16, 10], [3, 4], [4, 5], [16, 10]];
+  // Cover shapes by position: film frame, portrait, still. Keep in step with PF_COVER in admin.
+  shapes = [[16, 9], [4, 5], [3, 2], [3, 2], [4, 5]];
   chapters = ['01 reel', '02 works', '03 behind', '04 process'];
   spots = [
     [-0.27, -0.14, 'clamp(150px, 22vw, 420px)', '4 / 5'], [0.26, 0.12, 'clamp(170px, 26vw, 480px)', '3 / 2'],
@@ -292,18 +320,19 @@ class Component extends DCLogic {
   constructor(p) {
     super(p);
     ['rootRef', 'mistRef', 'headerRef', 'logoGreenRef', 'logoWhiteRef', 'heroRef', 'filmBaseRef', 'filmUiRef', 'knockRef', 'heroOverlayRef', 'cueRef',
-     'worksRef', 'sceneRef', 'worksTitleRef', 'counterRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
-     'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef', 'cursorRef',
+     'worksRef', 'gridRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
+     'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef',
      'loaderRef', 'loadNumRef', 'loadBarRef', 'loadLabelRef', 'loadMarkRef', 'grainRef', 'frameRef'].forEach(k => { this[k] = React.createRef(); });
-    this.S = { mx: 0, my: 0, tmx: 0, tmy: 0, cx: -200, cy: -200, tx: -200, ty: -200, ring: 0, tring: 0, vel: 0 };
+    this.S = { mx: 0, my: 0, tmx: 0, tmy: 0 };
     this.Y = { cur: 0, target: 0, applied: 0, running: false, k: 0.1 };
     this.frame = 0;
+    this.coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
   }
 
   componentDidMount() {
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.coarse = matchMedia('(pointer: coarse)').matches;
-    this.onMove = (e) => { const S = this.S; S.tx = e.clientX; S.ty = e.clientY; S.tmx = e.clientX / innerWidth * 2 - 1; S.tmy = e.clientY / innerHeight * 2 - 1; };
+    this.onMove = (e) => { const S = this.S; S.tmx = e.clientX / innerWidth * 2 - 1; S.tmy = e.clientY / innerHeight * 2 - 1; };
     this.onKey = (e) => {
       if (this.state.active == null) return;
       if (e.key === 'Escape') this.open(null);
@@ -340,17 +369,19 @@ class Component extends DCLogic {
     this.Y.cur = this.Y.target = this.Y.applied = scrollY;
     this.measure();
     this.setInert(false);
+    this.observeReveal();
     this.onHash();
     this.boot().catch(() => this.finishLoad());
     this.safety = setTimeout(() => this.finishLoad(), 25000);
     this.raf = requestAnimationFrame(this.tick);
   }
-  componentDidUpdate() { this.dirty = true; }
+  componentDidUpdate() { this.dirty = true; this.observeReveal(); }
   componentWillUnmount() {
     this.unmounted = true;
     cancelAnimationFrame(this.raf);
     clearTimeout(this.safety);
     if (this.ro) this.ro.disconnect();
+    if (this.io) this.io.disconnect();
     removeEventListener('mousemove', this.onMove);
     removeEventListener('keydown', this.onKey);
     removeEventListener('hashchange', this.onHash);
@@ -430,12 +461,6 @@ class Component extends DCLogic {
     const M = { vw, vh, hero: box(this.heroRef), works: box(this.worksRef), bts: box(this.btsRef), process: box(this.processRef), root: box(this.rootRef) };
     M.maxY = Math.max(0, document.documentElement.scrollHeight - vh);
     M.chap = [M.hero.top, M.works.top, M.bts.top, M.process.top];
-    const sc = this.sceneRef.current;
-    M.cards = sc ? Array.from(sc.querySelectorAll('[data-card]')).map(el => ({ el, w: el.offsetWidth, h: el.offsetHeight, cap: el.querySelector('[data-cap]'), par: el.querySelector('[data-par]') })) : [];
-    const pad = Math.min(56, Math.max(20, vw * 0.04)), gap = Math.max(16, vw * 0.02);
-    let cum = -vw / 2 + pad, total = 0;
-    M.cards.forEach((c, i) => { c.sx = cum + c.w / 2; cum += c.w + gap; total += c.w + (i ? gap : 0); });
-    M.travel = Math.max(0, total - (vw - 2 * pad));
     const bs = this.btsSceneRef.current;
     M.depth = bs ? Array.from(bs.querySelectorAll('[data-depth]')).map(el => ({ el, fx: +el.dataset.fx || 0, fy: +el.dataset.fy || 0, z0: +el.dataset.z || 0, w: el.offsetWidth, h: el.offsetHeight })) : [];
     const tk = this.tickRef.current;
@@ -513,9 +538,6 @@ class Component extends DCLogic {
         y = Y.applied = Y.cur;
       }
     } else { y = Y.cur = Y.target = Y.applied = scrollY; }
-    const pv = this.prevY == null ? y : this.prevY;
-    this.prevY = y;
-    S.vel += ((y - pv) / f60 - S.vel) * (1 - Math.pow(0.8, f60));
     const vw = M.vw, vh = M.vh, open = this.state.active != null;
 
     const Ld = this.L;
@@ -551,38 +573,6 @@ class Component extends DCLogic {
     }
     this.reelOn(heroIn && !open);
 
-    const wTop = M.works.top - y, wH = M.works.h, n = M.cards.length;
-    if (wTop < vh && wTop + wH > 0 && n) {
-      const px = Math.max(0, -wTop);
-      const L = vh * 1.1, Mg = vh * 0.9, SL = Math.max(1, wH - vh - L - Mg);
-      const wl = cl(px / L), wm = cl((px - L) / Mg), ws = cl((px - L - Mg) / SL);
-      const A = Math.min(vw * 0.36, vh * 0.8), D = Math.min(320, vw * 0.22);
-      const phi = (this.reduced ? 0 : now * 0.00011) + wl * Math.PI * 1.1;
-      const tiltV = Math.max(-7, Math.min(7, -S.vel * 0.09));
-      const stag = [0, 0.04, -0.02, 0.03];
-      let best = 0, bestV = -Infinity;
-      for (let i = 0; i < n; i++) {
-        const c = M.cards[i];
-        const tt = phi + i * 2 * Math.PI / n, s = Math.sin(tt), co = Math.cos(tt), den = 1 + s * s;
-        const lx = A * co / den, ly = A * s * co / den * 1.25, lz = s * D;
-        const sx = c.sx - ws * M.travel, sy = stag[i % 4] * vh - 18;
-        let mi = cl(wm * 1.4 - i * (0.4 / Math.max(1, n - 1)));
-        mi = mi < 0.5 ? 4 * mi * mi * mi : 1 - Math.pow(-2 * mi + 2, 3) / 2;
-        const x = lx + (sx - lx) * mi, yy = ly + (sy - ly) * mi, zz = lz * (1 - mi), scl = 0.34 + 0.66 * mi;
-        st(c.el, 'transform', `translate3d(${(x - c.w / 2).toFixed(2)}px, ${(yy - c.h / 2).toFixed(2)}px, ${zz.toFixed(2)}px) rotateY(${(tiltV * mi).toFixed(2)}deg) scale(${scl.toFixed(4)})`);
-        st(c.el, 'opacity', Math.min(1, 0.5 + 0.5 * ((s + 1) / 2) + mi).toFixed(3));
-        if (c.cap) st(c.cap, 'opacity', cl((mi - 0.7) / 0.3).toFixed(3));
-        if (c.par) st(c.par, 'transform', `translate3d(${(Math.max(-1, Math.min(1, x / (vw / 2))) * -3.5 * mi).toFixed(2)}%, 0, 0)`);
-        const v = wm < 0.5 ? zz : -Math.abs(x);
-        if (v > bestV) { bestV = v; best = i; }
-      }
-      const wt = this.worksTitleRef.current;
-      if (wt) { st(wt, 'opacity', (1 - cl(wm * 1.8)).toFixed(3)); st(wt, 'transform', `translateZ(0) scale(${(1 + wm * 0.25).toFixed(4)})`); }
-      const ct = this.counterRef.current, label = `${this.pad(best + 1)} / ${this.pad(n)}`;
-      if (ct && ct.textContent !== label) ct.textContent = label;
-      if (best !== this.lastBest) { this.lastBest = best; const r = this.state.db && this.state.db.works[best]; if (r) this.warm([this.heroSrc(r)]); }
-    }
-
     const bTop = M.bts.top - y, bH = M.bts.h;
     const km = 1 - Math.pow(0.95, f60);
     S.mx += (S.tmx - S.mx) * km; S.my += (S.tmy - S.my) * km;
@@ -597,13 +587,6 @@ class Component extends DCLogic {
         st(d.el, 'visibility', o <= 0.01 ? 'hidden' : 'visible');
         if (o > 0.01) st(d.el, 'transform', `translate3d(${(d.fx * vw - d.w / 2).toFixed(1)}px, ${(d.fy * vh - d.h / 2).toFixed(1)}px, ${z.toFixed(1)}px)`);
       }
-    }
-
-    if (!this.coarse) {
-      const kc = 1 - Math.pow(0.8, f60), kr = 1 - Math.pow(0.84, f60);
-      S.cx += (S.tx - S.cx) * kc; S.cy += (S.ty - S.cy) * kc; S.ring += (S.tring - S.ring) * kr;
-      if (Math.abs(S.ring - S.tring) < 0.002) S.ring = S.tring;
-      st(this.cursorRef.current, 'transform', S.ring === 0 ? 'translate3d(-200px, -200px, 0) scale(0)' : `translate3d(${(S.cx - 46).toFixed(1)}px, ${(S.cy - 46).toFixed(1)}px, 0) scale(${S.ring.toFixed(3)})`);
     }
 
     if (onFilm !== this.lastOnFilm) {
@@ -648,7 +631,7 @@ class Component extends DCLogic {
     await Promise.race([this.loadDb(), sleep(8000)]); bump();
     const db = this.state.db || { works: [], media: [] };
     const urls = [];
-    db.works.forEach((w, i) => urls.push(this.coverSrc(w, i)));
+    this.grid(this.works()).slice(0, 2).forEach(row => row.items.forEach(w => urls.push(this.coverSrc(w, row))));
     db.media.filter(m => m.section === 'bts' && !m.work_id).forEach((m, i) => urls.push(this.btsSrc(m, i)));
     const reel = db.media.filter(m => m.section === 'reel').slice(-1)[0];
     if (reel) urls.push(reel.kind === 'photo' ? reel.url : reel.poster_url);
@@ -745,9 +728,91 @@ class Component extends DCLogic {
     const need = cssW * Math.min(2, window.devicePixelRatio || 1), gw = a >= 1 ? 1100 : 1100 * a;
     return (grid && (!view || need <= gw * 1.08)) ? grid : (view || grid || '');
   }
-  coverSrc(r, i) {
-    const [x, y] = this.ratios[i % 8], a = x / y;
-    return this.fitSrc(r.cover_grid_url, r.cover_url, Math.min(innerHeight * 0.46 * a, innerWidth * 0.78) * 1.08, a);
+  // Rows share both edges: each frame grows by its aspect ratio, so every frame
+  // in a row lands at the same height. Only wide frames may stand alone.
+  grid(list) {
+    const rows = [];
+    let i = 0, p = 0;
+    while (i < list.length) {
+      let want = [1, 2, 2][p++ % 3];
+      if (want === 1 && list[i].ar < 1.6) want = 2;
+      const items = list.slice(i, i + want);
+      i += items.length;
+      const lone = items.length === 1 && items[0].ar < 1.6;
+      rows.push({ items, lead: items.length === 1 && !lone, spacer: lone ? 1.5 : 0 });
+    }
+    return rows;
+  }
+  coverSrc(w, row) {
+    const vw = document.documentElement.clientWidth || innerWidth, cw = vw - 2 * Math.min(56, Math.max(20, vw * 0.04));
+    const sum = row.items.reduce((t, x) => t + x.ar, 0) + row.spacer;
+    const css = this.state.narrow ? (row.lead ? vw : cw) : cw * w.ar / sum;
+    return this.fitSrc(w.cg, w.cv, css, w.ar);
+  }
+  teaser(s) {
+    const t = (s || '').trim(), m = /^[\s\S]*?[.!?](\s|$)/.exec(t), one = (m ? m[0] : t).trim();
+    return one.length > 180 ? one.slice(0, 177).replace(/\s+\S*$/, '') + '…' : one;
+  }
+  hoverCard(card, on, i) {
+    if (!card || this.coarse) return;
+    const z = card.querySelector('[data-zoom]'), t = card.querySelector('[data-title]'), v = card.querySelector('video');
+    if (z) z.style.transform = on ? 'scale(1.035)' : '';
+    if (t) t.style.color = on ? '#0E8E72' : '#1B1D1E';
+    if (on && i != null) this.warmWork(i);
+    if (!v) return;
+    clearTimeout(v._t);
+    v._on = on;
+    if (!on) { v.style.opacity = '0'; try { v.pause(); } catch (e) {} return; }
+    if (this.reduced || this.lean(true) || !(this.props.hoverFilm ?? true) || !this.L || !this.L.finished) return;
+    // A short hover intent, so sweeping the cursor across the grid streams nothing.
+    v._t = setTimeout(() => {
+      if (!v._on) return;
+      const f = v.getAttribute('data-film');
+      if (f && v.getAttribute('src') !== f) v.setAttribute('src', f);
+      const p = v.play();
+      if (p && p.catch) p.catch(() => {});
+    }, 260);
+  }
+  unhoverAll() { const g = this.gridRef.current; if (g) g.querySelectorAll('[data-card]').forEach(c => this.hoverCard(c, false)); }
+  pick(cat) {
+    if (cat === (this.state.cat || 'all')) return;
+    this.unhoverAll();
+    this.setState({ cat }, () => {
+      const g = this.gridRef.current;
+      if (!g || this.reduced) return;
+      let n = 0;
+      g.querySelectorAll('[data-card]').forEach(el => {
+        const b = el.getBoundingClientRect();
+        if (b.top > innerHeight || b.bottom < 0) return;
+        if (this.io) this.io.unobserve(el);
+        el._rv = 1;
+        el.style.opacity = '';
+        if (el.getAnimations) el.getAnimations().forEach(a => a.cancel());
+        el.animate([{ opacity: 0, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: n++ * 80, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+      });
+    });
+  }
+  // Frames below the fold wait hidden and rise once as they arrive; anything
+  // already on screen is left alone, so nothing blinks.
+  observeReveal() {
+    const root = this.worksRef.current;
+    if (!root || this.reduced || !window.IntersectionObserver) return;
+    if (!this.io) this.io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { this.io.unobserve(en.target); this.reveal(en.target); } }), { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+    root.querySelectorAll('[data-reveal]').forEach(el => {
+      if (el._rv) return;
+      el._rv = 1;
+      const b = el.getBoundingClientRect();
+      if (b.top < innerHeight && b.bottom > 0) return;
+      el.style.opacity = '0';
+      this.io.observe(el);
+    });
+  }
+  reveal(el) {
+    const ease = 'cubic-bezier(.2,.8,.2,1)', d = (+el.getAttribute('data-k') || 0) * 110;
+    el.style.opacity = '';
+    el.animate([{ opacity: 0, transform: 'translateY(48px)' }, { opacity: 1, transform: 'none' }], { duration: 1200, delay: d, easing: ease, fill: 'backwards' });
+    const st = el.querySelector('[data-settle]');
+    if (st) st.animate([{ transform: 'scale(1.08)' }, { transform: 'none' }], { duration: 1900, delay: d, easing: ease, fill: 'backwards' });
   }
   btsSrc(m, i) {
     if (m.kind === 'video') return m.poster_url || '';
@@ -810,23 +875,21 @@ class Component extends DCLogic {
   }
   works() {
     const db = this.state.db, slot = !this.hosted();
-    const shape = i => { const [a, b] = this.ratios[i % 8]; return { ratio: `${a} / ${b}`, width: `min(calc(46vh * ${a / b}), 78vw)` }; };
+    const shape = i => { const [a, b] = this.shapes[i % this.shapes.length]; return { ratio: a + ' / ' + b, ar: a / b }; };
     if (db && db.works.length) return db.works.map((r, i) => {
-      const cover = this.coverSrc(r, i);
       const mine = sec => db.media.filter(m => m.work_id === r.id && m.section === sec);
       return { id: this.pad(i + 1), no: this.pad(i + 1), title: r.title || 'untitled', kind: r.category || '', ...shape(i),
-        cover, hasCover: !!cover, slot: false,
+        cv: r.cover_url || '', cg: r.cover_grid_url || '', slot: false,
         film: r.film_url || '', hasFilm: !!r.film_url, poster: r.film_poster_url || r.cover_url || '',
         hero: r.cover_url || '', posterOnly: !r.film_url && !!r.cover_url, filmSlot: false,
         story: r.story || '', stills: mine('still'), bts: mine('case_bts') };
     });
     const n = Math.max(3, Math.min(12, this.props.workCount ?? 8));
     return Array.from({ length: n }, (_, i) => ({ id: this.pad(i + 1), no: this.pad(i + 1), title: 'project title', kind: this.kinds[i % 8], ...shape(i),
-      cover: '', hasCover: false, slot, film: '', hasFilm: false, poster: '', hero: '', posterOnly: false, filmSlot: slot,
+      cv: '', cg: '', slot, film: '', hasFilm: false, poster: '', hero: '', posterOnly: false, filmSlot: slot,
       story: 'a few lines on the story — who it was for, what we wanted it to feel like, and how we made it.', stills: null, bts: null }));
   }
   open(i) {
-    this.S.tring = 0;
     this.Y.running = false;
     try { history.replaceState(null, '', i == null ? location.pathname + location.search : `#work-${this.pad(i + 1)}`); } catch (e) {}
     this.setState({ active: i }, () => this.afterActive());
@@ -842,6 +905,7 @@ class Component extends DCLogic {
   afterActive() {
     const c = this.caseRef.current, on = this.state.active != null, was = this.wasOpen;
     this.wasOpen = on;
+    if (on) this.unhoverAll();
     if (!this.L || this.L.finished) document.body.style.overflow = on ? 'hidden' : '';
     if (!c) return;
     if (on !== was) {
@@ -864,6 +928,27 @@ class Component extends DCLogic {
   renderVals() {
     const works = this.works(), n = works.length, a = this.state.active ?? 0;
     const slot = !this.hosted(), db = this.state.db;
+    const narrow = !!this.state.narrow, hoverFilm = (this.props.hoverFilm ?? true) && !this.coarse;
+    const all = works.map((w, i) => ({ ...w,
+      open: () => this.open(i),
+      key: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.open(i); } },
+      enter: e => this.hoverCard(e.currentTarget, true, i), leave: e => this.hoverCard(e.currentTarget, false) }));
+    const kinds = [];
+    all.forEach(w => { const k = (w.kind || '').trim().toLowerCase(); if (k && kinds.indexOf(k) < 0) kinds.push(k); });
+    const cat = kinds.indexOf(this.state.cat) >= 0 ? this.state.cat : 'all';
+    const cats = ['all'].concat(kinds).map((k, i, arr) => ({ label: k, on: k === cat, color: k === cat ? '#1B1D1E' : '#8A9390', line: k === cat ? 'underline' : 'none', sep: i < arr.length - 1 ? ',' : '', pick: () => this.pick(k) }));
+    const shown = cat === 'all' ? all : all.filter(w => (w.kind || '').trim().toLowerCase() === cat);
+    const cell = (w, row, k) => {
+      const cover = (w.cv || w.cg) ? this.coverSrc(w, row) : '';
+      return { ...w, k, grow: narrow ? 1 : w.ar, cover, hasCover: !!cover, lead: row.lead, plain: !row.lead,
+        maxH: row.lead ? '86vh' : 'none', bleed: narrow && row.lead ? '0 calc(-1 * clamp(20px, 4vw, 56px))' : '0', fw: narrow && row.lead ? 'calc(100% + 2 * clamp(20px, 4vw, 56px))' : '100%',
+        story: row.lead ? this.teaser(w.story) : '', hasStory: row.lead && !!w.story,
+        hasPreview: hoverFilm && !!w.hasFilm, preview: w.film ? w.film + '#t=4' : '' };
+    };
+    const grid = this.grid(shown);
+    const rows = narrow
+      ? [].concat(...grid.map(row => row.items.map(w => ({ items: [cell(w, row, 0)], spacer: 0 }))))
+      : grid.map(row => ({ items: row.items.map((w, k) => cell(w, row, k)), spacer: row.spacer }));
     const spots = this.spots;
     const btsDb = db ? db.media.filter(m => m.section === 'bts' && !m.work_id) : [];
     const btsSrc = btsDb.length
@@ -926,21 +1011,30 @@ class Component extends DCLogic {
         if (!el._gl) { el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true; el.setAttribute('playsinline', ''); el.setAttribute('muted', ''); }
       },
       dbFail: !!this.state.dbFail, retry: () => location.reload(),
-      cardFocus: e => { let p = e.currentTarget.parentElement; while (p && p !== document.body) { if (p.scrollLeft || p.scrollTop) { p.scrollLeft = 0; p.scrollTop = 0; } p = p.parentElement; } },
-      works: works.map((w, i) => ({ ...w, open: () => this.open(i), key: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.open(i); } }, enter: () => { this.S.tring = 1; this.warmWork(i); } })),
+      rows, cats, hasCats: kinds.length > 1,
+      coverRef: el => {
+        if (!el) return;
+        if (!el._gl) { el._gl = 1; const show = () => { el.style.opacity = '1'; }; el.addEventListener('load', show); el.addEventListener('error', show); }
+        this.applySrc(el);
+        if (el.complete && el.naturalWidth) el.style.opacity = '1';
+      },
+      previewRef: el => {
+        if (!el || el._gl) return;
+        el._gl = 1; el.muted = true; el.defaultMuted = true; el.loop = true; el.playsInline = true;
+        el.setAttribute('muted', ''); el.setAttribute('playsinline', '');
+        el.addEventListener('playing', () => { if (el._on) el.style.opacity = '1'; });
+      },
       workCount: this.pad(n),
-      worksHeight: `${110 + 90 + n * 42 + 100}vh`,
       hudOn: this.props.hud ?? true,
       jump: this.jump,
       rootRef: this.rootRef, mistRef: this.mistRef, headerRef: this.headerRef, logoGreenRef: this.logoGreenRef, logoWhiteRef: this.logoWhiteRef,
       heroRef: this.heroRef, filmBaseRef: this.filmBaseRef, filmUiRef: this.filmUiRef, knockRef: this.knockRef, heroOverlayRef: this.heroOverlayRef, cueRef: this.cueRef,
-      worksRef: this.worksRef, sceneRef: this.sceneRef, worksTitleRef: this.worksTitleRef, counterRef: this.counterRef,
+      worksRef: this.worksRef, gridRef: this.gridRef,
       btsRef: this.btsRef, btsSceneRef: this.btsSceneRef, processRef: this.processRef, markRef: this.markRef,
       hudRef: this.hudRef, chapterRef: this.chapterRef, tickRef: this.tickRef, playheadRef: this.playheadRef, tcRef: this.tcRef,
-      caseRef: this.caseRef, cursorRef: this.cursorRef,
+      caseRef: this.caseRef,
       loaderOn: (this.props.preload ?? true) && !this.state.loaderGone,
       loaderRef: this.loaderRef, loadNumRef: this.loadNumRef, loadBarRef: this.loadBarRef, loadLabelRef: this.loadLabelRef, loadMarkRef: this.loadMarkRef,
-      showCursor: () => { this.S.tring = 1; }, hideCursor: () => { this.S.tring = 0; },
       activeWork: works[a], nextWork: works[(a + 1) % n],
       close: () => this.open(null), prev: () => this.step(-1), next: () => this.step(1)
     };

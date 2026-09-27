@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <link rel="icon" href="assets/infinity.svg" type="image/svg+xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Your experience — Glomium</title>
+<title>your experience — glomium</title>
 <meta name="description" content="glomium — tell us about your experience.">
 <meta property="og:title" content="glomium — your experience">
 <meta property="og:description" content="glomium — tell us about your experience.">
@@ -19,115 +19,135 @@
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Your experience — Glomium</title>
+<title>your experience — glomium</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-  :root { --green:#10AF8B; --green-deep:#0A6E58; --ink:#16231F; --line:rgba(16,175,139,.2); }
+  :root { --green:#10AF8B; --green-deep:#0A6E58; }
   * { box-sizing:border-box; }
-  body { margin:0; background:#F7F9F8; color:#16231F; font-family:'Jost',Helvetica,sans-serif; }
-  a { color:var(--green); text-decoration:none; }
-  a:hover { color:var(--green-deep); }
+  body { margin:0; background:#FFFFFF; color:#1B1D1E; font-family:'Jost',Helvetica,sans-serif; font-weight:300; -webkit-font-smoothing:antialiased; }
+  a { color:#0A6E58; text-decoration:none; }
+  a:hover { color:#10AF8B; }
   textarea, input, button, select { font-family:inherit; }
-  ::selection { background:var(--green); color:#fff; }
+  ::selection { background:#10AF8B; color:#fff; }
 </style>
 </helmet>
 
-<div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:clamp(20px,5vw,56px) clamp(14px,4vw,24px) 64px">
+<div style="min-height:100vh; display:flex; flex-direction:column">
+  <header style="display:flex; justify-content:space-between; align-items:center; gap:24px; padding:22px clamp(20px,4vw,56px)">
+    <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; display:block">
+    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">confidential</span>
+  </header>
 
-  <div style="width:100%; max-width:640px; display:flex; flex-direction:column; gap:clamp(20px,4vw,30px)">
-
-    <div style="display:flex; flex-direction:column; gap:7px">
-      <span style="font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:var(--green)">Glomium</span>
-      <span style="font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#5D6864">Confidential feedback</span>
-    </div>
+  <main style="flex:1; width:100%; max-width:780px; margin:0 auto; padding:clamp(56px,10vw,120px) clamp(20px,4vw,56px) clamp(80px,10vw,140px); display:flex; flex-direction:column; gap:clamp(56px,8vw,96px)">
 
     <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
-      <div style="padding:40px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--green-deep)">Loading…</div>
+      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">loading</span>
     </sc-if>
 
     <sc-if value="{{ dead }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex; flex-direction:column; gap:12px; padding:clamp(24px,5vw,36px); background:#fff; border:1px solid var(--line); border-radius:4px">
-        <span style="font-size:clamp(20px,4vw,26px); font-weight:300; color:var(--green-deep); text-wrap:balance">{{ deadTitle }}</span>
-        <span style="font-size:15px; line-height:1.7; color:#3E4A46; text-wrap:pretty">{{ deadNote }}</span>
+      <div style="display:flex; flex-direction:column; gap:24px">
+        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">your experience</span>
+        <h1 style="margin:0; font-size:clamp(40px,7vw,96px); font-weight:200; line-height:.98; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ deadTitle }}</h1>
+        <p style="margin:0; max-width:32em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">{{ deadNote }}</p>
       </div>
     </sc-if>
 
     <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex; flex-direction:column; gap:12px; padding:clamp(26px,5vw,40px); background:#fff; border:1px solid var(--line); border-radius:4px">
-        <span style="font-size:clamp(22px,4.4vw,30px); font-weight:300; color:var(--green-deep); text-wrap:balance">Thank you.</span>
-        <span style="font-size:15px; line-height:1.75; color:#3E4A46; text-wrap:pretty">That goes straight to the people who can act on it, and nobody on the crew sees it. If something needs a reply, we will write to you.</span>
+      <div style="display:flex; flex-direction:column; gap:24px">
+        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">received</span>
+        <h1 style="margin:0; font-size:clamp(48px,9vw,130px); font-weight:200; line-height:.94; letter-spacing:-0.04em; color:#1B1D1E">thank <span style="font-style:italic; color:#10AF8B">you</span>.</h1>
+        <p style="margin:0; max-width:32em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">that goes straight to the people who can act on it, and nobody on the crew sees it. if something needs a reply, we will write to you.</p>
       </div>
     </sc-if>
 
     <sc-if value="{{ showForm }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex; flex-direction:column; gap:clamp(20px,4vw,28px)">
+      <div style="display:flex; flex-direction:column; gap:clamp(56px,8vw,96px)">
 
-        <div style="display:flex; flex-direction:column; gap:12px">
-          <h1 style="margin:0; font-size:clamp(24px,5.4vw,36px); font-weight:200; line-height:1.25; color:#16231F; text-wrap:balance">{{ heading }}</h1>
+        <div style="display:flex; flex-direction:column; gap:26px">
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">your experience</span>
+          <h1 style="margin:0; font-size:clamp(36px,6.4vw,84px); font-weight:200; line-height:1; letter-spacing:-0.03em; color:#1B1D1E; text-wrap:balance">{{ heading }}</h1>
           <sc-if value="{{ hasSubject }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; flex-wrap:wrap; gap:6px 14px; padding:11px 14px; background:#fff; border:1px solid var(--line); border-radius:4px">
+            <div style="display:flex; flex-wrap:wrap; gap:14px 48px; padding-top:20px; border-top:1px solid #E2E7E5">
               <sc-for list="{{ subjectVM }}" as="sj" hint-placeholder-count="2">
-                <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
-                  <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#8A9390">{{ sj.label }}</span>
-                  <span style="font-size:15px; color:#16231F; overflow-wrap:anywhere">{{ sj.value }}</span>
+                <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ sj.label }}</span>
+                  <span style="font-size:15px; color:#1B1D1E; overflow-wrap:anywhere">{{ sj.value }}</span>
                 </div>
               </sc-for>
             </div>
           </sc-if>
-          <span style="font-size:15px; line-height:1.75; color:#3E4A46; text-wrap:pretty">This is read only by Glomium's management, and only to fix how we work. It is never shown to the crew, the client, or anyone you worked beside. Answer what you want to and leave the rest.</span>
+          <p style="margin:0; max-width:34em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">this is read only by glomium’s management, and only to fix how we work. it is never shown to the crew, the client, or anyone you worked beside. answer what you want to and leave the rest.</p>
         </div>
 
-        <div style="display:flex; flex-direction:column; gap:10px">
+        <ol style="list-style:none; margin:0; padding:0; border-top:1px solid #E2E7E5">
           <sc-for list="{{ questionsVM }}" as="q" hint-placeholder-count="5">
-            <div style="display:flex; flex-direction:column; gap:11px; padding:clamp(16px,3.4vw,20px); background:#fff; border:1px solid var(--line); border-radius:4px">
-              <span style="font-size:15px; line-height:1.5; color:#16231F; text-wrap:pretty">{{ q.label }}</span>
-              <div style="display:flex; gap:7px; flex-wrap:wrap">
-                <sc-for list="{{ q.options }}" as="o" hint-placeholder-count="5">
-                  <button onClick="{{ o.pick }}" style="flex:1 1 52px; min-width:52px; min-height:46px; padding:8px 4px; border-radius:3px; font-size:15px; cursor:pointer; transition:.15s; background:{{ o.bg }}; color:{{ o.color }}; border:1px solid {{ o.border }}">{{ o.value }}</button>
-                </sc-for>
+            <li style="display:flex; flex-direction:column; gap:18px; padding:clamp(26px,4vw,40px) 0; border-bottom:1px solid #E2E7E5">
+              <div style="display:flex; gap:20px; align-items:baseline">
+                <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">{{ q.no }}</span>
+                <span style="font-size:clamp(18px,2.2vw,22px); line-height:1.4; color:#1B1D1E; text-wrap:pretty">{{ q.label }}</span>
               </div>
-              <div style="display:flex; justify-content:space-between; gap:10px">
-                <span style="font-size:11px; letter-spacing:.06em; color:#5D6864">{{ q.low }}</span>
-                <span style="font-size:11px; letter-spacing:.06em; color:#5D6864">{{ q.high }}</span>
+              <div style="display:flex; flex-direction:column; gap:12px; padding-left:42px">
+                <div style="display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px">
+                  <sc-for list="{{ q.options }}" as="o" hint-placeholder-count="5">
+                    <button onClick="{{ o.pick }}" aria-pressed="{{ o.on }}" style="min-height:52px; padding:8px 4px; border-radius:0; font-size:17px; font-weight:300; cursor:pointer; transition:background .25s, color .25s, border-color .25s; background:{{ o.bg }}; color:{{ o.color }}; border:1px solid {{ o.border }}" style-hover="border-color:#0A6E58">{{ o.value }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex; justify-content:space-between; gap:10px">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ q.low }}</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">{{ q.high }}</span>
+                </div>
               </div>
-            </div>
+            </li>
           </sc-for>
 
-          <div style="display:flex; flex-direction:column; gap:11px; padding:clamp(16px,3.4vw,20px); background:#fff; border:1px solid var(--line); border-radius:4px">
-            <span style="font-size:15px; line-height:1.5; color:#16231F; text-wrap:pretty">Would you work with us again?</span>
-            <div style="display:flex; gap:7px">
+          <li style="display:flex; flex-direction:column; gap:18px; padding:clamp(26px,4vw,40px) 0; border-bottom:1px solid #E2E7E5">
+            <div style="display:flex; gap:20px; align-items:baseline">
+              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">{{ returnNo }}</span>
+              <span style="font-size:clamp(18px,2.2vw,22px); line-height:1.4; color:#1B1D1E">would you work with us again?</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; padding-left:42px">
               <sc-for list="{{ returnOptionsVM }}" as="r" hint-placeholder-count="2">
-                <button onClick="{{ r.pick }}" style="flex:1 1 0; min-height:46px; padding:8px 12px; border-radius:3px; font-size:14px; letter-spacing:.04em; cursor:pointer; transition:.15s; background:{{ r.bg }}; color:{{ r.color }}; border:1px solid {{ r.border }}">{{ r.label }}</button>
+                <button onClick="{{ r.pick }}" aria-pressed="{{ r.on }}" style="min-height:52px; padding:8px 12px; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; cursor:pointer; transition:background .25s, color .25s, border-color .25s; background:{{ r.bg }}; color:{{ r.color }}; border:1px solid {{ r.border }}" style-hover="border-color:#0A6E58">{{ r.label }}</button>
               </sc-for>
             </div>
-          </div>
+          </li>
 
           <sc-for list="{{ textFieldsVM }}" as="t" hint-placeholder-count="3">
-            <div style="display:flex; flex-direction:column; gap:9px; padding:clamp(16px,3.4vw,20px); background:#fff; border:1px solid var(--line); border-radius:4px">
-              <span style="font-size:15px; line-height:1.5; color:#16231F; text-wrap:pretty">{{ t.label }}</span>
-              <sc-if value="{{ t.hasHint }}" hint-placeholder-val="{{ false }}">
-                <span style="font-size:12px; line-height:1.65; color:#4A524F; text-wrap:pretty">{{ t.hint }}</span>
-              </sc-if>
-              <textarea value="{{ t.value }}" onChange="{{ t.onChange }}" rows="4" placeholder="{{ t.placeholder }}" style="width:100%; padding:13px 14px; border:1px solid var(--line); border-radius:3px; font-size:15px; line-height:1.6; color:#16231F; background:#FDFEFE; outline:none; resize:vertical" style-focus="border-color:var(--green)"></textarea>
-            </div>
+            <li style="display:flex; flex-direction:column; gap:14px; padding:clamp(26px,4vw,40px) 0; border-bottom:1px solid #E2E7E5">
+              <div style="display:flex; gap:20px; align-items:baseline">
+                <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">{{ t.no }}</span>
+                <span style="font-size:clamp(18px,2.2vw,22px); line-height:1.4; color:#1B1D1E; text-wrap:pretty">{{ t.label }}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:12px; padding-left:42px">
+                <sc-if value="{{ t.hasHint }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:14px; line-height:1.7; color:#4A524F; text-wrap:pretty">{{ t.hint }}</span>
+                </sc-if>
+                <textarea value="{{ t.value }}" onChange="{{ t.onChange }}" rows="4" aria-label="{{ t.label }}" placeholder="{{ t.placeholder }}" style="width:100%; padding:14px 16px; border:1px solid #DDE3E1; border-radius:0; font-size:16px; font-weight:300; line-height:1.7; color:#1B1D1E; background:#FFFFFF; outline:none; resize:vertical; transition:border-color .25s" style-focus="border-color:#10AF8B"></textarea>
+              </div>
+            </li>
           </sc-for>
-        </div>
+        </ol>
 
-        <div style="display:flex; flex-direction:column; gap:12px; align-items:flex-start">
-          <button onClick="{{ submit }}" disabled="{{ sending }}" style="min-height:52px; padding:15px 34px; background:var(--green-deep); color:#fff; border:none; border-radius:3px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer" style-hover="background:#085847">{{ submitLabel }}</button>
+        <div style="display:flex; flex-direction:column; gap:16px; align-items:flex-start">
+          <button onClick="{{ submit }}" disabled="{{ sending }}" style="min-height:52px; padding:0 34px; background:#0A6E58; color:#FFFFFF; border:0; border-radius:0; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; cursor:pointer; transition:background .3s" style-hover="background:#1B1D1E">{{ submitLabel }}</button>
           <sc-if value="{{ hasStatus }}" hint-placeholder-val="{{ false }}">
-            <span style="font-size:13px; line-height:1.6; color:#B4433A; text-wrap:pretty">{{ status }}</span>
+            <span style="font-size:14px; line-height:1.6; color:#B4433A; text-wrap:pretty">{{ status }}</span>
           </sc-if>
-          <span style="font-size:12px; line-height:1.7; color:#5D6864; text-wrap:pretty">You can send this once. Nothing is saved until you tap submit.</span>
+          <span style="font-size:14px; line-height:1.7; color:#4A524F; text-wrap:pretty">you can send this once. nothing is saved until you tap send.</span>
         </div>
       </div>
     </sc-if>
+  </main>
 
-    <div style="padding-top:8px; font-size:11px; letter-spacing:.1em; color:#5D6864">Glomium</div>
-  </div>
+  <footer style="display:flex; flex-direction:column; align-items:center; gap:22px; padding:0 24px 80px; text-align:center">
+    <img src="assets/infinity.svg" alt="" style="width:64px; height:auto">
+    <div style="font-size:16px; line-height:1.8; color:#4A524F">with love,<br>team glomium.</div>
+    <div style="width:48px; height:1px; background:#E2E7E5"></div>
+    <div style="font-size:11px; letter-spacing:2.6px; color:#8A9390">creative INFINITELY</div>
+  </footer>
 </div>
 </x-dc>
 </template>
@@ -141,19 +161,19 @@ const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 // actionable. The low/high words are printed under the row so a 3 means the
 // same thing to everyone answering.
 const SCORES = [
-  ['overall',       'The experience overall',                         'Bad',        'Excellent'],
-  ['communication', 'How clearly we told you what was happening',      'Left guessing', 'Always knew'],
-  ['organisation',  'How well the day itself was run',                 'Chaotic',    'Tight'],
-  ['payment',       'Payment — the amount, and how long it took',      'A struggle', 'No issue'],
-  ['treatment',     'How you were treated on set',                     'Poorly',     'With respect'],
+  ['overall',       'the experience overall', 'bad', 'excellent'],
+  ['communication', 'how clearly we told you what was happening', 'left guessing', 'always knew'],
+  ['organisation',  'how well the day itself was run', 'chaotic', 'tight'],
+  ['payment',       'payment — the amount, and how long it took', 'a struggle', 'no issue'],
+  ['treatment',     'how you were treated on set', 'poorly', 'with respect'],
 ];
 
 const TEXTS = [
-  ['liked',    'What worked well?', '', 'Anything worth keeping — a person, a call sheet, how a day was scheduled.'],
-  ['improve',  'What should we do differently?', '', 'The one change that would have made the day better.'],
-  ['complaint','Anything you want to report?',
-    'Behaviour, safety, money, or anything you did not feel able to say on the day. This reaches management directly.',
-    'Leave blank if there is nothing.'],
+  ['liked',    'what worked well?', '', 'anything worth keeping — a person, a call sheet, how a day was scheduled.'],
+  ['improve',  'what should we do differently?', '', 'the one change that would have made the day better.'],
+  ['complaint','anything you want to report?',
+    'behaviour, safety, money, or anything you did not feel able to say on the day. this reaches management directly.',
+    'leave blank if there is nothing.'],
 ];
 
 class Component extends DCLogic {
@@ -216,7 +236,7 @@ class Component extends DCLogic {
     const s = this.state, sc = s.scores || {}, tx = s.texts || {};
     const anything = SCORES.some(q => sc[q[0]]) || s.wouldReturn !== null
       || TEXTS.some(f => (tx[f[0]] || '').trim());
-    if (!anything) { this.setState({ status: 'Answer at least one thing before sending.' }); return; }
+    if (!anything) { this.setState({ status: 'answer at least one thing before sending.' }); return; }
     this.setState({ sending: true, status: '' });
     const { data, error } = await this.sb.rpc('submit_feedback', {
       p_token: this.token(),
@@ -231,13 +251,13 @@ class Component extends DCLogic {
       p_complaint: (tx.complaint || '').trim() || null,
     });
     if (error) {
-      this.setState({ sending: false, status: 'That did not send — ' + error.message });
+      this.setState({ sending: false, status: 'that did not send — ' + error.message });
       return;
     }
     if (data && data.ok === false) {
       this.setState({ sending: false, done: false, already: data.reason === 'already',
         found: data.reason === 'already',
-        status: data.reason === 'already' ? '' : 'This link is no longer valid.' });
+        status: data.reason === 'already' ? '' : 'this link is no longer valid.' });
       return;
     }
     this.setState({ sending: false, done: true });
@@ -246,45 +266,46 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state, sc = s.scores || {}, tx = s.texts || {};
     const pill = on => on
-      ? { bg: '#0A6E58', color: '#ffffff', border: '#0A6E58' }
-      : { bg: '#FDFEFE', color: '#3E4A46', border: 'rgba(16,175,139,.28)' };
+      ? { bg: '#0A6E58', color: '#FFFFFF', border: '#0A6E58', on: true }
+      : { bg: '#FFFFFF', color: '#1B1D1E', border: '#DDE3E1', on: false };
     const dead = !s.loading && !s.done && (!s.found || s.already);
     return {
       loading: s.loading,
       done: s.done,
       dead,
-      deadTitle: s.already ? 'Already received' : 'This link is not valid',
+      deadTitle: s.already ? 'already received' : 'this link is not valid',
       deadNote: s.already
-        ? 'Your feedback is in — thank you. The form can only be sent once, so there is nothing more to do here.'
-        : 'The link may have been mistyped, or it belongs to a request that has since been closed. Reply to the email we sent and we will send a fresh one.',
+        ? 'your feedback is in — thank you. the form can only be sent once, so there is nothing more to do here.'
+        : 'the link may have been mistyped, or it belongs to a request that has since been closed. reply to the email we sent and we will send a fresh one.',
       showForm: !s.loading && !dead && !s.done,
 
-      heading: (s.firstName ? s.firstName + ', how was ' : 'How was ')
+      heading: (s.firstName ? s.firstName + ', how was ' : 'how was ')
         + (s.project ? s.project : 'working with us') + '?',
 
       hasSubject: !!(s.project || s.shootDate),
-      subjectVM: [['Shoot', s.project], ['Day worked', this.prettyDay(s.shootDate)]]
+      subjectVM: [['shoot', s.project], ['day worked', this.prettyDay(s.shootDate)]]
         .filter(r => !!r[1]).map(r => ({ label: r[0], value: r[1] })),
 
-      questionsVM: SCORES.map(q => ({
-        key: q[0], label: q[1], low: q[2], high: q[3],
+      returnNo: String(SCORES.length + 1).padStart(2, '0'),
+      questionsVM: SCORES.map((q, qi) => ({
+        no: String(qi + 1).padStart(2, '0'), key: q[0], label: q[1], low: q[2], high: q[3],
         options: [1, 2, 3, 4, 5].map(v => Object.assign(
           { value: String(v), pick: () => this.setScore(q[0], v) },
           pill(sc[q[0]] === v))),
       })),
 
-      returnOptionsVM: [[true, 'Yes'], [false, 'No']].map(o => Object.assign(
+      returnOptionsVM: [[true, 'yes'], [false, 'no']].map(o => Object.assign(
         { label: o[1], pick: () => this.setState({ wouldReturn: s.wouldReturn === o[0] ? null : o[0], status: '' }) },
         pill(s.wouldReturn === o[0]))),
 
-      textFieldsVM: TEXTS.map(f => ({
-        label: f[1], hint: f[2], hasHint: !!f[2], placeholder: f[3],
+      textFieldsVM: TEXTS.map((f, fi) => ({
+        no: String(SCORES.length + 2 + fi).padStart(2, '0'), label: f[1], hint: f[2], hasHint: !!f[2], placeholder: f[3],
         value: tx[f[0]] || '',
         onChange: e => this.setState({ texts: Object.assign({}, tx, { [f[0]]: e.target.value }), status: '' }),
       })),
 
       sending: s.sending,
-      submitLabel: s.sending ? 'Sending…' : 'Send feedback',
+      submitLabel: s.sending ? 'sending…' : 'send feedback',
       status: s.status || '',
       hasStatus: !!s.status,
       submit: () => this.submit(),

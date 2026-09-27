@@ -22,125 +22,141 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
-  :root { --green:#10AF8B; --green-deep:#0A6E58; --ink:#16231F; }
+  :root { --green:#10AF8B; --green-deep:#0A6E58; --ink:#1B1D1E; }
   * { box-sizing:border-box; }
-  body { margin:0; background:#FFFFFF; color:#16231F; font-family:'Jost',Helvetica,sans-serif; overflow-x:hidden; }
-  a { color:var(--green); text-decoration:none; }
-  a:hover { color:var(--green-deep); }
+  body { margin:0; background:#FFFFFF; color:#1B1D1E; font-family:'Jost',Helvetica,sans-serif; font-weight:300; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  a { color:#0A6E58; text-decoration:none; }
+  a:hover { color:#10AF8B; }
   button { font-family:inherit; }
-  ::selection { background:var(--green); color:#fff; }
+  ::selection { background:#10AF8B; color:#fff; }
 </style>
 </helmet>
 
 <div style="position:relative; width:100%; background:#FFFFFF">
 
   <sc-if value="{{ notFound }}" hint-placeholder-val="{{ false }}">
-    <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
-      <div style="display:flex; flex-direction:column; gap:10px">
-        <span style="font-size:20px; font-weight:300; color:var(--green-deep)">Album not found</span>
-        <span style="font-size:14px; color:var(--ink)">Check the link and try again.</span>
+    <div style="min-height:100vh; min-height:100svh; display:flex; flex-direction:column; justify-content:space-between; gap:48px; padding:22px clamp(20px,4vw,56px) clamp(28px,5vh,48px)">
+      <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; align-self:flex-start">
+      <div style="display:flex; flex-direction:column; gap:22px; max-width:40em">
+        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">your album</span>
+        <h1 style="margin:0; font-size:clamp(44px,8vw,140px); font-weight:200; line-height:.94; letter-spacing:-0.035em; color:#1B1D1E">album <span style="font-style:italic; color:#10AF8B">not</span> found</h1>
+        <p style="margin:0; font-size:16px; line-height:1.8; color:#4A524F">check the link and try again.</p>
       </div>
+      <span style="font-size:11px; letter-spacing:2.6px; color:#8A9390">creative INFINITELY</span>
     </div>
   </sc-if>
 
   <sc-if value="{{ hasLoadError }}" hint-placeholder-val="{{ false }}">
-    <div style="min-height:100vh; display:grid; place-items:center; padding:24px; text-align:center">
-      <div style="display:flex; flex-direction:column; align-items:center; gap:14px">
-        <span style="font-size:20px; font-weight:300; color:var(--green-deep)">We could not load the album</span>
-        <span style="font-size:14px; color:var(--ink); max-width:34ch; text-wrap:pretty">{{ loadError }}</span>
-        <button onClick="{{ retry }}" style="min-height:44px; margin-top:4px; padding:11px 22px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">Try again</button>
+    <div style="min-height:100vh; min-height:100svh; display:flex; flex-direction:column; justify-content:space-between; gap:48px; padding:22px clamp(20px,4vw,56px) clamp(28px,5vh,48px)">
+      <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; align-self:flex-start">
+      <div style="display:flex; flex-direction:column; align-items:flex-start; gap:22px; max-width:40em">
+        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">your album</span>
+        <h1 style="margin:0; font-size:clamp(44px,8vw,140px); font-weight:200; line-height:.94; letter-spacing:-0.035em; color:#1B1D1E">it didn’t <span style="font-style:italic; color:#10AF8B">load</span></h1>
+        <p style="margin:0; max-width:30em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">{{ loadError }}</p>
+        <button onClick="{{ retry }}" style="margin-top:6px; min-height:44px; padding:14px 24px; background:none; border:1px solid #0E8E72; border-radius:0; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#0E8E72; cursor:pointer; transition:background .3s, color .3s" style-hover="background:#0E8E72; color:#FFFFFF">try again</button>
       </div>
+      <span style="font-size:11px; letter-spacing:2.6px; color:#8A9390">creative INFINITELY</span>
     </div>
   </sc-if>
 
   <sc-if value="{{ hasEvent }}" hint-placeholder-val="{{ false }}">
     <div>
-      <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; padding:16px clamp(18px,4vw,40px); opacity:0; pointer-events:none; background:rgba(255,255,255,.97); border-bottom:1px solid rgba(16,175,139,.14); transition:opacity .3s">
-        <span style="font-size:13px; font-weight:400; color:#16231F">{{ event.couple_names }}</span>
-        <button onClick="{{ share }}" style="min-height:44px; padding:9px 16px; background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">{{ shareLabel }}</button>
-      </div>
-
-      <div style="position:relative; height:100vh; height:100svh; overflow:hidden; background:#111">
-<img ref="{{ setCoverRef }}" alt="{{ event.couple_names }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none">
-        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.32) 0%, rgba(0,0,0,.05) 30%, rgba(0,0,0,.05) 60%, rgba(0,0,0,.5) 100%)"></div>
-        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding:0 24px">
-          <span style="font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#EAF5F1">Infinitely</span>
-          <h1 style="margin:0; font-size:clamp(30px,7vw,64px); font-weight:200; letter-spacing:.01em; color:#FFFFFF; text-wrap:balance">{{ event.couple_names }}</h1>
-          <span style="font-size:clamp(13px,1.6vw,16px); letter-spacing:.08em; color:#DDEDE7">{{ dateLabel }}</span>
-          <sc-if value="{{ event.venue }}" hint-placeholder-val="{{ false }}">
-            <span style="font-size:13px; letter-spacing:.06em; color:#C7DED6">{{ event.venue }}</span>
+      <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:6px clamp(20px,4vw,56px); opacity:0; pointer-events:none; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid #EEF1F0; transition:opacity .4s">
+        <span style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; color:#1B1D1E">{{ event.couple_names }}</span>
+        <div style="display:flex; align-items:center; gap:clamp(20px,3vw,36px); font-size:10px; letter-spacing:2.6px; text-transform:uppercase; white-space:nowrap">
+          <sc-if value="{{ navFilms }}" hint-placeholder-val="{{ false }}">
+            <a href="#films" onClick="{{ jump }}" style="display:flex; align-items:center; min-height:44px; color:#1B1D1E" style-hover="color:#10AF8B">films</a>
           </sc-if>
-        </div>
-        <div style="position:absolute; left:50%; bottom:28px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:8px">
-          <span style="font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:#EAF5F1">Scroll</span>
-          <div style="width:1px; height:30px; background:linear-gradient(180deg,#EAF5F1,transparent)"></div>
+          <button onClick="{{ share }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#0A6E58; cursor:pointer" style-hover="color:#10AF8B">{{ shareLabel }}</button>
         </div>
       </div>
 
-      <div style="position:relative">
-        <div style="position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none; display:flex; align-items:center; justify-content:center">
-          <span style="font-size:clamp(90px,22vw,340px); font-weight:200; letter-spacing:.02em; color:var(--green); opacity:.1; filter:blur(6px); white-space:nowrap; text-transform:uppercase">INFINITELY</span>
+      <div style="position:relative; height:100vh; height:100svh; overflow:hidden; background:#0B0C0C">
+        <img ref="{{ setCoverRef }}" data-cover="" alt="{{ event.couple_names }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none">
+        <div style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(8,22,17,.36) 0%, rgba(8,22,17,0) 22%, rgba(8,22,17,0) 46%, rgba(8,22,17,.62) 100%)"></div>
+        <div style="position:absolute; top:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:12px clamp(20px,4vw,56px)">
+          <img src="assets/wordmark-white.png" alt="glomium" style="height:20px; width:auto; display:block">
+          <button onClick="{{ share }}" style="min-height:44px; padding:0; border:0; background:none; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="color:#BFE9DC">{{ shareLabel }}</button>
         </div>
-        <div style="position:relative; z-index:1; padding:clamp(28px,6vh,64px) 0; display:flex; flex-direction:column; gap:6px; width:100%">
-        <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="3">
-          <sc-if value="{{ block.isGrid }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; gap:6px; padding:0 6px; align-items:flex-start">
-              <sc-for list="{{ block.columns }}" as="col" hint-placeholder-count="3">
-                <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px">
-                  <sc-for list="{{ col.items }}" as="ph" hint-placeholder-count="2">
-                    <div onClick="{{ ph.openLightbox }}" style="display:block; border-radius:1px; overflow:hidden; cursor:pointer">
-                      <img ref="{{ ph.setImgRef }}" alt="{{ ph.name }}" loading="lazy" style="width:100%; display:block">
-                    </div>
-                  </sc-for>
-                </div>
-              </sc-for>
-            </div>
-          </sc-if>
-          <sc-if value="{{ block.isFull }}" hint-placeholder-val="{{ false }}">
-            <div onClick="{{ block.openLightbox }}" style="display:block; width:100%; cursor:pointer">
-              <img ref="{{ block.setImgRef }}" alt="{{ block.name }}" loading="lazy" style="width:100%; max-height:92vh; object-fit:cover; display:block">
-            </div>
-          </sc-if>
-        </sc-for>
+        <div style="position:absolute; left:clamp(20px,4vw,56px); right:clamp(20px,4vw,56px); bottom:clamp(36px,7vh,72px); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:22px 48px; color:#FFFFFF">
+          <div style="display:flex; flex-direction:column; gap:18px; min-width:0; max-width:100%">
+            <sc-if value="{{ hasDate }}" hint-placeholder-val="{{ false }}"><span data-rise="" style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase">{{ dateLabel }}</span></sc-if>
+            <h1 data-rise="" style="margin:0; font-size:clamp(44px,8.4vw,156px); font-weight:200; line-height:.94; letter-spacing:-0.035em; text-wrap:balance; overflow-wrap:anywhere">{{ event.couple_names }}</h1>
+          </div>
+          <div data-rise="" style="display:flex; flex-direction:column; align-items:{{ heroMetaAlign }}; gap:12px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; text-align:{{ heroMetaText }}">
+            <sc-if value="{{ hasVenue }}" hint-placeholder-val="{{ false }}"><span>{{ event.venue }}</span></sc-if>
+            <span>{{ countLabel }}</span>
+          </div>
+        </div>
+      </div>
+
+      <section style="padding:clamp(96px,12vw,180px) clamp(20px,4vw,56px) 0">
+        <sc-if value="{{ hasPhotos }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:24px; margin-bottom:clamp(40px,5vw,72px); font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">
+            <span>{{ photosHead }}</span>
+            <span style="font-variant-numeric:tabular-nums">{{ photoCount }}</span>
+          </div>
+        </sc-if>
+        <div style="display:flex; flex-direction:column; gap:clamp(10px,1.4vw,20px)">
+          <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="2">
+            <sc-if value="{{ block.isGrid }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:clamp(10px,1.4vw,20px); align-items:flex-start; width:{{ block.width }}; margin:0 auto">
+                <sc-for list="{{ block.columns }}" as="col" hint-placeholder-count="3">
+                  <div style="flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:clamp(10px,1.4vw,20px)">
+                    <sc-for list="{{ col.items }}" as="ph" hint-placeholder-count="2">
+                      <button onClick="{{ ph.openLightbox }}" aria-label="{{ ph.aria }}" style="display:block; width:100%; padding:0; border:0; background:#F1F4F3; overflow:hidden; cursor:zoom-in">
+                        <img ref="{{ ph.setImgRef }}" alt="{{ ph.name }}" loading="lazy" decoding="async" style="width:100%; display:block; transition:opacity .8s, transform 1.4s cubic-bezier(.2,.8,.2,1)" style-hover="transform:scale(1.025)">
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ block.isFull }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ block.openLightbox }}" aria-label="{{ block.aria }}" style="display:block; width:calc(100% + 2 * clamp(20px,4vw,56px)); margin:clamp(34px,5vw,84px) calc(-1 * clamp(20px,4vw,56px)); padding:0; border:0; background:#F1F4F3; overflow:hidden; cursor:zoom-in">
+                <img ref="{{ block.setImgRef }}" alt="{{ block.name }}" loading="lazy" decoding="async" style="width:100%; max-height:92vh; object-fit:cover; display:block; transition:opacity .8s">
+              </button>
+            </sc-if>
+          </sc-for>
+        </div>
 
         <sc-if value="{{ hasVideos }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex; flex-direction:column; align-items:center; gap:clamp(38px,7vh,72px); padding:clamp(56px,10vh,110px) 6px clamp(20px,4vh,40px)">
-            <div style="width:clamp(140px,26vw,260px); height:1px; background:linear-gradient(90deg, rgba(16,175,139,0) 0%, var(--green) 50%, rgba(16,175,139,0) 100%)"></div>
-            <div style="width:100%; max-width:1480px; display:grid; gap:clamp(18px,2.4vw,34px); grid-template-columns:{{ videoCols }}">
+          <div id="films" style="display:flex; flex-direction:column; gap:clamp(40px,5vw,72px); padding-top:{{ filmsTop }}">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:24px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">
+              <span>{{ filmsHead }}</span>
+              <span style="font-variant-numeric:tabular-nums">{{ filmCount }}</span>
+            </div>
+            <div style="display:grid; gap:clamp(44px,5vw,72px) clamp(14px,1.8vw,28px); grid-template-columns:{{ videoCols }}; align-items:start">
               <sc-for list="{{ videos }}" as="vd" hint-placeholder-count="2">
-                <div style="display:flex; flex-direction:column; gap:14px">
-                  <div onClick="{{ vd.open }}" style="position:relative; cursor:pointer; background:#000; border-radius:2px; overflow:hidden" style-hover="opacity:.94">
+                <button onClick="{{ vd.open }}" aria-label="play {{ vd.title }}" style="display:flex; flex-direction:column; gap:16px; min-width:0; padding:0; border:0; background:none; text-align:left; color:inherit; cursor:pointer">
+                  <div style="position:relative; width:100%; overflow:hidden; background:#0B0C0C">
                     <video ref="{{ vd.setVideoRef }}" muted="{{ true }}" playsinline="{{ true }}" preload="metadata" tabIndex="-1" style="width:100%; aspect-ratio:16 / 9; object-fit:cover; display:block; pointer-events:none"></video>
-                    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,14,13,.22)">
-                      <div style="width:clamp(44px,4.6vw,62px); height:clamp(44px,4.6vw,62px); border-radius:50%; border:1px solid rgba(255,255,255,.72); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px)">
-                        <div style="width:0; height:0; margin-left:4px; border-left:13px solid rgba(255,255,255,.95); border-top:8px solid transparent; border-bottom:8px solid transparent"></div>
-                      </div>
-                    </div>
                   </div>
-                  <sc-if value="{{ vd.hasLabel }}" hint-placeholder-val="{{ false }}">
-                    <span style="font-size:clamp(9px,1.1vw,11px); letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep); text-align:center">{{ vd.label }}</span>
-                  </sc-if>
-                </div>
+                  <div style="width:100%; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:6px 20px">
+                    <div style="display:flex; gap:14px; align-items:baseline; min-width:0">
+                      <span style="font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">{{ vd.no }}</span>
+                      <span style="font-size:19px; line-height:1.35; color:#1B1D1E">{{ vd.title }}</span>
+                    </div>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">play</span>
+                  </div>
+                </button>
               </sc-for>
             </div>
           </div>
         </sc-if>
-        </div>
-      </div>
+      </section>
 
-      <footer style="display:flex; flex-direction:column; align-items:center; padding:clamp(60px,11vh,124px) 24px clamp(26px,4vh,40px)">
-        <div style="width:clamp(140px,26vw,260px); height:1px; background:linear-gradient(90deg, rgba(16,175,139,0) 0%, var(--green) 50%, rgba(16,175,139,0) 100%)"></div>
-        <span style="margin-top:clamp(28px,5vh,50px); font-size:clamp(26px,3.4vw,38px); font-weight:200; line-height:1; color:var(--green); opacity:.5">∞</span>
-        <span style="margin-top:clamp(20px,3vh,30px); font-size:10px; letter-spacing:.34em; text-transform:uppercase; color:var(--green-deep)">With love</span>
-        <h2 style="margin:clamp(12px,2vh,18px) 0 0; font-size:clamp(26px,4.6vw,46px); font-weight:200; letter-spacing:.015em; line-height:1.15; color:#16231F; text-align:center; text-wrap:balance">{{ event.couple_names }}</h2>
-        <span style="margin-top:clamp(10px,1.6vh,15px); font-size:clamp(11px,1.3vw,13px); letter-spacing:.14em; color:#5F6C68; text-align:center; text-wrap:pretty">{{ footerMeta }}</span>
-        <button onClick="{{ share }}" style="margin-top:clamp(26px,4.5vh,44px); min-height:44px; padding:13px 30px; background:transparent; color:var(--green-deep); border:1px solid rgba(16,175,139,.45); border-radius:2px; font-size:11px; letter-spacing:.16em; text-transform:uppercase; cursor:pointer; transition:background .25s, color .25s, border-color .25s" style-hover="background:var(--green); color:#fff; border-color:var(--green)">{{ shareLabel }}</button>
-        <div style="width:100%; max-width:1480px; margin-top:clamp(44px,8vh,86px); padding-top:clamp(18px,3vh,26px); border-top:1px solid rgba(16,175,139,.16); display:flex; align-items:center; justify-content:center">
-          <span style="font-size:10px; letter-spacing:.2em; color:#5F6C68"><span style="text-transform:lowercase">creative</span> <span style="color:var(--green-deep); text-transform:uppercase">INFINITELY</span></span>
-        </div>
+      <footer style="display:flex; flex-direction:column; align-items:center; gap:26px; padding:clamp(140px,16vw,240px) clamp(20px,4vw,56px) 110px; text-align:center">
+        <sc-if value="{{ hasFooterMeta }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ footerMeta }}</span></sc-if>
+        <h2 style="margin:0; font-size:clamp(34px,5vw,80px); font-weight:200; line-height:1; letter-spacing:-0.03em; color:#1B1D1E; text-wrap:balance">{{ event.couple_names }}</h2>
+        <button onClick="{{ share }}" style="margin-top:8px; min-height:44px; padding:14px 24px; background:none; border:1px solid #0E8E72; border-radius:0; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#0E8E72; cursor:pointer; transition:background .3s, color .3s" style-hover="background:#0E8E72; color:#FFFFFF">{{ shareLabel }}</button>
+        <img src="assets/infinity.svg" alt="" style="margin-top:clamp(72px,9vw,130px); width:clamp(80px,9vw,140px); height:auto">
+        <div style="font-size:16px; line-height:1.8; color:#4A524F">with love,<br>team glomium.</div>
+        <div style="width:48px; height:1px; background:#E2E7E5"></div>
+        <div style="font-size:11px; letter-spacing:2.6px; color:#8A9390">creative INFINITELY</div>
       </footer>
     </div>
   </sc-if>
@@ -168,30 +184,35 @@
   </sc-if>
 
   <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed; inset:0; z-index:1000; background:rgba(10,14,13,.97); display:flex; flex-direction:column">
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:clamp(10px,2vh,16px) clamp(10px,4vw,36px); flex-wrap:wrap; gap:clamp(6px,1vw,10px)">
-        <span style="font-size:13px; color:#EAF5F1; letter-spacing:.04em; max-width:60vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ lightboxName }}</span>
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-          <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ toggleFullscreen }}" style="min-height:44px; padding:10px clamp(13px,2vw,16px); background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">{{ fullscreenLabel }}</button>
-          </sc-if>
-          <sc-if value="{{ showSlideshowBtn }}" hint-placeholder-val="{{ true }}">
-            <button onClick="{{ toggleSlideshow }}" style="min-height:44px; padding:10px clamp(13px,2vw,16px); background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">{{ slideshowLabel }}</button>
-          </sc-if>
-          <button onClick="{{ shareCurrent }}" style="min-height:44px; padding:10px clamp(13px,2vw,16px); background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">Share</button>
-          <button onClick="{{ downloadCurrent }}" style="min-height:44px; padding:10px clamp(13px,2vw,16px); background:#fff; color:var(--green-deep); border:1px solid var(--green); border-radius:2px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer" style-hover="background:var(--green); color:#fff">Download</button>
-          <button onClick="{{ closeLightbox }}" style="min-width:44px; min-height:44px; padding:10px 12px; background:transparent; color:#EAF5F1; border:1px solid rgba(255,255,255,.3); border-radius:2px; font-size:14px; cursor:pointer" style-hover="border-color:var(--green); color:var(--green)">✕</button>
+    <div role="dialog" aria-modal="true" aria-label="viewer" style="position:fixed; inset:0; z-index:1000; background:#0B0C0C; display:flex; flex-direction:column; color:#FFFFFF; font-size:10px; letter-spacing:2.6px; text-transform:uppercase">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:24px; padding:4px clamp(20px,4vw,56px)">
+        <div style="display:flex; align-items:baseline; gap:16px; min-width:0">
+          <span style="font-variant-numeric:tabular-nums; white-space:nowrap">{{ lightboxCounter }}</span>
+          <sc-if value="{{ hasLightboxName }}" hint-placeholder-val="{{ false }}"><span style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#A9B3B0">{{ lightboxName }}</span></sc-if>
         </div>
+        <button onClick="{{ closeLightbox }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">close</button>
       </div>
-      <div style="flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:0 clamp(8px,3vw,40px) clamp(16px,3vh,40px); min-height:0">
-        <button onClick="{{ prevItem }}" style="position:absolute; left:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">‹</button>
+      <div ref="{{ stageRef }}" style="flex:1; position:relative; display:flex; align-items:center; justify-content:center; padding:0 clamp(12px,4vw,56px); min-height:0">
         <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ false }}">
-          <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; border-radius:2px; background:#000"></video>
+          <video ref="{{ setLightboxVideoRef }}" controls="{{ true }}" playsinline="{{ true }}" style="max-width:100%; max-height:100%; background:#000"></video>
         </sc-if>
         <sc-if value="{{ hasImgSrc }}" hint-placeholder-val="{{ false }}">
-          <img ref="{{ setLightboxImgRef }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain">
+          <img ref="{{ setLightboxImgRef }}" alt="{{ lightboxName }}" style="max-width:100%; max-height:100%; object-fit:contain; transition:opacity .45s">
         </sc-if>
-        <button onClick="{{ nextItem }}" style="position:absolute; right:clamp(4px,1.5vw,24px); top:50%; transform:translateY(-50%); min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:#EAF5F1; font-size:30px; line-height:1; cursor:pointer; padding:10px; opacity:.7" style-hover="opacity:1; color:var(--green)">›</button>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px clamp(20px,4vw,56px) 10px">
+        <button onClick="{{ prevItem }}" aria-label="previous" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">prev</button>
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; column-gap:clamp(16px,3vw,34px)">
+          <sc-if value="{{ isVideoItem }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ toggleFullscreen }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">{{ fullscreenLabel }}</button>
+          </sc-if>
+          <sc-if value="{{ showSlideshowBtn }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ toggleSlideshow }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">{{ slideshowLabel }}</button>
+          </sc-if>
+          <button onClick="{{ shareCurrent }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">share</button>
+          <button onClick="{{ downloadCurrent }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer; color:#10AF8B" style-hover="color:#FFFFFF">download</button>
+        </div>
+        <button onClick="{{ nextItem }}" aria-label="next" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">next</button>
       </div>
     </div>
   </sc-if>
@@ -207,17 +228,18 @@ const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 
 class Component extends DCLogic {
   state = {
-    loading: true, notFound: false, loadError: '', slug: '', event: null, media: [], shareLabel: 'Share album',
+    loading: true, notFound: false, loadError: '', slug: '', event: null, media: [], shareLabel: 'share album',
     lightboxOpen: false, lightboxIndex: 0, slideshowPlaying: false,
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
+    wide: typeof window !== 'undefined' ? window.innerWidth >= 1680 : false,
     videoShareId: null, isFullscreen: false, loaderGone: false,
   };
 
   loaderRef = React.createRef(); loadNumRef = React.createRef(); loadBarRef = React.createRef(); loadLabelRef = React.createRef(); loadMarkRef = React.createRef();
 
   onResize = () => {
-    const m = window.innerWidth < 768;
-    if (m !== this.state.isMobile) this.setState({ isMobile: m });
+    const m = window.innerWidth < 768, w = window.innerWidth >= 1680;
+    if (m !== this.state.isMobile || w !== this.state.wide) this.setState({ isMobile: m, wide: w });
   };
 
   componentDidMount() {
@@ -264,7 +286,7 @@ class Component extends DCLogic {
     // after mount, and touching it early threw and froze the loader at 000.
     for (let t = 0; !window.supabase && t < 100; t++) await sleep(100);
     if (window.supabase && !this.sb) this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    if (slug && !this.sb) this.setState({ loading: false, slug, loadError: 'The connection dropped before the album arrived. Your link is fine — try again.' });
+    if (slug && !this.sb) this.setState({ loading: false, slug, loadError: 'the connection dropped before the album arrived. your link is fine — try again.' });
     else if (slug) await Promise.race([this.load(slug), sleep(8000)]);
     else this.setState({ loading: false, notFound: true });
     bump();
@@ -288,6 +310,17 @@ class Component extends DCLogic {
     this.finishLoad();
   }
 
+  // The cover settles and the title block rises as the loader lifts.
+  intro() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ease = 'cubic-bezier(.2,.8,.2,1)';
+    const c = document.querySelector('[data-cover]');
+    if (c && c.animate) c.animate([{ transform: 'scale(1.06)' }, { transform: 'none' }], { duration: 2600, easing: ease, fill: 'both' });
+    document.querySelectorAll('[data-rise]').forEach((el, i) => el.animate && el.animate(
+      [{ opacity: 0, transform: 'translateY(22px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 1300, delay: 380 + i * 140, easing: ease, fill: 'both' }));
+  }
+
   finishLoad() {
     if (!this.L || this.L.finished || this.unmounted) return;
     this.L.finished = true;
@@ -295,6 +328,7 @@ class Component extends DCLogic {
     document.body.style.overflow = this.state.lightboxOpen ? 'hidden' : '';
     if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
     if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
+    this.intro();
     setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); } }, 1200);
   }
 
@@ -393,6 +427,11 @@ class Component extends DCLogic {
     }
     if (el.getAttribute('sizes') !== sizes) el.sizes = sizes;
     if (el.getAttribute('src') !== g) {
+      // Each frame fades in once its bytes land, over the reserved grey box.
+      el.style.opacity = '0';
+      const show = () => { el.style.opacity = '1'; };
+      el.addEventListener('load', show, { once: true });
+      el.addEventListener('error', show, { once: true });
       const set = this.srcsetFor(m, g, v);
       if (set) el.srcset = set; else el.removeAttribute('srcset');
       el.src = g;
@@ -437,7 +476,7 @@ class Component extends DCLogic {
   };
 
   async load(slug) {
-    const OFFLINE = 'The connection dropped before the album arrived. Your link is fine — try again.';
+    const OFFLINE = 'the connection dropped before the album arrived. your link is fine — try again.';
     this.setState({ loading: true, notFound: false, loadError: '', slug });
     try {
       // get_album returns only the columns an album page renders, so the client's
@@ -469,9 +508,9 @@ class Component extends DCLogic {
   share() {
     const url = window.location.href;
     if (navigator.share) { navigator.share({ title: this.state.event.couple_names, url }).catch(() => {}); return; }
-    const done = label => { this.setState({ shareLabel: label }); setTimeout(() => { if (!this.unmounted) this.setState({ shareLabel: 'Share album' }); }, 1800); };
-    if (!navigator.clipboard || !navigator.clipboard.writeText) { window.prompt('Copy this link', url); return; }
-    navigator.clipboard.writeText(url).then(() => done('Link copied!'), () => window.prompt('Copy this link', url));
+    const done = label => { this.setState({ shareLabel: label }); setTimeout(() => { if (!this.unmounted) this.setState({ shareLabel: 'share album' }); }, 1800); };
+    if (!navigator.clipboard || !navigator.clipboard.writeText) { window.prompt('copy this link', url); return; }
+    navigator.clipboard.writeText(url).then(() => done('link copied'), () => window.prompt('copy this link', url));
   }
 
   openLightbox(idx) {
@@ -662,34 +701,47 @@ class Component extends DCLogic {
     const fmtDate = d => { if (!d) return ''; const t = new Date(d + 'T00:00:00'); return isNaN(t.getTime()) ? '' : t.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }); };
 
     const indexed = s.media.map((m, i) => ({ ...m, idx: i }));
+    // Masonry that keeps its bottom edge: each photo drops into the shortest
+    // column by its real proportions. A short run stays at full-grid column
+    // width and centres, instead of stretching one photo across the page.
+    const cols = s.isMobile ? 2 : (s.wide ? 4 : 3);
+    const G = 'clamp(10px,1.4vw,20px)';
+    const sizes = s.isMobile ? '50vw' : (s.wide ? '25vw' : '34vw');
     const blocks = [];
     let run = [];
     const flush = () => {
-      if (run.length) {
-        const items = run.map(ph => ({
-          ...ph,
-          setImgRef: el => this.wireImg(el, ph, this.state.isMobile ? '33vw' : '25vw'),
-          openLightbox: () => this.openLightbox(ph.idx),
-        }));
-        const numCols = Math.min(this.state.isMobile ? 3 : 4, Math.max(2, items.length));
-        const cols = Array.from({ length: Math.min(numCols, items.length) || 1 }, () => []);
-        items.forEach((it, i) => cols[i % cols.length].push(it));
-        blocks.push({ isGrid: true, isFull: false, isVideo: false, columns: cols.map(colItems => ({ items: colItems })) });
-        run = [];
-      }
+      if (!run.length) return;
+      const items = run.map(ph => ({
+        ...ph,
+        aria: ph.name ? 'open ' + ph.name : 'open photo ' + (ph.idx + 1),
+        setImgRef: el => this.wireImg(el, ph, sizes),
+        openLightbox: () => this.openLightbox(ph.idx),
+      }));
+      const n = Math.min(cols, items.length);
+      const columns = Array.from({ length: n }, () => ({ items: [], h: 0 }));
+      items.forEach(it => {
+        const r = it.width > 0 && it.height > 0 ? it.height / it.width : 1.25;
+        let c = columns[0];
+        columns.forEach(x => { if (x.h < c.h - 0.001) c = x; });
+        c.items.push(it); c.h += r;
+      });
+      const width = n < cols ? 'calc((100% - ' + (cols - 1) + ' * ' + G + ') * ' + (n / cols).toFixed(4) + ' + ' + (n - 1) + ' * ' + G + ')' : '100%';
+      blocks.push({ isGrid: true, isFull: false, width, columns: columns.map(x => ({ items: x.items })) });
+      run = [];
     };
     for (const m of indexed) {
       if (m.kind === 'video') continue;
       if (m.full_bleed) {
         flush();
-        blocks.push({ isGrid: false, isFull: true, isVideo: false, item: m, name: m.name || '', setImgRef: el => this.wireImg(el, m, '100vw'), openLightbox: () => this.openLightbox(m.idx) });
+        blocks.push({ isGrid: false, isFull: true, item: m, name: m.name || '', aria: m.name ? 'open ' + m.name : 'open photo ' + (m.idx + 1), setImgRef: el => this.wireImg(el, m, '100vw'), openLightbox: () => this.openLightbox(m.idx) });
       } else run.push(m);
     }
     flush();
 
     // Videos always sit below the full photo grid, in their own labelled section.
-    const videos = indexed.filter(m => m.kind === 'video').map(m => ({
+    const videos = indexed.filter(m => m.kind === 'video').map((m, vi) => ({
       ...m,
+      no: String(vi + 1).padStart(2, '0'), title: (m.name && m.name.trim()) || 'film',
       label: m.name || '',
       hasLabel: !!(m.name && m.name.trim()),
       open: () => this.openLightbox(m.idx),
@@ -744,17 +796,47 @@ class Component extends DCLogic {
     }));
 
     const current = s.media[s.lightboxIndex] || null;
+    const nPhotos = indexed.length - videos.length, nMedia = s.media.length, dg = Math.max(2, String(nMedia).length);
+    const plural = (k, w) => k + ' ' + w + (k === 1 ? '' : 's');
+    const dateLabel = s.event ? fmtDate(s.event.event_date) : '';
+    const footerMeta = [dateLabel, s.event && s.event.venue].filter(Boolean).join(' · ');
     const isVideoItem = !!(current && current.kind === 'video');
 
     return {
       loading: s.loading, notFound: s.notFound, hasEvent: !!s.event,
       loadError: s.loadError, hasLoadError: !!s.loadError, retry: this.retry,
       pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
-      event: s.event || {}, dateLabel: s.event ? fmtDate(s.event.event_date) : '',
-      footerMeta: [s.event ? fmtDate(s.event.event_date) : '', s.event && s.event.venue].filter(Boolean).join('  ·  '),
-      blocks, videos, hasVideos: videos.length > 0,
+      event: s.event || {}, dateLabel, hasDate: !!dateLabel, hasVenue: !!(s.event && s.event.venue),
+      footerMeta, hasFooterMeta: !!footerMeta,
+      blocks, videos, hasVideos: videos.length > 0, hasPhotos: nPhotos > 0,
+      photosHead: '01 — photographs', photoCount: String(nPhotos),
+      filmsHead: (nPhotos ? '02' : '01') + ' — films', filmCount: String(videos.length),
+      filmsTop: nPhotos ? 'clamp(120px,14vw,200px)' : '0px',
+      countLabel: [nPhotos ? plural(nPhotos, 'photograph') : '', videos.length ? plural(videos.length, 'film') : ''].filter(Boolean).join(' · '),
+      heroMetaAlign: s.isMobile ? 'flex-start' : 'flex-end', heroMetaText: s.isMobile ? 'left' : 'right',
+      navFilms: videos.length > 0 && nPhotos > 0,
+      jump: e => {
+        e.preventDefault();
+        const el = document.getElementById('films');
+        if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      },
+      lightboxCounter: String(s.lightboxIndex + 1).padStart(dg, '0') + ' / ' + String(nMedia).padStart(dg, '0'),
+      hasLightboxName: !!(current && current.name && current.name.trim()),
+      // Swipe between items on touch; a drag that starts on the film is its scrubber's.
+      stageRef: el => {
+        if (!el || el._sw) return;
+        el._sw = 1;
+        let x0 = null, y0 = 0;
+        el.addEventListener('touchstart', e => { if (e.target && e.target.tagName === 'VIDEO') { x0 = null; return; } const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, { passive: true });
+        el.addEventListener('touchend', e => {
+          if (x0 == null) return;
+          const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+          x0 = null;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) this.step(dx < 0 ? 1 : -1);
+        }, { passive: true });
+      },
       showSlideshowBtn: !isVideoItem,
-      fullscreenLabel: s.isFullscreen ? 'Exit full screen' : 'Full screen',
+      fullscreenLabel: s.isFullscreen ? 'exit full screen' : 'full screen',
       toggleFullscreen: () => this.toggleFullscreen(),
       // One video sits alone full-width; 2+ share a row (2 on mobile, 3 on desktop).
       videoCols: videos.length === 1
@@ -777,7 +859,13 @@ class Component extends DCLogic {
       lightboxName: current ? (current.name || '') : '',
       isVideoItem,
       lightboxImgSrc: current && !isVideoItem ? (current.url_view || current.url) : '',
-      setLightboxImgRef: el => { const u = current && !isVideoItem && (current.url_view || current.url); if (el && u && el.getAttribute('src') !== u) el.src = u; },
+      setLightboxImgRef: el => {
+        const u = current && !isVideoItem && (current.url_view || current.url);
+        if (!el || !u || el.getAttribute('src') === u) return;
+        el.style.opacity = '0';
+        el.onload = el.onerror = () => { el.style.opacity = '1'; };
+        el.src = u;
+      },
       hasImgSrc: !!(current && !isVideoItem && current.url),
       setLightboxVideoRef: el => {
         this.lightboxVideoEl = el;
@@ -801,7 +889,7 @@ class Component extends DCLogic {
       prevItem: () => this.step(-1), nextItem: () => this.step(1),
       closeLightbox: () => this.closeLightbox(),
       toggleSlideshow: () => this.toggleSlideshow(),
-      slideshowLabel: s.slideshowPlaying ? 'Pause' : 'Slideshow',
+      slideshowLabel: s.slideshowPlaying ? 'pause' : 'slideshow',
       downloadCurrent: () => this.downloadCurrent(),
       loaderOn: !s.loaderGone,
       loaderRef: this.loaderRef, loadNumRef: this.loadNumRef, loadBarRef: this.loadBarRef, loadLabelRef: this.loadLabelRef, loadMarkRef: this.loadMarkRef,
