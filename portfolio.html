@@ -45,6 +45,7 @@ a:hover { color: #10AF8B; }
     </a>
     <nav style="display: flex; gap: clamp(16px, 3vw, 40px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; pointer-events: auto;">
       <a href="#works" onClick="{{ jump }}" style="color: inherit;" style-hover="color: #10AF8B;">works</a>
+      <a href="#why" onClick="{{ jump }}" style="color: inherit;" style-hover="color: #10AF8B;">why</a>
       <a href="#bts" onClick="{{ jump }}" style="color: inherit;" style-hover="color: #10AF8B;">behind</a>
       <a href="#process" onClick="{{ jump }}" style="color: inherit;" style-hover="color: #10AF8B;">process</a>
     </nav>
@@ -145,6 +146,80 @@ a:hover { color: #10AF8B; }
     </div>
   </section>
 
+  <section id="why" ref="{{ whyRef }}" data-screen-label="03 why" style="position: relative; background: #0B0C0C; color: #F4F6F5; padding: clamp(120px, 14vw, 220px) clamp(20px, 4vw, 56px) clamp(140px, 16vw, 260px); display: flex; flex-direction: column; gap: clamp(120px, 15vw, 240px); overflow: hidden;">
+    <div style="display: flex; flex-direction: column; gap: clamp(40px, 6vw, 80px);">
+      <div style="display: flex; justify-content: space-between; gap: 24px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
+        <span>03 — why we do this</span>
+        <span>no notes, please</span>
+      </div>
+      <div data-lw=""><h2 style="margin: 0; font-size: clamp(64px, 15vw, 280px); font-weight: 200; line-height: 0.86; letter-spacing: -0.045em; color: #F4F6F5; will-change: opacity, transform;">why we <span style="font-style: italic; color: #10AF8B;">do</span> this.</h2></div>
+    </div>
+
+    <div data-lw=""><p style="margin: 0; max-width: 17em; font-size: clamp(34px, 5.6vw, 104px); font-weight: 200; line-height: 1.02; letter-spacing: -0.03em; color: #F4F6F5; text-wrap: balance; will-change: opacity, transform;">we see the world differently. that’s not a slogan — it’s a <span style="font-style: italic; color: #10AF8B;">diagnosis</span>.</p></div>
+
+    <sc-if value="{{ shotA.show }}" hint-placeholder-val="{{ false }}">
+      <figure data-sw="" style="margin: 0 calc(-1 * clamp(20px, 4vw, 56px));">
+        <div style="position: relative; aspect-ratio: 21 / 9; overflow: hidden; background: #151717;">
+          <div data-shot="" style="position: absolute; inset: 0; will-change: transform;">
+            <sc-if value="{{ shotA.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ coverRef }}" data-src="{{ shotA.img }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.9s;"></sc-if>
+            <sc-if value="{{ shotA.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="why-shot-1" shape="rect" placeholder="master shot — 21:9"></image-slot></sc-if>
+          </div>
+        </div>
+        <sc-if value="{{ shotA.hasCap }}" hint-placeholder-val="{{ false }}"><figcaption style="padding: 14px clamp(20px, 4vw, 56px) 0; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #A9B3B0;">{{ shotA.caption }}</figcaption></sc-if>
+      </figure>
+    </sc-if>
+
+    <div data-lw="" style="padding-left: {{ whyIndent }};"><p style="margin: 0; max-width: 17em; font-size: clamp(34px, 5.6vw, 104px); font-weight: 200; line-height: 1.02; letter-spacing: -0.03em; color: #F4F6F5; text-wrap: balance; will-change: opacity, transform;">every creative eye is different. ours came <span style="font-style: italic; color: #10AF8B;">aligned</span> — naturally.</p></div>
+
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(14px, 1.8vw, 28px); row-gap: clamp(56px, 8vw, 96px); align-items: start;">
+      <sc-if value="{{ shotB.show }}" hint-placeholder-val="{{ false }}">
+        <figure data-sw="" style="margin: 0; grid-column: {{ whyColB }};">
+        <div style="position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #151717;">
+          <div data-shot="" style="position: absolute; inset: 0; will-change: transform;">
+            <sc-if value="{{ shotB.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ coverRef }}" data-src="{{ shotB.img }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.9s;"></sc-if>
+            <sc-if value="{{ shotB.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="why-shot-2" shape="rect" placeholder="master shot — 4:5"></image-slot></sc-if>
+          </div>
+        </div>
+        <sc-if value="{{ shotB.hasCap }}" hint-placeholder-val="{{ false }}"><figcaption style="padding-top: 14px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #A9B3B0;">{{ shotB.caption }}</figcaption></sc-if>
+        </figure>
+      </sc-if>
+      <sc-if value="{{ shotC.show }}" hint-placeholder-val="{{ false }}">
+        <figure data-sw="" style="margin: {{ whyTopC }} 0 0; grid-column: {{ whyColC }};">
+        <div style="position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: #151717;">
+          <div data-shot="" style="position: absolute; inset: 0; will-change: transform;">
+            <sc-if value="{{ shotC.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ coverRef }}" data-src="{{ shotC.img }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.9s;"></sc-if>
+            <sc-if value="{{ shotC.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="why-shot-3" shape="rect" placeholder="master shot — 3:2"></image-slot></sc-if>
+          </div>
+        </div>
+        <sc-if value="{{ shotC.hasCap }}" hint-placeholder-val="{{ false }}"><figcaption style="padding-top: 14px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #A9B3B0;">{{ shotC.caption }}</figcaption></sc-if>
+        </figure>
+      </sc-if>
+    </div>
+
+    <div data-lw=""><p style="margin: 0; max-width: 17em; font-size: clamp(34px, 5.6vw, 104px); font-weight: 200; line-height: 1.02; letter-spacing: -0.03em; color: #F4F6F5; text-wrap: balance; will-change: opacity, transform;">we keep only what feels <span style="font-style: italic; color: #10AF8B;">immersive</span>. the rest was never going to make it.</p></div>
+
+    <div data-lw=""><p style="margin: 0; font-size: clamp(52px, 11vw, 210px); font-weight: 200; line-height: 0.9; letter-spacing: -0.045em; color: #F4F6F5; text-wrap: balance; will-change: opacity, transform;">opinions are free. <span style="font-style: italic; color: #10AF8B;">taste</span> isn’t.</p></div>
+
+    <sc-if value="{{ shotD.show }}" hint-placeholder-val="{{ false }}">
+      <figure data-sw="" style="margin: 0 auto; width: {{ whyWideD }};">
+        <div style="position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #151717;">
+          <div data-shot="" style="position: absolute; inset: 0; will-change: transform;">
+            <sc-if value="{{ shotD.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ coverRef }}" data-src="{{ shotD.img }}" alt="" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.9s;"></sc-if>
+            <sc-if value="{{ shotD.slot }}" hint-placeholder-val="{{ false }}"><image-slot id="why-shot-4" shape="rect" placeholder="master shot — 16:9"></image-slot></sc-if>
+          </div>
+        </div>
+        <sc-if value="{{ shotD.hasCap }}" hint-placeholder-val="{{ false }}"><figcaption style="padding-top: 14px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #A9B3B0;">{{ shotD.caption }}</figcaption></sc-if>
+      </figure>
+    </sc-if>
+
+    <div data-lw=""><p style="margin: 0; max-width: 17em; font-size: clamp(34px, 5.6vw, 104px); font-weight: 200; line-height: 1.02; letter-spacing: -0.03em; color: #F4F6F5; text-wrap: balance; will-change: opacity, transform;">so yes — we already know what you want. you just haven’t <span style="font-style: italic; color: #10AF8B;">seen</span> it yet.</p></div>
+
+    <div data-lw=""><div style="display: flex; flex-direction: column; gap: 16px; will-change: opacity, transform;">
+      <span style="font-size: 16px; line-height: 1.8; color: #A9B3B0;">trust us. everyone does, eventually.</span>
+      <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">— team glomium</span>
+    </div></div>
+  </section>
+
   <section id="bts" ref="{{ btsRef }}" data-screen-label="03 behind the scenes" style="position: relative; height: {{ btsHeight }};">
     <div style="position: sticky; top: 0; height: 100vh; overflow: hidden; perspective: 1000px;">
       <div ref="{{ btsSceneRef }}" style="position: absolute; inset: 0; transform-style: preserve-3d;">
@@ -165,13 +240,13 @@ a:hover { color: #10AF8B; }
           </figure>
         </sc-for>
       </div>
-      <div style="position: absolute; top: 84px; left: clamp(20px, 4vw, 56px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390; pointer-events: none;">03 — behind the scenes</div>
+      <div style="position: absolute; top: 84px; left: clamp(20px, 4vw, 56px); font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390; pointer-events: none;">04 — behind the scenes</div>
     </div>
   </section>
 
   <section id="process" ref="{{ processRef }}" data-screen-label="04 process" style="position: relative; padding: clamp(120px, 16vw, 220px) clamp(20px, 4vw, 56px); display: flex; flex-wrap: wrap; gap: clamp(40px, 6vw, 96px); align-items: flex-start;">
     <div style="flex: 1 1 280px; position: {{ procPos }}; top: 120px; display: flex; flex-direction: column; gap: 22px;">
-      <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">04 — process</span>
+      <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">05 — process</span>
       <h2 style="margin: 0; font-weight: 200; font-size: clamp(44px, 6.4vw, 110px); line-height: 0.95; letter-spacing: -0.03em;">how we <span style="font-style: italic; color: #10AF8B;">work</span></h2>
     </div>
     <ol style="flex: 2 1 520px; list-style: none; margin: 0; padding: 0; border-top: 1px solid #E2E7E5;">
@@ -204,6 +279,7 @@ a:hover { color: #10AF8B; }
       <span ref="{{ chapterRef }}" style="flex: 0 0 110px;">01 reel</span>
       <div ref="{{ tickRef }}" style="position: relative; flex: 1 1 auto; height: 11px;">
         <div style="position: absolute; left: 0; right: 0; top: 5px; height: 1px; background: currentColor; opacity: 0.22;"></div>
+        <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
         <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
         <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
         <div data-tick="" style="position: absolute; top: 2px; width: 1px; height: 7px; background: currentColor; opacity: 0.5;"></div>
@@ -309,7 +385,7 @@ class Component extends DCLogic {
   kinds = ['wedding film', 'brand film', 'commercial', 'music video', 'event', 'wedding film', 'product film', 'brand film'];
   // Cover shapes by position: film frame, portrait, still. Keep in step with PF_COVER in admin.
   shapes = [[16, 9], [4, 5], [3, 2], [3, 2], [4, 5]];
-  chapters = ['01 reel', '02 works', '03 behind', '04 process'];
+  chapters = ['01 reel', '02 works', '03 why', '04 behind', '05 process'];
   spots = [
     [-0.27, -0.14, 'clamp(150px, 22vw, 420px)', '4 / 5'], [0.26, 0.12, 'clamp(170px, 26vw, 480px)', '3 / 2'],
     [-0.2, 0.2, 'clamp(140px, 18vw, 340px)', '3 / 4'], [0.22, -0.18, 'clamp(150px, 22vw, 420px)', '4 / 5'],
@@ -320,7 +396,7 @@ class Component extends DCLogic {
   constructor(p) {
     super(p);
     ['rootRef', 'mistRef', 'headerRef', 'logoGreenRef', 'logoWhiteRef', 'heroRef', 'filmBaseRef', 'filmUiRef', 'knockRef', 'heroOverlayRef', 'cueRef',
-     'worksRef', 'gridRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
+     'worksRef', 'gridRef', 'whyRef', 'btsRef', 'btsSceneRef', 'processRef', 'markRef',
      'hudRef', 'chapterRef', 'tickRef', 'playheadRef', 'tcRef', 'caseRef',
      'loaderRef', 'loadNumRef', 'loadBarRef', 'loadLabelRef', 'loadMarkRef', 'grainRef', 'frameRef'].forEach(k => { this[k] = React.createRef(); });
     this.S = { mx: 0, my: 0, tmx: 0, tmy: 0 };
@@ -458,9 +534,12 @@ class Component extends DCLogic {
     }
     const vw = innerWidth, vh = innerHeight, sy = scrollY;
     const box = ref => { const el = ref.current; if (!el) return { top: 0, h: 0 }; const b = el.getBoundingClientRect(); return { top: b.top + sy, h: b.height }; };
-    const M = { vw, vh, hero: box(this.heroRef), works: box(this.worksRef), bts: box(this.btsRef), process: box(this.processRef), root: box(this.rootRef) };
+    const M = { vw, vh, hero: box(this.heroRef), works: box(this.worksRef), why: box(this.whyRef), bts: box(this.btsRef), process: box(this.processRef), root: box(this.rootRef) };
     M.maxY = Math.max(0, document.documentElement.scrollHeight - vh);
-    M.chap = [M.hero.top, M.works.top, M.bts.top, M.process.top];
+    M.chap = [M.hero.top, M.works.top, M.why.top, M.bts.top, M.process.top];
+    const wr = this.whyRef.current, at = el => { const b = el.getBoundingClientRect(); return { top: b.top + sy, h: b.height }; };
+    M.lines = wr ? Array.from(wr.querySelectorAll('[data-lw]')).map(w => ({ el: w.firstElementChild, ...at(w) })) : [];
+    M.shots = wr ? Array.from(wr.querySelectorAll('[data-sw]')).map(w => ({ el: w.querySelector('[data-shot]'), ...at(w) })) : [];
     const bs = this.btsSceneRef.current;
     M.depth = bs ? Array.from(bs.querySelectorAll('[data-depth]')).map(el => ({ el, fx: +el.dataset.fx || 0, fy: +el.dataset.fy || 0, z0: +el.dataset.z || 0, w: el.offsetWidth, h: el.offsetHeight })) : [];
     const tk = this.tickRef.current;
@@ -573,6 +652,24 @@ class Component extends DCLogic {
     }
     this.reelOn(heroIn && !open);
 
+    // The manifesto reads itself in: each line lifts out of the dark as it
+    // reaches the reading height, and each master shot eases out of a slow push.
+    const yTop = M.why.top - y;
+    if (yTop < vh && yTop + M.why.h > 0) {
+      for (const L of M.lines) {
+        const t = L.top - y;
+        if (!L.el || t > vh * 1.1 || t + L.h < -vh * 0.3) continue;
+        const p = this.reduced ? 1 : cl((vh * 0.9 - t) / (vh * 0.4));
+        st(L.el, 'opacity', (0.12 + 0.88 * p).toFixed(3));
+        st(L.el, 'transform', 'translate3d(0, ' + ((1 - p) * 28).toFixed(1) + 'px, 0)');
+      }
+      if (!this.reduced) for (const S of M.shots) {
+        const t = S.top - y;
+        if (!S.el || t > vh || t + S.h < 0) continue;
+        st(S.el, 'transform', 'scale(' + (1.1 - 0.1 * cl((vh - t) / (vh + S.h))).toFixed(4) + ')');
+      }
+    }
+
     const bTop = M.bts.top - y, bH = M.bts.h;
     const km = 1 - Math.pow(0.95, f60);
     S.mx += (S.tmx - S.mx) * km; S.my += (S.tmy - S.my) * km;
@@ -589,14 +686,11 @@ class Component extends DCLogic {
       }
     }
 
-    if (onFilm !== this.lastOnFilm) {
-      this.lastOnFilm = onFilm;
-      const col = onFilm ? '#FFFFFF' : '#1B1D1E';
-      st(this.headerRef.current, 'color', col);
-      st(this.hudRef.current, 'color', col);
-      st(this.logoGreenRef.current, 'opacity', onFilm ? '0' : '1');
-      st(this.logoWhiteRef.current, 'opacity', onFilm ? '1' : '0');
-    }
+    const dTop = onFilm || (yTop <= 40 && yTop + M.why.h > 40), dBot = onFilm || (yTop <= vh - 30 && yTop + M.why.h > vh - 30);
+    st(this.headerRef.current, 'color', dTop ? '#FFFFFF' : '#1B1D1E');
+    st(this.hudRef.current, 'color', dBot ? '#FFFFFF' : '#1B1D1E');
+    st(this.logoGreenRef.current, 'opacity', dTop ? '0' : '1');
+    st(this.logoWhiteRef.current, 'opacity', dTop ? '1' : '0');
 
     if (this.hudRef.current) {
       const gp = cl((y - M.root.top) / Math.max(1, M.root.h - vh));
@@ -964,6 +1058,13 @@ class Component extends DCLogic {
       ['edit', 'colour, sound and pace, cut until it feels right — not just looks right.'],
       ['deliver', 'films and stills, delivered privately and ready to share.']
     ].map((s, i) => ({ no: this.pad(i + 1), verb: s[0], line: s[1] }));
+    const edDb = db ? db.media.filter(m => m.section === 'editorial' && !m.work_id) : [];
+    const vwNow = document.documentElement.clientWidth || innerWidth;
+    const [shotA, shotB, shotC, shotD] = [[21 / 9, 1.08], [4 / 5, narrow ? 1 : 0.42], [3 / 2, narrow ? 1 : 0.5], [16 / 9, narrow ? 1 : 0.84]].map((sp, i) => {
+      const m = edDb[i];
+      const img = m ? (m.kind === 'video' ? (m.poster_url || '') : this.fitSrc(m.url_grid, m.url, vwNow * sp[1] * 1.1, sp[0])) : '';
+      return { img, hasImg: !!img, slot: !m && slot, show: !!img || (!m && slot), caption: (m && m.caption) || '', hasCap: !!(m && m.caption) };
+    });
     const pat = this.stillPats();
     const aw = works[a] || works[0];
     if (this.state.active != null) this.everOpened = true;
@@ -1012,6 +1113,9 @@ class Component extends DCLogic {
       },
       dbFail: !!this.state.dbFail, retry: () => location.reload(),
       rows, cats, hasCats: kinds.length > 1,
+      whyRef: this.whyRef, shotA, shotB, shotC, shotD,
+      whyIndent: narrow ? '0px' : '22%', whyColB: narrow ? '1 / -1' : '1 / span 5', whyColC: narrow ? '1 / -1' : '7 / span 6',
+      whyTopC: narrow ? '0px' : 'clamp(80px, 16vw, 280px)', whyWideD: narrow ? '100%' : '84%',
       coverRef: el => {
         if (!el) return;
         if (!el._gl) { el._gl = 1; const show = () => { el.style.opacity = '1'; }; el.addEventListener('load', show); el.addEventListener('error', show); }

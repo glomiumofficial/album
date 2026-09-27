@@ -3177,6 +3177,39 @@
                 </sc-for>
               </div>
         </div>
+
+        <div style="display:flex; flex-direction:column; gap:14px; padding:24px; border:1px solid var(--line); border-radius:0">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Editorial — master shots</span>
+            <span style="font-size:11px; color:#6B7572">The “why we do this” page · {{ pfEdCount }}. Four shots, used in order.</span>
+            <input type="file" accept="image/*" multiple="{{ true }}" ref="{{ pfEdRef }}" onChange="{{ pfEdOnFiles }}" style="display:none">
+            <button onClick="{{ pfEdPick }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; margin-left:auto" style-hover="background:var(--green-deep); color:#fff">Upload</button>
+          </div>
+          <span style="font-size:12px; line-height:1.6; color:#4A524F">Shapes, in order: 21:9 full-bleed · 4:5 · 3:2 · 16:9. About 2600 px on the long side. Anything past the fourth is not shown.</span>
+          <sc-if value="{{ pfEdEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#4A524F">No master shots yet — the page shows its text only until you add some.</span></sc-if>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; align-items:start">
+                <sc-for list="{{ pfEdVM }}" as="ed" hint-placeholder-count="0">
+                  <div style="display:flex; flex-direction:column; gap:6px">
+                    <div style="position:relative; aspect-ratio:{{ ed.ratio }}; background:#EEF3F1; border-radius:0; overflow:hidden">
+                      <sc-if value="{{ ed.hasThumb }}" hint-placeholder-val="{{ false }}"><img ref="{{ pfSrcRef }}" data-src="{{ ed.thumb }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                      <sc-if value="{{ ed.noThumb }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; inset:0; display:grid; place-items:center; font-size:11px; color:#6B7572">Video</span></sc-if>
+                      <sc-if value="{{ ed.isVideo }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:6px; top:6px; padding:2px 7px; border-radius:0; background:rgba(0,0,0,.6); color:#fff; font-size:10px; letter-spacing:.18em; text-transform:uppercase">Video</span></sc-if>
+                      <span style="position:absolute; right:6px; top:6px; min-width:22px; padding:2px 6px; border-radius:0; background:rgba(255,255,255,.92); color:#1B1D1E; font-size:10px; letter-spacing:.06em; text-align:center">{{ ed.no }}</span>
+                    </div>
+                    <span style="font-size:10px; letter-spacing:.04em; color:#6B7572">{{ ed.spec }}</span>
+                    <sc-if value="{{ ed.hasWarn }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px; color:#9A6A12">{{ ed.warn }}</span></sc-if>
+                    <sc-if value="{{ ed.canEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ ed.edit }}" style="padding:5px 0; background:none; border:1px solid {{ ed.editBorder }}; border-radius:0; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit photo</button></sc-if>
+                    <input value="{{ ed.caption }}" onChange="{{ ed.onCaption }}" onBlur="{{ ed.saveCaption }}" placeholder="caption" style="padding:6px 9px; border:1px solid var(--line); border-radius:0; font-size:12px; outline:none; background:#fff; min-width:0">
+                    <div style="display:flex; gap:4px">
+                      <button onClick="{{ ed.left }}" title="Move earlier" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:0; font-size:12px; color:var(--green-deep); cursor:pointer">&#8592;</button>
+                      <select value="{{ ed.pos }}" onChange="{{ ed.onPos }}" title="Position" style="flex:1.3; min-width:0; padding:4px 2px; border:1px solid var(--line); border-radius:0; font-size:11px; color:var(--green-deep); background:#fff; text-align:center; cursor:pointer"><sc-for list="{{ ed.posOpts }}" as="po" hint-placeholder-count="1"><option value="{{ po.value }}">{{ po.label }}</option></sc-for></select>
+                      <button onClick="{{ ed.right }}" title="Move later" style="flex:1; padding:5px 0; background:none; border:1px solid var(--line); border-radius:0; font-size:12px; color:var(--green-deep); cursor:pointer">&#8594;</button>
+                      <button onClick="{{ ed.remove }}" title="Remove" style="flex:1; padding:5px 0; background:none; border:1px solid #E7CEC9; border-radius:0; font-size:12px; color:#B4433A; cursor:pointer">&#215;</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+        </div>
       </div>
       <sc-if value="{{ peOpen }}" hint-placeholder-val="{{ false }}">
         <div onClick="{{ peBackdrop }}" style="position:fixed; inset:0; z-index:9000; background:rgba(14,22,20,.6); display:grid; place-items:center; padding:20px">
@@ -5727,6 +5760,7 @@ const PF_COVER = ['16:9', '4:5', '3:2', '3:2', '4:5'];
 const PF_STILL = ['3:2', '4:5', '4:5', '16:10', '21:9', '4:3'];
 const PF_CBTS = ['4:5', '3:4', '4:5', '1:1', '4:5'];
 const PF_BTS = ['4:5', '3:2', '3:4', '4:5', '16:10', '3:4', '1:1', '3:2', '4:5'];
+const PF_EDIT = ['21:9', '4:5', '3:2', '16:9'];
 const PE_TONES = [
   ['none', 'original', '', []],
   ['bw', 'black & white', 'grayscale(1) contrast(1.08)', [['gray', 1], ['contrast', 1.08]]],
@@ -9259,7 +9293,7 @@ class Component extends DCLogic {
   }
   peCentered(w) { return this.peClamp({ w, x: (1 - w) / 2, y: (1 - this.peH(w)) / 2 }); }
   pfSecSpec(section, i) {
-    const t = { still: [PF_STILL], case_bts: [PF_CBTS, 1200], bts: [PF_BTS, 1600] }[section];
+    const t = { still: [PF_STILL], case_bts: [PF_CBTS, 1200], bts: [PF_BTS, 1600], editorial: [PF_EDIT, 2600] }[section];
     return t ? pfSpec(t[0][i % t[0].length], t[1]) : null;
   }
   async pfEditOpen(t) {
@@ -9493,7 +9527,7 @@ class Component extends DCLogic {
 
   portfolioVM() {
     const s = this.state;
-    if (s.view !== 'portfolio') return { isPortfolio: false, peOpen: false, pfWorksVM: [], pfBtsVM: [], pfCatOptsVM: [] };
+    if (s.view !== 'portfolio') return { isPortfolio: false, peOpen: false, pfWorksVM: [], pfBtsVM: [], pfEdVM: [], pfCatOptsVM: [] };
     const byOrder = (a, b) => (a.sort_order || 0) - (b.sort_order || 0) || String(a.created_at || '').localeCompare(String(b.created_at || ''));
     const works = s.pfWorks.slice().sort(byOrder);
     const mediaOf = (sec, wid) => s.pfMedia.filter(m => m.section === sec && (m.work_id || null) === (wid || null)).sort(byOrder);
@@ -9521,6 +9555,7 @@ class Component extends DCLogic {
     }; };
     const reel = mediaOf('reel', null).slice(-1)[0];
     const bts = mediaOf('bts', null);
+    const edit = mediaOf('editorial', null);
     const origin = location.origin && location.origin !== 'null' && /^https?:/.test(location.origin) ? location.origin : 'https://album.glomium.co';
     const link = origin + '/portfolio.html';
     const live = works.filter(w => w.published).length;
@@ -9581,6 +9616,8 @@ class Component extends DCLogic {
       pfBtsRef: ref('bts'), pfBtsPick: pick('bts'), pfBtsOnFiles: files(f => this.pfUploadMedia('bts', null, f)),
       ...this.peVM(),
       pfBtsVM: bts.map(m => tile(m, bts, PF_BTS, 1600)), pfBtsEmpty: !bts.length, pfBtsCount: bts.length ? String(bts.length) : 'none yet',
+      pfEdRef: ref('editorial'), pfEdPick: pick('editorial'), pfEdOnFiles: files(f => this.pfUploadMedia('editorial', null, f)),
+      pfEdVM: edit.map(m => tile(m, edit, PF_EDIT, 2600)), pfEdEmpty: !edit.length, pfEdCount: edit.length ? String(edit.length) : 'none yet',
     };
   }
 
