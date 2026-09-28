@@ -146,6 +146,9 @@
         <div style="display:flex; align-items:center; gap:12px; margin-left:auto">
         <span style="width:1px; height:20px; background:var(--line)"></span>
         <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">{{ roleLabel }}</span>
+        <sc-if value="{{ canCleanStorage }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ cleanStorage }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ cleanStorageLabel }}</button>
+        </sc-if>
         <button onClick="{{ signOut }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Sign out</button>
         </div>
       </div>
@@ -6381,8 +6384,14 @@ class Component extends DCLogic {
     this.loadEvents();
   }
 
+  // Deleting the parent row cascades the media rows but never touched storage,
+  // so every deleted album left all its files behind. Collect the addresses
+  // first, delete the row, and only then clear the files.
   async doDeleteEvent(ev) {
     if (!window.confirm('Delete "' + ev.couple_names + '" and all its media?')) return;
+    const mr = await this.sb.from('media').select('url,url_view,url_grid,thumb_url').eq('event_id', ev.id);
+    if (mr.error) { this.setState({ createError: 'Could not list this album\u2019s files, so nothing was deleted: ' + mr.error.message }); return; }
+    const files = [ev.cover_url, ev.cover_url_view].concat(...(mr.data || []).map(m => [m.url, m.url_view, m.url_grid, m.thumb_url]));
     const { error } = await this.sb.from('events').delete().eq('id', ev.id);
     if (error) {
       this.setState({ createError: /violates foreign key|still referenced/i.test(error.message || '')
@@ -6390,7 +6399,8 @@ class Component extends DCLogic {
         : error.message });
       return;
     }
-    this.setState({ createError: '' });
+    const left = await this.removeStorageUrls(files);
+    this.setState({ createError: left ? 'Event deleted, but ' + left + ' file(s) could not be removed from storage.' : '' });
     this.loadEvents();
   }
 
@@ -6715,6 +6725,9 @@ class Component extends DCLogic {
 
   async doDeleteProject(pr) {
     if (!window.confirm('Delete "' + pr.client_name + '" and all its media?')) return;
+    const mr = await this.sb.from('project_media').select('url,url_view,url_grid,thumb_url').eq('project_id', pr.id);
+    if (mr.error) { this.setState({ createProjectError: 'Could not list this client\u2019s files, so nothing was deleted: ' + mr.error.message }); return; }
+    const files = [pr.cover_url, pr.cover_url_view].concat(...(mr.data || []).map(m => [m.url, m.url_view, m.url_grid, m.thumb_url]));
     const { error } = await this.sb.from('projects').delete().eq('id', pr.id);
     if (error) {
       this.setState({ createProjectError: /violates foreign key|still referenced/i.test(error.message || '')
@@ -6722,7 +6735,8 @@ class Component extends DCLogic {
         : this.schemaHint(error.message) });
       return;
     }
-    this.setState({ createProjectError: '' });
+    const left = await this.removeStorageUrls(files);
+    this.setState({ createProjectError: left ? 'Client deleted, but ' + left + ' file(s) could not be removed from storage.' : '' });
     this.loadProjects(this.state.division);
   }
 
@@ -7484,8 +7498,11 @@ class Component extends DCLogic {
         const v = await this.resizeImage(file, 2800, 0.92);
         if (v) coverView = await this.uploadBlob(v.blob, 'cover-view', v.ext);
       } catch (e) {}
+      const prev = [this.state.current.cover_url, this.state.current.cover_url_view];
       const { error } = await this.sb.from(this.parentTable()).update({ cover_url: url, cover_url_view: coverView }).eq('id', this.state.current.id);
-      if (error) throw new Error('Uploaded, but the cover could not be set: ' + error.message);
+      if (error) { this.removeStorageUrls([url, coverView]); throw new Error('Uploaded, but the cover could not be set: ' + error.message); }
+      // The replaced cover used to stay in storage forever.
+      this.removeStorageUrls(prev.filter(u => u && u !== url && u !== coverView));
       this.setState({ current: { ...this.state.current, cover_url: url, cover_url_view: coverView }, detailsStatus: 'Cover updated.' });
     } catch (e) { this.setState({ detailsStatus: e.message }); }
     setTimeout(() => this.setState({ detailsStatus: '' }), 2500);
@@ -7786,6 +7803,48 @@ class Component extends DCLogic {
     const i = String(u).indexOf(marker);
     if (i === -1) return null;
     return decodeURIComponent(String(u).slice(i + marker.length).split('?')[0]);
+  }
+
+  // Returns how many files storage refused, so callers can say so instead of
+  // reporting a clean delete that left files behind.
+  async removeStorageUrls(urls) {
+    const paths = Array.from(new Set((urls || []).map(u => this.storagePathFromUrl(u)).filter(Boolean)));
+    let left = 0;
+    for (let i = 0; i < paths.length; i += 100) {
+      const part = paths.slice(i, i + 100);
+      const { error } = await this.sb.storage.from(BUCKET).remove(part);
+      if (error) left += part.length;
+    }
+    return left;
+  }
+
+  // Files in storage that no row anywhere points at — left by deletes made
+  // before storage cleanup existed. The list comes from storage_orphans()
+  // (admins only); the files go through the Storage API, the only way
+  // Supabase lets them be removed.
+  async cleanStorage() {
+    if (this.state.cleaningStorage) return;
+    this.setState({ cleaningStorage: true });
+    try {
+      const { data, error } = await this.sb.rpc('storage_orphans');
+      if (error) {
+        window.alert(/could not find the function|PGRST202/i.test((error.message || '') + (error.code || ''))
+          ? 'Run the storage cleanup SQL in Supabase first.' : error.message);
+        return;
+      }
+      const list = (data || []).map(r => r.name).filter(Boolean);
+      if (!list.length) { window.alert('Storage is clean — every file is in use.'); return; }
+      const bytes = (data || []).reduce((a, r) => a + Number(r.bytes || 0), 0);
+      const size = bytes >= 1073741824 ? (bytes / 1073741824).toFixed(2) + ' GB' : (bytes / 1048576).toFixed(1) + ' MB';
+      if (!window.confirm('Found ' + list.length + ' file(s), ' + size + ', that nothing in the panel uses.\n\nDelete them from storage for good?')) return;
+      let failed = 0;
+      for (let i = 0; i < list.length; i += 100) {
+        const part = list.slice(i, i + 100);
+        const r = await this.sb.storage.from(BUCKET).remove(part);
+        if (r.error) failed += part.length;
+      }
+      window.alert(failed ? (list.length - failed) + ' deleted, ' + failed + ' could not be removed.' : 'Deleted ' + list.length + ' file(s) — ' + size + ' freed.');
+    } finally { this.setState({ cleaningStorage: false }); }
   }
 
   async deleteMedia(item) {
@@ -16640,6 +16699,8 @@ class Component extends DCLogic {
       onPasswordChange: e => this.setState({ password: e.target.value }),
       onPasswordKeyDown: e => { if (e.key === 'Enter') this.doSignIn(); },
       signIn: () => this.doSignIn(), signOut: () => this.doSignOut(),
+      canCleanStorage: s.role === 'admin', cleanStorage: () => this.cleanStorage(),
+      cleanStorageLabel: s.cleaningStorage ? 'Checking…' : 'Clean storage',
 
       newCouple: s.newCouple, newDate: s.newDate, newVenue: s.newVenue, newSlug: s.newSlug,
       onNewCoupleChange: e => this.setState({ newCouple: e.target.value }),

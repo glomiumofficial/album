@@ -458,6 +458,7 @@ class Component extends DCLogic {
     clearTimeout(this.safety);
     if (this.ro) this.ro.disconnect();
     if (this.io) this.io.disconnect();
+    if (this.sdAnims) this.sdAnims.forEach(a => a.cancel());
     removeEventListener('mousemove', this.onMove);
     removeEventListener('keydown', this.onKey);
     removeEventListener('hashchange', this.onHash);
@@ -511,6 +512,9 @@ class Component extends DCLogic {
   measure() {
     const root = this.rootRef.current;
     if (!root) return;
+    // Scroll-linked animations must be off while we read geometry, or the
+    // rects below would include their transforms.
+    if (this.sdAnims) { this.sdAnims.forEach(a => a.cancel()); this.sdAnims = null; }
     const k = this.knockRef.current;
     if (k) {
       const o = k.querySelector('[data-origin]');
@@ -552,6 +556,51 @@ class Component extends DCLogic {
     if (c) { const H = Math.max(40, Math.round(160 * vh / Math.max(1, vw))); if (c.height !== H) { c.height = H; this.mctx = null; } }
     this.M = M;
     this.mistY = null;
+    this.buildScrollDriven(M);
+  }
+
+  // Phones scroll on the compositor thread while the frame loop runs on the
+  // main thread, so JS-written transforms land a frame behind the finger. Where
+  // the browser supports scroll-driven animations, hand the scroll-linked
+  // motion to it instead: it then moves in lockstep with every scrolled frame.
+  buildScrollDriven(M) {
+    this.sd = false;
+    if (!this.coarse || this.reduced || typeof ViewTimeline === 'undefined') return;
+    const cl = v => v < 0 ? 0 : v > 1 ? 1 : v, list = [];
+    const run = (el, subject, frames, rs, re) => {
+      if (!el || !subject) return;
+      try {
+        const a = el.animate(frames, { fill: 'both', easing: 'linear', timeline: new ViewTimeline({ subject, axis: 'block' }), rangeStart: rs, rangeEnd: re });
+        list.push(a);
+      } catch (e) {}
+    };
+    const sample = (n, fn) => Array.from({ length: n + 1 }, (_, i) => ({ offset: i / n, ...fn(i / n) }));
+    const hero = this.heroRef.current, bts = this.btsRef.current;
+    for (const el of [this.knockRef.current, this.heroOverlayRef.current, this.cueRef.current, this.filmBaseRef.current, this.filmUiRef.current, this.btsSceneRef.current]) if (el) { el.style.transform = el === this.cueRef.current ? 'translateX(-50%)' : ''; el._s_transform = el._s_opacity = el._s_visibility = undefined; }
+    const C0 = 'contain 0%', C1 = 'contain 100%';
+    run(this.knockRef.current, hero, sample(72, p => {
+      const z = cl((p - 0.05) / 0.7), o = 1 - cl((p - 0.5) / 0.26);
+      return { transform: 'scale(' + Math.exp(Math.log(26) * Math.pow(z, 2.1)).toFixed(4) + ')', opacity: o.toFixed(3), visibility: o <= 0 ? 'hidden' : 'visible' };
+    }), C0, C1);
+    run(this.heroOverlayRef.current, hero, sample(12, p => ({ opacity: (1 - cl(p / 0.09)).toFixed(3), transform: 'translate3d(0,' + (-p * 140).toFixed(1) + 'px,0)' })), C0, C1);
+    run(this.cueRef.current, hero, sample(10, p => ({ opacity: (1 - cl(p / 0.05)).toFixed(3) })), C0, C1);
+    run(this.filmBaseRef.current, hero, sample(10, p => ({ transform: 'scale(' + (1.18 - 0.18 * cl(p / 0.85)).toFixed(4) + ')' })), C0, C1);
+    run(this.filmUiRef.current, hero, sample(20, p => ({ opacity: cl((p - 0.72) / 0.14).toFixed(3) })), C0, C1);
+    if (bts && M.depth.length) {
+      const travel = 1400 + Math.max(0, M.depth.length - 2) * 450;
+      for (const d of M.depth) run(d.el, bts, sample(48, p => {
+        const z = d.z0 + p * travel, o = Math.min(cl((z + 4600) / 1700), 1 - cl((z - 200) / 380));
+        return { opacity: o.toFixed(3), visibility: o <= 0.01 ? 'hidden' : 'visible', transform: 'translate3d(' + (d.fx * M.vw - d.w / 2).toFixed(1) + 'px,' + (d.fy * M.vh - d.h / 2).toFixed(1) + 'px,' + z.toFixed(1) + 'px)' };
+      }), C0, C1);
+    }
+    for (const L of M.lines) {
+      const w = L.el && L.el.parentElement;
+      run(L.el, w, [{ opacity: 0.12, transform: 'translate3d(0,28px,0)' }, { opacity: 1, transform: 'none' }],
+        { rangeName: 'cover', offset: CSS.px(M.vh * 0.1) }, { rangeName: 'cover', offset: CSS.px(M.vh * 0.5) });
+    }
+    for (const S of M.shots) run(S.el, S.el && S.el.closest('[data-sw]'), [{ transform: 'scale(1.1)' }, { transform: 'none' }], 'cover 0%', 'cover 100%');
+    this.sdAnims = list;
+    this.sd = list.length > 0;
   }
 
   intro() {
@@ -633,7 +682,7 @@ class Component extends DCLogic {
     let onFilm = false;
     if (heroIn) {
       const p = cl(-hTop / Math.max(1, hH - vh));
-      const k = this.knockRef.current;
+      const k = this.sd ? null : this.knockRef.current;
       if (k) {
         const z = cl((p - 0.05) / 0.7), o = 1 - cl((p - 0.5) / 0.26);
         st(k, 'transform', `scale(${Math.exp(Math.log(this.coarse ? 26 : 46) * Math.pow(z, 2.1)).toFixed(4)})`);
@@ -645,11 +694,13 @@ class Component extends DCLogic {
         else if (p !== this.lastP) { this.lastP = p; this.knockIdle = 0; st(k, 'willChange', 'transform, opacity'); }
         else if (++this.knockIdle === 10) st(k, 'willChange', 'auto');
       }
-      const ov = this.heroOverlayRef.current;
+      const ov = this.sd ? null : this.heroOverlayRef.current;
       if (ov) { st(ov, 'opacity', (1 - cl(p / 0.09)).toFixed(3)); st(ov, 'transform', `translate3d(0, ${(-p * 140).toFixed(2)}px, 0)`); }
-      st(this.cueRef.current, 'opacity', (1 - cl(p / 0.05)).toFixed(3));
-      st(this.filmBaseRef.current, 'transform', `scale(${(1.18 - 0.18 * cl(p / 0.85)).toFixed(4)})`);
-      st(this.filmUiRef.current, 'opacity', cl((p - 0.72) / 0.14).toFixed(3));
+      if (!this.sd) {
+        st(this.cueRef.current, 'opacity', (1 - cl(p / 0.05)).toFixed(3));
+        st(this.filmBaseRef.current, 'transform', `scale(${(1.18 - 0.18 * cl(p / 0.85)).toFixed(4)})`);
+        st(this.filmUiRef.current, 'opacity', cl((p - 0.72) / 0.14).toFixed(3));
+      }
       onFilm = p > 0.7 && hTop + hH > vh * 0.5;
     }
     this.reelOn(heroIn && !open);
@@ -657,7 +708,7 @@ class Component extends DCLogic {
     // The manifesto reads itself in: each line lifts out of the dark as it
     // reaches the reading height, and each master shot eases out of a slow push.
     const yTop = M.why.top - y;
-    if (yTop < vh && yTop + M.why.h > 0) {
+    if (!this.sd && yTop < vh && yTop + M.why.h > 0) {
       for (const L of M.lines) {
         const t = L.top - y;
         if (!L.el || t > vh * 1.1 || t + L.h < -vh * 0.3) continue;
@@ -675,7 +726,7 @@ class Component extends DCLogic {
     const bTop = M.bts.top - y, bH = M.bts.h;
     const km = 1 - Math.pow(0.95, f60);
     S.mx += (S.tmx - S.mx) * km; S.my += (S.tmy - S.my) * km;
-    if (bTop < vh && bTop + bH > 0 && M.depth.length) {
+    if (!this.sd && bTop < vh && bTop + bH > 0 && M.depth.length) {
       const p = cl(-bTop / Math.max(1, bH - vh));
       if (!this.coarse) st(this.btsSceneRef.current, 'transform', `rotateY(${(S.mx * 3).toFixed(3)}deg) rotateX(${(-S.my * 2).toFixed(3)}deg)`);
       const travel = 1400 + Math.max(0, M.depth.length - 2) * 450;

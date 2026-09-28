@@ -834,7 +834,7 @@ class Component extends DCLogic {
       this._loadRaf = requestAnimationFrame(tick);
     };
     this._loadRaf = requestAnimationFrame(tick);
-    this.safety = setTimeout(() => this.finishLoad(), 25000);
+    this.safety = setTimeout(() => this.finishLoad(), 60000);
   }
   async warmFirstScreen() {
     const L = this.L;
@@ -862,13 +862,17 @@ class Component extends DCLogic {
     const list = Array.from(new Set(urls.filter(Boolean))).slice(0, 14);
     L.total += list.length;
     const bump = () => { L.done++; };
-    const img = u => new Promise(res => {
+    const img = (u, k) => new Promise(res => {
       const i = new Image(); i.decoding = 'async';
-      i.onload = () => (i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(res);
+      i.onload = () => (k === 0 && i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(res);
       i.onerror = res; i.src = u;
     }).then(bump);
     const fonts = Promise.all(this._fontWaits || []).then(() => document.fonts && document.fonts.ready).then(bump, bump);
-    await Promise.race([Promise.all([fonts].concat(list.map(img))), sleep(14000)]);
+    // The hero cover is non-negotiable and gets its own ceiling; the rest stay
+    // capped, shorter on phones where the first screen is the cover alone.
+    const jobs = list.map(img), cover = pr && jobs[0] ? jobs[0] : Promise.resolve();
+    await Promise.race([Promise.all([fonts].concat(jobs)), sleep(window.innerWidth < 768 ? 6000 : 10000)]);
+    await Promise.race([cover, sleep(20000)]);
     await sleep(Math.max(0, 1200 - (performance.now() - L.t0)));
     L.done = L.total;
     await sleep(600);
@@ -892,6 +896,9 @@ class Component extends DCLogic {
     if (!L || L.finished || this.unmounted) return;
     L.finished = true;
     clearTimeout(this.safety);
+    // Never lift the loader onto an empty page — show the retry screen instead.
+    const s = this.state;
+    if (!s.project && !s.notFound && !s.loadError) this.setState({ loading: false, loadError: 'The connection dropped before the page arrived. Your link is fine — try again.' });
     if (!this.state.lightboxOpen && !this.state.plb) document.body.style.overflow = '';
     if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
     if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
@@ -997,7 +1004,12 @@ class Component extends DCLogic {
       // get_project exposes only the columns this page renders — the client's
       // billing fields on the projects row stay private.
       let p = null, media = null;
-      const rpc = await this.sb.rpc('get_project', { p_slug: slug });
+      // A request that never answers used to leave the page blank until a
+      // reload. Give each try 10s, retry once, then offer the retry screen.
+      const TIMEOUT = { error: { code: 'timeout', message: 'timeout' } };
+      const ask = () => Promise.race([this.sb.rpc('get_project', { p_slug: slug }), new Promise(r => setTimeout(() => r(TIMEOUT), 10000))]);
+      let rpc = await ask();
+      if (rpc === TIMEOUT && !this.unmounted) rpc = await ask();
 
       if (rpc.error) {
         // A client on hotel wifi used to be told their project did not exist.

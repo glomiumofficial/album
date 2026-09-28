@@ -253,7 +253,7 @@ class Component extends DCLogic {
     requestAnimationFrame(() => this.syncTitle());
     setTimeout(() => this.syncTitle(), 400);
     const slug = (new URLSearchParams(window.location.search).get('event') || '').trim();
-    this.safety = setTimeout(() => this.finishLoad(), 25000);
+    this.safety = setTimeout(() => this.finishLoad(), 60000);
     this.boot(slug).catch(() => this.finishLoad());
   }
 
@@ -287,23 +287,29 @@ class Component extends DCLogic {
     for (let t = 0; !window.supabase && t < 100; t++) await sleep(100);
     if (window.supabase && !this.sb) this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     if (slug && !this.sb) this.setState({ loading: false, slug, loadError: 'the connection dropped before the album arrived. your link is fine — try again.' });
-    else if (slug) await Promise.race([this.load(slug), sleep(8000)]);
+    else if (slug) await this.load(slug);
     else this.setState({ loading: false, notFound: true });
     bump();
-    const s = this.state, urls = [];
+    const s = this.state, urls = [], mob = this.state.isMobile;
     if (s.event) {
       urls.push(s.event.cover_url_view || s.event.cover_url);
-      s.media.filter(m => m.kind !== 'video').slice(0, this.state.isMobile ? 9 : 12)
+      // On a phone the first screen is the cover alone — waiting on a dozen
+      // grid photos only held the loader and fought the page for bandwidth.
+      s.media.filter(m => m.kind !== 'video').slice(0, mob ? 4 : 12)
         .forEach(m => urls.push(m.full_bleed ? (m.url_view || m.url) : (m.url_grid || m.url)));
     }
     const list = Array.from(new Set(urls.filter(Boolean)));
     this.L.total += list.length;
-    const img = u => new Promise(res => {
+    const img = (u, k) => new Promise(res => {
       const i = new Image(); i.decoding = 'async';
-      i.onload = () => (i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(res);
+      i.onload = () => (k === 0 && i.decode ? i.decode() : Promise.resolve()).catch(() => {}).then(res);
       i.onerror = res; i.src = u;
     }).then(bump);
-    await Promise.race([Promise.all([fonts].concat(list.map(img))), sleep(14000)]);
+    // The hero cover is non-negotiable: the loader never lifts onto a black
+    // hero. It gets its own, longer ceiling; the grid photos stay capped.
+    const jobs = list.map(img), cover = jobs[0] || Promise.resolve();
+    await Promise.race([Promise.all([fonts].concat(jobs)), sleep(mob ? 6000 : 10000)]);
+    await Promise.race([cover, sleep(20000)]);
     await sleep(Math.max(0, 1400 - (performance.now() - this.L.t0)));
     this.L.done = this.L.total;
     await sleep(650);
@@ -325,6 +331,10 @@ class Component extends DCLogic {
     if (!this.L || this.L.finished || this.unmounted) return;
     this.L.finished = true;
     clearTimeout(this.safety);
+    // Never lift the loader onto an empty page: if the album still has not
+    // arrived, show the retry screen instead of a blank white one.
+    const s = this.state;
+    if (!s.event && !s.notFound && !s.loadError) this.setState({ loading: false, loadError: 'the connection dropped before the album arrived. your link is fine — try again.' });
     document.body.style.overflow = this.state.lightboxOpen ? 'hidden' : '';
     if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
     if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
@@ -353,7 +363,7 @@ class Component extends DCLogic {
     if (!list || this.unmounted) return;
     const doc = document.documentElement, h = Math.max(1, doc.scrollHeight);
     const frac = Math.min(1, (window.scrollY + window.innerHeight * 3) / h);
-    const ahead = this.state.isMobile ? 18 : 30;
+    const ahead = this.state.isMobile ? 10 : 30;
     const limit = Math.min(list.length, Math.ceil(frac * list.length) + ahead);
     if (limit <= this.warmLimit) return;
     this.warmLimit = limit;
@@ -364,7 +374,7 @@ class Component extends DCLogic {
       }
       this.warmers--;
     };
-    while ((this.warmers || 0) < 2) { this.warmers = (this.warmers || 0) + 1; worker(); }
+    while ((this.warmers || 0) < (this.state.isMobile ? 1 : 2)) { this.warmers = (this.warmers || 0) + 1; worker(); }
   }
 
   // Single source of truth for the tab title. The <helmet> title is a static
@@ -398,7 +408,12 @@ class Component extends DCLogic {
       if (this.warmList) this.warmAhead();
       const past = window.scrollY > window.innerHeight * 0.85;
       if (past === this._barOn) return;
-      const bar = this.topbarEl || (this.topbarEl = document.querySelector('[data-el="topbar"]'));
+      let bar = this.topbarEl;
+      if (!bar) {
+        bar = this.topbarEl = document.querySelector('[data-el="topbar"]');
+        // A live blur over a scrolling photo grid is what blanked phone screens.
+        if (bar && this.state.isMobile) { bar.style.backdropFilter = 'none'; bar.style.webkitBackdropFilter = 'none'; bar.style.background = '#FFFFFF'; }
+      }
       if (!bar) return;
       this._barOn = past;
       bar.style.opacity = past ? '1' : '0';
@@ -427,14 +442,20 @@ class Component extends DCLogic {
     }
     if (el.getAttribute('sizes') !== sizes) el.sizes = sizes;
     if (el.getAttribute('src') !== g) {
-      // Each frame fades in once its bytes land, over the reserved grey box.
-      el.style.opacity = '0';
+      // Desktop: each frame fades in once its bytes land. Phones paint as bytes
+      // arrive — a hidden-until-loaded tile read as a blank white page on a
+      // fast scroll over a slow line.
+      const fade = !this.state.isMobile;
       const show = () => { el.style.opacity = '1'; };
-      el.addEventListener('load', show, { once: true });
-      el.addEventListener('error', show, { once: true });
+      if (fade) {
+        el.style.opacity = '0';
+        el.addEventListener('load', show, { once: true });
+        el.addEventListener('error', show, { once: true });
+      } else { el.style.opacity = '1'; el.style.transition = 'none'; }
       const set = this.srcsetFor(m, g, v);
       if (set) el.srcset = set; else el.removeAttribute('srcset');
       el.src = g;
+      if (fade && el.complete && el.naturalWidth) show();
     }
   }
 
@@ -482,7 +503,12 @@ class Component extends DCLogic {
       // get_album returns only the columns an album page renders, so the client's
       // phone, email and PAN on the events row are never readable from here.
       let ev = null, media = null;
-      const rpc = await this.sb.rpc('get_album', { p_slug: slug });
+      // A request that never answers used to leave the page white until a
+      // reload. Give each try 10s, retry once, then offer the retry screen.
+      const TIMEOUT = { error: { code: 'timeout', message: 'timeout' } };
+      const ask = () => Promise.race([this.sb.rpc('get_album', { p_slug: slug }), new Promise(r => setTimeout(() => r(TIMEOUT), 10000))]);
+      let rpc = await ask();
+      if (rpc === TIMEOUT && !this.unmounted) rpc = await ask();
 
       if (rpc.error) {
         // A client on hotel wifi used to be told their album did not exist.
