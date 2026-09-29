@@ -4990,26 +4990,55 @@
             <button onClick="{{ sendPreviewEmail }}" disabled="{{ noClientEmail }}" style="padding:11px 20px; background:none; border:1px solid var(--green); border-radius:0; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green-deep); color:#fff">Email album link</button>
             <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
           </div>
-          <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#6B7572">Add the client email in Finance → Projects &amp; pricing to enable this.</span></sc-if>
+          <sc-if value="{{ noClientEmail }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#6B7572">Add the client email in the Profile tab to enable this.</span></sc-if>
           <span style="font-size:11px; color:#6B7572">Sends automatically from official@glomium.in — no mail app needed.</span>
         </div>
         </sc-if>
         </sc-if>
 
+        <sc-if value="{{ isProfileTab }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:0">
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Client</span>
+            <span style="font-size:11px; color:#6B7572">One record. Emails, invoices and the album link all read from here.</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px">
+            <label style="display:flex; flex-direction:column; gap:6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Name<input value="{{ editClientName }}" onChange="{{ onEditClientNameChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; letter-spacing:0; text-transform:none; color:#1B1D1E; outline:none"></label>
+            <label style="display:flex; flex-direction:column; gap:6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Phone<input value="{{ editClientPhone }}" onChange="{{ onEditClientPhoneChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; letter-spacing:0; text-transform:none; color:#1B1D1E; outline:none"></label>
+            <label style="display:flex; flex-direction:column; gap:6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Email<input type="email" value="{{ editClientEmail }}" onChange="{{ onEditClientEmailChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; letter-spacing:0; text-transform:none; color:#1B1D1E; outline:none"></label>
+          </div>
+          <sc-if value="{{ profileShowsTax }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px; padding-top:16px; border-top:1px solid var(--line)">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Tax identity</span>
+              <span style="font-size:11px; color:#6B7572">Used on every invoice. Draft invoices update when you save.</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px">
+              <label style="display:flex; flex-direction:column; gap:6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">PAN<input value="{{ editClientPan }}" onChange="{{ onEditClientPanChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; letter-spacing:0; text-transform:none; color:#1B1D1E; outline:none"></label>
+              <label style="display:flex; flex-direction:column; gap:6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">GSTIN (B2B, optional)<input value="{{ editClientGstin }}" onChange="{{ onEditClientGstinChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; letter-spacing:0; text-transform:none; color:#1B1D1E; outline:none"></label>
+              <label style="display:flex; flex-direction:column; gap:6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Place of supply — state<input value="{{ editClientState }}" onChange="{{ onEditClientStateChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; letter-spacing:0; text-transform:none; color:#1B1D1E; outline:none"></label>
+            </div>
+          </div>
+          </sc-if>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+            <button onClick="{{ saveClientDetails }}" style="padding:11px 22px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Save profile</button>
+            <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
+          </div>
+        </div>
+        </sc-if>
+
         <sc-if value="{{ isBillingTab }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:0">
-          <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Client &amp; billing (KYC)</span>
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Pricing</span>
+            <span style="font-size:11px; color:#6B7572">Billing to {{ editClientName }} · {{ profileTaxLine }}</span>
+            <button onClick="{{ goProfileTab }}" style="padding:0; background:none; border:none; font-size:11px; color:var(--green-deep); text-decoration:underline; cursor:pointer">Edit profile</button>
+          </div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
-            <input placeholder="Client full name" value="{{ editClientName }}" onChange="{{ onEditClientNameChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none">
-            <input placeholder="Phone number" value="{{ editClientPhone }}" onChange="{{ onEditClientPhoneChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none">
-            <input type="email" placeholder="Client email" value="{{ editClientEmail }}" onChange="{{ onEditClientEmailChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none">
-            <input placeholder="PAN number" value="{{ editClientPan }}" onChange="{{ onEditClientPanChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none; text-transform:uppercase">
-            <input type="number" min="0" placeholder="Package price (₹)" value="{{ editPackagePrice }}" onChange="{{ onEditPackagePriceChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none">
-            <input placeholder="Client GSTIN (optional, B2B)" value="{{ editClientGstin }}" onChange="{{ onEditClientGstinChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none; text-transform:uppercase">
-            <input placeholder="Place of supply — state, e.g. Kerala" value="{{ editClientState }}" onChange="{{ onEditClientStateChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none">
+            <label style="display:flex; flex-direction:column; gap:6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Package price (₹)<input type="number" min="0" value="{{ editPackagePrice }}" onChange="{{ onEditPackagePriceChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; letter-spacing:0; text-transform:none; color:#1B1D1E; outline:none"></label>
           </div>
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
-            <button onClick="{{ saveClientDetails }}" style="padding:11px 22px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Save client details</button>
+            <button onClick="{{ saveClientDetails }}" style="padding:11px 22px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Save price</button>
             <span style="font-size:12px; color:var(--green-deep)">{{ clientStatus }}</span>
           </div>
         </div>
@@ -5806,6 +5835,7 @@ const EMAILJS_TEMPLATE_ID = 'template_9xph63f';
 // in the body.
 const EMAILJS_INVOICE_TEMPLATE_ID = 'template_lgfvfhb';
 const EMAILJS_PUBLIC_KEY = 'rRmmmx6iCKnvLcEuR';
+const EMAILJS_VARS_LIMIT_KB = 500;
 
 // Booking enquiries to freelance talent. There is no EmailJS-side design: the
 // template in EmailJS holds nothing but {{{body_html}}} (triple braces, so the
@@ -6662,8 +6692,11 @@ class Component extends DCLogic {
     if (this.can('media')) return 'album';
     if (this.can('people')) return 'crew';
     if (this.can('billing')) return 'billing';
-    return '';
+    return this.canProfile() ? 'profile' : '';
   }
+
+  // Client contact is shared by every area that emails; tax identity only by money.
+  canProfile() { return this.can('media') || this.can('people') || this.can('billing'); }
 
   // A job opened from the Schedule belongs to the Schedule. Sending everyone
   // back to Albums regardless was how the panel lost people's place.
@@ -10982,16 +11015,16 @@ class Component extends DCLogic {
       stage = 'sending via EmailJS';
       const mailer = await this.waitForGlobal('emailjs', 8000);
       if (!mailer) throw new Error('Email service did not load — check your connection and try again.');
-      await mailer.send(EMAILJS_SERVICE_ID, EMAILJS_INVOICE_TEMPLATE_ID, {
+      const attached = await this.sendInvoiceMail(mailer, {
         to_email: to, email: to, user_email: to, reply_to: to, to_name: s.cmpName || '', subject: s.cmpSubject.trim(),
-        body_html: html, message: this.htmlToText(html),
+        body_html: html,
         invoice_number: inv.number, invoice_date: inv.issue_date ? fmtDay(inv.issue_date) : '', invoice_amount: fmtINR(inv.total),
-        invoice_link: pdfUrl, invoice_pdf: file, invoice_pdf_b64: String(dataUri).split(',')[1] || '', invoice_pdf_uri: dataUri, invoice_filename: fileName,
-      }, { publicKey: EMAILJS_PUBLIC_KEY });
+        invoice_link: pdfUrl, invoice_filename: fileName,
+      }, dataUri, !!pdfUrl);
       stage = 'updating the record';
       await this.sb.from('invoices').update({ status: 'sent', pdf_url: pdfUrl || null, sent_at: new Date().toISOString() }).eq('id', inv.id);
       this.cmpBlob = null;
-      this.setState({ cmpOpen: false, cmpBusy: false, cmpStatus: '', niDone: 'Sent ' + inv.number + ' to ' + to + (pdfUrl ? '.' : ' — the PDF did not reach storage, so the email has the attachment but no download link.') });
+      this.setState({ cmpOpen: false, cmpBusy: false, cmpStatus: '', niDone: 'Sent ' + inv.number + ' to ' + to + (!pdfUrl ? ' — the PDF did not reach storage, so the email has the attachment but no download link.' : attached ? '.' : ' — the PDF was too large to attach, so it went as the download link.') });
       setTimeout(() => this.setState({ niDone: '' }), 6000);
       this.loadFinInvoices();
     } catch (e) {
@@ -11113,14 +11146,13 @@ class Component extends DCLogic {
       // EmailJS. The invoice_* variables are still sent for an installation
       // whose template is pointed at them.
       const bodyHtml = this.invoiceEmailHtml({ name, label, inv, invoiceDate, pdfUrl });
-      await mailer.send(EMAILJS_SERVICE_ID, EMAILJS_INVOICE_TEMPLATE_ID, {
+      await this.sendInvoiceMail(mailer, {
         to_email: clientEmail, email: clientEmail, user_email: clientEmail, reply_to: clientEmail,
         to_name: name, subject,
-        body_html: bodyHtml, message: this.htmlToText(bodyHtml),
+        body_html: bodyHtml,
         invoice_number: inv.number, invoice_date: invoiceDate, invoice_amount: fmtINR(inv.total),
-        invoice_link: pdfUrl, invoice_pdf: file, invoice_pdf_b64: base64, invoice_pdf_uri: dataUri,
-        invoice_filename: inv.number + '.pdf',
-      }, { publicKey: EMAILJS_PUBLIC_KEY });
+        invoice_link: pdfUrl, invoice_filename: inv.number + '.pdf',
+      }, dataUri, !!pdfUrl);
       stage = 'updating the invoice record';
       await this.sb.from('invoices').update({ status: 'sent', pdf_url: pdfUrl || null, sent_at: new Date().toISOString() }).eq('id', inv.id);
       this.setState({
@@ -11140,6 +11172,29 @@ class Component extends DCLogic {
       const detail = e.text || e.message || (typeof e === 'string' ? e : JSON.stringify(e));
       this.setState({ pdfBusy: false, invStatus: 'Failed while ' + stage + ': ' + detail });
     }
+  }
+
+  // EmailJS caps the whole variables payload (500 KB on the paid plan). The PDF
+  // travels ONCE, as a base64 data URI in invoice_pdf — the variable the
+  // template's Attachments row is bound to. Base64 is ~1.33× the file, so PDFs
+  // over ~370 KB cannot ride along; those go out with the download link only.
+  // If EmailJS still rejects on size, retry without the attachment.
+  async sendInvoiceMail(mailer, params, dataUri, hasLink) {
+    const send = p => mailer.send(EMAILJS_SERVICE_ID, EMAILJS_INVOICE_TEMPLATE_ID, p, { publicKey: EMAILJS_PUBLIC_KEY });
+    const bytes = p => new Blob([JSON.stringify(p)]).size;
+    const withPdf = Object.assign({}, params, { invoice_pdf: dataUri });
+    const fits = bytes(withPdf) < (EMAILJS_VARS_LIMIT_KB - 8) * 1024;
+    if (fits) {
+      try { await send(withPdf); return true; }
+      catch (e) {
+        if (!(hasLink && /size limit/i.test(e.text || e.message || ''))) throw e;
+        console.warn('[invoice] attachment rejected on size, sending link only:', e.text || e);
+      }
+    } else if (!hasLink) {
+      throw new Error('The PDF is ' + Math.round(bytes(withPdf) / 1024) + ' KB encoded, over the ' + EMAILJS_VARS_LIMIT_KB + ' KB email limit, and it did not reach storage for a link. Compress the PDF and try again.');
+    }
+    await send(Object.assign({}, params, { invoice_pdf: '' }));
+    return false;
   }
 
   async sendEmail(params) {
@@ -15947,6 +16002,7 @@ class Component extends DCLogic {
       if (this.can('media')) tabs.push({ key: 'album', label: 'Album' });
       if (this.can('people')) tabs.push({ key: 'crew', label: 'Crew & cost' });
     }
+    if (this.canProfile()) tabs.push({ key: 'profile', label: 'Profile' });
     // A digital client is an account to run, not an album to deliver, so its
     // platform access and credentials belong on the client record itself.
     if (!inFinance && this.parentTable() === 'projects' && this.divisionsOf(s.current).indexOf('digital') !== -1 && this.can('digital')) {
@@ -17522,6 +17578,10 @@ class Component extends DCLogic {
       ...this.portfolioVM(),
       isAlbumTab: s.editorTab === 'album' && this.can('media'),
       isBillingTab: s.editorTab === 'billing' && this.can('billing'),
+      isProfileTab: s.editorTab === 'profile' && this.canProfile(),
+      profileShowsTax: this.can('billing'),
+      profileTaxLine: [s.editClientPan ? 'PAN ' + s.editClientPan : 'no PAN', s.editClientGstin ? 'GSTIN ' + s.editClientGstin : 'unregistered', s.editClientState || 'no state'].join(' · '),
+      goProfileTab: () => this.setState({ editorTab: 'profile' }),
       isWeddingAlbumTab: s.editorTab === 'album' && this.can('media') && this.parentTable() !== 'projects',
       isProjectRecord: this.parentTable() === 'projects',
       isWeddingRecord: this.parentTable() !== 'projects',
