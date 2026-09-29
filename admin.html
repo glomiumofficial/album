@@ -2757,19 +2757,22 @@
       <sc-if value="{{ isFinInvoices }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
-          <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Invoices</span>
+          <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">{{ finInvTitle }}</span>
           <span style="font-size:12px; color:#4A524F">{{ finInvSummary }}</span>
           <span style="font-size:12px; color:#0A6E58">{{ niDone }}</span>
           <span style="font-size:12px; color:#B4433A; margin-left:auto">{{ finStatus }}</span>
           <sc-if value="{{ canNewInvoice }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ openNewInvoice }}" style="padding:9px 16px; background:var(--green-deep); border:1px solid var(--green-deep); border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:#1B1D1E">+ New invoice</button>
+            <button onClick="{{ openNewInvoice }}" style="padding:9px 16px; background:var(--green-deep); border:1px solid var(--green-deep); border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:#1B1D1E">{{ niNewLabel }}</button>
+          </sc-if>
+          <sc-if value="{{ canUpload }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ openUpload }}" style="padding:9px 16px; background:none; border:1px solid var(--green-deep); border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green-deep); color:#FFFFFF">Upload proforma</button>
           </sc-if>
         </div>
 
         <sc-if value="{{ niOpen }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; gap:22px; padding:clamp(18px,3vw,28px); border:1px solid var(--green); border-radius:0; background:#FFFFFF">
             <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
-              <span style="font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">New invoice</span>
+              <span style="font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">{{ niTitle }}</span>
               <span style="font-size:12px; color:#B4433A">{{ niStatus }}</span>
               <button onClick="{{ closeNewInvoice }}" style="margin-left:auto; padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer">Close</button>
             </div>
@@ -2799,6 +2802,7 @@
                 </div>
 
                 <div style="display:flex; gap:18px; flex-wrap:wrap">
+                  <sc-if value="{{ niShowType }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex; flex-direction:column; gap:8px">
                     <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Type</span>
                     <div style="display:flex; gap:6px; flex-wrap:wrap">
@@ -2807,6 +2811,7 @@
                       </sc-for>
                     </div>
                   </div>
+                  </sc-if>
                   <div style="display:flex; flex-direction:column; gap:8px">
                     <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">GST</span>
                     <div style="display:flex; gap:6px; flex-wrap:wrap">
@@ -2876,19 +2881,88 @@
 
                 <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
                   <button onClick="{{ niGenerate }}" disabled="{{ niBusy }}" style="padding:12px 22px; background:var(--green-deep); border:1px solid var(--green-deep); border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:#1B1D1E">{{ niGenerateLabel }}</button>
-                  <span style="font-size:11px; color:#6B7572">Saved as a draft — preview, then issue or email it from the list.</span>
+                  <span style="font-size:11px; color:#6B7572">{{ niHelp }}</span>
                 </div>
               </div>
             </sc-if>
           </div>
         </sc-if>
+        <sc-if value="{{ upOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:22px; padding:clamp(18px,3vw,28px); border:1px solid var(--green); border-radius:0; background:#FFFFFF">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Upload proforma</span>
+              <span style="font-size:12px; color:#B4433A">{{ upStatus }}</span>
+              <button onClick="{{ closeUpload }}" style="margin-left:auto; padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer">Close</button>
+            </div>
+            <label style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:28px 18px; border:1px dashed var(--line); border-radius:0; cursor:pointer; text-align:center" style-hover="border-color:var(--green)">
+              <input type="file" accept="application/pdf,.pdf" onChange="{{ onUpFile }}" style="display:none">
+              <span style="font-size:13px; color:var(--green-deep); overflow-wrap:anywhere">{{ upPickLabel }}</span>
+              <span style="font-size:11px; color:#6B7572">The date, amounts, services and project are read from it — check them before saving.</span>
+            </label>
+            <sc-if value="{{ upRead }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:22px">
+                <sc-if value="{{ upHasFound }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-direction:column; gap:8px">
+                    <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Read from the PDF</span>
+                    <div style="display:grid; gap:14px 22px; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); padding:14px 16px; background:#F3FAF8; border-radius:0">
+                      <sc-for list="{{ upFoundVM }}" as="uf" hint-placeholder-count="4">
+                        <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                          <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">{{ uf.label }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ uf.value }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <div style="display:flex; flex-direction:column; gap:8px">
+                  <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Project</span>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <input value="{{ upQuery }}" onChange="{{ onUpQuery }}" placeholder="Search client or project" style="flex:0 1 220px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)">
+                    <select value="{{ upKey }}" onChange="{{ onUpPick }}" style="flex:1 1 300px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff; color:#1B1D1E">
+                      <option value="">Choose a project — {{ upOptsCount }}</option>
+                      <sc-for list="{{ upOptsVM }}" as="o" hint-placeholder-count="0">
+                        <option value="{{ o.value }}">{{ o.label }}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                  <span style="font-size:11px; color:#6B7572">{{ upMatchNote }}</span>
+                </div>
+                <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Proforma no.<input value="{{ upNumber }}" onChange="{{ onUpNumber }}" placeholder="Next PRO number if blank" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Date<input type="date" value="{{ upIssue }}" onChange="{{ onUpIssue }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Valid till<input type="date" value="{{ upDue }}" onChange="{{ onUpDue }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Bill to<input value="{{ upName }}" onChange="{{ onUpName }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Email<input value="{{ upEmail }}" onChange="{{ onUpEmail }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                  <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Total ₹ (incl. GST)<input type="number" value="{{ upTotal }}" onChange="{{ onUpTotal }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px">
+                  <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Services</span>
+                  <sc-for list="{{ upLinesVM }}" as="ul" hint-placeholder-count="0">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap">
+                      <input value="{{ ul.desc }}" onChange="{{ ul.onDesc }}" placeholder="Service" style="flex:1 1 260px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)">
+                      <input type="number" value="{{ ul.amount }}" onChange="{{ ul.onAmount }}" placeholder="Amount ₹" style="flex:0 1 140px; min-width:0; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)">
+                      <button onClick="{{ ul.remove }}" style="padding:0 12px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; color:#B4433A; cursor:pointer">Remove</button>
+                    </div>
+                  </sc-for>
+                  <button onClick="{{ upAddLine }}" style="align-self:flex-start; padding:8px 14px; background:none; border:1px dashed var(--line); border-radius:0; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">+ Add service</button>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+                  <button onClick="{{ upSaveSend }}" disabled="{{ upBusy }}" style="padding:12px 22px; background:var(--green-deep); border:1px solid var(--green-deep); border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:#1B1D1E">Save &amp; write email</button>
+                  <button onClick="{{ upSave }}" disabled="{{ upBusy }}" style="padding:12px 22px; background:none; border:1px solid var(--line); border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ upSaveLabel }}</button>
+                  <span style="font-size:11px; color:#6B7572">The PDF is kept exactly as uploaded — it is what the client receives.</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
           <sc-for list="{{ finInvFilterVM }}" as="f" hint-placeholder-count="5">
             <button onClick="{{ f.go }}" style="padding:8px 14px; background:{{ f.bg }}; border:1px solid {{ f.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ f.color }}; cursor:pointer">{{ f.label }}</button>
           </sc-for>
           <input value="{{ finInvQuery }}" onChange="{{ onFinInvQuery }}" placeholder="Search client or invoice no." style="padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff; margin-left:auto; flex:0 1 260px; min-width:0" style-focus="border-color:var(--green)">
         </div>
-        <sc-if value="{{ finNoInvoices }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#4A524F">No invoices here.</span></sc-if>
+        <sc-if value="{{ finNoInvoices }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#4A524F">{{ finInvEmpty }}</span></sc-if>
         <div style="display:flex; flex-direction:column; gap:8px">
           <sc-for list="{{ finInvRowsVM }}" as="iv" hint-placeholder-count="0">
             <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:13px 16px; border:1px solid var(--line); border-radius:0">
@@ -2904,6 +2978,12 @@
               <div style="display:flex; gap:8px; flex-wrap:wrap">
                 <button onClick="{{ iv.preview }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Preview</button>
                 <button onClick="{{ iv.open }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Open project</button>
+                <sc-if value="{{ iv.canEdit }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ iv.edit }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Edit</button>
+                </sc-if>
+                <sc-if value="{{ iv.canSend }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ iv.send }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green-deep); color:#fff">{{ iv.sendLabel }}</button>
+                </sc-if>
                 <sc-if value="{{ iv.canIssue }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ iv.issue }}" style="padding:7px 13px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.06em; color:var(--green-deep); cursor:pointer" style-hover="background:var(--green-deep); color:#fff">Mark issued</button>
                 </sc-if>
@@ -5464,6 +5544,7 @@
           </div>
         </div>
 
+        <sc-if value="{{ previewIsTaxDoc }}" hint-placeholder-val="{{ false }}">
         <div ref="{{ setInvoicePrintRef }}" style="background:#fff; padding:48px; font-family:'Jost',Helvetica,sans-serif; color:#111; display:flex; flex-direction:column; gap:26px">
 
           <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px; border-bottom:2px solid #111; padding-bottom:18px">
@@ -5552,6 +5633,149 @@
             </div>
           </div>
 
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ previewIsProforma }}" hint-placeholder-val="{{ false }}">
+        <div ref="{{ setInvoicePrintRef }}" style="background:#FFFFFF; padding:40px 52px 28px; font-family:'Jost',Helvetica,sans-serif; font-weight:300; color:#1B1D1E; display:flex; flex-direction:column; gap:22px">
+
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:20px">
+            <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; display:block">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">proforma · {{ previewInvoiceNumber }}</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:6px">
+            <span style="font-size:28px; line-height:1.28; font-weight:300; color:#1B1D1E">proforma invoice</span>
+            <span style="font-size:13px; line-height:1.8; color:#4A524F">a quote for your project — not a demand for payment. the tax invoice follows on confirmation.</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; padding:14px 0; border-top:1px solid #E2E7E5; border-bottom:1px solid #E2E7E5">
+            <div style="display:flex; flex-direction:column; gap:7px"><span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">number</span><span style="font-size:15px; color:#1B1D1E">{{ previewInvoiceNumber }}</span></div>
+            <div style="display:flex; flex-direction:column; gap:7px"><span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">date</span><span style="font-size:15px; color:#1B1D1E">{{ previewIssueDate }}</span></div>
+            <div style="display:flex; flex-direction:column; gap:7px"><span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">valid till</span><span style="font-size:15px; color:#1B1D1E">{{ previewDueDate }}</span></div>
+            <div style="display:flex; flex-direction:column; gap:7px"><span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">place of supply</span><span style="font-size:15px; color:#1B1D1E">{{ previewPlaceOfSupply }}</span></div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:4px">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">prepared for</span>
+            <span style="font-size:18px; color:#1B1D1E">{{ previewBillName }}</span>
+            <span style="font-size:13px; line-height:1.7; color:#4A524F">{{ previewBillCouple }}</span>
+            <sc-if value="{{ previewHasGstin }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#4A524F">gstin {{ previewBillGstin }}</span></sc-if>
+            <sc-if value="{{ previewHasPan }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#4A524F">pan {{ previewBillPan }}</span></sc-if>
+            <sc-if value="{{ previewHasEmail }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#4A524F">{{ previewBillEmail }}</span></sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; gap:20px; padding-bottom:8px; border-bottom:1px solid #1B1D1E; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390"><span>description</span><span>amount</span></div>
+            <sc-for list="{{ previewLineItems }}" as="pl" hint-placeholder-count="2">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:24px; padding:10px 0; border-bottom:1px solid #E2E7E5">
+                <span style="font-size:15px; line-height:1.6; color:#1B1D1E">{{ pl.desc }}</span>
+                <span style="font-size:15px; color:#1B1D1E; font-variant-numeric:tabular-nums; white-space:nowrap">{{ pl.amountFmt }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end">
+            <div style="width:300px; display:flex; flex-direction:column; gap:6px">
+              <div style="display:flex; justify-content:space-between; font-size:13px; color:#4A524F"><span>subtotal</span><span style="font-variant-numeric:tabular-nums">{{ previewSubtotal }}</span></div>
+              <sc-if value="{{ previewHasDiscount }}" hint-placeholder-val="{{ false }}"><div style="display:flex; justify-content:space-between; font-size:13px; color:#4A524F"><span>discount</span><span style="font-variant-numeric:tabular-nums">− {{ previewDiscount }}</span></div></sc-if>
+              <div style="display:flex; justify-content:space-between; font-size:13px; color:#4A524F"><span>taxable value</span><span style="font-variant-numeric:tabular-nums">{{ previewTaxable }}</span></div>
+              <sc-for list="{{ previewGstRows }}" as="pg" hint-placeholder-count="1">
+                <div style="display:flex; justify-content:space-between; font-size:13px; color:#4A524F"><span style="text-transform:lowercase">{{ pg.label }}</span><span style="font-variant-numeric:tabular-nums">{{ pg.amountFmt }}</span></div>
+              </sc-for>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px; padding-top:10px; border-top:1px solid #0E8E72">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">total</span>
+                <span style="font-size:26px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ previewTotal }}</span>
+              </div>
+              <span style="font-size:11px; line-height:1.6; color:#8A9390; text-align:right; text-transform:lowercase">{{ previewAmountWords }}</span>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:28px; padding-top:16px; border-top:1px solid #E2E7E5">
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">payment</span>
+              <span style="font-size:12px; line-height:1.8; color:#4A524F">glomium technologies private limited<br>{{ invBankName }} · a/c {{ invBankAccount }}<br>ifsc {{ invBankIfsc }}</span>
+              <sc-if value="{{ hasUpi }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#4A524F">upi {{ invUpiId }}</span></sc-if>
+            </div>
+            <sc-if value="{{ previewHasNotes }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:8px">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">notes</span>
+                <span style="font-size:12px; line-height:1.8; color:#4A524F; white-space:pre-line">{{ previewNotes }}</span>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px; padding-top:0; text-align:center">
+            <span style="font-size:14px; line-height:1.6; color:#4A524F">with love,<br>team glomium.</span>
+            <div style="width:48px; height:1px; background:#E2E7E5"></div>
+            <div style="display:flex; align-items:baseline; gap:.55em; color:#1B1D1E"><span style="font-size:9px; letter-spacing:2.6px">creative</span><span style="font-size:13px; letter-spacing:4.4px">INFINITELY</span></div>
+          </div>
+
+          <span style="font-size:9px; line-height:1.7; letter-spacing:1.2px; color:#8A9390; text-align:center">gstin 32AAGCG3568E1ZS · sac 998386 · official@glomium.in</span>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ cmpOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(10,20,17,.6); z-index:60; display:flex; align-items:flex-start; justify-content:center; padding:24px; overflow:auto">
+      <div style="width:min(1160px,100%); background:#FFFFFF; display:flex; flex-direction:column">
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:14px 18px; background:#0A1411">
+          <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#FFFFFF">Send {{ cmpNumber }}</span>
+          <span style="font-size:12px; color:#FFFFFF; margin-right:auto">{{ cmpStatus }}</span>
+          <button onClick="{{ closeComposer }}" style="padding:8px 14px; background:none; border:1px solid #FFFFFF; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#FFFFFF; cursor:pointer">Close</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:22px; min-width:0">
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">To — from the project page<input value="{{ cmpTo }}" onChange="{{ onCmpTo }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Subject<input value="{{ cmpSubject }}" onChange="{{ onCmpSubject }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+            <label style="display:flex; flex-direction:column; gap:5px; font-size:11px; color:#4A524F">Headline<input value="{{ cmpHeadline }}" onChange="{{ onCmpHeadline }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff" style-focus="border-color:var(--green)"></label>
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+                <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572; margin-right:auto">Message</span>
+                <sc-for list="{{ cmpModeVM }}" as="cm" hint-placeholder-count="2">
+                  <button onClick="{{ cm.go }}" style="padding:6px 12px; background:{{ cm.bg }}; border:1px solid {{ cm.border }}; border-radius:0; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:{{ cm.color }}; cursor:pointer">{{ cm.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ cmpWrite }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; border:1px solid var(--line)">
+                  <div style="display:flex; gap:2px; padding:6px; border-bottom:1px solid var(--line); background:#F7F9F8">
+                    <button onMouseDown="{{ cmdBold }}" title="Bold" style="width:32px; height:30px; background:none; border:1px solid transparent; border-radius:0; font-size:13px; font-weight:500; color:#1B1D1E; cursor:pointer" style-hover="border-color:var(--line)">B</button>
+                    <button onMouseDown="{{ cmdItalic }}" title="Italic" style="width:32px; height:30px; background:none; border:1px solid transparent; border-radius:0; font-size:13px; font-style:italic; color:#1B1D1E; cursor:pointer" style-hover="border-color:var(--line)">I</button>
+                    <button onMouseDown="{{ cmdLink }}" title="Link" style="padding:0 10px; height:30px; background:none; border:1px solid transparent; border-radius:0; font-size:11px; color:#1B1D1E; cursor:pointer" style-hover="border-color:var(--line)">Link</button>
+                    <button onMouseDown="{{ cmdList }}" title="List" style="padding:0 10px; height:30px; background:none; border:1px solid transparent; border-radius:0; font-size:11px; color:#1B1D1E; cursor:pointer" style-hover="border-color:var(--line)">List</button>
+                    <button onMouseDown="{{ cmdClear }}" title="Clear formatting" style="padding:0 10px; height:30px; background:none; border:1px solid transparent; border-radius:0; font-size:11px; color:#1B1D1E; cursor:pointer" style-hover="border-color:var(--line)">Clear</button>
+                  </div>
+                  <div ref="{{ setCmpEditor }}" contentEditable="true" suppressContentEditableWarning="{{ true }}" onInput="{{ onCmpInput }}" style="min-height:200px; padding:14px; font-size:14px; line-height:1.8; font-weight:300; color:#4A524F; outline:none"></div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ cmpCode }}" hint-placeholder-val="{{ false }}">
+                <textarea value="{{ cmpHtml }}" onChange="{{ onCmpHtml }}" rows="12" spellcheck="false" style="padding:14px; border:1px solid var(--line); border-radius:0; font-size:12px; line-height:1.6; font-family:ui-monospace,Menlo,monospace; outline:none; background:#fff; resize:vertical" style-focus="border-color:var(--green)"></textarea>
+              </sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Attachment</span>
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 14px; border:1px solid var(--line)">
+                <div style="flex:1 1 180px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                  <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ cmpFileLabel }}</span>
+                  <span style="font-size:11px; color:#6B7572">{{ cmpSourceLabel }}</span>
+                </div>
+                <sc-if value="{{ cmpHasFile }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ cmpViewFile }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">View</button>
+                </sc-if>
+                <sc-if value="{{ cmpCanGenerate }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ cmpUseGenerated }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Use generated</button>
+                </sc-if>
+                <label style="padding:7px 13px; border:1px solid var(--line); font-size:11px; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)"><input type="file" accept="application/pdf,.pdf" onChange="{{ onCmpFile }}" style="display:none">Attach another PDF</label>
+              </div>
+            </div>
+            <button onClick="{{ cmpSend }}" disabled="{{ cmpBusy }}" style="align-self:flex-start; padding:12px 24px; background:var(--green-deep); border:1px solid var(--green-deep); border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:#1B1D1E">{{ cmpSendLabel }}</button>
+          </div>
+          <div style="display:flex; flex-direction:column; min-width:0; background:#EDF1F0">
+            <span style="padding:14px 18px 0; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#4A524F">Preview — exactly what sends</span>
+            <iframe srcDoc="{{ cmpPreviewHtml }}" sandbox="" title="Proforma email preview" style="flex:1; width:100%; min-height:760px; border:none; background:transparent; display:block"></iframe>
+          </div>
         </div>
       </div>
     </div>
@@ -5981,7 +6205,7 @@ function loadLib(name) {
 }
 
 const WS_STORAGE_KEY = 'gl_workspace';
-const FIN_VIEWS = ['finance', 'finMaster', 'finProjects', 'finInvoices', 'money', 'payouts', 'spend', 'finPeople', 'finInventory', 'finPayroll'];
+const FIN_VIEWS = ['finance', 'finMaster', 'finProjects', 'finInvoices', 'finProforma', 'money', 'payouts', 'spend', 'finPeople', 'finInventory', 'finPayroll'];
 const INV_CATS = [['camera', 'Camera'], ['lens', 'Lens'], ['computer', 'Mac / computer'], ['lighting', 'Lighting'], ['audio', 'Audio'], ['storage', 'SSD / drive'], ['memory', 'Memory card'], ['drone', 'Drone'], ['support', 'Tripod / rig / gimbal'], ['power', 'Batteries / power'], ['accessory', 'Accessory'], ['other', 'Other']];
 const INV_PREFIX = { camera: 'CAM', lens: 'LEN', computer: 'MAC', lighting: 'LGT', audio: 'AUD', storage: 'SSD', memory: 'MEM', drone: 'DRN', support: 'RIG', power: 'PWR', accessory: 'ACC', other: 'OTH' };
 const INV_STATUS = [['in_use', 'In use', '#DDEFE8', '#0A6E58'], ['spare', 'Spare', '#F1F4F3', '#5C6864'], ['repair', 'In repair', '#FDF9F0', '#8A6D3B'], ['lost', 'Lost', '#F7E9E7', '#B4433A'], ['sold', 'Sold / retired', '#EEEEEE', '#5C6864']];
@@ -6307,7 +6531,7 @@ class Component extends DCLogic {
     if (view === 'spend') { this.loadSpend(); if (!(this.state.talent || []).length) this.loadTalent(); }
     if (view === 'finance' || view === 'finProjects') this.loadFinance();
     if (view === 'finMaster') { this.loadFinance(); this.loadMaster(); }
-    if (view === 'finInvoices') this.loadFinInvoices();
+    if (view === 'finInvoices' || view === 'finProforma') this.loadFinInvoices();
     if (view === 'finPeople') this.loadFinPeople();
     if (view === 'finPayroll') this.loadPayroll();
     if (view === 'finInventory') { this.setState({ invOpenId: null, invForm: null }); this.loadInventory(); }
@@ -6450,7 +6674,7 @@ class Component extends DCLogic {
     this.setState({ view: to, editorFrom: null, current: null, media: [], assignments: [], costing: null, agEdits: {} });
     if (to === 'finance' || to === 'finProjects') { this.loadFinance(); return; }
     if (to === 'finMaster') { this.loadFinance(); this.loadMaster(); return; }
-    if (to === 'finInvoices') { this.loadFinInvoices(); return; }
+    if (to === 'finInvoices' || to === 'finProforma') { this.loadFinInvoices(); return; }
     if (to !== 'dashboard') return;
     this.loadForDivision();
     if (!wasProject) this.loadEvents();
@@ -8609,8 +8833,8 @@ class Component extends DCLogic {
   // anything else is added as a free line. Same numbering, GST split and
   // line-stamping guard as the project page.
   async openNewInvoice() {
-    this.setState({ niOpen: true, niStatus: 'Loading projects…', niKey: '', niQuery: '', niRec: null, niKind: '',
-      niLines: [], niChecked: [], niCustom: [], niType: 'tax', niGst: 'auto', niDiscount: '', niNotes: '', niBusy: false });
+    this.setState({ niOpen: true, niStatus: 'Loading projects…', niKey: '', niQuery: '', niRec: null, niKind: '', niEditId: null, niEditNo: '',
+      niLines: [], niChecked: [], niCustom: [], niType: this.state.view === 'finProforma' ? 'proforma' : 'tax', niGst: 'auto', niDiscount: '', niNotes: '', niBusy: false });
     const [pr, ev] = await Promise.all([
       this.sb.from('projects').select('*').order('created_at', { ascending: false }).limit(800),
       this.sb.from('events').select('*').order('created_at', { ascending: false }).limit(800),
@@ -8625,7 +8849,26 @@ class Component extends DCLogic {
     this.setState({ niRecords: recs, niStatus: err ? 'Could not load projects: ' + err.message : '' });
   }
 
-  closeNewInvoice() { this.setState({ niOpen: false, niRec: null, niKey: '', niStatus: '' }); }
+  closeNewInvoice() { this.setState({ niOpen: false, niRec: null, niKey: '', niStatus: '', niEditId: null, niEditNo: '' }); }
+
+  // Edit a proforma in the same form it was made in: the project stays, the
+  // saved lines, bill-to, dates and GST come back exactly as stored.
+  async niEdit(inv) {
+    if (inv.type !== 'proforma' || inv.status === 'cancelled') return;
+    await this.openNewInvoice();
+    await this.niPick(inv.project_id ? 'p:' + inv.project_id : 'e:' + inv.event_id);
+    if (!this.state.niRec) { this.setState({ niStatus: 'The project for ' + inv.number + ' could not be found.' }); return; }
+    const st = this.state;
+    this.setState({
+      niEditId: inv.id, niEditNo: inv.number, niType: 'proforma', niLines: [], niChecked: [],
+      niBillName: inv.bill_name || '', niGstin: inv.bill_gstin || '', niPan: inv.bill_pan || '', niEmail: inv.bill_email || '',
+      niState: inv.place_of_supply && inv.place_of_supply !== '\u2014' ? inv.place_of_supply : st.niState,
+      niIssue: inv.issue_date || st.niIssue, niDue: inv.due_date || '', niDiscount: Number(inv.discount) ? String(inv.discount) : '',
+      niNotes: inv.notes || '', niGst: inv.gst_mode === 'cgst_sgst' || inv.gst_mode === 'igst' ? inv.gst_mode : 'auto',
+      niCustom: (inv.line_items || []).map((l, i) => ({ id: Date.now() + i, desc: l.desc || '', amount: l.amount == null ? '' : String(l.amount) })),
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   async niPick(key) {
     const r = (this.state.niRecords || []).find(x => x.key === key);
@@ -8672,9 +8915,8 @@ class Component extends DCLogic {
     this.setState({ niBusy: true, niStatus: 'Generating…' });
     try {
       const type = s.niType === 'proforma' ? 'proforma' : 'tax';
-      const number = await this.nextInvoiceNumber(type);
-      const { data: inv, error } = await this.insertInvoice({
-        [s.niKind === 'project' ? 'project_id' : 'event_id']: c.id, type, number, status: 'draft',
+      const row = {
+        [s.niKind === 'project' ? 'project_id' : 'event_id']: c.id, type, status: 'draft',
         issue_date: s.niIssue || this.toIso(new Date()), due_date: s.niDue || null,
         bill_name: name, bill_couple: c.project_title || c.couple_names || c.client_name,
         bill_gstin: (s.niGstin || '').trim(), bill_pan: (s.niPan || '').trim(), bill_email: (s.niEmail || '').trim(),
@@ -8682,7 +8924,22 @@ class Component extends DCLogic {
         discount: t.discount, subtotal: t.subtotal, taxable_value: t.taxable,
         cgst_amount: t.cgst, sgst_amount: t.sgst, igst_amount: t.igst, total: t.total,
         advance_pct: 0, advance_amount: 0, balance_amount: t.total, notes: s.niNotes || '',
-      });
+      };
+      // Editing keeps the proforma's number. It goes back to draft, because what
+      // the client holds no longer matches until it is sent again.
+      if (s.niEditId) {
+        const { data: upd, error: uErr } = await this.sb.from('invoices').update(row)
+          .eq('id', s.niEditId).eq('type', 'proforma').neq('status', 'cancelled').select('id');
+        if (uErr) throw uErr;
+        if (!upd || !upd.length) throw new Error(s.niEditNo + ' was cancelled meanwhile — nothing was saved.');
+        this.setState({ niOpen: false, niRec: null, niKey: '', niBusy: false, niStatus: '', niEditId: null, niEditNo: '', finProFilter: 'open',
+          niDone: s.niEditNo + ' saved · ' + fmtINR(t.total) + ' · send it again so the client has the latest.' });
+        setTimeout(() => this.setState({ niDone: '' }), 5000);
+        this.loadFinInvoices();
+        return;
+      }
+      const number = await this.nextInvoiceNumber(type);
+      const { data: inv, error } = await this.insertInvoice(Object.assign({ number }, row));
       if (error) throw error;
       if (sold.length) {
         const ids = sold.map(l => l.id);
@@ -8693,8 +8950,9 @@ class Component extends DCLogic {
           throw new Error(sErr ? sErr.message : 'Some of these lines were billed meanwhile — nothing was created. Pick the project again.');
         }
       }
-      this.setState({ niOpen: false, niRec: null, niKey: '', niBusy: false, niStatus: '', finInvFilter: 'draft',
-        niDone: (type === 'tax' ? 'Draft saved' : 'Generated ' + inv.number) + ' · ' + fmtINR(t.total) + ' incl. GST · issue it to take the number.' });
+      this.setState({ niOpen: false, niRec: null, niKey: '', niBusy: false, niStatus: '', finInvFilter: 'draft', finProFilter: 'open',
+        niDone: type === 'tax' ? 'Draft saved · ' + fmtINR(t.total) + ' incl. GST · issue it to take the number.'
+          : 'Generated ' + inv.number + ' · ' + fmtINR(t.total) + ' · preview, download or send it below.' });
       setTimeout(() => this.setState({ niDone: '' }), 4000);
       this.loadFinInvoices();
     } catch (e) {
@@ -8705,7 +8963,14 @@ class Component extends DCLogic {
   newInvoiceVM() {
     const s = this.state;
     const canNew = this.can('moneyEdit');
-    const base = { canNewInvoice: canNew && !s.niOpen, openNewInvoice: () => this.openNewInvoice(), niDone: s.niDone || '', niOpen: !!s.niOpen && canNew };
+    const onPro = s.view === 'finProforma';
+    const base = { canNewInvoice: canNew && !s.niOpen, openNewInvoice: () => this.openNewInvoice(), niDone: s.niDone || '', niOpen: !!s.niOpen && canNew,
+      niNewLabel: onPro ? '+ New proforma' : '+ New invoice', niShowType: !onPro && !s.niEditId,
+      canUpload: onPro && canNew && !s.upOpen && !s.niOpen, openUpload: () => this.openUpload(),
+      niTitle: s.niEditId ? 'Edit ' + s.niEditNo : onPro ? 'New proforma' : 'New invoice',
+      niHelp: s.niEditId ? 'Saves over ' + s.niEditNo + ' and keeps its number.'
+        : onPro ? 'Saved to the list below — preview, download the PDF, or send it to the email on the project page.'
+        : 'Saved as a draft — preview, then issue or email it from the list.' };
     if (!base.niOpen) return Object.assign(base, { niOptsVM: [], niLinesVM: [], niCustomVM: [], niTotalsVM: [], niTypeVM: [], niGstVM: [], niFactsVM: [] });
     const q = (s.niQuery || '').trim().toLowerCase();
     const recs = (s.niRecords || []).filter(r => !q || r.key === s.niKey || r.label.toLowerCase().includes(q));
@@ -8718,7 +8983,7 @@ class Component extends DCLogic {
     const divs = c && (c.divisions && c.divisions.length ? c.divisions : c.division ? [c.division] : []);
     return Object.assign(base, {
       closeNewInvoice: () => this.closeNewInvoice(),
-      niStatus: s.niStatus || '', niBusy: !!s.niBusy, niGenerateLabel: s.niBusy ? 'Generating…' : (proforma ? 'Generate proforma' : 'Generate invoice'),
+      niStatus: s.niStatus || '', niBusy: !!s.niBusy, niGenerateLabel: s.niBusy ? (s.niEditId ? 'Saving…' : 'Generating…') : s.niEditId ? 'Save changes' : (proforma ? 'Generate proforma' : 'Generate invoice'),
       niGenerate: () => this.niGenerate(),
       niQuery: s.niQuery || '', onNiQuery: set('niQuery'),
       niKey: s.niKey || '', onNiPick: e => this.niPick(e.target.value),
@@ -8853,6 +9118,7 @@ class Component extends DCLogic {
     if (!this.can('finance') && s.view !== 'shoots') return out;
     if (s.view === 'finance' || s.view === 'finProjects') Object.assign(out, this.finProjectsVM(s.view));
     if (s.view === 'finInvoices') Object.assign(out, this.finInvoicesVM());
+    if (s.view === 'finProforma') Object.assign(out, this.finInvoicesVM('proforma'));
     if (s.view === 'finMaster') Object.assign(out, this.masterVM());
     if (s.view === 'finInventory') Object.assign(out, this.inventoryVM());
     if (s.view === 'finPayroll') Object.assign(out, this.payrollVM());
@@ -8963,26 +9229,30 @@ class Component extends DCLogic {
     };
   }
 
-  finInvoicesVM() {
+  finInvoicesVM(mode) {
     const s = this.state;
+    const pro = mode === 'proforma';
     const today = this.toIso(new Date());
     const rcv = {};
     (s.finInvReceipts || []).forEach(r => { rcv[r.invoice_id] = (rcv[r.invoice_id] || 0) + Number(r.amount || 0); });
     const nameOf = i => i.projects ? (i.projects.client_name || i.projects.project_title || '—')
       : i.events ? (i.events.couple_names || '—') : (i.bill_name || '—');
-    const rows = (s.finInvList || []).map(i => {
+    const rows = (s.finInvList || []).filter(i => !pro || i.type === 'proforma').map(i => {
       const got = rcv[i.id] || 0, bal = Number(i.total || 0) - got;
-      const state = i.status === 'cancelled' ? 'cancelled' : i.type === 'credit' ? 'credit' : i.type === 'proforma' ? 'proforma' : i.status === 'draft' ? 'draft' : bal <= 1 ? 'paid' : 'unpaid';
+      const state = pro ? (i.status === 'cancelled' ? 'cancelled' : i.status === 'draft' ? 'draft' : 'sent')
+        : i.status === 'cancelled' ? 'cancelled' : i.type === 'credit' ? 'credit' : i.type === 'proforma' ? 'proforma' : i.status === 'draft' ? 'draft' : bal <= 1 ? 'paid' : 'unpaid';
       return { i, got, bal, state, name: nameOf(i) };
     });
-    const f = s.finInvFilter || 'unpaid';
+    const f = pro ? (s.finProFilter || 'open') : (s.finInvFilter || 'unpaid');
     const q = (s.finInvQuery || '').trim().toLowerCase();
-    const shown = rows.filter(x => (f === 'all' || x.state === f)
+    const inF = (k, x) => k === 'all' || (k === 'open' ? x.state !== 'cancelled' : x.state === k);
+    const shown = rows.filter(x => inF(f, x)
       && (!q || [x.i.number, x.name, x.i.bill_name].filter(Boolean).join(' ').toLowerCase().includes(q)));
-    const count = k => rows.filter(x => k === 'all' || x.state === k).length;
+    const count = k => rows.filter(x => inF(k, x)).length;
     const STATE = {
       unpaid: ['Unpaid', '#F7E9E7', '#B4433A'], draft: ['Draft', '#EEEEEE', '#5C6864'],
       paid: ['Paid', '#DDEFE8', '#0A6E58'], proforma: ['Proforma', '#EFE9DA', '#8A6D3B'], cancelled: ['Cancelled', '#EEEEEE', '#5C6864'], credit: ['Credit note', '#E4EEF7', '#2F5D86'],
+      sent: ['Sent', '#E4EEF7', '#2F5D86'],
     };
     const byInvId = {};
     (s.finInvList || []).forEach(i => { byInvId[i.id] = i; });
@@ -8991,10 +9261,15 @@ class Component extends DCLogic {
     return {
       ...this.newInvoiceVM(),
       isFinInvoices: true,
-      finInvFilterVM: [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['cancelled', 'Cancelled'], ['credit', 'Credit notes'], ['all', 'All']].map(c =>
-        Object.assign({ label: c[1] + ' (' + count(c[0]) + ')', go: () => this.setState({ finInvFilter: c[0] }) }, this.finChip(f === c[0]))),
+      ...(pro ? this.uploadVM() : { upOpen: false }),
+      finInvTitle: pro ? 'Proforma' : 'Invoices',
+      finInvEmpty: pro ? 'No proforma invoices here.' : 'No invoices here.',
+      finInvFilterVM: (pro
+        ? [['open', 'Open'], ['draft', 'Not sent'], ['sent', 'Sent'], ['cancelled', 'Cancelled'], ['all', 'All']]
+        : [['unpaid', 'Unpaid'], ['draft', 'Drafts'], ['paid', 'Paid'], ['proforma', 'Proforma'], ['cancelled', 'Cancelled'], ['credit', 'Credit notes'], ['all', 'All']]).map(c =>
+        Object.assign({ label: c[1] + ' (' + count(c[0]) + ')', go: () => this.setState(pro ? { finProFilter: c[0] } : { finInvFilter: c[0] }) }, this.finChip(f === c[0]))),
       finInvQuery: s.finInvQuery || '', onFinInvQuery: e => this.setState({ finInvQuery: e.target.value }),
-      finInvSummary: shown.length + (shown.length === 1 ? ' invoice · ' : ' invoices · ') + fmtINR(totalShown)
+      finInvSummary: shown.length + (pro ? ' proforma · ' : shown.length === 1 ? ' invoice · ' : ' invoices · ') + fmtINR(totalShown)
         + (balShown > 1 ? ' · ' + fmtINR(balShown) + ' outstanding' : ''),
       finNoInvoices: !shown.length && !(s.finStatus || '').startsWith('Loading'),
       finInvRowsVM: shown.map(x => {
@@ -9003,21 +9278,27 @@ class Component extends DCLogic {
         const late = x.state === 'unpaid' && due && due < today;
         return {
           client: x.name, number: this.invNo(x.i),
-          dateLabel: 'Issued ' + fmtDay(x.i.issue_date) + (x.i.due_date ? ' · due ' + fmtDay(x.i.due_date) : ''),
+          dateLabel: (pro ? 'Dated ' : 'Issued ') + fmtDay(x.i.issue_date) + (x.i.due_date ? (pro ? ' · valid till ' : ' · due ') + fmtDay(x.i.due_date) : ''),
           dateColor: late ? '#B4433A' : '#67746F',
           stateLabel: st[0], stateBg: st[1], stateColor: st[2],
           totalFmt: fmtINR(x.i.total),
-          subLabel: x.state === 'credit' ? 'Against ' + ((byInvId[x.i.credit_for] || {}).number || 'an invoice') : x.state === 'cancelled' ? (x.i.cancel_reason || 'Cancelled') : x.state === 'proforma' ? 'Quote' : x.state === 'draft' ? 'Not issued — not owed yet' : x.got <= 0 ? 'Nothing received' : x.bal > 1 ? fmtINR(x.bal) + ' outstanding' : 'Received in full',
+          subLabel: pro ? (x.state === 'cancelled' ? (x.i.cancel_reason || 'Cancelled') : x.state === 'sent' ? 'Sent' + (x.i.sent_at ? ' ' + fmtDay(String(x.i.sent_at).slice(0, 10)) : '') : 'Not sent yet') + (x.i.pdf_source === 'uploaded' ? ' · uploaded pdf' : '')
+            : x.state === 'credit' ? 'Against ' + ((byInvId[x.i.credit_for] || {}).number || 'an invoice') : x.state === 'cancelled' ? (x.i.cancel_reason || 'Cancelled') : x.state === 'proforma' ? 'Quote' : x.state === 'draft' ? 'Not issued — not owed yet' : x.got <= 0 ? 'Nothing received' : x.bal > 1 ? fmtINR(x.bal) + ' outstanding' : 'Received in full',
           subColor: x.state === 'unpaid' ? '#B4433A' : '#67746F',
           canLog: x.state === 'unpaid' && this.can('moneyEdit'),
           canIssue: x.state === 'draft' && x.i.type === 'tax' && this.can('moneyEdit'),
           issue: () => this.markInvoiceIssued(x.i),
-          canCancel: (x.state === 'draft' || x.state === 'unpaid' || x.state === 'proforma') && this.can('moneyEdit'),
+          canCancel: (x.state === 'draft' || x.state === 'unpaid' || x.state === 'proforma' || (pro && x.state === 'sent')) && this.can('moneyEdit'),
+          canEdit: pro && x.state !== 'cancelled' && x.i.pdf_source !== 'uploaded' && this.can('moneyEdit'),
+          edit: () => this.niEdit(x.i),
+          canSend: pro && x.state !== 'cancelled' && this.can('moneyEdit'),
+          sendLabel: x.state === 'sent' ? 'Send again' : 'Send',
+          send: () => this.openComposer(x.i),
           canCreditNote: x.state === 'unpaid' && x.i.type === 'tax',
           cancelLabel: x.i.status === 'draft' && this.isDraftNo(x.i.number) ? 'Delete draft' : 'Cancel',
           cancel: () => this.cancelInvoice(x.i),
           logPayment: () => this.goLogPayment(x.i),
-          preview: () => this.openInvoicePreview(x.i),
+          preview: () => (x.i.pdf_source === 'uploaded' ? this.viewUploadedPdf(x.i) : this.openInvoicePreview(x.i)),
           open: () => this.openFinInvoiceParent(x.i),
         };
       }),
@@ -10262,7 +10543,7 @@ class Component extends DCLogic {
     setTimeout(() => this.setState({ invStatus: '' }), 3500);
     const c = this.state.current;
     if (c) { this.loadInvoices(c.id, c); if (c._table === 'projects') this.loadPricing(c.id); }
-    if (this.state.view === 'finInvoices') this.loadFinInvoices();
+    if (this.state.view === 'finInvoices' || this.state.view === 'finProforma') this.loadFinInvoices();
   }
 
   async deleteInvoice(inv) {
@@ -10276,7 +10557,7 @@ class Component extends DCLogic {
         : error.message });
       return;
     }
-    if (!this.state.current) { if (this.state.view === 'finInvoices') this.loadFinInvoices(); return; }
+    if (!this.state.current) { if (this.state.view === 'finInvoices' || this.state.view === 'finProforma') this.loadFinInvoices(); return; }
     this.loadInvoices(this.state.current.id);
     // A deleted invoice releases its lines (on delete set null); show them as unbilled again.
     if (this.state.current && this.state.current._table === 'projects') this.loadPricing(this.state.current.id);
@@ -10285,8 +10566,19 @@ class Component extends DCLogic {
   async getInvoicePdfBlob() {
     const el = this.invoicePrintRef;
     await loadLib('html2pdf');
-    const opt = { margin: 0, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' } };
-    return await window.html2pdf().set(opt).from(el).toPdf().output('blob');
+    const opt = { margin: 0, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'avoid-all'] } };
+    const worker = window.html2pdf().set(opt).from(el).toContainer().toCanvas();
+    const canvas = await worker.get('canvas');
+    const pdf = await worker.toPdf().get('pdf');
+    // A document a little taller than A4 is scaled onto one page rather than
+    // leaving the sign-off alone on page two. Only a genuinely long one paginates.
+    const pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight();
+    const tall = (canvas.height / canvas.width) * pw;
+    if (tall <= ph || tall > ph * 1.45) return pdf.output('blob');
+    const doc = new pdf.constructor({ unit: 'pt', format: 'a4', orientation: 'portrait' });
+    const w = pw * ph / tall;
+    doc.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', (pw - w) / 2, 0, w, ph);
+    return doc.output('blob');
   }
 
   async downloadInvoicePreview() {
@@ -10376,9 +10668,397 @@ class Component extends DCLogic {
     });
   }
 
+  // ---- Proforma: upload an existing PDF, read it, compose and send ------------
+  invoicePdfPath(inv) { return (inv.event_id || inv.project_id || 'misc') + '/invoices/' + inv.number + '.pdf'; }
+
+  async loadParentRecords() {
+    const [pr, ev] = await Promise.all([
+      this.sb.from('projects').select('*').order('created_at', { ascending: false }).limit(800),
+      this.sb.from('events').select('*').order('created_at', { ascending: false }).limit(800),
+    ]);
+    return { error: pr.error || ev.error, recs: [
+      ...(pr.data || []).map(r => ({ key: 'p:' + r.id, kind: 'project', rec: r, label: (r.client_name || '—') + (r.project_title ? ' · ' + r.project_title : '') })),
+      ...(ev.data || []).map(r => ({ key: 'e:' + r.id, kind: 'event', rec: r, label: (r.couple_names || r.client_name || '—') + (r.event_date ? ' · ' + fmtDay(r.event_date) : '') + ' · Wedding' })),
+    ] };
+  }
+
+  openUpload() {
+    this.upFile = null;
+    this.setState({ upOpen: true, niOpen: false, upStatus: 'Loading projects…', upBusy: false, upRead: false, upFileName: '', upFound: [], upLines: [],
+      upKey: '', upQuery: '', upNumber: '', upIssue: '', upDue: '', upName: '', upEmail: '', upTotal: '', upGstin: '', upMatched: '' });
+    this.loadParentRecords().then(({ recs, error }) => this.setState({ upRecords: recs, upStatus: error ? 'Could not load projects: ' + error.message : '' }));
+  }
+  closeUpload() { this.upFile = null; this.setState({ upOpen: false, upStatus: '' }); }
+
+  // Text runs regrouped into visual lines by baseline, top to bottom.
+  async pdfText(file) {
+    const pdfjs = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs');
+    pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.min.mjs';
+    const doc = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+    const lines = [];
+    for (let p = 1; p <= Math.min(doc.numPages, 6); p++) {
+      const tc = await (await doc.getPage(p)).getTextContent();
+      const rows = [];
+      tc.items.forEach(it => {
+        if (!it.str || !it.str.trim()) return;
+        const y = Math.round(it.transform[5]);
+        let row = rows.find(r => Math.abs(r.y - y) <= 3);
+        if (!row) rows.push(row = { y, parts: [] });
+        row.parts.push({ x: it.transform[4], s: it.str });
+      });
+      rows.sort((a, b) => b.y - a.y).forEach(r => lines.push(r.parts.sort((a, b) => a.x - b.x).map(q => q.s).join(' ').replace(/\s+/g, ' ').trim()));
+    }
+    return lines.filter(Boolean);
+  }
+
+  parseProforma(lines, recs) {
+    const text = lines.join('\n'), low = text.toLowerCase();
+    const MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const iso = (d, m, y) => {
+      y = +y < 100 ? 2000 + +y : +y;
+      if (!(m >= 1 && m <= 12 && d >= 1 && d <= 31 && y > 2000 && y < 2100)) return '';
+      return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    };
+    const mi = s => MON.indexOf(String(s).slice(0, 3).toLowerCase()) + 1;
+    const datesIn = str => {
+      const out = []; let m;
+      const push = (i, v) => { if (v) out.push({ i, v }); };
+      const r1 = /\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})\b/g; while ((m = r1.exec(str))) push(m.index, iso(+m[1], +m[2], m[3]));
+      const r2 = /\b(\d{1,2})(?:st|nd|rd|th)?[\s\-]+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?[\s\-]+(\d{4})\b/gi; while ((m = r2.exec(str))) push(m.index, iso(+m[1], mi(m[2]), m[3]));
+      const r3 = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})\b/gi; while ((m = r3.exec(str))) push(m.index, iso(+m[2], mi(m[1]), m[3]));
+      const r4 = /\b(\d{4})-(\d{2})-(\d{2})\b/g; while ((m = r4.exec(str))) push(m.index, iso(+m[3], +m[2], m[1]));
+      return out.sort((a, b) => a.i - b.i).map(d => d.v);
+    };
+    // Amounts: grouped or decimal numbers, or a bare number after a currency
+    // mark. Years, pincodes, SAC codes and GSTINs are not money.
+    const amountsIn = str => {
+      const clean = str.replace(/\b\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}\b/g, ' ').replace(/\b\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]{3}\b/g, ' ');
+      const out = []; let m;
+      const re = /(₹|rs\.?|inr)?\s*(\d{1,3}(?:,\d{2,3})+(?:\.\d{1,2})?|\d{2,9}\.\d{1,2}|\d{3,9})(?![\d,%])/gi;
+      while ((m = re.exec(clean))) {
+        const raw = m[2], cur = !!m[1];
+        if (!cur && /^\d+$/.test(raw) && (/^(19|20)\d{2}$/.test(raw) || raw.length >= 6)) continue;
+        out.push(parseFloat(raw.replace(/,/g, '')));
+      }
+      return out;
+    };
+    const numM = text.match(/\b(PRO[\-\/]\d{2,4}[\-\/]\d{1,5})\b/i)
+      || text.match(/(?:proforma|pro-forma|quotation|quote|estimate|invoice)\s*(?:invoice\s*)?(?:no\.?|number|#)\s*[:\-.]?\s*([A-Z0-9][A-Z0-9\/\-_.]{1,30})/i);
+    const number = numM ? numM[1].replace(/[.,]$/, '') : '';
+    let issue = '', due = '';
+    lines.forEach(l => {
+      const d = datesIn(l); if (!d.length) return;
+      if (/valid|due|expir|until|till/i.test(l)) { if (!due) due = d[d.length - 1]; }
+      else if (/date|dated/i.test(l) && !issue) issue = d[0];
+    });
+    const all = datesIn(text);
+    if (!issue && all.length) issue = all[0];
+    const TOTAL = /(grand\s*total|total\s*(amount|payable|due|value)?|amount\s*payable|net\s*payable)/i;
+    const NOT_LINE = /(sub\s*-?\s*total|total|gst|cgst|sgst|igst|tax|discount|balance|advance|round|in words|rupees|payable|bank|a\/c|account|ifsc|upi|gstin|pan\b|phone|mobile|tel|pin|date|valid|invoice\s*no|proforma\s*no|sac|hsn|qty|rate)/i;
+    let total = 0;
+    lines.forEach(l => { if (TOTAL.test(l) && !/sub\s*-?\s*total/i.test(l)) { const a = amountsIn(l); if (a.length) total = a[a.length - 1]; } });
+    const items = [];
+    lines.forEach(l => {
+      if (NOT_LINE.test(l)) return;
+      const a = amountsIn(l); if (!a.length) return;
+      const desc = l.replace(/(₹|rs\.?|inr)?\s*\d[\d,]*(\.\d{1,2})?/gi, ' ').replace(/[|:\-–—]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if ((desc.match(/[a-z]/gi) || []).length < 3) return;
+      items.push({ desc, amount: a[a.length - 1] });
+    });
+    if (!total) total = Math.max(0, ...items.map(i => i.amount), ...amountsIn(text));
+    const emails = (text.match(/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/gi) || []).filter(e => !/glomium/i.test(e));
+    const gst = (text.match(/\b\d{2}[A-Z]{5}\d{4}[A-Z][0-9A-Z]Z[0-9A-Z]\b/g) || []).filter(g => g !== '32AAGCG3568E1ZS');
+    let name = '';
+    const bi = lines.findIndex(l => /(bill(ed)?\s*to|prepared\s*for|quotation\s*for|client|customer|to\s*:)/i.test(l));
+    if (bi !== -1) {
+      const rest = lines[bi].replace(/.*?(bill(ed)?\s*to|prepared\s*for|quotation\s*for|client( name)?|customer( name)?|to)\s*[:\-]?\s*/i, '').trim();
+      name = rest && /[a-z]{2}/i.test(rest) ? rest : (lines[bi + 1] || '');
+      name = name.replace(/\s{2,}.*/, '').slice(0, 80);
+    }
+    // Project: whole names found in the text weigh most, then single words, then the email.
+    let best = null, bestScore = 0;
+    (recs || []).forEach(r => {
+      const c = r.rec; let sc = 0;
+      [c.client_name, c.project_title, c.couple_names].filter(Boolean).forEach(n => {
+        const nl = String(n).toLowerCase().trim();
+        if (nl.length >= 3 && low.includes(nl)) sc += 10;
+        else nl.split(/[^a-z0-9]+/).filter(w => w.length >= 4 && !/^(and|with|wedding|project|the)$/.test(w)).forEach(w => { if (low.includes(w)) sc += 2; });
+      });
+      if (c.client_email && emails.some(e => e.toLowerCase() === String(c.client_email).toLowerCase())) sc += 20;
+      if (sc > bestScore) { bestScore = sc; best = r; }
+    });
+    if (bestScore < 4) best = null;
+    const found = [
+      ['number', number], ['date', issue ? fmtDay(issue) : ''], ['valid till', due ? fmtDay(due) : ''],
+      ['total', total ? fmtINR(total) : ''], ['services', items.length ? items.length + ' line' + (items.length === 1 ? '' : 's') : ''],
+      ['bill to', name], ['email', emails[0] || ''], ['project', best ? best.label : ''],
+    ].filter(f => f[1]);
+    return { number, issue, due, total, lines: items.slice(0, 15), email: emails[0] || '', gstin: gst[0] || '', name, rec: best, found };
+  }
+
+  async onUpFile(e) {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    if (!/pdf$/i.test(f.type || '') && !/\.pdf$/i.test(f.name)) { this.setState({ upStatus: 'That is not a PDF.' }); return; }
+    this.upFile = f;
+    this.setState({ upFileName: f.name, upStatus: 'Reading the PDF…', upRead: false });
+    let lines = [];
+    try { lines = await this.pdfText(f); } catch (err) { console.warn('[proforma] could not read pdf text', err); }
+    const p = this.parseProforma(lines, this.state.upRecords || []);
+    this.setState({
+      upRead: true, upStatus: lines.length ? '' : 'No text could be read from this PDF (a scan?) — fill in the details below.',
+      upNumber: p.number, upIssue: p.issue || this.toIso(new Date()), upDue: p.due, upName: p.name || (p.rec ? (p.rec.rec.client_name || p.rec.rec.couple_names || '') : ''),
+      upEmail: (p.rec && p.rec.rec.client_email) || p.email, upTotal: p.total ? String(p.total) : '', upGstin: p.gstin,
+      upKey: p.rec ? p.rec.key : this.state.upKey, upMatched: p.rec ? p.rec.key : '',
+      upLines: p.lines.map((l, i) => ({ id: Date.now() + i, desc: l.desc, amount: String(l.amount) })), upFound: p.found,
+    });
+  }
+
+  async upSave(andSend) {
+    const s = this.state, r = (s.upRecords || []).find(x => x.key === s.upKey);
+    if (!this.upFile) return this.setState({ upStatus: 'Choose the PDF first.' });
+    if (!r) return this.setState({ upStatus: 'Choose which project this proforma is for.' });
+    const lines = (s.upLines || []).filter(l => (l.desc || '').trim() && parseFloat(l.amount));
+    const sub = +lines.reduce((t, l) => t + (parseFloat(l.amount) || 0), 0).toFixed(2);
+    const total = parseFloat(s.upTotal) || sub;
+    if (!total) return this.setState({ upStatus: 'Add the total.' });
+    this.setState({ upBusy: true, upStatus: 'Saving…' });
+    try {
+      const c = r.rec, base = sub && sub <= total ? sub : total, tax = +(total - base).toFixed(2);
+      const row = {
+        [r.kind === 'project' ? 'project_id' : 'event_id']: c.id, type: 'proforma', status: 'draft', pdf_source: 'uploaded',
+        issue_date: s.upIssue || this.toIso(new Date()), due_date: s.upDue || null,
+        bill_name: (s.upName || '').trim() || c.client_name || c.couple_names || '—',
+        bill_couple: c.project_title || c.couple_names || c.client_name || '', bill_gstin: (s.upGstin || '').trim(), bill_pan: '',
+        bill_email: (s.upEmail || '').trim(), place_of_supply: c.client_state || '—', gst_mode: 'igst',
+        gst_rate: base && tax ? Math.round(tax / base * 100) : 0,
+        line_items: lines.length ? lines.map(l => ({ desc: l.desc.trim(), amount: parseFloat(l.amount) || 0 })) : [{ desc: 'As per the attached proforma', amount: total }],
+        discount: 0, subtotal: base, taxable_value: base, cgst_amount: 0, sgst_amount: 0, igst_amount: tax, total,
+        advance_pct: 0, advance_amount: 0, balance_amount: total, notes: 'Uploaded — ' + (s.upFileName || 'proforma.pdf'),
+      };
+      const wanted = (s.upNumber || '').trim();
+      let number = wanted || await this.nextInvoiceNumber('proforma');
+      let res = await this.sb.from('invoices').insert(Object.assign({ number }, row)).select('*').single();
+      if (res.error && res.error.code === '23505') {
+        number = await this.nextInvoiceNumber('proforma');
+        res = await this.sb.from('invoices').insert(Object.assign({ number }, row)).select('*').single();
+      }
+      if (res.error) throw new Error(/pdf_source/i.test(res.error.message || '') ? 'Run the proforma upload SQL in Supabase first.' : res.error.message);
+      const inv = res.data;
+      const { error: upErr } = await this.sb.storage.from(PRIVATE_BUCKET).upload(this.invoicePdfPath(inv), this.upFile, { contentType: 'application/pdf', upsert: true });
+      if (upErr) { await this.sb.from('invoices').delete().eq('id', inv.id); throw new Error('Could not store the PDF, so nothing was saved: ' + upErr.message); }
+      this.upFile = null;
+      this.setState({ upOpen: false, upBusy: false, upStatus: '', finProFilter: 'open',
+        niDone: 'Saved ' + inv.number + ' · ' + fmtINR(total) + (wanted && number !== wanted ? ' · ' + wanted + ' was taken, so it got the next number.' : '.') });
+      setTimeout(() => this.setState({ niDone: '' }), 6000);
+      this.loadFinInvoices();
+      if (andSend) this.openComposer(inv);
+    } catch (e) {
+      this.setState({ upBusy: false, upStatus: e.message || 'Could not save.' });
+    }
+  }
+
+  uploadVM() {
+    const s = this.state;
+    if (!s.upOpen) return { upOpen: false, upFoundVM: [], upOptsVM: [], upLinesVM: [] };
+    const set = k => e => this.setState({ [k]: e.target.value });
+    const q = (s.upQuery || '').trim().toLowerCase();
+    const all = s.upRecords || [];
+    const recs = all.filter(r => !q || r.key === s.upKey || r.label.toLowerCase().includes(q));
+    const picked = all.find(r => r.key === s.upKey);
+    const editLine = (id, k) => e => { const v = e.target.value; this.setState(st => ({ upLines: st.upLines.map(x => x.id === id ? Object.assign({}, x, { [k]: v }) : x) })); };
+    return {
+      upOpen: true, upStatus: s.upStatus || '', upBusy: !!s.upBusy, closeUpload: () => this.closeUpload(), onUpFile: e => this.onUpFile(e),
+      upPickLabel: s.upFileName ? s.upFileName + ' — choose another' : 'Choose the proforma PDF',
+      upRead: !!s.upRead, upFoundVM: (s.upFound || []).map(f => ({ label: f[0], value: f[1] })), upHasFound: (s.upFound || []).length > 0,
+      upQuery: s.upQuery || '', onUpQuery: set('upQuery'), upKey: s.upKey || '',
+      onUpPick: e => { const v = e.target.value, r = all.find(x => x.key === v); this.setState(st => ({ upKey: v, upEmail: (r && r.rec.client_email) || st.upEmail || '' })); },
+      upOptsVM: recs.map(r => ({ value: r.key, label: r.label })), upOptsCount: recs.length + (recs.length === 1 ? ' match' : ' matches'),
+      upMatchNote: !picked ? 'Pick the project — the email on its project page is where this goes.'
+        : (s.upMatched === s.upKey ? 'Matched from the PDF. ' : '') + (picked.rec.client_email ? 'Sends to ' + picked.rec.client_email + '.' : 'This project has no client email yet.'),
+      upNumber: s.upNumber || '', onUpNumber: set('upNumber'), upIssue: s.upIssue || '', onUpIssue: set('upIssue'),
+      upDue: s.upDue || '', onUpDue: set('upDue'), upName: s.upName || '', onUpName: set('upName'),
+      upEmail: s.upEmail || '', onUpEmail: set('upEmail'), upTotal: s.upTotal || '', onUpTotal: set('upTotal'),
+      upLinesVM: (s.upLines || []).map(l => ({ desc: l.desc, amount: l.amount, onDesc: editLine(l.id, 'desc'), onAmount: editLine(l.id, 'amount'),
+        remove: () => this.setState(st => ({ upLines: st.upLines.filter(x => x.id !== l.id) })) })),
+      upAddLine: () => this.setState(st => ({ upLines: [...(st.upLines || []), { id: Date.now() + Math.random(), desc: '', amount: '' }] })),
+      upSave: () => this.upSave(false), upSaveSend: () => this.upSave(true), upSaveLabel: s.upBusy ? 'Saving…' : 'Save only',
+    };
+  }
+
+  async viewUploadedPdf(inv) {
+    const w = window.open('', '_blank');
+    const { data, error } = await this.sb.storage.from(PRIVATE_BUCKET).download(this.invoicePdfPath(inv));
+    if (error || !data) { if (w) w.close(); window.alert('Could not open the PDF: ' + (error ? error.message : 'not found')); return; }
+    const url = URL.createObjectURL(data);
+    if (w) w.location.href = url; else window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  // Renders the generated proforma to a PDF by opening the preview behind the composer.
+  async renderInvoiceBlob(inv) {
+    this.invoicePrintRef = null;
+    this.setState({ previewInvoice: inv, showInvoicePreview: true });
+    for (let i = 0; i < 60 && !this.invoicePrintRef; i++) await new Promise(r => requestAnimationFrame(r));
+    if (!this.invoicePrintRef) throw new Error('Could not render the proforma.');
+    await new Promise(r => setTimeout(r, 250));
+    try { return await this.getInvoicePdfBlob(); }
+    finally { this.setState({ showInvoicePreview: false, previewInvoice: null }); }
+  }
+
+  setCmpEditor = el => {
+    this.cmpEditorEl = el;
+    if (el && document.activeElement !== el && el.innerHTML !== (this.state.cmpHtml || '')) el.innerHTML = this.state.cmpHtml || '';
+  };
+
+  async openComposer(inv) {
+    this.cmpBlob = null;
+    this.setState({ cmpOpen: true, cmpInv: inv, cmpBusy: true, cmpStatus: 'Preparing the PDF…', cmpTo: '', cmpSubject: '', cmpHeadline: '',
+      cmpMode: 'write', cmpHtml: '', cmpFile: '', cmpSize: 0, cmpSource: '' });
+    try {
+      const table = inv.project_id ? 'projects' : 'events';
+      const { data: rec } = await this.sb.from(table).select('*').eq('id', inv.project_id || inv.event_id).maybeSingle();
+      const to = String((rec && rec.client_email) || inv.bill_email || '').trim();
+      const name = String((rec && (rec.client_name || rec.couple_names)) || inv.bill_name || 'there').toLowerCase();
+      const title = String((rec && (rec.project_title || rec.couple_names || rec.client_name)) || inv.bill_couple || '').toLowerCase();
+      let blob, source;
+      if (inv.pdf_source === 'uploaded') {
+        const { data, error } = await this.sb.storage.from(PRIVATE_BUCKET).download(this.invoicePdfPath(inv));
+        if (error || !data) throw new Error('Could not fetch the uploaded PDF: ' + (error ? error.message : 'not found'));
+        blob = data; source = 'uploaded';
+      } else { blob = await this.renderInvoiceBlob(inv); source = 'generated'; }
+      this.cmpBlob = blob;
+      const html = '<p>dear ' + name + ',</p><p>the proforma for ' + (title || 'your project') + ' is attached to this email. it is a quote, not a demand for payment — the tax invoice follows once you confirm.</p><p>any question at all, simply reply here.</p>';
+      this.setState({
+        cmpBusy: false, cmpStatus: to ? '' : 'No client email on the project page — add one here.', cmpTo: to, cmpName: name,
+        cmpSubject: ('proforma invoice ' + inv.number + (title ? ' — ' + title : '')).toLowerCase(), cmpHeadline: 'your proforma is ready.',
+        cmpHtml: html, cmpFile: inv.number + '.pdf', cmpSize: blob.size, cmpSource: source,
+      }, () => this.setCmpEditor(this.cmpEditorEl));
+    } catch (e) {
+      this.setState({ cmpBusy: false, cmpStatus: e.message || 'Could not prepare the PDF.' });
+    }
+  }
+
+  cmpEmailHtml(pdfUrl) {
+    const s = this.state, inv = s.cmpInv || {};
+    const body = String(s.cmpHtml || '')
+      .replace(/<p>/gi, '<p style="margin:0 0 18px">')
+      .replace(/<ul>/gi, '<ul style="margin:0 0 18px;padding-left:20px">')
+      .replace(/<a /gi, '<a style="color:#0E8E72" ');
+    return this.mailShell({
+      preheader: 'proforma ' + (inv.number || '') + ' — ' + fmtINR(inv.total),
+      headline: s.cmpHeadline || 'your proforma is ready.',
+      greeting: '', body: [body],
+      rows: [['number', inv.number], ['date', inv.issue_date ? fmtDay(inv.issue_date) : ''], ['amount', fmtINR(inv.total)]],
+      button: pdfUrl ? { href: pdfUrl, label: 'download the proforma' } : null,
+      closing: 'with thanks,',
+    });
+  }
+
+  async cmpSend() {
+    const s = this.state, inv = s.cmpInv;
+    const to = String(s.cmpTo || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return this.setState({ cmpStatus: 'Add a valid email address.' });
+    if (!this.cmpBlob) return this.setState({ cmpStatus: 'There is no PDF attached.' });
+    if (!(s.cmpSubject || '').trim()) return this.setState({ cmpStatus: 'Add a subject.' });
+    this.setState({ cmpBusy: true, cmpStatus: 'Sending…' });
+    let stage = 'storing the PDF';
+    try {
+      const blob = this.cmpBlob;
+      let pdfUrl = '';
+      try {
+        const path = this.invoicePdfPath(inv);
+        const { error: upErr } = await this.sb.storage.from(PRIVATE_BUCKET).upload(path, blob, { contentType: 'application/pdf', upsert: true });
+        if (upErr) throw upErr;
+        const { data: signed, error: sErr } = await this.sb.storage.from(PRIVATE_BUCKET).createSignedUrl(path, 60 * 60 * 24 * 180);
+        if (sErr) throw sErr;
+        pdfUrl = signed.signedUrl;
+      } catch (upe) { console.warn('[proforma] storage upload failed, sending anyway:', upe); }
+      const dataUri = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
+      const fileName = inv.number + '.pdf';
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      const html = this.cmpEmailHtml(pdfUrl);
+      stage = 'sending via EmailJS';
+      const mailer = await this.waitForGlobal('emailjs', 8000);
+      if (!mailer) throw new Error('Email service did not load — check your connection and try again.');
+      await mailer.send(EMAILJS_SERVICE_ID, EMAILJS_INVOICE_TEMPLATE_ID, {
+        to_email: to, email: to, user_email: to, reply_to: to, to_name: s.cmpName || '', subject: s.cmpSubject.trim(),
+        body_html: html, message: this.htmlToText(html),
+        invoice_number: inv.number, invoice_date: inv.issue_date ? fmtDay(inv.issue_date) : '', invoice_amount: fmtINR(inv.total),
+        invoice_link: pdfUrl, invoice_pdf: file, invoice_pdf_b64: String(dataUri).split(',')[1] || '', invoice_pdf_uri: dataUri, invoice_filename: fileName,
+      }, { publicKey: EMAILJS_PUBLIC_KEY });
+      stage = 'updating the record';
+      await this.sb.from('invoices').update({ status: 'sent', pdf_url: pdfUrl || null, sent_at: new Date().toISOString() }).eq('id', inv.id);
+      this.cmpBlob = null;
+      this.setState({ cmpOpen: false, cmpBusy: false, cmpStatus: '', niDone: 'Sent ' + inv.number + ' to ' + to + (pdfUrl ? '.' : ' — the PDF did not reach storage, so the email has the attachment but no download link.') });
+      setTimeout(() => this.setState({ niDone: '' }), 6000);
+      this.loadFinInvoices();
+    } catch (e) {
+      this.setState({ cmpBusy: false, cmpStatus: 'Failed while ' + stage + ': ' + (e.text || e.message || String(e)) });
+    }
+  }
+
+  composerVM() {
+    const s = this.state;
+    if (!s.cmpOpen) return { cmpOpen: false, cmpModeVM: [] };
+    const inv = s.cmpInv || {};
+    const code = s.cmpMode === 'html';
+    const size = s.cmpSize ? (s.cmpSize < 1048576 ? Math.max(1, Math.round(s.cmpSize / 1024)) + ' KB' : (s.cmpSize / 1048576).toFixed(1) + ' MB') : '';
+    const cmd = c => e => {
+      e.preventDefault();
+      let v = null;
+      if (c === 'createLink') { v = window.prompt('Link address', 'https://'); if (!v) return; }
+      document.execCommand(c, false, v);
+      if (this.cmpEditorEl) this.setState({ cmpHtml: this.cmpEditorEl.innerHTML });
+    };
+    const chip = on => ({ bg: on ? 'var(--green-deep)' : '#FFFFFF', color: on ? '#FFFFFF' : 'var(--green-deep)', border: on ? 'var(--green-deep)' : 'var(--line)' });
+    return {
+      cmpOpen: true, cmpNumber: inv.number || '', cmpStatus: s.cmpStatus || '', cmpBusy: !!s.cmpBusy,
+      cmpSendLabel: s.cmpBusy ? 'Working…' : 'Send email',
+      cmpTo: s.cmpTo || '', onCmpTo: e => this.setState({ cmpTo: e.target.value }),
+      cmpSubject: s.cmpSubject || '', onCmpSubject: e => this.setState({ cmpSubject: e.target.value }),
+      cmpHeadline: s.cmpHeadline || '', onCmpHeadline: e => this.setState({ cmpHeadline: e.target.value }),
+      cmpModeVM: [['write', 'Write'], ['html', 'HTML']].map(m => Object.assign({ label: m[1], go: () => this.setState({ cmpMode: m[0] }) }, chip((s.cmpMode || 'write') === m[0]))),
+      cmpWrite: !code, cmpCode: code, cmpHtml: s.cmpHtml || '',
+      onCmpHtml: e => this.setState({ cmpHtml: e.target.value }), onCmpInput: e => this.setState({ cmpHtml: e.currentTarget.innerHTML }),
+      setCmpEditor: this.setCmpEditor,
+      cmdBold: cmd('bold'), cmdItalic: cmd('italic'), cmdLink: cmd('createLink'), cmdList: cmd('insertUnorderedList'), cmdClear: cmd('removeFormat'),
+      cmpHasFile: !!this.cmpBlob && !s.cmpBusy, cmpFileLabel: s.cmpFile ? s.cmpFile + (size ? ' · ' + size : '') : (s.cmpBusy ? 'Preparing…' : 'No PDF attached'),
+      cmpSourceLabel: s.cmpSource === 'generated' ? 'Generated from this proforma' : s.cmpSource === 'uploaded' ? 'The uploaded PDF' : s.cmpSource === 'attached' ? 'Attached here' : '',
+      cmpViewFile: () => { if (!this.cmpBlob) return; const u = URL.createObjectURL(this.cmpBlob); window.open(u, '_blank'); setTimeout(() => URL.revokeObjectURL(u), 60000); },
+      onCmpFile: e => {
+        const f = e.target.files && e.target.files[0]; e.target.value = '';
+        if (!f) return;
+        if (!/pdf$/i.test(f.type || '') && !/\.pdf$/i.test(f.name)) { this.setState({ cmpStatus: 'That is not a PDF.' }); return; }
+        this.cmpBlob = f;
+        this.setState({ cmpFile: f.name, cmpSize: f.size, cmpSource: 'attached', cmpStatus: '' });
+      },
+      cmpCanGenerate: inv.pdf_source !== 'uploaded' && s.cmpSource !== 'generated' && !s.cmpBusy,
+      cmpUseGenerated: async () => {
+        this.setState({ cmpBusy: true, cmpStatus: 'Preparing the PDF…' });
+        try { const b = await this.renderInvoiceBlob(inv); this.cmpBlob = b; this.setState({ cmpBusy: false, cmpStatus: '', cmpFile: inv.number + '.pdf', cmpSize: b.size, cmpSource: 'generated' }); }
+        catch (err) { this.setState({ cmpBusy: false, cmpStatus: err.message }); }
+      },
+      cmpPreviewHtml: '<!doctype html><html><head><meta charset="utf-8"><link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400&display=swap" rel="stylesheet"></head><body style="margin:0">'
+        + this.cmpEmailHtml('#') + '</body></html>',
+      cmpSend: () => this.cmpSend(),
+      closeComposer: () => { if (s.cmpBusy) return; this.cmpBlob = null; this.setState({ cmpOpen: false, cmpStatus: '' }); },
+    };
+  }
+
   async emailInvoicePreview() {
-    const inv = this.state.previewInvoice, s = this.state, ev = s.current;
-    const clientEmail = s.editClientEmail || ev.client_email;
+    const inv = this.state.previewInvoice, s = this.state;
+    // From Finance there is no open project, so read the parent fresh: the
+    // email saved on the project page is the one the invoice goes to.
+    let ev = s.current;
+    const fromEditor = !!(ev && inv && (ev.id === inv.project_id || ev.id === inv.event_id));
+    if (!fromEditor) {
+      const table = inv.project_id ? 'projects' : 'events';
+      const { data } = await this.sb.from(table).select('*').eq('id', inv.project_id || inv.event_id).maybeSingle();
+      ev = Object.assign({ _table: table }, data || {});
+    }
+    const clientEmail = ((fromEditor ? s.editClientEmail : '') || ev.client_email || inv.bill_email || '').trim();
     if (!clientEmail) { this.setState({ invStatus: 'Add and save a client email first.' }); setTimeout(() => this.setState({ invStatus: '' }), 2500); return; }
     this.setState({ pdfBusy: true, invStatus: 'Preparing PDF…' });
     let stage = 'issuing the invoice number';
@@ -10408,9 +11088,9 @@ class Component extends DCLogic {
         pdfUrl = signed.signedUrl;
       } catch (upe) { console.warn('[invoice] storage upload failed, sending anyway:', upe); }
 
-      const name = s.editClientName || 'there';
+      const name = (fromEditor ? s.editClientName : '') || ev.client_name || inv.bill_name || 'there';
       const label = inv.type === 'proforma' ? 'Proforma Invoice' : inv.type === 'credit' ? 'Credit Note' : 'Tax Invoice';
-      const subject = (label + ' ' + inv.number + ' — ' + ev.couple_names).toLowerCase();
+      const subject = (label + ' ' + inv.number + ' — ' + (ev.couple_names || ev.project_title || ev.client_name || inv.bill_couple || 'glomium')).toLowerCase();
       const invoiceDate = inv.issue_date
         ? new Date(inv.issue_date + 'T00:00:00').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
         : '—';
@@ -10448,8 +11128,11 @@ class Component extends DCLogic {
           ? 'Sent ' + inv.number + '.'
           : 'Sent ' + inv.number + ', but the PDF did not reach storage, so the email carries no download link — check the client got the attachment, or send again.',
         showInvoicePreview: false, previewInvoice: null,
+        niDone: 'Sent ' + inv.number + ' to ' + clientEmail + '.',
       });
-      this.loadInvoices(ev.id);
+      setTimeout(() => this.setState({ niDone: '' }), 5000);
+      if (fromEditor) this.loadInvoices(ev.id, ev);
+      if (s.view === 'finInvoices' || s.view === 'finProforma') this.loadFinInvoices();
       this.setState({ pdfBusy: false });
       setTimeout(() => this.setState({ invStatus: '' }), 3000);
     } catch (e) {
@@ -15220,7 +15903,7 @@ class Component extends DCLogic {
       finGroups = [
         ['Overview', [sub('finance', 'Overview')]],
         ['Projects', [sub('finProjects', 'Jobs & pricing'), sub('finMaster', 'Clients & dues')]],
-        ['Money in', [sub('finInvoices', 'Invoices'), sub('money', 'Payments received', this.can('money'))]],
+        ['Money in', [sub('finInvoices', 'Invoices'), sub('finProforma', 'Proforma'), sub('money', 'Payments received', this.can('money'))]],
         ['Money out', [sub('spend', 'Expenses & shoots', this.can('spend')), sub('payouts', 'Crew payouts', this.can('payouts')), sub('finPayroll', 'Payroll')]],
         ['People & assets', [sub('finPeople', 'People pay'), sub('finInventory', 'Inventory')]],
       ].map(g => ({ label: g[0], subs: g[1].filter(Boolean) })).filter(g => g.subs.length);
@@ -16668,7 +17351,9 @@ class Component extends DCLogic {
     const pInv = s.previewInvoice;
     const previewVals = pInv ? {
       previewInvoiceNumber: this.isDraftNo(pInv.number) ? 'Draft — numbered on issue' : pInv.number, previewTypeLabel: pInv.type === 'proforma' ? 'Proforma Invoice' : pInv.type === 'credit' ? 'Credit Note' : 'Tax Invoice',
-      previewIsProforma: pInv.type === 'proforma',
+      previewIsProforma: pInv.type === 'proforma', previewIsTaxDoc: pInv.type !== 'proforma',
+      previewDueDate: pInv.due_date ? new Date(pInv.due_date + 'T00:00:00').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—',
+      previewHasNotes: !!String(pInv.notes || '').trim(),
       previewIssueDate: pInv.issue_date ? new Date(pInv.issue_date + 'T00:00:00').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—',
       previewPlaceOfSupply: pInv.place_of_supply || '—',
       previewBillName: pInv.bill_name, previewBillCouple: pInv.bill_couple,
@@ -16685,7 +17370,7 @@ class Component extends DCLogic {
       previewAdvancePct: pInv.advance_pct, previewAdvanceAmt: fmtINR(pInv.advance_amount), previewBalanceAmt: fmtINR(pInv.balance_amount),
       previewNotes: pInv.notes,
     } : {
-      previewInvoiceNumber: '', previewTypeLabel: '', previewIsProforma: false, previewIssueDate: '', previewPlaceOfSupply: '',
+      previewInvoiceNumber: '', previewTypeLabel: '', previewIsProforma: false, previewIsTaxDoc: false, previewDueDate: '', previewHasNotes: false, previewIssueDate: '', previewPlaceOfSupply: '',
       previewBillName: '', previewBillCouple: '', previewHasGstin: false, previewBillGstin: '', previewHasPan: false, previewBillPan: '', previewHasEmail: false, previewBillEmail: '', previewLineItems: [],
       previewSubtotal: '', previewHasDiscount: false, previewDiscount: '', previewTaxable: '', previewGstRows: [],
       previewTotal: '', previewAmountWords: '', previewAdvancePct: '', previewAdvanceAmt: '', previewBalanceAmt: '', previewNotes: '',
@@ -16825,8 +17510,10 @@ class Component extends DCLogic {
       invBankIfsc: s.bankIfsc || BANK_PLACEHOLDER, invUpiId: s.upiId, hasUpi: !!s.upiId,
       setInvoicePrintRef: el => { this.invoicePrintRef = el; },
       pdfBusy: s.pdfBusy, emailButtonLabel: s.pdfBusy ? 'Working…' : 'Email to client',
-      emailInvoicePreview: () => this.emailInvoicePreview(), downloadInvoicePreview: () => this.downloadInvoicePreview(),
+      emailInvoicePreview: () => { const pi = this.state.previewInvoice; if (pi && pi.type === 'proforma') { this.closeInvoicePreview(); this.openComposer(pi); } else this.emailInvoicePreview(); },
+      downloadInvoicePreview: () => this.downloadInvoicePreview(),
       ...previewVals,
+      ...this.composerVM(),
 
       ...this.projectDivisionsVM(),
       ...this.accessTabVM(),
