@@ -5836,6 +5836,12 @@ const EMAILJS_TEMPLATE_ID = 'template_9xph63f';
 const EMAILJS_INVOICE_TEMPLATE_ID = 'template_lgfvfhb';
 const EMAILJS_PUBLIC_KEY = 'rRmmmx6iCKnvLcEuR';
 const EMAILJS_VARS_LIMIT_KB = 500;
+// Base64 grows a file by 4/3 and the email body rides in the same payload, so
+// the PDF itself must stay under ~3/4 of what is left after the body.
+const EMAILJS_PDF_BUDGET = Math.floor((EMAILJS_VARS_LIMIT_KB * 1000 - 40000) * 0.75);
+const GSTIN_RE = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+const PAN_RE = /^[A-Z]{5}\d{4}[A-Z]$/;
+const HOME_STATE_CODE = '32'; // Kerala — CGST + SGST inside, IGST outside
 
 // Booking enquiries to freelance talent. There is no EmailJS-side design: the
 // template in EmailJS holds nothing but {{{body_html}}} (triple braces, so the
@@ -8184,22 +8190,37 @@ class Component extends DCLogic {
   onAddonDescChange(id, val) { this.setState({ newInvAddons: this.state.newInvAddons.map(a => a.id === id ? { ...a, desc: val } : a) }); }
   onAddonAmountChange(id, val) { this.setState({ newInvAddons: this.state.newInvAddons.map(a => a.id === id ? { ...a, amount: val } : a) }); }
 
-  async nextInvoiceNumber(type) {
-    // GST numbering runs per financial year (1 April – 31 March), not per
-    // calendar year: INV-2627-001 is the first invoice of FY 2026-27.
-    const now = new Date();
-    const fy = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
-    const year = String(fy).slice(2) + String(fy + 1).slice(2);
+  // GST numbering runs per financial year (1 April – 31 March) of the document's
+  // own date: INV-2627-001 is the first invoice of FY 2026-27. A proforma dated
+  // 31 March but raised on 2 April belongs to the year it is dated in.
+  fyCode(iso) {
+    let d = iso ? new Date(String(iso).slice(0, 10) + 'T00:00:00') : new Date();
+    if (isNaN(d)) d = new Date();
+    const fy = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
+    return String(fy).slice(2) + String(fy + 1).slice(2);
+  }
+
+  async nextInvoiceNumber(type, onDate) {
+    const year = this.fyCode(onDate);
     const prefix = type === 'proforma' ? 'PRO' : type === 'credit' ? 'CN' : 'INV';
-    // Counting rows re-issues a number that a deleted invoice already used, so read
-    // the highest number actually issued this year instead.
+    // Read every number this year and take the numeric max: a text sort puts
+    // -1000 below -999, and counting rows re-issues a deleted invoice's number.
     const { data, error } = await this.sb.from('invoices').select('number')
-      .like('number', prefix + '-' + year + '-%').order('number', { ascending: false }).limit(1);
-    // A failed read used to fall through to "nothing issued yet" and mint
-    // INV-2026-001 again, on top of a live invoice. Refuse instead.
+      .like('number', prefix + '-' + year + '-%').limit(10000);
+    // A failed read must never fall through to "nothing issued yet".
     if (error) throw new Error('Could not read the last invoice number (' + error.message + ') \u2014 nothing was created.');
-    const last = data && data[0] ? parseInt(String(data[0].number).split('-').pop(), 10) : 0;
-    return prefix + '-' + year + '-' + String((isFinite(last) ? last : 0) + 1).padStart(3, '0');
+    const last = (data || []).reduce((m, r) => { const n = parseInt(String(r.number).split('-').pop(), 10); return isFinite(n) && n > m ? n : m; }, 0);
+    return prefix + '-' + year + '-' + String(last + 1).padStart(3, '0');
+  }
+
+  r2(n) { return Math.round(((Number(n) || 0) + Number.EPSILON) * 100) / 100; }
+  gstStateCode(gstin) { const g = String(gstin || '').trim().toUpperCase(); return GSTIN_RE.test(g) ? g.slice(0, 2) : ''; }
+  taxIdProblem(gstin, pan) {
+    const g = String(gstin || '').trim().toUpperCase(), p = String(pan || '').trim().toUpperCase();
+    if (g && !GSTIN_RE.test(g)) return 'GSTIN ' + g + ' is not valid \u2014 15 characters, like 32ABCDE1234F1Z5.';
+    if (p && !PAN_RE.test(p)) return 'PAN ' + p + ' is not valid \u2014 10 characters, like ABCDE1234F.';
+    if (g && p && g.slice(2, 12) !== p) return 'PAN ' + p + ' does not match GSTIN ' + g + ' (characters 3\u201312 of a GSTIN are the PAN).';
+    return '';
   }
 
   // Two people raising an invoice in the same second both read the same "last
@@ -8215,7 +8236,7 @@ class Component extends DCLogic {
     const draft = row.type === 'tax' && row.status === 'draft';
     if (draft) row.number = this.draftNo();
     for (let attempt = 0; attempt < 4; attempt++) {
-      if (attempt > 0) row.number = draft ? this.draftNo() : await this.nextInvoiceNumber(row.type);
+      if (attempt > 0 || !row.number) row.number = draft ? this.draftNo() : await this.nextInvoiceNumber(row.type, row.issue_date);
       const res = await this.sb.from('invoices').insert(row).select('id, number').single();
       if (!res.error || res.error.code !== '23505') return res;
     }
@@ -8224,47 +8245,46 @@ class Component extends DCLogic {
 
   async generateInvoice() {
     const s = this.state, ev = s.current;
-    const name = s.editClientName || ev.client_name;
-    if (!name) { this.setState({ invStatus: 'Add and save a client name first.' }); setTimeout(() => this.setState({ invStatus: '' }), 2500); return; }
+    const flash = msg => { this.setState({ invStatus: msg }); setTimeout(() => this.setState({ invStatus: '' }), 4000); };
+    const name = String(s.editClientName || ev.client_name || '').trim();
+    if (!name) return flash('Add and save a client name first.');
+    const gstin = String(s.editClientGstin || ev.client_gstin || '').trim().toUpperCase();
+    let pan = String(s.editClientPan || ev.client_pan || '').trim().toUpperCase();
+    const bad = this.taxIdProblem(gstin, pan);
+    if (bad) return flash(bad + ' Fix it in the Profile tab.');
+    if (!pan && gstin) pan = gstin.slice(2, 12);
+    const packagePrice = this.r2(parseFloat(s.editPackagePrice || ev.package_price || 0));
+    const lineItems = [
+      packagePrice > 0 ? { desc: PACKAGE_DESC, amount: packagePrice } : null,
+      ...(s.newInvAddons || []).map(a => ({ desc: String(a.desc || '').trim(), amount: this.r2(parseFloat(a.amount)) })).filter(a => a.desc && a.amount > 0),
+    ].filter(Boolean);
+    if (!lineItems.length) return flash('Set a package price or add a line with an amount.');
     this.setState({ invStatus: 'Generating…' });
     try {
-      const type = s.newInvType;
-      const number = await this.nextInvoiceNumber(type);
-      const packagePrice = parseFloat(s.editPackagePrice || ev.package_price || 0) || 0;
-      const addons = s.newInvAddons.filter(a => a.desc && a.amount);
-      const lineItems = [
-        { desc: PACKAGE_DESC, amount: packagePrice },
-        ...addons.map(a => ({ desc: a.desc, amount: parseFloat(a.amount) || 0 })),
-      ];
-      const subtotal = lineItems.reduce((sum, l) => sum + l.amount, 0);
-      const discount = parseFloat(s.newInvDiscount || 0) || 0;
-      const taxable = Math.max(0, subtotal - discount);
-      const clientState = (s.editClientState || ev.client_state || '').trim();
-      const gstMode = s.newInvGstOverride === 'auto' ? (!clientState || /kerala|^\s*32\b|\bkl\b/i.test(clientState) ? 'cgst_sgst' : 'igst') : s.newInvGstOverride;
-      const rate = 18, half = rate / 2;
-      const cgst = gstMode === 'cgst_sgst' ? +(taxable * half / 100).toFixed(2) : 0;
-      const sgst = cgst;
-      const igst = gstMode === 'igst' ? +(taxable * rate / 100).toFixed(2) : 0;
-      const total = +(taxable + (gstMode === 'cgst_sgst' ? cgst + sgst : igst)).toFixed(2);
-      const advPct = parseFloat(s.newInvAdvancePct || 0) || 0;
-      const advance = +(total * advPct / 100).toFixed(2);
-      const balance = +(total - advance).toFixed(2);
+      const type = s.newInvType || 'tax';
+      const today = this.toIso(new Date());
+      const clientState = String(s.editClientState || ev.client_state || '').trim();
+      const t = this.invoiceTotals(lineItems, parseFloat(s.newInvDiscount || 0) || 0, clientState, s.newInvGstOverride, gstin);
+      const advPct = Math.min(100, Math.max(0, parseFloat(s.newInvAdvancePct || 0) || 0));
+      const advance = this.r2(t.total * advPct / 100);
       const row = {
-        [this.parentCol(ev)]: ev.id, type, number, status: 'draft', issue_date: new Date().toISOString().slice(0, 10),
-        due_date: this.addDays(this.toIso(new Date()), Number(ev.payment_terms_days == null ? 7 : ev.payment_terms_days)),
-        bill_name: name, bill_couple: ev.couple_names, bill_gstin: s.editClientGstin || ev.client_gstin || '',
-        bill_pan: s.editClientPan || ev.client_pan || '', bill_email: s.editClientEmail || ev.client_email || '',
-        place_of_supply: clientState || '—', gst_mode: gstMode, gst_rate: rate,
-        line_items: lineItems, discount, subtotal, taxable_value: taxable,
-        cgst_amount: cgst, sgst_amount: sgst, igst_amount: igst, total,
-        advance_pct: advPct, advance_amount: advance, balance_amount: balance, notes: s.newInvNotes,
+        [this.parentCol(ev)]: ev.id, type, status: 'draft', issue_date: today,
+        due_date: this.addDays(today, Number(ev.payment_terms_days == null ? 7 : ev.payment_terms_days)),
+        bill_name: name, bill_couple: ev.couple_names || ev.project_title || name, bill_gstin: gstin, bill_pan: pan,
+        bill_email: String(s.editClientEmail || ev.client_email || '').trim(),
+        place_of_supply: clientState || '—', gst_mode: t.gstMode, gst_rate: t.rate,
+        line_items: lineItems, discount: t.discount, subtotal: t.subtotal, taxable_value: t.taxable,
+        cgst_amount: t.cgst, sgst_amount: t.sgst, igst_amount: t.igst, total: t.total,
+        advance_pct: advPct, advance_amount: advance, balance_amount: this.r2(t.total - advance), notes: s.newInvNotes,
       };
-      const { error } = await this.insertInvoice(row);
+      // A tax draft takes its GST number only when issued; other types number now.
+      if (type !== 'tax') row.number = await this.nextInvoiceNumber(type, today);
+      const { data, error } = await this.insertInvoice(row);
       if (error) throw error;
-      this.setState({ invStatus: type === 'tax' ? 'Draft saved — it takes its number when issued.' : 'Generated ' + row.number + '.', showInvoiceForm: false, newInvAddons: [] });
-      this.loadInvoices(ev.id);
-    } catch (e) { this.setState({ invStatus: e.message || 'Failed to generate.' }); }
-    setTimeout(() => this.setState({ invStatus: '' }), 2500);
+      this.setState({ showInvoiceForm: false, newInvAddons: [] });
+      flash(type === 'tax' ? 'Draft saved \u2014 it takes its number when issued.' : 'Generated ' + data.number + '.');
+      this.loadInvoices(ev.id, ev);
+    } catch (e) { flash(e.message || 'Failed to generate.'); }
   }
 
   // ---- Inventory: gear we own, what it cost, when we bought it ------------------
@@ -8930,12 +8950,12 @@ class Component extends DCLogic {
   niItems() {
     const s = this.state;
     const sold = s.niType === 'tax' ? (s.niLines || []).filter(l => (s.niChecked || []).indexOf(l.id) !== -1) : [];
-    const extra = (s.niCustom || []).filter(a => (a.desc || '').trim() && Number(a.amount));
+    const extra = (s.niCustom || []).filter(a => (a.desc || '').trim() && Number(a.amount) > 0);
     const lineItems = [
-      ...sold.map(l => ({ desc: this.priceLineDesc(l), amount: Number(l.amount) })),
-      ...extra.map(a => ({ desc: a.desc.trim(), amount: parseFloat(a.amount) || 0 })),
+      ...sold.map(l => ({ desc: this.priceLineDesc(l), amount: this.r2(l.amount) })),
+      ...extra.map(a => ({ desc: a.desc.trim(), amount: this.r2(a.amount) })),
     ];
-    return { sold, lineItems, t: this.invoiceTotals(lineItems, parseFloat(s.niDiscount || 0) || 0, s.niState, s.niGst) };
+    return { sold, lineItems, t: this.invoiceTotals(lineItems, parseFloat(s.niDiscount || 0) || 0, s.niState, s.niGst, s.niGstin) };
   }
 
   async niGenerate() {
@@ -8943,8 +8963,20 @@ class Component extends DCLogic {
     if (!c) return this.setState({ niStatus: 'Choose a project first.' });
     const name = (s.niBillName || '').trim();
     if (!name) return this.setState({ niStatus: 'Add the name to bill.' });
+    if ((s.niCustom || []).some(a => (a.desc || '').trim() && String(a.amount).trim() && !(Number(a.amount) > 0)))
+      return this.setState({ niStatus: 'Every line needs an amount above zero \u2014 use Discount to take money off.' });
     const { sold, lineItems, t } = this.niItems();
     if (!lineItems.length || t.subtotal <= 0) return this.setState({ niStatus: 'Add at least one line with an amount.' });
+    if (Number(s.niDiscount || 0) < 0) return this.setState({ niStatus: 'Discount cannot be negative.' });
+    if (Number(s.niDiscount || 0) > t.subtotal) return this.setState({ niStatus: 'Discount is more than the subtotal.' });
+    const gstin = String(s.niGstin || '').trim().toUpperCase();
+    let pan = String(s.niPan || '').trim().toUpperCase();
+    const bad = this.taxIdProblem(gstin, pan);
+    if (bad) return this.setState({ niStatus: bad });
+    if (!pan && gstin) pan = gstin.slice(2, 12);
+    const email = String(s.niEmail || '').trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return this.setState({ niStatus: email + ' is not a valid email.' });
+    if (s.niIssue && s.niDue && s.niDue < s.niIssue) return this.setState({ niStatus: (s.niType === 'proforma' ? 'Valid-till' : 'Due') + ' date is before the issue date.' });
     this.setState({ niBusy: true, niStatus: 'Generating…' });
     try {
       const type = s.niType === 'proforma' ? 'proforma' : 'tax';
@@ -8952,7 +8984,7 @@ class Component extends DCLogic {
         [s.niKind === 'project' ? 'project_id' : 'event_id']: c.id, type, status: 'draft',
         issue_date: s.niIssue || this.toIso(new Date()), due_date: s.niDue || null,
         bill_name: name, bill_couple: c.project_title || c.couple_names || c.client_name,
-        bill_gstin: (s.niGstin || '').trim(), bill_pan: (s.niPan || '').trim(), bill_email: (s.niEmail || '').trim(),
+        bill_gstin: gstin, bill_pan: pan, bill_email: email,
         place_of_supply: (s.niState || '').trim() || '—', gst_mode: t.gstMode, gst_rate: t.rate, line_items: lineItems,
         discount: t.discount, subtotal: t.subtotal, taxable_value: t.taxable,
         cgst_amount: t.cgst, sgst_amount: t.sgst, igst_amount: t.igst, total: t.total,
@@ -8971,8 +9003,8 @@ class Component extends DCLogic {
         this.loadFinInvoices();
         return;
       }
-      const number = await this.nextInvoiceNumber(type);
-      const { data: inv, error } = await this.insertInvoice(Object.assign({ number }, row));
+      if (type === 'proforma') row.number = await this.nextInvoiceNumber(type, row.issue_date);
+      const { data: inv, error } = await this.insertInvoice(row);
       if (error) throw error;
       if (sold.length) {
         const ids = sold.map(l => l.id);
@@ -10387,17 +10419,20 @@ class Component extends DCLogic {
   }
 
   // The GST split, shared by the one-off form and the recurring schedule.
-  invoiceTotals(lineItems, discount, clientState, gstOverride) {
-    const subtotal = lineItems.reduce((sum, l) => sum + l.amount, 0);
-    const disc = Number(discount || 0);
-    const taxable = Math.max(0, subtotal - disc);
-    const gstMode = gstOverride === 'auto' || !gstOverride
-      ? (!(clientState || '').trim() || /kerala|^\s*32\b|\bkl\b/i.test(clientState) ? 'cgst_sgst' : 'igst')
-      : gstOverride;
+  // Place of supply: a valid GSTIN's first two digits are the client's state and
+  // win over whatever is typed; otherwise the typed state; blank counts as Kerala.
+  invoiceTotals(lineItems, discount, clientState, gstOverride, gstin) {
+    const r2 = n => this.r2(n);
+    const subtotal = r2((lineItems || []).reduce((sum, l) => sum + (Number(l.amount) || 0), 0));
+    const disc = Math.min(subtotal, Math.max(0, r2(discount)));
+    const taxable = r2(subtotal - disc);
+    const code = this.gstStateCode(gstin), st = String(clientState || '').trim();
+    const local = code ? code === HOME_STATE_CODE : (!st || /kerala|^\s*32\b|\bkl\b/i.test(st));
+    const gstMode = gstOverride === 'cgst_sgst' || gstOverride === 'igst' ? gstOverride : (local ? 'cgst_sgst' : 'igst');
     const rate = 18, half = rate / 2;
-    const cgst = gstMode === 'cgst_sgst' ? +(taxable * half / 100).toFixed(2) : 0;
-    const igst = gstMode === 'igst' ? +(taxable * rate / 100).toFixed(2) : 0;
-    const total = +(taxable + (gstMode === 'cgst_sgst' ? cgst * 2 : igst)).toFixed(2);
+    const cgst = gstMode === 'cgst_sgst' ? r2(taxable * half / 100) : 0;
+    const igst = gstMode === 'igst' ? r2(taxable * rate / 100) : 0;
+    const total = r2(taxable + (gstMode === 'cgst_sgst' ? cgst * 2 : igst));
     return { subtotal, discount: disc, taxable, gstMode, rate, cgst, sgst: cgst, igst, total };
   }
 
@@ -10410,13 +10445,12 @@ class Component extends DCLogic {
     if (!silent) this.setState({ invStatus: 'Generating…' });
     try {
       const label = this.periodLabel(period, pr.billing_cycle);
-      if (this.state.invoices.some(i => i.period_start === period.start)) return false;
+      if (this.state.invoices.some(i => i.period_start === period.start && i.status !== 'cancelled' && i.type === 'tax')) return false;
       const scope = pr.retainer_scope || 'Retainer services';
       const lineItems = [{ desc: scope + ' — ' + label, amount }];
-      const t = this.invoiceTotals(lineItems, 0, s.editClientState || pr.client_state, s.newInvGstOverride);
-      const number = await this.nextInvoiceNumber('tax');
+      const t = this.invoiceTotals(lineItems, 0, s.editClientState || pr.client_state, s.newInvGstOverride, s.editClientGstin || pr.client_gstin);
       const { error } = await this.insertInvoice({
-        project_id: pr.id, type: 'tax', number, status: 'draft',
+        project_id: pr.id, type: 'tax', status: 'draft',
         issue_date: period.start, due_date: period.dueDate,
         period_start: period.start, period_end: period.end, period_label: label,
         delivery_due: period.deliveryDue,
@@ -10448,7 +10482,7 @@ class Component extends DCLogic {
   async generateDueInvoices() {
     const pr = this.state.current;
     const today = this.toIso(new Date());
-    const billed = new Set(this.state.invoices.map(i => i.period_start).filter(Boolean));
+    const billed = new Set(this.state.invoices.filter(i => i.status !== 'cancelled' && i.type === 'tax').map(i => i.period_start).filter(Boolean));
     const due = this.contractSchedule(pr).filter(p => p.start <= today && !billed.has(p.start));
     if (!due.length) { this.setState({ invStatus: 'Nothing outstanding.' }); setTimeout(() => this.setState({ invStatus: '' }), 2500); return; }
     this.setState({ invStatus: 'Generating ' + due.length + '…' });
@@ -10550,7 +10584,7 @@ class Component extends DCLogic {
       const today = this.toIso(new Date());
       const cn = {
         project_id: full.project_id || null, event_id: full.event_id || null, type: 'credit', status: 'sent',
-        number: await this.nextInvoiceNumber('credit'), issue_date: today, due_date: null, credit_for: full.id,
+        number: await this.nextInvoiceNumber('credit', today), issue_date: today, due_date: null, credit_for: full.id,
         bill_name: full.bill_name, bill_couple: full.bill_couple, bill_gstin: full.bill_gstin, bill_pan: full.bill_pan, bill_email: full.bill_email,
         place_of_supply: full.place_of_supply, gst_mode: full.gst_mode, gst_rate: full.gst_rate, line_items: full.line_items,
         discount: full.discount, subtotal: full.subtotal, taxable_value: full.taxable_value,
@@ -10565,7 +10599,11 @@ class Component extends DCLogic {
       }
       cnNo = res.data.number;
     }
-    const { error } = await this.sb.from('invoices').update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: (cnNo ? cnNo + (why ? ' · ' : '') : '') + (why || '') || null }).eq('id', inv.id);
+    const { data: gone, error: cErr } = await this.sb.from('invoices').update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: (cnNo ? cnNo + (why ? ' · ' : '') : '') + (why || '') || null })
+      .eq('id', inv.id).neq('status', 'cancelled').select('id');
+    const error = cErr || (!gone || !gone.length ? { message: inv.number + ' was already cancelled.' } : null);
+    // A credit note against an invoice that did not cancel would double the reversal.
+    if (error && cnNo) await this.sb.from('invoices').delete().eq('number', cnNo).eq('type', 'credit');
     if (!error) await this.sb.from('project_price_lines').update({ invoice_id: null }).eq('invoice_id', inv.id);
     this.afterInvoiceChange(error && /cancel|check constraint/i.test(error.message || '') ? { message: 'Run album-system/finance-audit-2026-09.sql in Supabase first.' } : error, inv.number + ' cancelled' + (cnNo ? ' · credit note ' + cnNo + ' issued.' : '.'));
   }
@@ -10596,21 +10634,51 @@ class Component extends DCLogic {
     if (this.state.current && this.state.current._table === 'projects') this.loadPricing(this.state.current.id);
   }
 
-  async getInvoicePdfBlob() {
+  // The PDF is a JPEG of the page, so pixels × quality set the file size. A
+  // download is made sharp; an emailed copy steps quality and resolution down
+  // until it fits EMAILJS_PDF_BUDGET, so it always rides as an attachment.
+  async getInvoicePdfBlob(forEmail) {
     const el = this.invoicePrintRef;
+    if (!el || !el.isConnected) throw new Error('The invoice is not on screen to render \u2014 open Preview and try again.');
     await loadLib('html2pdf');
-    const opt = { margin: 0, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'avoid-all'] } };
-    const worker = window.html2pdf().set(opt).from(el).toContainer().toCanvas();
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const worker = window.html2pdf().set({ margin: 0, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#FFFFFF' },
+      jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' } }).from(el).toContainer().toCanvas();
     const canvas = await worker.get('canvas');
-    const pdf = await worker.toPdf().get('pdf');
-    // A document a little taller than A4 is scaled onto one page rather than
-    // leaving the sign-off alone on page two. Only a genuinely long one paginates.
-    const pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight();
-    const tall = (canvas.height / canvas.width) * pw;
-    if (tall <= ph || tall > ph * 1.45) return pdf.output('blob');
-    const doc = new pdf.constructor({ unit: 'pt', format: 'a4', orientation: 'portrait' });
-    const w = pw * ph / tall;
-    doc.addImage(canvas.toDataURL('image/jpeg', 0.98), 'JPEG', (pw - w) / 2, 0, w, ph);
+    if (!canvas || !canvas.width || !canvas.height) throw new Error('The invoice rendered empty.');
+    const JsPDF = (window.jspdf && window.jspdf.jsPDF) || (await worker.toPdf().get('pdf')).constructor;
+    const steps = forEmail ? [[0.8, 0.8], [0.8, 0.68], [0.7, 0.62], [0.6, 0.58], [0.5, 0.55], [0.42, 0.5]] : [[1, 0.92]];
+    let blob = null;
+    for (const [k, q] of steps) {
+      blob = this.canvasToPdf(JsPDF, canvas, k, q);
+      if (!forEmail || blob.size <= EMAILJS_PDF_BUDGET) break;
+    }
+    console.info('[invoice] pdf ' + Math.round(blob.size / 1024) + ' KB' + (forEmail ? ' (email budget ' + Math.round(EMAILJS_PDF_BUDGET / 1024) + ' KB)' : ''));
+    return blob;
+  }
+
+  // One A4 page per slice. A page a little taller than A4 is shrunk onto one
+  // page rather than leaving the sign-off alone on page two.
+  canvasToPdf(JsPDF, canvas, k, q) {
+    const doc = new JsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait', compress: true });
+    const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+    const tall = canvas.height / canvas.width * pw;
+    const squeeze = tall > ph && tall <= ph * 1.45;
+    const slice = tall <= ph * 1.45 ? canvas.height : Math.floor(canvas.width * ph / pw);
+    const pages = Math.max(1, Math.ceil((canvas.height - 2) / slice));
+    for (let i = 0; i < pages; i++) {
+      const sy = i * slice, sh = Math.min(slice, canvas.height - sy);
+      const c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(canvas.width * k)); c.height = Math.max(1, Math.round(sh * k));
+      const g = c.getContext('2d');
+      g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, c.width, c.height);
+      g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      g.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, c.width, c.height);
+      if (i) doc.addPage();
+      const img = c.toDataURL('image/jpeg', q);
+      if (squeeze) { const w = pw * ph / tall; doc.addImage(img, 'JPEG', (pw - w) / 2, 0, w, ph); }
+      else doc.addImage(img, 'JPEG', 0, 0, pw, sh / canvas.width * pw);
+    }
     return doc.output('blob');
   }
 
@@ -10631,8 +10699,13 @@ class Component extends DCLogic {
   async emailInvoiceFromList(inv) {
     // The PDF is rendered from the preview overlay's DOM, so open it first, let it
     // paint, then reuse the existing send path.
+    if (inv.status === 'cancelled') { this.afterInvoiceChange({ message: inv.number + ' is cancelled \u2014 it cannot be sent.' }); return; }
+    // A ref left over from an earlier preview points at a detached node and
+    // renders a blank PDF, so clear it and wait for this invoice to mount.
+    this.invoicePrintRef = null;
     this.setState({ previewInvoice: inv, showInvoicePreview: true, invStatus: 'Preparing PDF…' });
-    for (let i = 0; i < 40 && !this.invoicePrintRef; i++) await new Promise(r => requestAnimationFrame(r));
+    for (let i = 0; i < 60 && !this.invoicePrintRef; i++) await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => setTimeout(r, 250));
     if (!this.invoicePrintRef) { this.setState({ invStatus: 'Could not render the invoice. Open Preview and send from there.', showInvoicePreview: false, previewInvoice: null }); setTimeout(() => this.setState({ invStatus: '' }), 5000); return; }
     await this.emailInvoicePreview();
   }
@@ -10936,7 +11009,7 @@ class Component extends DCLogic {
     for (let i = 0; i < 60 && !this.invoicePrintRef; i++) await new Promise(r => requestAnimationFrame(r));
     if (!this.invoicePrintRef) throw new Error('Could not render the proforma.');
     await new Promise(r => setTimeout(r, 250));
-    try { return await this.getInvoicePdfBlob(); }
+    try { return await this.getInvoicePdfBlob(true); }
     finally { this.setState({ showInvoicePreview: false, previewInvoice: null }); }
   }
 
@@ -10946,6 +11019,7 @@ class Component extends DCLogic {
   };
 
   async openComposer(inv) {
+    if (inv.status === 'cancelled') { this.afterInvoiceChange({ message: inv.number + ' is cancelled \u2014 it cannot be sent.' }); return; }
     this.cmpBlob = null;
     this.setState({ cmpOpen: true, cmpInv: inv, cmpBusy: true, cmpStatus: 'Preparing the PDF…', cmpTo: '', cmpSubject: '', cmpHeadline: '',
       cmpMode: 'write', cmpHtml: '', cmpFile: '', cmpSize: 0, cmpSource: '' });
@@ -11010,7 +11084,6 @@ class Component extends DCLogic {
       } catch (upe) { console.warn('[proforma] storage upload failed, sending anyway:', upe); }
       const dataUri = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(blob); });
       const fileName = inv.number + '.pdf';
-      const file = new File([blob], fileName, { type: 'application/pdf' });
       const html = this.cmpEmailHtml(pdfUrl);
       stage = 'sending via EmailJS';
       const mailer = await this.waitForGlobal('emailjs', 8000);
@@ -11022,7 +11095,7 @@ class Component extends DCLogic {
         invoice_link: pdfUrl, invoice_filename: fileName,
       }, dataUri, !!pdfUrl);
       stage = 'updating the record';
-      await this.sb.from('invoices').update({ status: 'sent', pdf_url: pdfUrl || null, sent_at: new Date().toISOString() }).eq('id', inv.id);
+      await this.markSent(inv, pdfUrl);
       this.cmpBlob = null;
       this.setState({ cmpOpen: false, cmpBusy: false, cmpStatus: '', niDone: 'Sent ' + inv.number + ' to ' + to + (!pdfUrl ? ' — the PDF did not reach storage, so the email has the attachment but no download link.' : attached ? '.' : ' — the PDF was too large to attach, so it went as the download link.') });
       setTimeout(() => this.setState({ niDone: '' }), 6000);
@@ -11057,7 +11130,7 @@ class Component extends DCLogic {
       onCmpHtml: e => this.setState({ cmpHtml: e.target.value }), onCmpInput: e => this.setState({ cmpHtml: e.currentTarget.innerHTML }),
       setCmpEditor: this.setCmpEditor,
       cmdBold: cmd('bold'), cmdItalic: cmd('italic'), cmdLink: cmd('createLink'), cmdList: cmd('insertUnorderedList'), cmdClear: cmd('removeFormat'),
-      cmpHasFile: !!this.cmpBlob && !s.cmpBusy, cmpFileLabel: s.cmpFile ? s.cmpFile + (size ? ' · ' + size : '') : (s.cmpBusy ? 'Preparing…' : 'No PDF attached'),
+      cmpHasFile: !!this.cmpBlob && !s.cmpBusy, cmpFileLabel: s.cmpFile ? s.cmpFile + (size ? ' · ' + size : '') + (s.cmpSize > EMAILJS_PDF_BUDGET ? ' · too large to attach, goes as a download link' : '') : (s.cmpBusy ? 'Preparing…' : 'No PDF attached'),
       cmpSourceLabel: s.cmpSource === 'generated' ? 'Generated from this proforma' : s.cmpSource === 'uploaded' ? 'The uploaded PDF' : s.cmpSource === 'attached' ? 'Attached here' : '',
       cmpViewFile: () => { if (!this.cmpBlob) return; const u = URL.createObjectURL(this.cmpBlob); window.open(u, '_blank'); setTimeout(() => URL.revokeObjectURL(u), 60000); },
       onCmpFile: e => {
@@ -11091,21 +11164,23 @@ class Component extends DCLogic {
       const { data } = await this.sb.from(table).select('*').eq('id', inv.project_id || inv.event_id).maybeSingle();
       ev = Object.assign({ _table: table }, data || {});
     }
+    if (inv.status === 'cancelled') { this.setState({ invStatus: inv.number + ' is cancelled \u2014 it cannot be sent.' }); setTimeout(() => this.setState({ invStatus: '' }), 3500); return; }
     const clientEmail = ((fromEditor ? s.editClientEmail : '') || ev.client_email || inv.bill_email || '').trim();
     if (!clientEmail) { this.setState({ invStatus: 'Add and save a client email first.' }); setTimeout(() => this.setState({ invStatus: '' }), 2500); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) { this.setState({ invStatus: clientEmail + ' is not a valid email \u2014 fix it in the Profile tab.' }); setTimeout(() => this.setState({ invStatus: '' }), 4000); return; }
     this.setState({ pdfBusy: true, invStatus: 'Preparing PDF…' });
-    let stage = 'issuing the invoice number';
+    let stage = 'issuing the invoice number', issuedNow = false;
     try {
       if (inv.status === 'draft' && inv.type === 'tax' && this.isDraftNo(inv.number)) {
         const r = await this.issueInvoice(inv);
         if (r.error) throw new Error(r.error.message);
         Object.assign(inv, r.data);
+        issuedNow = true;
         this.setState({ previewInvoice: Object.assign({}, r.data) });
-        await new Promise(res => setTimeout(res, 250));
+        await new Promise(res => setTimeout(res, 300));
       }
       stage = 'rendering the PDF';
-      const blob = await this.getInvoicePdfBlob();
-      const sizeMB = blob.size / 1048576;
+      const blob = await this.getInvoicePdfBlob(true);
 
       // Archive copy in storage — nice to have, never a reason to block the email.
       stage = 'uploading to storage';
@@ -11127,18 +11202,14 @@ class Component extends DCLogic {
       const invoiceDate = inv.issue_date
         ? new Date(inv.issue_date + 'T00:00:00').toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })
         : '—';
-      const file = new File([blob], inv.number + '.pdf', { type: 'application/pdf' });
-      // EmailJS variable attachments read base64, not a File object — send both shapes so
-      // whichever the template's attachment is pointed at resolves.
       const dataUri = await new Promise((res, rej) => {
         const fr = new FileReader();
         fr.onload = () => res(fr.result);
         fr.onerror = rej;
         fr.readAsDataURL(blob);
       });
-      const base64 = String(dataUri).split(',')[1] || '';
       stage = 'sending via EmailJS';
-      this.setState({ invStatus: 'Sending… (PDF ' + sizeMB.toFixed(1) + ' MB)' });
+      this.setState({ invStatus: 'Sending… (PDF ' + Math.max(1, Math.round(blob.size / 1024)) + ' KB)' });
       const mailer = await this.waitForGlobal('emailjs', 8000);
       if (!mailer) throw new Error('Email service did not load — check your connection and try again.');
       // The template is a bare {{{body_html}}} pipe shared with booking
@@ -11146,7 +11217,7 @@ class Component extends DCLogic {
       // EmailJS. The invoice_* variables are still sent for an installation
       // whose template is pointed at them.
       const bodyHtml = this.invoiceEmailHtml({ name, label, inv, invoiceDate, pdfUrl });
-      await this.sendInvoiceMail(mailer, {
+      const attached = await this.sendInvoiceMail(mailer, {
         to_email: clientEmail, email: clientEmail, user_email: clientEmail, reply_to: clientEmail,
         to_name: name, subject,
         body_html: bodyHtml,
@@ -11154,13 +11225,13 @@ class Component extends DCLogic {
         invoice_link: pdfUrl, invoice_filename: inv.number + '.pdf',
       }, dataUri, !!pdfUrl);
       stage = 'updating the invoice record';
-      await this.sb.from('invoices').update({ status: 'sent', pdf_url: pdfUrl || null, sent_at: new Date().toISOString() }).eq('id', inv.id);
+      await this.markSent(inv, pdfUrl);
+      const note = !pdfUrl ? ' \u2014 the PDF did not reach storage, so the email has the attachment but no download link.'
+        : attached ? '.' : ' \u2014 the PDF was too large to attach, so it went as the download link.';
       this.setState({
-        invStatus: pdfUrl
-          ? 'Sent ' + inv.number + '.'
-          : 'Sent ' + inv.number + ', but the PDF did not reach storage, so the email carries no download link — check the client got the attachment, or send again.',
+        invStatus: 'Sent ' + inv.number + note,
         showInvoicePreview: false, previewInvoice: null,
-        niDone: 'Sent ' + inv.number + ' to ' + clientEmail + '.',
+        niDone: 'Sent ' + inv.number + ' to ' + clientEmail + note,
       });
       setTimeout(() => this.setState({ niDone: '' }), 5000);
       if (fromEditor) this.loadInvoices(ev.id, ev);
@@ -11170,8 +11241,19 @@ class Component extends DCLogic {
     } catch (e) {
       console.error('[invoice] failed while ' + stage, e);
       const detail = e.text || e.message || (typeof e === 'string' ? e : JSON.stringify(e));
-      this.setState({ pdfBusy: false, invStatus: 'Failed while ' + stage + ': ' + detail });
+      this.setState({ pdfBusy: false, invStatus: 'Failed while ' + stage + ': ' + detail + (issuedNow ? ' \u2014 ' + inv.number + ' is issued; send it again from the list.' : '') });
+      if (issuedNow) { if (fromEditor) this.loadInvoices(ev.id, ev); if (s.view === 'finInvoices' || s.view === 'finProforma') this.loadFinInvoices(); }
     }
+  }
+
+  // Sending records the link and time. It never moves status backwards: a paid
+  // invoice re-sent stays paid; only a draft becomes sent.
+  async markSent(inv, pdfUrl) {
+    const patch = { sent_at: new Date().toISOString() };
+    if (pdfUrl) patch.pdf_url = pdfUrl;
+    if (inv.status === 'draft') patch.status = 'sent';
+    const { error } = await this.sb.from('invoices').update(patch).eq('id', inv.id).neq('status', 'cancelled');
+    if (error) console.warn('[invoice] sent, but the record did not update:', error.message);
   }
 
   // EmailJS caps the whole variables payload (500 KB on the paid plan). The PDF
@@ -11183,7 +11265,8 @@ class Component extends DCLogic {
     const send = p => mailer.send(EMAILJS_SERVICE_ID, EMAILJS_INVOICE_TEMPLATE_ID, p, { publicKey: EMAILJS_PUBLIC_KEY });
     const bytes = p => new Blob([JSON.stringify(p)]).size;
     const withPdf = Object.assign({}, params, { invoice_pdf: dataUri });
-    const fits = bytes(withPdf) < (EMAILJS_VARS_LIMIT_KB - 8) * 1024;
+    console.info('[invoice] email payload', Math.round(bytes(withPdf) / 1024) + ' KB (PDF ' + Math.round(String(dataUri).length * 0.75 / 1024) + ' KB, body ' + Math.round(bytes(params) / 1024) + ' KB)');
+    const fits = bytes(withPdf) < EMAILJS_VARS_LIMIT_KB * 1000 - 4000;
     if (fits) {
       try { await send(withPdf); return true; }
       catch (e) {
@@ -11191,7 +11274,7 @@ class Component extends DCLogic {
         console.warn('[invoice] attachment rejected on size, sending link only:', e.text || e);
       }
     } else if (!hasLink) {
-      throw new Error('The PDF is ' + Math.round(bytes(withPdf) / 1024) + ' KB encoded, over the ' + EMAILJS_VARS_LIMIT_KB + ' KB email limit, and it did not reach storage for a link. Compress the PDF and try again.');
+      throw new Error('The email with its PDF is ' + Math.round(bytes(withPdf) / 1000) + ' KB, over the ' + EMAILJS_VARS_LIMIT_KB + ' KB limit, and the PDF did not reach storage for a link. Use the generated PDF, or upload a smaller one.');
     }
     await send(Object.assign({}, params, { invoice_pdf: '' }));
     return false;
