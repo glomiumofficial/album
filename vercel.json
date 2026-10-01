@@ -20,6 +20,10 @@
     {
       "source": "/work",
       "destination": "/portfolio.html"
+    },
+    {
+      "source": "/crew",
+      "destination": "/crew.html"
     }
   ],
   "headers": [
@@ -126,6 +130,15 @@
     },
     {
       "source": "/portfolio.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/crew.html",
       "headers": [
         {
           "key": "Cache-Control",

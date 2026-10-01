@@ -25,3 +25,8 @@
   from = "/work"
   to = "/portfolio.html"
   status = 200
+
+[[redirects]]
+  from = "/crew"
+  to = "/crew.html"
+  status = 200

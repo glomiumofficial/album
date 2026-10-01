@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>glomium — crew</title>
+<link rel="icon" href="assets/infinity.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; background:#FFFFFF; color:#1B1D1E; font-family:'Jost',Helvetica,sans-serif; -webkit-font-smoothing:antialiased; }
+  input, textarea, button, select { font-family:inherit; }
+  :focus-visible { outline:2px solid #10AF8B; outline-offset:2px; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  a { color:#0A6E58; text-decoration:none; }
+  a:hover { color:#10AF8B; }
+  ::selection { background:#10AF8B; color:#fff; }
+  html { -webkit-text-size-adjust:100%; }
+  body { -webkit-tap-highlight-color:transparent; }
+  @media (pointer:coarse) {
+    input, select, textarea { font-size:max(16px, var(--fs, 16px)) !important; }
+    [data-tap] { min-height:44px; }
+    [data-tap-sq] { min-width:30px !important; min-height:30px !important; }
+  }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:#FFFFFF">
+
+  <sc-if value="{{ isBoot }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:14px">
+        <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; display:block">
+        <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">{{ bootText }}</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showAuth }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px">
+      <div style="width:min(380px,100%); display:flex; flex-direction:column; gap:20px">
+        <div style="text-align:center; display:flex; flex-direction:column; gap:6px">
+          <img src="assets/wordmark-green.png" alt="glomium" style="height:22px; width:auto; display:block; margin:0 auto">
+          <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#0A6E58">{{ authTitle }}</span>
+        </div>
+        <sc-if value="{{ authNeedsEmail }}" hint-placeholder-val="{{ true }}">
+          <input type="email" autocomplete="email" placeholder="Your approved email" data-k="email" value="{{ email }}" onChange="{{ onAuthField }}" style="width:100%; padding:14px 16px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; outline:none">
+        </sc-if>
+        <sc-if value="{{ authNeedsProfile }}" hint-placeholder-val="{{ false }}">
+          <input autocomplete="name" placeholder="Your full name" data-k="fullName" value="{{ fullName }}" onChange="{{ onAuthField }}" style="width:100%; padding:14px 16px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; outline:none">
+          <input type="tel" autocomplete="tel" placeholder="Phone (optional)" data-k="phone" value="{{ phone }}" onChange="{{ onAuthField }}" style="width:100%; padding:14px 16px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; outline:none">
+          <select data-k="crewRole" value="{{ crewRole }}" onChange="{{ onAuthField }}" style="width:100%; padding:14px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; background:#fff; color:#1B1D1E">
+            <option value="">Your position</option>
+            <sc-for list="{{ roleOpts }}" as="ro" hint-placeholder-count="14"><option value="{{ ro.v }}">{{ ro.l }}</option></sc-for>
+          </select>
+        </sc-if>
+        <sc-if value="{{ authNeedsPassword }}" hint-placeholder-val="{{ true }}">
+          <input type="password" autocomplete="{{ pwAutocomplete }}" placeholder="{{ pwPlaceholder }}" data-k="password" value="{{ password }}" onChange="{{ onAuthField }}" onKeyDown="{{ onAuthKey }}" style="width:100%; padding:14px 16px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; outline:none">
+        </sc-if>
+        <sc-if value="{{ authNeedsConfirm }}" hint-placeholder-val="{{ false }}">
+          <input type="password" autocomplete="new-password" placeholder="Same password again" data-k="password2" value="{{ password2 }}" onChange="{{ onAuthField }}" onKeyDown="{{ onAuthKey }}" style="width:100%; padding:14px 16px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; outline:none">
+        </sc-if>
+        <sc-if value="{{ authErr }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:13px; line-height:1.5; color:#B4433A; text-wrap:pretty">{{ authErr }}</span>
+        </sc-if>
+        <sc-if value="{{ authMsg }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:13px; line-height:1.5; color:#0A6E58; text-wrap:pretty">{{ authMsg }}</span>
+        </sc-if>
+        <button onClick="{{ authSubmit }}" disabled="{{ busy }}" style="padding:14px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:13px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer">{{ authCta }}</button>
+        <div style="display:flex; justify-content:center; gap:22px; flex-wrap:wrap">
+          <sc-for list="{{ authLinks }}" as="al" hint-placeholder-count="2">
+            <button onClick="{{ al.go }}" style="background:none; border:none; padding:4px 0; font-size:12px; letter-spacing:.06em; color:#0A6E58; cursor:pointer">{{ al.label }}</button>
+          </sc-for>
+        </div>
+        <span style="font-size:12px; line-height:1.6; color:#6B7572; text-align:center; text-wrap:pretty">{{ authNote }}</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showWaiting }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px">
+      <div style="width:min(420px,100%); display:flex; flex-direction:column; gap:16px; text-align:center">
+        <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; display:block; margin:0 auto">
+        <span style="font-size:22px; font-weight:300; line-height:1.35; color:#0A6E58">{{ waitTitle }}</span>
+        <span style="font-size:14px; line-height:1.7; color:#16231F; text-wrap:pretty">{{ waitText }}</span>
+        <span style="font-size:12px; color:#4A524F">Signed in as {{ meEmail }}</span>
+        <sc-if value="{{ waitCanRequest }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:10px; text-align:left">
+            <input placeholder="Your full name" data-k="fullName" value="{{ fullName }}" onChange="{{ onAuthField }}" style="width:100%; padding:13px 14px; border:1px solid #DDE3E1; border-radius:0; font-size:15px">
+            <input type="tel" placeholder="Phone (optional)" data-k="phone" value="{{ phone }}" onChange="{{ onAuthField }}" style="width:100%; padding:13px 14px; border:1px solid #DDE3E1; border-radius:0; font-size:15px">
+            <select data-k="crewRole" value="{{ crewRole }}" onChange="{{ onAuthField }}" style="width:100%; padding:13px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; background:#fff">
+              <option value="">What do you do?</option>
+              <sc-for list="{{ roleOpts }}" as="ro" hint-placeholder-count="9"><option value="{{ ro.v }}">{{ ro.l }}</option></sc-for>
+            </select>
+            <button onClick="{{ requestAccess }}" disabled="{{ busy }}" style="padding:13px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer">Request access</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ meErr }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#B4433A">{{ meErr }}</span></sc-if>
+        <div style="display:flex; gap:10px; justify-content:center">
+          <button onClick="{{ reload }}" style="padding:11px 20px; background:none; border:1px solid #0A6E58; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Check again</button>
+          <button onClick="{{ signOut }}" style="padding:11px 20px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showError }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; display:grid; place-items:center; padding:24px">
+      <div style="width:min(420px,100%); display:flex; flex-direction:column; gap:16px; text-align:center">
+        <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; display:block; margin:0 auto">
+        <span style="font-size:22px; font-weight:300; line-height:1.35; color:#0A6E58">Couldn't load the crew page</span>
+        <span style="font-size:14px; line-height:1.7; color:#16231F; text-wrap:pretty">{{ errorText }}</span>
+        <sc-if value="{{ meEmail }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#4A524F">Signed in as {{ meEmail }}</span></sc-if>
+        <div style="display:flex; gap:10px; justify-content:center">
+          <button onClick="{{ retry }}" style="padding:11px 20px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer">Try again</button>
+          <button onClick="{{ signOut }}" style="padding:11px 20px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showApp }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex; min-height:100vh; align-items:stretch">
+
+      <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed; top:0; left:0; right:0; z-index:30; height:56px; display:flex; align-items:center; gap:14px; padding:0 16px; background:#FFFFFF; border-bottom:1px solid #DDE3E1">
+          <button data-tap="1" onClick="{{ toggleSide }}" style="padding:8px 12px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Menu</button>
+          <span style="font-size:14px; color:#1B1D1E; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0">{{ pageTitle }}</span>
+        </div>
+        <sc-if value="{{ sideOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ toggleSide }}" style="position:fixed; inset:0; z-index:39; background:rgba(22,35,31,.28)"></div>
+        </sc-if>
+      </sc-if>
+
+      <aside style="display:{{ sideDisplay }}; position:{{ sidePos }}; top:0; left:0; bottom:0; z-index:40; flex:0 0 264px; width:264px; height:100vh; overflow-y:auto; flex-direction:column; gap:22px; padding:24px 16px 20px; background:#F7FAF9; border-right:1px solid #DDE3E1">
+        <div style="display:flex; flex-direction:column; gap:6px; padding:0 8px">
+          <img src="assets/wordmark-green.png" alt="glomium" style="height:17px; width:auto; display:block; align-self:flex-start">
+          <span style="font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#0A6E58">Crew tasks</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; padding:0 8px">
+          <span style="flex:0 0 30px; height:30px; display:grid; place-items:center; background:#0A6E58; color:#fff; font-size:11px; letter-spacing:.06em">{{ meInitials }}</span>
+          <div style="display:flex; flex-direction:column; min-width:0">
+            <span style="font-size:13px; color:#1B1D1E; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ meName }}</span>
+            <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">{{ meRoleLabel }}</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2px">
+          <sc-for list="{{ navTop }}" as="n" hint-placeholder-count="2">
+            <button data-tap="1" onClick="{{ n.go }}" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 10px; background:{{ n.bg }}; border:none; border-radius:0; font-size:14px; color:{{ n.color }}; text-align:left; cursor:pointer">
+              <span>{{ n.label }}</span><span style="font-size:11px; color:#6B7572">{{ n.count }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ isManager }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ newTask }}" style="margin:0 8px; padding:11px 14px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer">Issue a task</button>
+        </sc-if>
+        <div style="display:flex; flex-direction:column; gap:2px">
+          <span style="padding:0 10px 6px; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">{{ navTasksLabel }}</span>
+          <sc-if value="{{ noNavTasks }}" hint-placeholder-val="{{ false }}">
+            <span style="padding:4px 10px; font-size:12px; line-height:1.5; color:#6B7572">{{ noTasksNote }}</span>
+          </sc-if>
+          <sc-for list="{{ navTasks }}" as="nt" hint-placeholder-count="3">
+            <button data-tap="1" onClick="{{ nt.go }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:8px 10px; background:{{ nt.bg }}; border:none; border-radius:0; text-align:left; cursor:pointer">
+              <span style="font-size:14px; line-height:1.35; color:{{ nt.color }}; text-wrap:pretty">{{ nt.title }}</span>
+              <span style="font-size:11px; color:#6B7572">{{ nt.meta }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="margin-top:auto; display:flex; flex-direction:column; gap:2px; padding-top:14px; border-top:1px solid #DDE3E1">
+          <sc-for list="{{ navBottom }}" as="nb" hint-placeholder-count="0">
+            <button data-tap="1" onClick="{{ nb.go }}" style="display:flex; justify-content:space-between; padding:8px 10px; background:{{ nb.bg }}; border:none; border-radius:0; font-size:13px; color:{{ nb.color }}; text-align:left; cursor:pointer"><span>{{ nb.label }}</span><span style="font-size:11px; color:#6B7572">{{ nb.count }}</span></button>
+          </sc-for>
+          <button onClick="{{ signOut }}" style="padding:8px 10px; background:none; border:none; font-size:13px; color:#6B7572; text-align:left; cursor:pointer">Sign out</button>
+        </div>
+      </aside>
+
+      <main style="flex:1 1 auto; min-width:0; padding:{{ mainPad }}">
+        <div style="max-width:1080px; margin:0 auto; display:flex; flex-direction:column; gap:28px">
+
+          <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed; right:20px; bottom:20px; z-index:60; max-width:min(420px,calc(100vw - 40px)); padding:13px 16px; background:{{ toastBg }}; color:#FFFFFF; font-size:13px; line-height:1.5">{{ toast }}</div>
+          </sc-if>
+
+          <sc-if value="{{ pageToday }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; flex-direction:column; gap:6px">
+              <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">{{ todayLabel }}</span>
+              <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2; color:#1B1D1E">{{ greeting }}</h1>
+              <span style="font-size:15px; line-height:1.7; color:#4A524F; text-wrap:pretty">{{ todaySub }}</span>
+            </div>
+            <sc-if value="{{ noActive }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:28px; border:1px solid #DDE3E1; font-size:14px; line-height:1.7; color:#4A524F">{{ noActiveNote }}</div>
+            </sc-if>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px">
+              <sc-for list="{{ todayCards }}" as="tc" hint-placeholder-count="3">
+                <button onClick="{{ tc.go }}" style="display:flex; flex-direction:column; align-items:stretch; gap:12px; padding:22px; background:#FFFFFF; border:1px solid #DDE3E1; border-radius:0; text-align:left; cursor:pointer">
+                  <div style="display:flex; justify-content:space-between; gap:10px; align-items:center">
+                    <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58">{{ tc.kind }}</span>
+                    <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:{{ tc.statusColor }}">{{ tc.status }}</span>
+                  </div>
+                  <span style="font-size:19px; font-weight:400; line-height:1.3; color:#1B1D1E; text-wrap:pretty">{{ tc.title }}</span>
+                  <span style="font-size:13px; line-height:1.5; color:#4A524F">{{ tc.when }}</span>
+                  <div style="display:flex; flex-direction:column; gap:6px">
+                    <div style="height:4px; background:#E8EEEC"><div style="height:4px; width:{{ tc.pct }}%; background:#0A6E58"></div></div>
+                    <span style="font-size:12px; color:#6B7572">{{ tc.progressLabel }}</span>
+                  </div>
+                  <span style="font-size:12px; color:{{ tc.checkColor }}">{{ tc.checkLabel }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pageForm }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px">
+              <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">{{ formEyebrow }}</span>
+              <h1 style="margin:0; font-size:clamp(26px,3.6vw,34px); font-weight:300; line-height:1.2">{{ formHeading }}</h1>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:18px; padding:24px; border:1px solid #DDE3E1">
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <sc-for list="{{ kindChips }}" as="kc" hint-placeholder-count="4">
+                  <button onClick="{{ kc.pick }}" style="padding:9px 14px; background:{{ kc.bg }}; color:{{ kc.color }}; border:1px solid {{ kc.border }}; border-radius:0; font-size:12px; letter-spacing:.08em; cursor:pointer">{{ kc.label }}</button>
+                </sc-for>
+              </div>
+              <input placeholder="Task title — e.g. Trial shoot · Aara bridal look" data-k="title" value="{{ form.title }}" onChange="{{ onForm }}" style="padding:13px 14px; border:1px solid #DDE3E1; border-radius:0; font-size:17px; outline:none">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px">
+                <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Shoot date</span><input type="date" data-k="shoot_date" value="{{ form.shoot_date }}" onChange="{{ onForm }}" style="padding:11px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:14px"></label>
+                <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Call time</span><input placeholder="6:30 am" data-k="call_time" value="{{ form.call_time }}" onChange="{{ onForm }}" style="padding:11px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:14px"></label>
+                <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Location</span><input placeholder="Studio / venue" data-k="location" value="{{ form.location }}" onChange="{{ onForm }}" style="padding:11px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:14px"></label>
+                <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Boards due</span><input type="date" data-k="due_date" value="{{ form.due_date }}" onChange="{{ onForm }}" style="padding:11px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:14px"></label>
+              </div>
+              <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Brief</span><textarea rows="5" placeholder="What we're shooting, the look, references, who does what." data-k="brief" value="{{ form.brief }}" onChange="{{ onForm }}" style="padding:12px 14px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; line-height:1.7; resize:vertical"></textarea></label>
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Crew on this task ({{ formMemberCount }})</span>
+                <sc-if value="{{ noRoster }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:13px; line-height:1.6; color:#4A524F">Nobody is approved yet. Crew sign up on this page; the admin approves them in the admin panel under Approvals.</span>
+                </sc-if>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px">
+                  <sc-for list="{{ rosterPick }}" as="rp" hint-placeholder-count="4">
+                    <button onClick="{{ rp.toggle }}" style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:{{ rp.bg }}; border:1px solid {{ rp.border }}; border-radius:0; text-align:left; cursor:pointer">
+                      <span style="flex:0 0 16px; height:16px; display:grid; place-items:center; border:1px solid #0A6E58; background:{{ rp.boxBg }}; color:#fff; font-size:11px">{{ rp.tick }}</span>
+                      <span style="display:flex; flex-direction:column; min-width:0"><span style="font-size:14px; color:#1B1D1E">{{ rp.name }}</span><span style="font-size:11px; color:#6B7572">{{ rp.role }}</span></span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+              <sc-if value="{{ formIsNew }}" hint-placeholder-val="{{ true }}">
+                <label style="display:flex; align-items:center; gap:10px; font-size:13px; color:#4A524F; cursor:pointer">
+                  <input type="checkbox" checked="{{ form.starter }}" onChange="{{ onStarter }}"> Start with a checklist: mood board, storyboard, recce, gear list, call sheet
+                </label>
+              </sc-if>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:6px">
+                <button onClick="{{ saveTask }}" disabled="{{ busy }}" style="padding:12px 24px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer">{{ formCta }}</button>
+                <button onClick="{{ cancelForm }}" style="padding:12px 18px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:#4A524F; cursor:pointer">Cancel</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pageTask }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ taskLoading }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Loading task…</span>
+            </sc-if>
+            <sc-if value="{{ hasTask }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                  <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#0A6E58">{{ task.kindLabel }}</span>
+                  <sc-if value="{{ isManager }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; gap:8px; margin-left:auto">
+                      <button onClick="{{ editTask }}" style="padding:7px 13px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Edit</button>
+                      <button onClick="{{ trashTask }}" style="padding:7px 13px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#B4433A; cursor:pointer">Move to trash</button>
+                    </div>
+                  </sc-if>
+                </div>
+                <h1 style="margin:0; font-size:clamp(28px,4.2vw,40px); font-weight:300; line-height:1.18; color:#1B1D1E; text-wrap:pretty">{{ task.title }}</h1>
+              </div>
+
+              <div style="display:grid; grid-template-columns:minmax(110px,150px) minmax(0,1fr); gap:10px 18px; font-size:14px; line-height:1.5">
+                <span style="color:#6B7572">Status</span>
+                <div>
+                  <sc-if value="{{ isManager }}" hint-placeholder-val="{{ false }}">
+                    <select value="{{ task.status }}" onChange="{{ onTaskStatus }}" style="padding:5px 8px; border:1px solid #DDE3E1; border-radius:0; font-size:13px; background:#fff; color:#1B1D1E">
+                      <sc-for list="{{ statusOpts }}" as="so" hint-placeholder-count="3"><option value="{{ so.v }}">{{ so.l }}</option></sc-for>
+                    </select>
+                  </sc-if>
+                  <sc-if value="{{ notManager }}" hint-placeholder-val="{{ true }}">
+                    <span style="color:{{ task.statusColor }}">{{ task.statusLabel }}</span>
+                  </sc-if>
+                </div>
+                <span style="color:#6B7572">Shoot</span><span style="color:#1B1D1E">{{ task.shootLabel }}</span>
+                <span style="color:#6B7572">Location</span><span style="color:#1B1D1E">{{ task.locationLabel }}</span>
+                <span style="color:#6B7572">Boards due</span><span style="color:#1B1D1E">{{ task.dueLabel }}</span>
+                <span style="color:#6B7572">Crew</span>
+                <div style="display:flex; gap:6px; flex-wrap:wrap">
+                  <sc-for list="{{ task.crew }}" as="cm" hint-placeholder-count="3">
+                    <span style="padding:3px 9px; background:#F3FAF8; border:1px solid #DDE3E1; font-size:12px; color:#1B1D1E">{{ cm.name }}</span>
+                  </sc-for>
+                </div>
+                <span style="color:#6B7572">Progress</span>
+                <div style="display:flex; flex-direction:column; gap:6px; padding-top:6px">
+                  <div style="height:4px; max-width:360px; background:#E8EEEC"><div style="height:4px; width:{{ task.pct }}%; background:#0A6E58"></div></div>
+                  <span style="font-size:12px; color:#4A524F">{{ task.progressLabel }}</span>
+                </div>
+              </div>
+              <sc-if value="{{ task.hasBrief }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:15px; line-height:1.8; color:#4A524F; white-space:pre-wrap; text-wrap:pretty; padding:18px 0; border-top:1px solid #DDE3E1; border-bottom:1px solid #DDE3E1">{{ task.brief }}</div>
+              </sc-if>
+
+              <div style="display:flex; gap:26px; flex-wrap:wrap; border-bottom:1px solid #DDE3E1">
+                <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="4">
+                  <button data-tap="1" onClick="{{ tb.go }}" style="padding:0 0 12px; margin-bottom:-1px; background:none; border:none; border-bottom:2px solid {{ tb.line }}; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:{{ tb.color }}; cursor:pointer">{{ tb.label }} <span style="color:#6B7572">{{ tb.count }}</span></button>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{ tabOverview }}" hint-placeholder-val="{{ true }}">
+                <sc-if value="{{ canCheckIn }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-direction:column; gap:14px; padding:22px; background:#F3FAF8; border:1px solid #DDE3E1">
+                    <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:baseline">
+                      <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58">Today's check-in</span>
+                      <span style="font-size:12px; color:#6B7572">{{ ciStatus }}</span>
+                    </div>
+                    <textarea rows="2" placeholder="What did you get done today? Anything blocking you?" value="{{ ciNote }}" onChange="{{ onCiNote }}" style="padding:11px 13px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; line-height:1.6; resize:vertical; background:#fff"></textarea>
+                    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+                      <span style="font-size:12px; color:#4A524F">My part is</span>
+                      <input type="range" min="0" max="100" step="5" value="{{ ciPercent }}" onChange="{{ onCiPercent }}" style="flex:1 1 160px; accent-color:#0A6E58">
+                      <span style="font-size:15px; color:#0A6E58; min-width:44px">{{ ciPercent }}%</span>
+                      <button onClick="{{ postCheckin }}" disabled="{{ busy }}" style="padding:10px 18px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer">{{ ciCta }}</button>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <div style="display:flex; flex-direction:column; gap:12px">
+                  <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#0A6E58">Checklist</span>
+                  <sc-if value="{{ noItems }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">Nothing on the checklist yet.</span></sc-if>
+                  <div style="display:flex; flex-direction:column">
+                    <sc-for list="{{ itemsVM }}" as="it" hint-placeholder-count="4">
+                      <div style="display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid #EEF2F1; flex-wrap:wrap">
+                        <button data-tap-sq="1" onClick="{{ it.toggle }}" aria-label="Done" style="flex:0 0 20px; width:20px; height:20px; padding:0; display:grid; place-items:center; border:1px solid #0A6E58; border-radius:0; background:{{ it.boxBg }}; color:#fff; font-size:12px; cursor:pointer">{{ it.tick }}</button>
+                        <span style="flex:1 1 200px; min-width:0; font-size:15px; color:{{ it.color }}; text-decoration:{{ it.strike }}">{{ it.title }}</span>
+                        <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">{{ it.section }}</span>
+                        <span style="font-size:12px; color:#4A524F; min-width:90px">{{ it.assignee }}</span>
+                        <span style="font-size:11px; color:#6B7572">{{ it.doneMeta }}</span>
+                        <sc-if value="{{ isManager }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ it.remove }}" style="padding:4px 8px; background:none; border:none; font-size:12px; color:#B4433A; cursor:pointer">Remove</button>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <input placeholder="Add a checklist item" value="{{ newItem.title }}" data-k="title" onChange="{{ onNewItem }}" onKeyDown="{{ onNewItemKey }}" style="flex:1 1 220px; min-width:0; padding:10px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:14px">
+                    <select value="{{ newItem.section }}" data-k="section" onChange="{{ onNewItem }}" style="padding:10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px; background:#fff">
+                      <sc-for list="{{ sectionOpts }}" as="se" hint-placeholder-count="5"><option value="{{ se.v }}">{{ se.l }}</option></sc-for>
+                    </select>
+                    <select value="{{ newItem.assignee }}" data-k="assignee" onChange="{{ onNewItem }}" style="padding:10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px; background:#fff">
+                      <option value="">Anyone</option>
+                      <sc-for list="{{ task.crew }}" as="ac" hint-placeholder-count="0"><option value="{{ ac.id }}">{{ ac.name }}</option></sc-for>
+                    </select>
+                    <button onClick="{{ addItem }}" style="padding:10px 18px; background:none; border:1px solid #0A6E58; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Add</button>
+                  </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:12px">
+                  <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#0A6E58">Participation</span>
+                  <div style="overflow-x:auto; border:1px solid #DDE3E1">
+                    <table style="width:100%; min-width:640px; border-collapse:collapse; font-size:13px">
+                      <thead>
+                        <tr style="background:#F7FAF9; text-align:left">
+                          <th style="padding:10px 14px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Crew</th>
+                          <th style="padding:10px 14px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Their items</th>
+                          <th style="padding:10px 14px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Latest %</th>
+                          <th style="padding:10px 14px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Check-ins</th>
+                          <th style="padding:10px 14px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Messages</th>
+                          <th style="padding:10px 14px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Added</th>
+                          <th style="padding:10px 14px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Last active</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <sc-for list="{{ partVM }}" as="pa" hint-placeholder-count="3">
+                          <tr style="border-top:1px solid #EEF2F1">
+                            <td style="padding:11px 14px"><div style="display:flex; flex-direction:column"><span style="color:#1B1D1E">{{ pa.name }}</span><span style="font-size:11px; color:#6B7572">{{ pa.role }}</span></div></td>
+                            <td style="padding:11px 14px; color:#1B1D1E">{{ pa.items }}</td>
+                            <td style="padding:11px 14px; color:#0A6E58">{{ pa.pct }}</td>
+                            <td style="padding:11px 14px; color:#1B1D1E">{{ pa.checkins }}</td>
+                            <td style="padding:11px 14px; color:#1B1D1E">{{ pa.messages }}</td>
+                            <td style="padding:11px 14px; color:#1B1D1E">{{ pa.uploads }}</td>
+                            <td style="padding:11px 14px; color:{{ pa.activeColor }}">{{ pa.active }}</td>
+                          </tr>
+                        </sc-for>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:12px">
+                  <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#0A6E58">Check-in log</span>
+                  <sc-if value="{{ noCheckins }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">No check-ins yet.</span></sc-if>
+                  <sc-for list="{{ checkinsVM }}" as="ck" hint-placeholder-count="2">
+                    <div style="display:grid; grid-template-columns:minmax(90px,120px) minmax(0,1fr); gap:4px 16px; padding:12px 0; border-bottom:1px solid #EEF2F1">
+                      <span style="font-size:12px; color:#6B7572">{{ ck.day }}</span>
+                      <div style="display:flex; flex-direction:column; gap:4px">
+                        <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap"><span style="font-size:14px; color:#1B1D1E">{{ ck.name }}</span><span style="font-size:12px; color:#0A6E58">{{ ck.pct }}%</span></div>
+                        <span style="font-size:14px; line-height:1.6; color:#4A524F; white-space:pre-wrap">{{ ck.note }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ tabStory }}" hint-placeholder-val="{{ false }}">
+                <input type="file" accept="image/*" ref="{{ setFrameInput }}" onChange="{{ onFrameFile }}" style="display:none">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                  <div style="display:flex; border:1px solid #DDE3E1">
+                    <sc-for list="{{ storyViews }}" as="sv" hint-placeholder-count="2">
+                      <button onClick="{{ sv.go }}" style="padding:8px 14px; background:{{ sv.bg }}; color:{{ sv.color }}; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">{{ sv.label }}</button>
+                    </sc-for>
+                  </div>
+                  <span style="font-size:12px; color:#6B7572">{{ storySummary }}</span>
+                  <button onClick="{{ addShot }}" style="margin-left:auto; padding:10px 16px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Add shot</button>
+                </div>
+                <sc-if value="{{ noShots }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">No shots yet. Add the first frame and build the sequence from there.</span></sc-if>
+
+                <sc-if value="{{ storyCards }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px">
+                    <sc-for list="{{ shotsVM }}" as="sh" hint-placeholder-count="0">
+                      <div style="display:flex; flex-direction:column; border:1px solid #DDE3E1; background:#FFFFFF">
+                        <button onClick="{{ sh.pickFrame }}" style="position:relative; display:block; width:100%; aspect-ratio:16/9; padding:0; border:none; border-bottom:1px solid #DDE3E1; background:#F3FAF8; cursor:pointer; overflow:hidden">
+                          <sc-if value="{{ sh.hasFrame }}" hint-placeholder-val="{{ false }}"><img src="{{ sh.url }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                          <sc-if value="{{ sh.noFrame }}" hint-placeholder-val="{{ true }}"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58">Add frame</span></sc-if>
+                          <span style="position:absolute; top:0; left:0; padding:5px 9px; background:#0A6E58; color:#fff; font-size:11px; letter-spacing:.12em">{{ sh.noLabel }}</span>
+                        </button>
+                        <div style="display:flex; flex-direction:column; gap:8px; padding:12px 14px">
+                          <input placeholder="Shot title" data-f="title" value="{{ sh.title }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="padding:6px 0; border:none; border-bottom:1px solid #EEF2F1; border-radius:0; font-size:16px; color:#1B1D1E; outline:none">
+                          <textarea rows="3" placeholder="What happens in frame" data-f="description" value="{{ sh.description }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="padding:6px 0; border:none; border-bottom:1px solid #EEF2F1; border-radius:0; font-size:14px; line-height:1.6; color:#4A524F; resize:vertical; outline:none"></textarea>
+                          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
+                            <input placeholder="Framing" data-f="framing" value="{{ sh.framing }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="min-width:0; padding:7px 8px; border:1px solid #EEF2F1; border-radius:0; font-size:13px">
+                            <input placeholder="Lens" data-f="lens" value="{{ sh.lens }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="min-width:0; padding:7px 8px; border:1px solid #EEF2F1; border-radius:0; font-size:13px">
+                            <input placeholder="Movement" data-f="movement" value="{{ sh.movement }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="min-width:0; padding:7px 8px; border:1px solid #EEF2F1; border-radius:0; font-size:13px">
+                            <input type="number" min="0" placeholder="Seconds" data-f="duration_s" value="{{ sh.duration }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="min-width:0; padding:7px 8px; border:1px solid #EEF2F1; border-radius:0; font-size:13px">
+                          </div>
+                          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap">
+                            <select value="{{ sh.status }}" onChange="{{ sh.onStatus }}" style="padding:5px 6px; border:1px solid #DDE3E1; border-radius:0; font-size:12px; background:#fff; color:{{ sh.statusColor }}">
+                              <sc-for list="{{ shotStatusOpts }}" as="ss" hint-placeholder-count="3"><option value="{{ ss.v }}">{{ ss.l }}</option></sc-for>
+                            </select>
+                            <button onClick="{{ sh.up }}" disabled="{{ sh.isFirst }}" aria-label="Move earlier" style="padding:4px 8px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:12px; color:#4A524F; cursor:pointer">←</button>
+                            <button onClick="{{ sh.down }}" disabled="{{ sh.isLast }}" aria-label="Move later" style="padding:4px 8px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:12px; color:#4A524F; cursor:pointer">→</button>
+                            <sc-if value="{{ sh.canDelete }}" hint-placeholder-val="{{ false }}"><button onClick="{{ sh.remove }}" style="margin-left:auto; padding:4px 6px; background:none; border:none; font-size:12px; color:#B4433A; cursor:pointer">Delete</button></sc-if>
+                          </div>
+                          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+                            <sc-for list="{{ sh.reacts }}" as="r" hint-placeholder-count="0">
+                              <button onClick="{{ r.go }}" style="padding:3px 8px; background:{{ r.bg }}; border:1px solid {{ r.border }}; border-radius:0; font-size:12px; color:{{ r.color }}; cursor:pointer">{{ r.glyph }} {{ r.count }}</button>
+                            </sc-for>
+                            <button onClick="{{ sh.toggleComments }}" style="padding:3px 8px; background:none; border:none; font-size:12px; color:#0A6E58; cursor:pointer">{{ sh.commentLabel }}</button>
+                          </div>
+                          <span style="font-size:11px; color:#6B7572">{{ sh.by }}</span>
+                          <sc-if value="{{ sh.isOpen }}" hint-placeholder-val="{{ false }}">
+                            <div style="display:flex; flex-direction:column; gap:8px; padding-top:8px; border-top:1px solid #EEF2F1">
+                              <sc-for list="{{ sh.comments }}" as="cc" hint-placeholder-count="0">
+                                <div style="display:flex; flex-direction:column; gap:2px"><span style="font-size:11px; color:#6B7572">{{ cc.author }} · {{ cc.time }}</span><span style="font-size:13px; line-height:1.55; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere">{{ cc.body }}</span></div>
+                              </sc-for>
+                              <div style="display:flex; gap:6px">
+                                <input placeholder="Comment" value="{{ refDraft }}" onChange="{{ onRefDraft }}" onKeyDown="{{ onRefKey }}" style="flex:1; min-width:0; padding:8px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px">
+                                <button data-tap="1" onClick="{{ sendRef }}" style="padding:8px 12px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:10px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Post</button>
+                              </div>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ storyTable }}" hint-placeholder-val="{{ false }}">
+                  <div style="overflow-x:auto; border:1px solid #DDE3E1">
+                    <table style="width:100%; min-width:960px; border-collapse:collapse; font-size:13px">
+                      <thead>
+                        <tr style="background:#F7FAF9; text-align:left">
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572; width:52px">No</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572; width:110px">Frame</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Shot</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Description</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Framing</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Lens</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Movement</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572; width:70px">Sec</th>
+                          <th style="padding:10px 12px; font-size:10px; font-weight:400; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Status</th>
+                          <th style="padding:10px 12px; width:90px"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <sc-for list="{{ shotsVM }}" as="sh" hint-placeholder-count="0">
+                          <tr style="border-top:1px solid #EEF2F1; vertical-align:top">
+                            <td style="padding:10px 12px; color:#0A6E58">{{ sh.no }}</td>
+                            <td style="padding:8px 12px">
+                              <button onClick="{{ sh.pickFrame }}" style="display:grid; place-items:center; width:96px; aspect-ratio:16/9; padding:0; border:1px solid #DDE3E1; background:#F3FAF8; overflow:hidden; cursor:pointer">
+                                <sc-if value="{{ sh.hasFrame }}" hint-placeholder-val="{{ false }}"><img src="{{ sh.url }}" alt="" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                                <sc-if value="{{ sh.noFrame }}" hint-placeholder-val="{{ true }}"><span style="font-size:9px; letter-spacing:.18em; text-transform:uppercase; color:#0A6E58">Add</span></sc-if>
+                              </button>
+                            </td>
+                            <td style="padding:6px 8px"><input data-f="title" value="{{ sh.title }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="width:100%; min-width:120px; padding:6px; border:1px solid transparent; border-radius:0; font-size:13px"></td>
+                            <td style="padding:6px 8px"><textarea rows="2" data-f="description" value="{{ sh.description }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="width:100%; min-width:180px; padding:6px; border:1px solid transparent; border-radius:0; font-size:13px; line-height:1.5; resize:vertical"></textarea></td>
+                            <td style="padding:6px 8px"><input data-f="framing" value="{{ sh.framing }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="width:100%; min-width:80px; padding:6px; border:1px solid transparent; border-radius:0; font-size:13px"></td>
+                            <td style="padding:6px 8px"><input data-f="lens" value="{{ sh.lens }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="width:100%; min-width:70px; padding:6px; border:1px solid transparent; border-radius:0; font-size:13px"></td>
+                            <td style="padding:6px 8px"><input data-f="movement" value="{{ sh.movement }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="width:100%; min-width:80px; padding:6px; border:1px solid transparent; border-radius:0; font-size:13px"></td>
+                            <td style="padding:6px 8px"><input type="number" min="0" data-f="duration_s" value="{{ sh.duration }}" onChange="{{ sh.onChange }}" onBlur="{{ sh.onBlur }}" style="width:60px; padding:6px; border:1px solid transparent; border-radius:0; font-size:13px"></td>
+                            <td style="padding:6px 8px">
+                              <select value="{{ sh.status }}" onChange="{{ sh.onStatus }}" style="padding:5px 6px; border:1px solid #DDE3E1; border-radius:0; font-size:12px; background:#fff; color:{{ sh.statusColor }}">
+                                <sc-for list="{{ shotStatusOpts }}" as="ss" hint-placeholder-count="3"><option value="{{ ss.v }}">{{ ss.l }}</option></sc-for>
+                              </select>
+                            </td>
+                            <td style="padding:6px 8px">
+                              <div style="display:flex; gap:4px">
+                                <button onClick="{{ sh.up }}" disabled="{{ sh.isFirst }}" aria-label="Move up" style="padding:3px 7px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:12px; cursor:pointer">↑</button>
+                                <button onClick="{{ sh.down }}" disabled="{{ sh.isLast }}" aria-label="Move down" style="padding:3px 7px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:12px; cursor:pointer">↓</button>
+                                <sc-if value="{{ sh.canDelete }}" hint-placeholder-val="{{ false }}"><button onClick="{{ sh.remove }}" aria-label="Delete shot" style="padding:3px 7px; background:none; border:none; font-size:12px; color:#B4433A; cursor:pointer">✕</button></sc-if>
+                              </div>
+                            </td>
+                          </tr>
+                        </sc-for>
+                      </tbody>
+                    </table>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ showBoard }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ pageCrewBoard }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:6px">
+                <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">Everyone on the crew list</span>
+                <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Crew board</h1>
+              </div>
+            </sc-if>
+            <input type="file" multiple accept="image/*,video/mp4,video/quicktime,video/webm,application/pdf" ref="{{ setBoardInput }}" onChange="{{ onBoardFiles }}" style="display:none">
+            <div style="position:{{ boardPos }}; inset:0; z-index:{{ boardZ }}; height:{{ boardHeight }}; min-height:460px; display:flex; flex-direction:column; background:#FFFFFF; border:1px solid #DDE3E1">
+              <div style="display:flex; align-items:center; gap:4px; padding:8px; border-bottom:1px solid #DDE3E1; overflow-x:auto; background:#FFFFFF">
+                <sc-for list="{{ boardTools }}" as="bt" hint-placeholder-count="12">
+                  <button data-tap="1" onClick="{{ bt.go }}" title="{{ bt.hint }}" style="flex:0 0 auto; padding:7px 11px; background:{{ bt.bg }}; color:{{ bt.color }}; border:1px solid {{ bt.border }}; border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; white-space:nowrap">{{ bt.label }}</button>
+                </sc-for>
+                <span style="flex:1 1 12px"></span>
+                <sc-for list="{{ presentVM }}" as="pr" hint-placeholder-count="0">
+                  <span title="{{ pr.name }}" style="flex:0 0 26px; height:26px; display:grid; place-items:center; background:{{ pr.color }}; color:#FFFFFF; font-size:10px; letter-spacing:.04em">{{ pr.initials }}</span>
+                </sc-for>
+                <sc-for list="{{ zoomTools }}" as="zt" hint-placeholder-count="5">
+                  <button data-tap="1" onClick="{{ zt.go }}" title="{{ zt.hint }}" style="flex:0 0 auto; padding:7px 10px; background:#FFFFFF; color:#1B1D1E; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.08em; cursor:pointer; white-space:nowrap">{{ zt.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ boardSubBar }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid #DDE3E1; background:#F7FAF9; flex-wrap:wrap">
+                  <span style="font-size:12px; color:#4A524F">{{ boardHint }}</span>
+                  <sc-if value="{{ toolLink }}" hint-placeholder-val="{{ false }}">
+                    <input placeholder="https://…" data-k="url" value="{{ linkForm.url }}" onChange="{{ onLinkForm }}" onKeyDown="{{ onLinkKey }}" style="flex:2 1 220px; min-width:0; padding:8px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px; background:#FFFFFF">
+                    <input placeholder="Caption (optional)" data-k="title" value="{{ linkForm.title }}" onChange="{{ onLinkForm }}" onKeyDown="{{ onLinkKey }}" style="flex:1 1 140px; min-width:0; padding:8px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px; background:#FFFFFF">
+                    <button onClick="{{ addBoardLink }}" style="padding:8px 14px; background:#0A6E58; color:#FFFFFF; border:none; border-radius:0; font-size:11px; letter-spacing:.18em; text-transform:uppercase; cursor:pointer">Add link</button>
+                  </sc-if>
+                  <sc-if value="{{ toolPen }}" hint-placeholder-val="{{ false }}">
+                    <sc-for list="{{ penColors }}" as="pc" hint-placeholder-count="4">
+                      <button onClick="{{ pc.go }}" aria-label="Pen colour" style="width:24px; height:24px; padding:0; background:{{ pc.c }}; border:2px solid {{ pc.ring }}; border-radius:0; cursor:pointer"></button>
+                    </sc-for>
+                    <sc-for list="{{ penWidths }}" as="pw" hint-placeholder-count="3">
+                      <button data-tap="1" onClick="{{ pw.go }}" style="padding:6px 10px; background:{{ pw.bg }}; color:{{ pw.color }}; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer">{{ pw.label }}</button>
+                    </sc-for>
+                  </sc-if>
+                  <sc-if value="{{ tplOpen }}" hint-placeholder-val="{{ false }}">
+                    <sc-for list="{{ tplVM }}" as="tp" hint-placeholder-count="3">
+                      <button onClick="{{ tp.go }}" style="padding:8px 14px; background:#FFFFFF; color:#0A6E58; border:1px solid #0A6E58; border-radius:0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; cursor:pointer">{{ tp.label }}</button>
+                    </sc-for>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <div style="position:relative; flex:1 1 auto; min-height:0; display:flex">
+                <sc-if value="{{ shotDrawerOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:{{ drawerPos }}; top:0; left:0; bottom:0; z-index:2147483646; flex:0 0 210px; width:210px; max-width:80%; overflow-y:auto; border-right:1px solid #DDE3E1; background:#FFFFFF; box-shadow:{{ drawerShadow }}; display:flex; flex-direction:column; gap:8px; padding:10px">
+                    <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Storyboard — drag onto the board</span>
+                    <sc-if value="{{ noDrawerShots }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; line-height:1.5; color:#4A524F">No shots yet. Add them in the Storyboard tab.</span></sc-if>
+                    <sc-for list="{{ drawerShots }}" as="ds" hint-placeholder-count="0">
+                      <div draggable="true" onDragStart="{{ ds.onDrag }}" style="display:flex; flex-direction:column; border:1px solid #DDE3E1; background:#FFFFFF; cursor:grab">
+                        <div style="aspect-ratio:16/9; background:#F3FAF8; display:grid; place-items:center; overflow:hidden">
+                          <sc-if value="{{ ds.hasFrame }}" hint-placeholder-val="{{ false }}"><img src="{{ ds.url }}" alt="" draggable="false" style="display:block; width:100%; height:100%; object-fit:cover"></sc-if>
+                          <sc-if value="{{ ds.noFrame }}" hint-placeholder-val="{{ true }}"><span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#0A6E58">{{ ds.no }}</span></sc-if>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px; padding:6px 8px">
+                          <span style="flex:1 1 auto; min-width:0; font-size:12px; color:#1B1D1E; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ ds.label }}</span>
+                          <button data-tap="1" onClick="{{ ds.place }}" style="padding:4px 8px; background:none; border:1px solid #0A6E58; border-radius:0; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Place</button>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <div ref="{{ setCanvas }}" onPointerDown="{{ onCanvasDown }}" onPointerMove="{{ onCanvasMove }}" onPointerUp="{{ onCanvasUp }}" onPointerCancel="{{ onCanvasUp }}" onDragOver="{{ onCanvasDragOver }}" onDrop="{{ onCanvasDrop }}" style="position:relative; flex:1 1 auto; min-width:0; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; cursor:{{ boardCursor }}; background-color:#F7FAF9; background-image:radial-gradient(#CBD5D1 1px, transparent 1.4px); background-size:{{ gridSize }}; background-position:{{ gridPos }}">
+                  <div style="position:absolute; left:0; top:0; width:0; height:0; transform-origin:0 0; transform:{{ worldTransform }}">
+                    {{ linksSvg }}
+                    <sc-for list="{{ cardsVM }}" as="c" hint-placeholder-count="0">
+                      <div data-card="{{ c.id }}" style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.w }}px; height:{{ c.h }}px; z-index:{{ c.z }}; display:flex; flex-direction:column; background:{{ c.bg }}; border:{{ c.border }}; outline:{{ c.outline }}; outline-offset:2px; box-shadow:{{ c.shadow }}; overflow:hidden; cursor:{{ c.cursor }}">
+                        <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ false }}">
+                          <textarea data-edit="{{ c.id }}" data-f="note" tabIndex="-1" value="{{ c.text }}" onChange="{{ c.onText }}" onBlur="{{ c.onBlur }}" placeholder="{{ c.ph }}" style="flex:1 1 auto; width:100%; min-height:0; padding:{{ c.pad }}; border:none; outline:none; resize:none; background:transparent; font-family:inherit; --fs:{{ c.fs }}; font-size:{{ c.fs }}; font-weight:{{ c.fw }}; line-height:1.45; color:#1B1D1E; pointer-events:{{ c.pe }}"></textarea>
+                        </sc-if>
+                        <sc-if value="{{ c.isTodo }}" hint-placeholder-val="{{ false }}">
+                          <div style="flex:1 1 auto; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:7px; padding:12px">
+                            <div style="display:flex; align-items:baseline; gap:8px">
+                              <input data-edit="{{ c.id }}" data-f="title" tabIndex="-1" value="{{ c.title }}" onChange="{{ c.onText }}" onBlur="{{ c.onBlur }}" placeholder="To-do" style="flex:1 1 auto; min-width:0; padding:0; border:none; outline:none; background:transparent; font-family:inherit; font-size:14px; font-weight:500; color:#1B1D1E; pointer-events:{{ c.pe }}">
+                              <span style="font-size:11px; color:#6B7572">{{ c.todoSummary }}</span>
+                            </div>
+                            <sc-for list="{{ c.todos }}" as="tdo" hint-placeholder-count="0">
+                              <div style="display:flex; align-items:flex-start; gap:8px">
+                                <button data-nodrag="1" data-tap-sq="1" onClick="{{ tdo.toggle }}" aria-label="Done" style="flex:0 0 16px; width:16px; height:16px; margin-top:2px; padding:0; display:grid; place-items:center; border:1px solid #0A6E58; border-radius:0; background:{{ tdo.box }}; color:#FFFFFF; font-size:10px; cursor:pointer">{{ tdo.tick }}</button>
+                                <span style="flex:1 1 auto; min-width:0; font-size:13px; line-height:1.4; color:{{ tdo.color }}; text-decoration:{{ tdo.strike }}; overflow-wrap:anywhere">{{ tdo.t }}</span>
+                                <sc-if value="{{ c.isSel }}" hint-placeholder-val="{{ false }}"><button data-nodrag="1" onClick="{{ tdo.remove }}" aria-label="Remove" style="padding:0 2px; background:none; border:none; font-size:13px; color:#B4433A; cursor:pointer">×</button></sc-if>
+                              </div>
+                            </sc-for>
+                            <sc-if value="{{ c.isSel }}" hint-placeholder-val="{{ false }}">
+                              <input data-nodrag="1" placeholder="Add an item, press Enter" value="{{ todoDraft }}" onChange="{{ onTodoDraft }}" onKeyDown="{{ c.onTodoKey }}" style="padding:6px 8px; border:1px solid #DDE3E1; border-radius:0; font-size:12px; background:#FFFFFF">
+                            </sc-if>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ c.isSwatch }}" hint-placeholder-val="{{ false }}">
+                          <div style="flex:1 1 auto; min-height:0; background:{{ c.color }}"></div>
+                          <div style="display:flex; align-items:center; gap:6px; padding:8px 10px; background:#FFFFFF">
+                            <input data-edit="{{ c.id }}" data-f="title" tabIndex="-1" value="{{ c.title }}" onChange="{{ c.onText }}" onBlur="{{ c.onBlur }}" placeholder="Name" style="flex:1 1 auto; min-width:0; padding:0; border:none; outline:none; background:transparent; font-family:inherit; font-size:12px; color:#1B1D1E; pointer-events:{{ c.pe }}">
+                            <span style="font-size:11px; letter-spacing:.06em; color:#4A524F">{{ c.hex }}</span>
+                          </div>
+                          <sc-if value="{{ c.isSel }}" hint-placeholder-val="{{ false }}">
+                            <input data-nodrag="1" type="color" value="{{ c.color }}" onChange="{{ c.onColor }}" aria-label="Pick colour" style="position:absolute; top:8px; right:8px; width:30px; height:30px; padding:0; border:2px solid #FFFFFF; background:none; cursor:pointer">
+                          </sc-if>
+                        </sc-if>
+                        <sc-if value="{{ c.isLink }}" hint-placeholder-val="{{ false }}">
+                          <sc-if value="{{ c.hasThumb }}" hint-placeholder-val="{{ false }}"><img src="{{ c.thumb }}" alt="" draggable="false" style="display:block; width:100%; flex:1 1 auto; min-height:0; object-fit:cover; pointer-events:none"></sc-if>
+                          <div style="display:flex; flex-direction:column; gap:3px; padding:10px 12px; background:#F7FAF9; margin-top:auto">
+                            <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58">{{ c.host }}</span>
+                            <span style="font-size:13px; line-height:1.4; color:#1B1D1E; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ c.linkTitle }}</span>
+                            <a data-nodrag="1" href="{{ c.href }}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start; font-size:11px; letter-spacing:.14em; text-transform:uppercase">Open ↗</a>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ c.isImage }}" hint-placeholder-val="{{ false }}">
+                          <img src="{{ c.url }}" alt="{{ c.fileName }}" draggable="false" style="display:block; width:100%; height:100%; object-fit:cover; background:#F3FAF8; pointer-events:none">
+                        </sc-if>
+                        <sc-if value="{{ c.isVideo }}" hint-placeholder-val="{{ false }}">
+                          <div style="flex:0 0 24px; display:flex; align-items:center; padding:0 8px; background:#16231F; color:#CFE0DA; font-size:10px; letter-spacing:.2em; text-transform:uppercase">Video</div>
+                          <video data-nodrag="1" src="{{ c.url }}" controls playsinline preload="metadata" style="display:block; width:100%; flex:1 1 auto; min-height:0; background:#16231F"></video>
+                        </sc-if>
+                        <sc-if value="{{ c.isPdf }}" hint-placeholder-val="{{ false }}">
+                          <div style="flex:1 1 auto; display:flex; flex-direction:column; justify-content:center; gap:6px; padding:16px; background:#F3FAF8">
+                            <span style="font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:#0A6E58">PDF</span>
+                            <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ c.fileName }}</span>
+                            <a data-nodrag="1" href="{{ c.url }}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start; font-size:11px; letter-spacing:.14em; text-transform:uppercase">Open ↗</a>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ c.isShot }}" hint-placeholder-val="{{ false }}">
+                          <div style="flex:1 1 auto; min-height:0; display:grid; place-items:center; background:#F3FAF8; overflow:hidden">
+                            <sc-if value="{{ c.hasFrame }}" hint-placeholder-val="{{ false }}"><img src="{{ c.frameUrl }}" alt="" draggable="false" style="display:block; width:100%; height:100%; object-fit:cover; pointer-events:none"></sc-if>
+                            <sc-if value="{{ c.noFrame }}" hint-placeholder-val="{{ true }}"><span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#0A6E58">No frame yet</span></sc-if>
+                          </div>
+                          <div style="display:flex; flex-direction:column; gap:2px; padding:8px 10px; background:#FFFFFF">
+                            <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#0A6E58">{{ c.shotLabel }}</span>
+                            <span style="font-size:13px; color:#1B1D1E; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ c.shotTitle }}</span>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ c.showFooter }}" hint-placeholder-val="{{ false }}">
+                          <span style="position:absolute; left:6px; bottom:6px; padding:2px 7px; background:#0A6E58; color:#FFFFFF; font-size:10px; letter-spacing:.06em; pointer-events:none">{{ c.footer }}</span>
+                        </sc-if>
+                        <sc-if value="{{ c.isSel }}" hint-placeholder-val="{{ false }}">
+                          <div data-resize="{{ c.id }}" style="position:absolute; right:0; bottom:0; width:18px; height:18px; cursor:nwse-resize; background:linear-gradient(135deg, transparent 52%, #0A6E58 52%)"></div>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                    {{ strokesSvg }}
+                    <sc-for list="{{ cursorsVM }}" as="cu" hint-placeholder-count="0">
+                      <div style="position:absolute; left:{{ cu.x }}px; top:{{ cu.y }}px; z-index:2147483600; pointer-events:none; transform:scale({{ cu.inv }}); transform-origin:0 0; display:flex; align-items:flex-start; gap:2px">
+                        <span style="width:12px; height:12px; background:{{ cu.color }}; clip-path:polygon(0 0, 100% 45%, 45% 100%)"></span>
+                        <span style="margin-top:8px; padding:2px 6px; background:{{ cu.color }}; color:#FFFFFF; font-size:11px; white-space:nowrap">{{ cu.name }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ boardLoading }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute; top:12px; left:12px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Loading board…</span>
+                  </sc-if>
+                  <sc-if value="{{ boardNote }}" hint-placeholder-val="{{ false }}">
+                    <div data-nodrag="1" style="position:absolute; top:10px; left:10px; right:10px; padding:10px 14px; background:#FBF7EC; border:1px solid #E4D7B8; font-size:12px; color:#6E5626">{{ boardNote }}</div>
+                  </sc-if>
+                  <sc-if value="{{ boardEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; padding:20px">
+                      <div data-nodrag="1" style="pointer-events:auto; max-width:440px; display:flex; flex-direction:column; align-items:center; gap:12px; padding:26px; text-align:center; background:rgba(255,255,255,.94); border:1px solid #DDE3E1">
+                        <span style="font-size:20px; font-weight:300; color:#1B1D1E">An empty board</span>
+                        <span style="font-size:13px; line-height:1.65; color:#4A524F; text-wrap:pretty">Double-tap anywhere for a note, add photos from your phone, draw with the pen, or start from a template. Pinch to zoom, drag to move around.</span>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:center">
+                          <sc-for list="{{ tplVM }}" as="tp" hint-placeholder-count="3">
+                            <button onClick="{{ tp.go }}" style="padding:9px 14px; background:#0A6E58; color:#FFFFFF; border:none; border-radius:0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; cursor:pointer">{{ tp.label }}</button>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+                    <div data-nodrag="1" style="position:absolute; left:50%; bottom:14px; transform:translateX(-50%); z-index:2147483640; display:flex; align-items:center; gap:4px; padding:6px; max-width:calc(100% - 24px); overflow-x:auto; background:#16231F; color:#FFFFFF">
+                      <span style="flex:0 0 auto; padding:0 8px; font-size:11px; color:#CFE0DA; white-space:nowrap">{{ selLabel }}</span>
+                      <sc-for list="{{ selColors }}" as="scl" hint-placeholder-count="0">
+                        <button onClick="{{ scl.go }}" aria-label="Colour" style="flex:0 0 22px; width:22px; height:22px; padding:0; background:{{ scl.c }}; border:2px solid {{ scl.ring }}; border-radius:0; cursor:pointer"></button>
+                      </sc-for>
+                      <sc-for list="{{ selActions }}" as="sa" hint-placeholder-count="0">
+                        <button data-tap="1" onClick="{{ sa.go }}" style="flex:0 0 auto; padding:7px 10px; background:{{ sa.bg }}; color:{{ sa.color }}; border:none; border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; white-space:nowrap">{{ sa.label }}</button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ cmtOpen }}" hint-placeholder-val="{{ false }}">
+                    <div data-nodrag="1" style="position:absolute; top:0; right:0; bottom:0; width:min(320px,92%); z-index:2147483645; display:flex; flex-direction:column; background:#FFFFFF; border-left:1px solid #DDE3E1">
+                      <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #DDE3E1">
+                        <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#0A6E58">Comments</span>
+                        <button onClick="{{ closeComments }}" style="padding:2px 6px; background:none; border:none; font-size:16px; color:#4A524F; cursor:pointer">×</button>
+                      </div>
+                      <div style="flex:1 1 auto; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:14px">
+                        <sc-if value="{{ noCmts }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">No comments yet.</span></sc-if>
+                        <sc-for list="{{ cmtList }}" as="cm" hint-placeholder-count="0">
+                          <div style="display:flex; flex-direction:column; gap:2px"><span style="font-size:11px; color:#6B7572">{{ cm.author }} · {{ cm.time }}</span><span style="font-size:14px; line-height:1.55; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere">{{ cm.body }}</span></div>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex; gap:6px; padding:10px; border-top:1px solid #DDE3E1">
+                        <input placeholder="Comment" value="{{ refDraft }}" onChange="{{ onRefDraft }}" onKeyDown="{{ onRefKey }}" style="flex:1 1 auto; min-width:0; padding:9px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px">
+                        <button data-tap="1" onClick="{{ sendRef }}" style="padding:9px 12px; background:#0A6E58; color:#FFFFFF; border:none; border-radius:0; font-size:10px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Post</button>
+                      </div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showChat }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ pageChannel }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:6px">
+                <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">Everyone on the crew list</span>
+                <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Crew channel</h1>
+              </div>
+            </sc-if>
+            <input type="file" accept="image/*,video/mp4,video/quicktime,video/webm,application/pdf" ref="{{ setChatInput }}" onChange="{{ onChatFile }}" style="display:none">
+            <div style="display:flex; flex-direction:column; border:1px solid #DDE3E1">
+              <div ref="{{ setChatBox }}" style="height:{{ chatHeight }}; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding:8px 20px 16px; display:flex; flex-direction:column">
+                <sc-if value="{{ noChat }}" hint-placeholder-val="{{ false }}"><span style="margin:auto; font-size:13px; color:#6B7572; text-align:center">{{ noChatNote }}</span></sc-if>
+                <sc-for list="{{ chatVM }}" as="m" hint-placeholder-count="0">
+                  <sc-if value="{{ m.showDay }}" hint-placeholder-val="{{ false }}">
+                    <span style="align-self:center; margin:14px 0 6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">{{ m.dayLabel }}</span>
+                  </sc-if>
+                  <div style="display:flex; gap:12px; padding:9px 0">
+                    <span style="flex:0 0 32px; height:32px; display:grid; place-items:center; background:{{ m.avBg }}; color:{{ m.avColor }}; font-size:11px; letter-spacing:.04em">{{ m.initials }}</span>
+                    <div style="flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:4px">
+                      <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap">
+                        <span style="font-size:13px; font-weight:500; color:#1B1D1E">{{ m.author }}</span>
+                        <span style="font-size:11px; color:#6B7572">{{ m.time }}</span>
+                        <sc-if value="{{ m.canDelete }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.remove }}" style="padding:0; background:none; border:none; font-size:11px; color:#B4433A; cursor:pointer">Delete</button></sc-if>
+                      </div>
+                      <sc-if value="{{ m.hasBody }}" hint-placeholder-val="{{ true }}"><span style="font-size:15px; line-height:1.6; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere">{{ m.body }}</span></sc-if>
+                      <sc-if value="{{ m.isImage }}" hint-placeholder-val="{{ false }}"><a href="{{ m.url }}" target="_blank" rel="noopener"><img src="{{ m.url }}" alt="" loading="lazy" style="display:block; max-width:min(340px,100%); max-height:300px; border:1px solid #DDE3E1"></a></sc-if>
+                      <sc-if value="{{ m.isVideo }}" hint-placeholder-val="{{ false }}"><video src="{{ m.url }}" controls playsinline preload="metadata" style="display:block; max-width:min(380px,100%); background:#16231F"></video></sc-if>
+                      <sc-if value="{{ m.isFile }}" hint-placeholder-val="{{ false }}"><a href="{{ m.url }}" target="_blank" rel="noopener" style="align-self:flex-start; padding:8px 12px; border:1px solid #DDE3E1; font-size:13px">{{ m.fileName }}</a></sc-if>
+                      <div style="display:flex; gap:6px; flex-wrap:wrap">
+                        <sc-for list="{{ m.reacts }}" as="r" hint-placeholder-count="0">
+                          <button data-tap="1" onClick="{{ r.go }}" style="padding:2px 7px; background:{{ r.bg }}; border:1px solid {{ r.border }}; border-radius:0; font-size:11px; color:{{ r.color }}; cursor:pointer">{{ r.glyph }} {{ r.count }}</button>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px; padding:12px; border-top:1px solid #DDE3E1; background:#F7FAF9">
+                <sc-if value="{{ hasPendingFile }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:10px; align-items:center; font-size:12px; color:#4A524F"><span>Attached: {{ pendingName }}</span><button onClick="{{ clearPending }}" style="padding:0; background:none; border:none; font-size:12px; color:#B4433A; cursor:pointer">Remove</button></div>
+                </sc-if>
+                <div style="display:flex; gap:8px; align-items:flex-end">
+                  <textarea rows="2" placeholder="{{ chatPlaceholder }}" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" style="flex:1; min-width:0; padding:10px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; line-height:1.5; resize:none; background:#fff"></textarea>
+                  <sc-if value="{{ canAttach }}" hint-placeholder-val="{{ false }}">
+                    <button data-tap="1" onClick="{{ pickChatFile }}" aria-label="Attach" style="padding:12px; background:#fff; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Attach</button>
+                  </sc-if>
+                  <button data-tap="1" onClick="{{ sendMessage }}" disabled="{{ sending }}" style="padding:12px 18px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Send</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pageProfile }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px">
+              <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">Your details</span>
+              <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">My profile</h1>
+            </div>
+            <sc-if value="{{ profileLoading }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Loading…</span>
+            </sc-if>
+            <sc-if value="{{ hasProfile }}" hint-placeholder-val="{{ false }}">
+              <div style="max-width:560px; display:flex; flex-direction:column; gap:22px; padding:28px; border:1px solid #DDE3E1">
+                <div style="display:flex; align-items:center; gap:16px">
+                  <span style="flex:0 0 56px; height:56px; display:grid; place-items:center; background:#0A6E58; color:#fff; font-size:18px; letter-spacing:.04em">{{ profileInitials }}</span>
+                  <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                    <span style="font-size:19px; color:#1B1D1E">{{ pform.full_name }}</span>
+                    <span style="font-size:12px; color:#4A524F">{{ profileRole }}</span>
+                    <sc-if value="{{ hasCrewId }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">{{ profileCrewId }}</span></sc-if>
+                  </div>
+                </div>
+                <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Full name</span>
+                  <input autocomplete="name" data-k="full_name" value="{{ pform.full_name }}" onChange="{{ onPform }}" style="padding:12px 14px; border:1px solid #DDE3E1; border-radius:0; font-size:15px">
+                </label>
+                <div style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Email</span>
+                  <span style="padding:12px 14px; background:#F7FAF9; border:1px solid #DDE3E1; font-size:15px; color:#4A524F; overflow-wrap:anywhere">{{ profileEmail }}</span>
+                  <span style="font-size:11px; color:#6B7572">This is your sign-in email.</span>
+                </div>
+                <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Position</span>
+                  <select data-k="primary_role" value="{{ pform.primary_role }}" onChange="{{ onPform }}" style="padding:12px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; background:#fff; color:#1B1D1E">
+                    <option value="">Pick your position</option>
+                    <sc-for list="{{ roleOpts }}" as="ro" hint-placeholder-count="14"><option value="{{ ro.v }}">{{ ro.l }}</option></sc-for>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Phone</span>
+                  <input type="tel" autocomplete="tel" placeholder="+91" data-k="phone" value="{{ pform.phone }}" onChange="{{ onPform }}" style="padding:12px 14px; border:1px solid #DDE3E1; border-radius:0; font-size:15px">
+                </label>
+                <sc-if value="{{ profilePending }}" hint-placeholder-val="{{ false }}">
+                  <span style="padding:12px 14px; background:#FBF7EC; border:1px solid #E4D7B8; font-size:13px; line-height:1.6; color:#6E5626">A change you sent is waiting for the admin's approval.</span>
+                </sc-if>
+                <sc-if value="{{ profileErr }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#B4433A">{{ profileErr }}</span></sc-if>
+                <sc-if value="{{ profileMsg }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#0A6E58">{{ profileMsg }}</span></sc-if>
+                <div style="display:flex; flex-direction:column; gap:10px">
+                  <button onClick="{{ saveProfile }}" disabled="{{ busy }}" style="align-self:flex-start; padding:12px 22px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer">{{ profileCta }}</button>
+                  <span style="font-size:12px; line-height:1.6; color:#6B7572; text-wrap:pretty">{{ profileNote }}</span>
+                </div>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ pageTrash }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px">
+              <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">HR and admin</span>
+              <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Trash</h1>
+              <span style="font-size:15px; line-height:1.7; color:#4A524F; text-wrap:pretty; max-width:640px">Tasks stay here for 7 days, hidden from crew. After that the task, its chat, boards and every uploaded file are deleted for good.</span>
+            </div>
+            <sc-if value="{{ noTrash }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">Trash is empty.</span></sc-if>
+            <div style="display:flex; flex-direction:column">
+              <sc-for list="{{ trashVM }}" as="tr" hint-placeholder-count="0">
+                <div style="display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid #EEF2F1; flex-wrap:wrap">
+                  <div style="flex:1 1 240px; min-width:0; display:flex; flex-direction:column; gap:2px"><span style="font-size:15px; color:#1B1D1E">{{ tr.title }}</span><span style="font-size:12px; color:#6B7572">{{ tr.meta }}</span></div>
+                  <span style="font-size:12px; color:#B4433A">{{ tr.left }}</span>
+                  <button onClick="{{ tr.restore }}" style="padding:7px 13px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Restore</button>
+                  <button onClick="{{ tr.purge }}" style="padding:7px 13px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#B4433A; cursor:pointer">Delete now</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+        </div>
+      </main>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
+const BUCKET = 'crew-tasks';
+const MAX_BYTES = 50 * 1024 * 1024;
+const KINDS = { upcoming_shoot: 'Upcoming shoot', trial_shoot: 'Trial shoot', reshoot: 'Reshoot', other: 'Other' };
+const STATUSES = { open: 'Issued', in_progress: 'In progress', done: 'Done' };
+const STATUS_COLOR = { open: '#0A6E58', in_progress: '#8A5A00', done: '#6B7572' };
+const SECTIONS = { general: 'General', moodboard: 'Mood board', storyboard: 'Storyboard', shoot: 'Shoot day', post: 'Post' };
+const SHOT_ST = { idea: 'Idea', locked: 'Locked', shot: 'Shot' };
+const SHOT_COLOR = { idea: '#4A524F', locked: '#0A6E58', shot: '#6B7572' };
+const GLYPHS = ['♥', '✓', '★', '?'];
+const CREW_ROLES = [['model', 'Model'], ['makeup_artist', 'Makeup artist'], ['hair_stylist', 'Hair stylist'], ['stylist', 'Stylist / wardrobe'], ['photographer', 'Photographer'], ['videographer', 'Videographer'], ['photo_videographer', 'Photo & videographer'], ['photo_editor', 'Photo editor'], ['video_editor', 'Video editor'], ['art_director', 'Art director'], ['drone_operator', 'Drone operator'], ['social_media_marketer', 'Social media marketer'], ['content_writer', 'Content writer'], ['assistant', 'Assistant']];
+const ROLE_NAME = CREW_ROLES.reduce((m, [k, v]) => { m[k] = v; return m; }, {});
+const STARTER = [['Mood board — first pass', 'moodboard'], ['Storyboard — shot list', 'storyboard'], ['Recce / location check', 'shoot'], ['Gear list', 'shoot'], ['Call sheet shared', 'shoot']];
+const ALLOWED = /^(image\/|video\/(mp4|quicktime|webm)$|application\/pdf$)/;
+const CARD_DEF = { note: { w: 240, h: 150 }, sticky: { w: 180, h: 180 }, heading: { w: 360, h: 64 }, todo: { w: 240, h: 210 }, swatch: { w: 140, h: 170 }, link: { w: 260, h: 210 }, image: { w: 260, h: 200 }, video: { w: 320, h: 220 }, pdf: { w: 220, h: 130 }, shot: { w: 260, h: 210 }, stroke: { w: 10, h: 10 } };
+const KIND_LABEL = { note: 'Note', sticky: 'Sticky', heading: 'Heading', todo: 'To-do', swatch: 'Swatch', link: 'Link', image: 'Photo', video: 'Video', pdf: 'PDF', shot: 'Shot', stroke: 'Drawing' };
+const EDITABLE = { note: 1, sticky: 1, heading: 1, todo: 1, swatch: 1 };
+const STICKY = ['#F6E7A1', '#CFEADF', '#F4D6D2', '#D6E4F0', '#E3DAF0', '#FFFFFF'];
+const INKS = ['#16231F', '#0A6E58', '#B4433A', '#2F5D8A'];
+const PEN_W = [['Fine', 2], ['Medium', 4], ['Bold', 9]];
+const userColor = uid => { const p = ['#0A6E58', '#2F5D8A', '#8A5A00', '#B4433A', '#6B4FA0', '#1F7A8C']; let h = 0; for (const ch of String(uid || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return p[h % p.length]; };
+const ptsToD = pts => pts.length ? 'M' + pts.map(p => (+p[0]).toFixed(1) + ' ' + (+p[1]).toFixed(1)).join(' L') : '';
+const TEMPLATES = {
+  mood: { label: 'Mood board', cards: [
+    { k: 'heading', x: 0, y: 0, w: 560, note: 'Mood' },
+    { k: 'sticky', x: 0, y: 90, note: 'Look', color: '#F6E7A1' }, { k: 'sticky', x: 200, y: 90, note: 'Light', color: '#CFEADF' },
+    { k: 'sticky', x: 400, y: 90, note: 'Wardrobe', color: '#F4D6D2' }, { k: 'sticky', x: 600, y: 90, note: 'Location', color: '#D6E4F0' },
+    { k: 'swatch', x: 0, y: 300, title: 'Ink', color: '#16231F' }, { k: 'swatch', x: 160, y: 300, title: 'Green', color: '#0A6E58' },
+    { k: 'swatch', x: 320, y: 300, title: 'Sand', color: '#E9DCC9' }, { k: 'swatch', x: 480, y: 300, title: 'Paper', color: '#F4F1EA' },
+    { k: 'note', x: 640, y: 300, w: 240, h: 170, note: 'Drop references here — photos, links, storyboard frames.' },
+  ] },
+  shots: { label: 'Shot plan', cards: [
+    { k: 'heading', x: 0, y: 0, w: 600, note: 'Shot plan' },
+    { k: 'sticky', x: 0, y: 90, w: 200, h: 150, note: 'Opening', color: '#CFEADF' }, { k: 'sticky', x: 260, y: 90, w: 200, h: 150, note: 'Build', color: '#CFEADF' },
+    { k: 'sticky', x: 520, y: 90, w: 200, h: 150, note: 'Hero', color: '#F6E7A1' }, { k: 'sticky', x: 780, y: 90, w: 200, h: 150, note: 'Close', color: '#CFEADF' },
+    { k: 'note', x: 0, y: 280, w: 200, h: 120, note: 'What we see\nLens · move' }, { k: 'note', x: 260, y: 280, w: 200, h: 120, note: 'What we see\nLens · move' },
+    { k: 'note', x: 520, y: 280, w: 200, h: 120, note: 'What we see\nLens · move' }, { k: 'note', x: 780, y: 280, w: 200, h: 120, note: 'What we see\nLens · move' },
+  ], links: [[1, 2], [2, 3], [3, 4]] },
+  call: { label: 'Call sheet', cards: [
+    { k: 'heading', x: 0, y: 0, w: 600, note: 'Call sheet' },
+    { k: 'note', x: 0, y: 90, note: 'Call time\n' }, { k: 'note', x: 260, y: 90, note: 'Location & parking\n' }, { k: 'note', x: 520, y: 90, note: 'Crew & roles\n' },
+    { k: 'note', x: 0, y: 270, note: 'Gear\n' }, { k: 'note', x: 260, y: 270, note: 'Contacts\n' },
+    { k: 'todo', x: 520, y: 270, title: 'Before we roll', body: { items: [{ t: 'Batteries charged', d: false }, { t: 'Cards formatted', d: false }, { t: 'Releases signed', d: false }, { t: 'Backup drive packed', d: false }] } },
+  ] },
+};
+
+const todayKey = () => new Date().toLocaleDateString('en-CA');
+const dayKey = ts => new Date(ts).toLocaleDateString('en-CA');
+const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '';
+const fmtShort = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
+const fmtTime = ts => new Date(ts).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+const dayLabel = k => {
+  const t = todayKey(); const y = new Date(Date.now() - 864e5).toLocaleDateString('en-CA');
+  return k === t ? 'Today' : k === y ? 'Yesterday' : fmtDate(k);
+};
+const ago = ts => {
+  if (!ts) return 'Not yet';
+  const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+  if (m < 2) return 'Just now'; if (m < 60) return m + ' min ago';
+  const h = Math.round(m / 60); if (h < 24) return h + ' h ago';
+  const d = Math.round(h / 24); return d === 1 ? 'Yesterday' : d + ' days ago';
+};
+const initials = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase() || '?';
+const roleLabel = r => r ? ROLE_NAME[r] || r.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()) : '';
+const fileName = p => p ? decodeURIComponent(p.split('/').pop().replace(/^[a-z]+-\d+-[a-z0-9]+-/, '')) : '';
+const extOf = (f) => ((f.name || '').split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 5) || 'bin';
+const kindOf = type => type.startsWith('image/') ? 'image' : type.startsWith('video/') ? 'video' : 'pdf';
+const dur = s => { s = Math.round(s); return s >= 60 ? Math.floor(s / 60) + 'm ' + (s % 60) + 's' : s + 's'; };
+const linkInfo = url => {
+  let host = ''; try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) { host = url; }
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
+  const label = /youtu/.test(host) ? 'YouTube' : /pinterest|pin\.it/.test(host) ? 'Pinterest' : /drive\.google|docs\.google/.test(host) ? 'Google Drive' : /instagram/.test(host) ? 'Instagram' : /vimeo/.test(host) ? 'Vimeo' : host;
+  return { label, thumb: yt ? 'https://img.youtube.com/vi/' + yt[1] + '/hqdefault.jpg' : '' };
+};
+const friendly = e => {
+  const m = String((e && (e.message || e.error_description)) || e || 'Something went wrong');
+  if (/row-level security|permission denied/i.test(m)) return "You don't have permission for that.";
+  if ((e && e.code === 'PGRST202') || /could not find the function|column .* does not exist|relation .* does not exist/i.test(m)) return "The crew page isn't fully set up yet — ask the admin.";
+  if (/Failed to fetch|NetworkError|network/i.test(m)) return "Couldn't reach the server — check your connection and try again.";
+  return m;
+};
+
+class Component extends DCLogic {
+  state = {
+    phase: 'boot', bootText: 'Loading', authMode: 'signin', email: '', password: '', password2: '', authErr: '', authMsg: '', fullName: '', phone: '', crewRole: '', profile: null, pform: null, profileMsg: '', profileErr: '',
+    busy: false, me: null, meErr: '', page: 'today', taskId: null, tab: 'overview',
+    tasks: [], members: [], allItems: [], myToday: [], roster: [], people: [], access: [], trash: [],
+    t: null, chat: [], reactions: [], urls: {}, narrow: typeof window !== 'undefined' && window.innerWidth < 880, sideOpen: false,
+    toast: '', toastErr: false, form: null, storyView: 'cards', openRef: null, draft: '', refDraft: '', pendingFile: null, sending: false,
+    ci: { note: '', percent: 0 }, newItem: { title: '', section: 'general', assignee: '' }, linkForm: { url: '', title: '' }, noteDraft: '',
+    uploading: '', shotEdits: {},
+    board: null, view: { x: 60, y: 60, z: 1 }, tool: 'select', sel: null, editing: null, arrowFrom: null, dragPos: null,
+    cursors: {}, present: [], boardFull: false, shotDrawer: false, tplOpen: false, pen: { c: '#16231F', w: 4 }, boardEdits: {}, todoDraft: '', boardNote: '',
+  };
+
+  setCanvasRef = el => {
+    if (this.canvasEl === el) return;
+    if (this.canvasEl && this._wheel) this.canvasEl.removeEventListener('wheel', this._wheel);
+    this.canvasEl = el;
+    if (!el) return;
+    this._wheel = ev => {
+      ev.preventDefault();
+      if (ev.ctrlKey || ev.metaKey) this.zoomAt(ev.clientX, ev.clientY, Math.exp(-ev.deltaY * 0.0045));
+      else { const v = (this._rp && this._rp.view) || this.state.view; this.setView({ ...v, x: v.x - ev.deltaX, y: v.y - ev.deltaY }); }
+    };
+    el.addEventListener('wheel', this._wheel, { passive: false });
+    if (!this._fitted && this.state.board && this.state.board.items.length) { this._fitted = true; requestAnimationFrame(() => this.fitBoard()); }
+  };
+  setLivePathRef = el => { this.livePath = el; };
+
+  componentDidMount() {
+    this.onResize = () => { const n = window.innerWidth < 880; if (n !== this.state.narrow) this.setState({ narrow: n, sideOpen: false }); };
+    window.addEventListener('resize', this.onResize);
+    this.onKey = e => {
+      if (!this._boardKey) return;
+      const tg = e.target, typing = tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT' || tg.isContentEditable);
+      if (e.key === 'Escape') { this.setState({ tool: 'select', sel: null, editing: null, arrowFrom: null, tplOpen: false, boardFull: false }); if (typing) tg.blur(); return; }
+      if (typing) return;
+      if ((e.key === 'Delete' || e.key === 'Backspace') && this.state.sel) { e.preventDefault(); this.deleteSelected(); }
+    };
+    window.addEventListener('keydown', this.onKey);
+    this.boot();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('keydown', this.onKey);
+    this.leaveBoard();
+    if (this.rt && this.sb) this.sb.removeChannel(this.rt);
+  }
+  componentDidUpdate() {
+    const lock = !!this.state.boardFull;
+    if (lock !== !!this._locked) { this._locked = lock; document.body.style.overflow = lock ? 'hidden' : ''; }
+    const bk = this.boardKey();
+    if (bk !== this._boardKey) { this.leaveBoard(); if (bk) this.enterBoard(bk); }
+    if (this.state.chat !== this._lastChat) {
+      this._lastChat = this.state.chat;
+      const el = this.chatBox;
+      if (el) requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
+    }
+  }
+
+  async boot() {
+    for (let i = 0; i < 150 && !(window.supabase && window.supabase.createClient); i++) await new Promise(r => setTimeout(r, 100));
+    if (!window.supabase) { this.setState({ bootText: "Couldn't load — check your connection and reload" }); return; }
+    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const recovering = /type=recovery/.test(location.hash + location.search);
+    this.sb.auth.onAuthStateChange((ev, session) => {
+      if (ev === 'PASSWORD_RECOVERY') { this.setState({ phase: 'auth', authMode: 'newpass', authErr: '', authMsg: '' }); return; }
+      if (ev === 'SIGNED_OUT') { this.resetAll(); return; }
+      if (ev === 'SIGNED_IN' && session && !this.state.me && this.state.authMode !== 'newpass' && !this.signingIn) this.afterSignIn();
+    });
+    if (recovering) { this.setState({ phase: 'auth', authMode: 'newpass' }); return; }
+    const { data } = await this.sb.auth.getSession();
+    if (data && data.session) await this.afterSignIn(); else this.setState({ phase: 'auth' });
+  }
+
+  resetAll() {
+    if (this.rt) { this.sb.removeChannel(this.rt); this.rt = null; }
+    this.setState({ phase: 'auth', me: null, authMode: 'signin', password: '', password2: '', tasks: [], t: null, chat: [], page: 'today', taskId: null });
+  }
+
+  async afterSignIn() {
+    this.signingIn = true;
+    this.setState({ phase: 'boot', bootText: 'Signing in' });
+    try {
+      const { data, error } = await this.sb.rpc('crew_whoami');
+      if (error) throw error;
+      const me = data || {};
+      if (!me.is_manager && !me.is_crew) { this.setState({ me, phase: 'waiting' }); return; }
+      this.setState({ me, phase: 'app', authErr: '', authMsg: '', password: '', password2: '' });
+      await this.loadAll();
+      this.subscribe();
+    } catch (e) {
+      console.error(e);
+      let email = '';
+      try { const { data: u } = await this.sb.auth.getUser(); email = (u && u.user && u.user.email) || ''; } catch (_) {}
+      const m = String((e && e.message) || e || '');
+      const missing = (e && e.code === 'PGRST202') || /could not find the function/i.test(m);
+      this.setState({
+        phase: 'error', me: null, sessionEmail: email,
+        meErr: missing ? 'The crew page is not set up in the database yet. Run crew-tasks-schema.sql in Supabase, then try again.' : friendly(e),
+      });
+    } finally { this.signingIn = false; }
+  }
+
+  subscribe() {
+    if (this.rt) return;
+    const bump = () => { clearTimeout(this.rtT); this.rtT = setTimeout(() => this.reloadChat(), 250); };
+    const board = p => {
+      const s = this.state; if (s.page !== 'task' || !s.taskId) return;
+      const tid = (p.new && p.new.task_id) || (p.old && p.old.task_id);
+      if (tid && tid !== s.taskId) return;
+      clearTimeout(this.bdT); this.bdT = setTimeout(() => this.refreshTask().catch(console.error), 400);
+    };
+    const boardRt = p => {
+      const key = this._boardKey; if (!key) return;
+      const tid = (p.new && p.new.task_id) || (p.old && p.old.task_id) || null;
+      if (p.eventType !== 'DELETE' && (key === 'crew' ? tid !== null : tid !== key)) return;
+      clearTimeout(this.bkT); this.bkT = setTimeout(() => this.loadBoard(key).catch(console.error), 350);
+    };
+    let ch = this.sb.channel('crew-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'crew_messages' }, bump)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'crew_reactions' }, bump);
+    for (const tb of ['crew_task_items', 'crew_checkins', 'crew_shots'])
+      ch = ch.on('postgres_changes', { event: '*', schema: 'public', table: tb }, board);
+    for (const tb of ['crew_mood_items', 'crew_board_links'])
+      ch = ch.on('postgres_changes', { event: '*', schema: 'public', table: tb }, boardRt);
+    this.rt = ch.subscribe();
+  }
+
+  flash(msg, err) {
+    clearTimeout(this.toastT);
+    this.setState({ toast: msg, toastErr: !!err });
+    this.toastT = setTimeout(() => this.setState({ toast: '' }), err ? 6000 : 3000);
+  }
+  async run(fn, okMsg) {
+    try { const r = await fn(); if (okMsg) this.flash(okMsg); return r; }
+    catch (e) { console.error(e); this.flash(friendly(e), true); }
+  }
+
+  async loadAll() {
+    const sb = this.sb, me = this.state.me;
+    const [tk, mb, it, ci, ro] = await Promise.all([
+      sb.from('crew_tasks').select('*').is('trashed_at', null).order('shoot_date', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false }),
+      sb.from('crew_task_members').select('task_id, person_id'),
+      sb.from('crew_task_items').select('id, task_id, done, assignee'),
+      me.person_id ? sb.from('crew_checkins').select('task_id').eq('person_id', me.person_id).eq('day', todayKey()) : Promise.resolve({ data: [] }),
+      sb.rpc('crew_roster'),
+    ]);
+    for (const r of [tk, mb, it, ci, ro]) if (r.error) throw r.error;
+    this.setState({ tasks: tk.data || [], members: mb.data || [], allItems: it.data || [], myToday: (ci.data || []).map(x => x.task_id), roster: ro.data || [] });
+    if (me.is_manager) await this.loadTrash(true);
+  }
+
+  async loadTrash(autoPurge) {
+    const { data, error } = await this.sb.from('crew_tasks').select('id, title, kind, shoot_date, trashed_at, purge_after').not('trashed_at', 'is', null).order('trashed_at', { ascending: false });
+    if (error) throw error;
+    const due = autoPurge ? (data || []).filter(t => t.purge_after && new Date(t.purge_after) < new Date()) : [];
+    for (const t of due) { try { await this.purge(t.id); } catch (e) { console.error('purge', t.id, e); } }
+    this.setState({ trash: (data || []).filter(t => !due.find(d => d.id === t.id)) });
+  }
+
+  async purge(id) {
+    const st = this.sb.storage.from(BUCKET);
+    for (let guard = 0; guard < 50; guard++) {
+      const { data, error } = await st.list(id, { limit: 1000 });
+      if (error) throw error;
+      if (!data || !data.length) break;
+      const paths = data.filter(f => f.id || f.metadata).map(f => id + '/' + f.name);
+      if (!paths.length) break;
+      const { error: rmErr } = await st.remove(paths);
+      if (rmErr) throw rmErr;
+      if (data.length < 1000) break;
+    }
+    const { error } = await this.sb.from('crew_tasks').delete().eq('id', id);
+    if (error) throw error;
+  }
+
+  async sign(paths) {
+    const need = [...new Set(paths.filter(p => p && !this.state.urls[p]))];
+    if (!need.length) return;
+    const { data, error } = await this.sb.storage.from(BUCKET).createSignedUrls(need, 6 * 3600);
+    if (error) { console.error(error); return; }
+    const urls = { ...this.state.urls };
+    (data || []).forEach(d => { if (d.signedUrl) urls[d.path] = d.signedUrl; });
+    this.setState({ urls });
+  }
+
+  go(page, extra) {
+    this.setState({ page, sideOpen: false, openRef: null, draft: '', pendingFile: null, ...(extra || {}) });
+    if (page === 'channel') this.run(() => this.loadMessages(null));
+    if (page === 'trash') this.run(() => this.loadTrash(false));
+    if (page === 'profile') this.run(() => this.loadProfile());
+    if (page === 'today') this.run(() => this.loadAll());
+  }
+
+  async openTask(id, tab) {
+    this.setState({ page: 'task', taskId: id, tab: tab || 'overview', t: null, sideOpen: false, openRef: null, draft: '', pendingFile: null, shotEdits: {}, newItem: { title: '', section: 'general', assignee: '' } });
+    await this.run(() => this.loadTask(id, true));
+  }
+
+  async loadTask(id, fresh) {
+    const sb = this.sb;
+    const [it, ci, mo, sh, pa] = await Promise.all([
+      sb.from('crew_task_items').select('*').eq('task_id', id).order('sort').order('created_at'),
+      sb.from('crew_checkins').select('*').eq('task_id', id).order('day', { ascending: false }).order('created_at', { ascending: false }).limit(120),
+      Promise.resolve({ data: [] }),
+      sb.from('crew_shots').select('*').eq('task_id', id).order('sort').order('shot_no'),
+      sb.rpc('crew_task_participation', { p_task: id }),
+    ]);
+    for (const r of [it, ci, mo, sh, pa]) if (r.error) throw r.error;
+    await this.sign([...(mo.data || []).map(m => m.storage_path), ...(sh.data || []).map(x => x.image_path)]);
+    if (this.state.taskId !== id) return;
+    const patch = { t: { id, items: it.data || [], checkins: ci.data || [], mood: mo.data || [], shots: sh.data || [], part: pa.data || [] } };
+    if (fresh) {
+      const mine = (ci.data || []).find(c => c.person_id === this.state.me.person_id && c.day === todayKey());
+      patch.ci = mine ? { note: mine.note || '', percent: mine.percent || 0, saved: true } : { note: '', percent: this.lastPercent(ci.data || []), saved: false };
+    }
+    this.setState(patch);
+    await this.loadMessages(id);
+  }
+
+  lastPercent(rows) {
+    const mine = rows.find(c => c.person_id === this.state.me.person_id);
+    return mine ? mine.percent : 0;
+  }
+
+  async loadMessages(taskId) {
+    const sb = this.sb;
+    let q = sb.from('crew_messages').select('*').order('created_at', { ascending: true }).limit(600);
+    let r = sb.from('crew_reactions').select('*');
+    q = taskId ? q.eq('task_id', taskId) : q.is('task_id', null);
+    r = taskId ? r.eq('task_id', taskId) : r.is('task_id', null);
+    const [m, x] = await Promise.all([q, r]);
+    if (m.error) throw m.error;
+    if (x.error) throw x.error;
+    await this.sign((m.data || []).map(z => z.attachment_path));
+    const still = taskId ? (this.state.page === 'task' && this.state.taskId === taskId) : (this.state.page === 'channel' || this.state.page === 'board');
+    if (still) this.setState({ chat: m.data || [], reactions: x.data || [] });
+  }
+
+  reloadChat() {
+    const s = this.state;
+    if (s.page === 'channel' || s.page === 'board') this.loadMessages(null).catch(console.error);
+    else if (s.page === 'task' && s.taskId) this.loadMessages(s.taskId).catch(console.error);
+  }
+
+  async refreshTask() { if (this.state.taskId) await this.loadTask(this.state.taskId, false); }
+
+  async upload(taskId, file, prefix) {
+    if (!ALLOWED.test(file.type || '')) throw new Error(file.name + ': only photos, MP4/MOV/WebM video and PDF can be uploaded.');
+    let blob = file, type = file.type, ext = extOf(file);
+    if (type.startsWith('image/') && !/gif|heic|heif/.test(type) && file.size > 1.5 * 1024 * 1024) {
+      try {
+        const bmp = await createImageBitmap(file);
+        const k = Math.min(1, 2400 / Math.max(bmp.width, bmp.height));
+        const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+        c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+        blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.86)); type = 'image/jpeg'; ext = 'jpg';
+      } catch (e) { blob = file; }
+    }
+    if (blob.size > MAX_BYTES) throw new Error(file.name + ' is over 50 MB. Trim or compress it first.');
+    const safe = (file.name || 'file').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_').slice(0, 40);
+    const path = taskId + '/' + prefix + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '-' + safe + '.' + ext;
+    const { error } = await this.sb.storage.from(BUCKET).upload(path, blob, { contentType: type, upsert: false });
+    if (error) throw error;
+    return { path, kind: kindOf(type), size: blob.size };
+  }
+
+  async authSubmit() {
+    const s = this.state, sb = this.sb, email = s.email.trim().toLowerCase();
+    if (!sb) return;
+    this.setState({ authErr: '', authMsg: '', busy: true });
+    const back = location.origin + location.pathname;
+    try {
+      if (s.authMode === 'signin') {
+        if (!email || !s.password) throw new Error('Enter your email and password.');
+        this.signingIn = true;
+        const { error } = await sb.auth.signInWithPassword({ email, password: s.password });
+        this.signingIn = false;
+        if (error) throw new Error(/confirm/i.test(error.message) ? 'Confirm your email first — open the link we sent you.' : /invalid/i.test(error.message) ? 'Email or password is wrong.' : error.message);
+        await this.afterSignIn();
+      } else if (s.authMode === 'signup') {
+        if (!s.fullName.trim()) throw new Error('Enter your full name so the admin knows who you are.');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter a valid email.');
+        if (!s.crewRole) throw new Error('Pick your position.');
+        if (s.password.length < 8) throw new Error('Use at least 8 characters for your password.');
+        if (s.password !== s.password2) throw new Error("The two passwords don't match.");
+        const { data, error } = await sb.auth.signUp({ email, password: s.password, options: { emailRedirectTo: back, data: { app: 'crew', full_name: s.fullName.trim(), phone: s.phone.trim(), primary_role: s.crewRole } } });
+        if (error) throw new Error(/registered|exists/i.test(error.message) ? 'An account already exists for this email — sign in instead.' : error.message);
+        if (data && data.session) { await this.afterSignIn(); return; }
+        this.setState({ authMode: 'signin', password: '', password2: '', authMsg: 'Account created. Open the confirmation link we emailed you, then sign in — the admin approves your access before tasks appear.' });
+      } else if (s.authMode === 'reset') {
+        if (!email) throw new Error('Enter your email.');
+        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: back });
+        if (error) throw error;
+        this.setState({ authMsg: 'If that email has an account, a reset link is on its way.' });
+      } else if (s.authMode === 'newpass') {
+        if (s.password.length < 8) throw new Error('Use at least 8 characters.');
+        if (s.password !== s.password2) throw new Error("The two passwords don't match.");
+        const { error } = await sb.auth.updateUser({ password: s.password });
+        if (error) throw error;
+        history.replaceState(null, '', location.pathname);
+        this.setState({ authMode: 'signin' });
+        await this.afterSignIn();
+      }
+    } catch (e) {
+      this.signingIn = false;
+      this.setState({ authErr: friendly(e) });
+    } finally { this.setState({ busy: false }); }
+  }
+
+  async requestAccess() {
+    const s = this.state;
+    if (!s.fullName.trim()) { this.setState({ meErr: 'Enter your full name.' }); return; }
+    if (!s.crewRole) { this.setState({ meErr: 'Pick your position.' }); return; }
+    this.setState({ busy: true, meErr: '' });
+    try {
+      const { data, error } = await this.sb.rpc('crew_request_access', { p_name: s.fullName.trim(), p_phone: s.phone.trim(), p_role: s.crewRole });
+      if (error) throw error;
+      this.setState({ me: { ...s.me, request_status: data || 'pending' } });
+    } catch (e) { this.setState({ meErr: friendly(e) }); }
+    finally { this.setState({ busy: false }); }
+  }
+
+  async loadProfile() {
+    const { data, error } = await this.sb.rpc('crew_my_profile');
+    if (error) throw error;
+    const p = data || {};
+    this.setState({ profile: p, pform: { full_name: p.full_name || '', phone: p.phone || '', primary_role: p.primary_role || '' }, profileMsg: '', profileErr: '' });
+  }
+
+  async saveProfile() {
+    const pf = this.state.pform; if (!pf) return;
+    if (!pf.full_name.trim()) { this.setState({ profileErr: 'Your name cannot be blank.' }); return; }
+    if (!pf.primary_role) { this.setState({ profileErr: 'Pick your position.' }); return; }
+    this.setState({ busy: true, profileErr: '', profileMsg: '' });
+    try {
+      const { data, error } = await this.sb.rpc('crew_update_profile', { p_name: pf.full_name.trim(), p_phone: pf.phone.trim(), p_role: pf.primary_role });
+      if (error) throw error;
+      await this.loadProfile();
+      this.setState({ profileMsg: data === 'sent' ? 'Sent to the admin. Your crew record updates once they approve it.' : data === 'unchanged' ? 'Nothing changed.' : 'Saved.' });
+      if (data === 'saved') this.setState(st => ({ me: { ...st.me, name: pf.full_name.trim() } }));
+    } catch (e) { this.setState({ profileErr: friendly(e) }); }
+    finally { this.setState({ busy: false }); }
+  }
+
+  blankForm() { return { id: null, kind: 'upcoming_shoot', title: '', shoot_date: '', call_time: '', location: '', due_date: '', brief: '', members: [], starter: true }; }
+
+  async saveTask() {
+    const f = this.state.form, sb = this.sb;
+    if (!f.title.trim()) { this.flash('Give the task a title.', true); return; }
+    this.setState({ busy: true });
+    const row = { kind: f.kind, title: f.title.trim(), brief: f.brief.trim() || null, shoot_date: f.shoot_date || null, call_time: f.call_time.trim() || null, location: f.location.trim() || null, due_date: f.due_date || null };
+    const id = await this.run(async () => {
+      let id = f.id;
+      if (id) {
+        const { error } = await sb.from('crew_tasks').update(row).eq('id', id);
+        if (error) throw error;
+        const cur = this.state.members.filter(m => m.task_id === id).map(m => m.person_id);
+        const drop = cur.filter(p => !f.members.includes(p)), add = f.members.filter(p => !cur.includes(p));
+        if (drop.length) { const { error: e1 } = await sb.from('crew_task_members').delete().eq('task_id', id).in('person_id', drop); if (e1) throw e1; }
+        if (add.length) { const { error: e2 } = await sb.from('crew_task_members').insert(add.map(p => ({ task_id: id, person_id: p }))); if (e2) throw e2; }
+      } else {
+        const { data, error } = await sb.from('crew_tasks').insert(row).select('id').single();
+        if (error) throw error;
+        id = data.id;
+        if (f.members.length) { const { error: e2 } = await sb.from('crew_task_members').insert(f.members.map(p => ({ task_id: id, person_id: p }))); if (e2) throw e2; }
+        if (f.starter) { const { error: e3 } = await sb.from('crew_task_items').insert(STARTER.map(([title, section], i) => ({ task_id: id, title, section, sort: i }))); if (e3) throw e3; }
+      }
+      await this.loadAll();
+      return id;
+    }, f.id ? 'Task updated.' : 'Task issued.');
+    this.setState({ busy: false });
+    if (id) { this.setState({ form: null }); this.openTask(id); }
+  }
+
+  async setTaskStatus(v) {
+    const id = this.state.taskId;
+    await this.run(async () => { const { error } = await this.sb.from('crew_tasks').update({ status: v }).eq('id', id); if (error) throw error; await this.loadAll(); }, v === 'done' ? 'Marked done. Move it to trash when you no longer need the media.' : 'Status updated.');
+  }
+
+  async trashTask() {
+    const t = this.state.tasks.find(x => x.id === this.state.taskId);
+    if (!t || !confirm('Move "' + t.title + '" to trash?\n\nCrew lose access straight away. In 7 days the task, its chat, boards and every uploaded file are deleted for good. You can restore it until then.')) return;
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_tasks').update({ trashed_at: new Date().toISOString() }).eq('id', t.id);
+      if (error) throw error;
+      this.setState({ page: 'trash', taskId: null, t: null });
+      await this.loadAll();
+    }, 'Moved to trash. Deletes for good in 7 days.');
+  }
+
+  async toggleItem(it) {
+    const done = !it.done;
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_task_items').update({ done, done_by_name: done ? this.state.me.name : null }).eq('id', it.id);
+      if (error) throw error;
+      await this.refreshTask();
+      const { data } = await this.sb.from('crew_task_items').select('id, task_id, done, assignee');
+      if (data) this.setState({ allItems: data });
+    });
+  }
+
+  async addItem() {
+    const n = this.state.newItem, t = this.state.t;
+    if (!n.title.trim() || !t) return;
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_task_items').insert({ task_id: t.id, title: n.title.trim(), section: n.section, assignee: n.assignee || null, sort: t.items.length });
+      if (error) throw error;
+      this.setState({ newItem: { ...n, title: '' } });
+      await this.refreshTask();
+      const { data } = await this.sb.from('crew_task_items').select('id, task_id, done, assignee');
+      if (data) this.setState({ allItems: data });
+    });
+  }
+
+  async removeItem(it) {
+    if (!confirm('Remove "' + it.title + '"?')) return;
+    await this.run(async () => { const { error } = await this.sb.from('crew_task_items').delete().eq('id', it.id); if (error) throw error; await this.refreshTask(); });
+  }
+
+  async postCheckin() {
+    const s = this.state, t = s.t;
+    if (!t || !s.me.person_id) return;
+    this.setState({ busy: true });
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_checkins').upsert({ task_id: t.id, person_id: s.me.person_id, day: todayKey(), note: s.ci.note.trim() || null, percent: Number(s.ci.percent) || 0 }, { onConflict: 'task_id,person_id,day' });
+      if (error) throw error;
+      this.setState({ ci: { ...s.ci, saved: true }, myToday: [...new Set([...s.myToday, t.id])] });
+      await this.refreshTask();
+    }, 'Check-in saved.');
+    this.setState({ busy: false });
+  }
+
+  async addShot() {
+    const t = this.state.t; if (!t) return;
+    await this.run(async () => {
+      await this.renumber(t.shots);
+      const { error } = await this.sb.from('crew_shots').insert({ task_id: t.id, shot_no: t.shots.length + 1, sort: t.shots.length, updated_name: this.state.me.name });
+      if (error) throw error;
+      await this.refreshTask();
+    });
+  }
+
+  shotVal(sh, f) { const e = this.state.shotEdits[sh.id]; return e && f in e ? e[f] : sh[f]; }
+
+  async saveShotField(sh, f) {
+    const e = this.state.shotEdits[sh.id]; if (!e || !(f in e)) return;
+    let v = e[f];
+    if (f === 'duration_s') v = v === '' || v == null ? null : Math.max(0, Number(v) || 0);
+    else v = String(v).trim() || null;
+    if (v === (sh[f] == null ? null : sh[f])) return;
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_shots').update({ [f]: v, updated_name: this.state.me.name }).eq('id', sh.id);
+      if (error) throw error;
+      this.setState(s => {
+        const edits = { ...s.shotEdits }; const ed = { ...(edits[sh.id] || {}) }; delete ed[f]; edits[sh.id] = ed;
+        return { shotEdits: edits, t: s.t ? { ...s.t, shots: s.t.shots.map(x => x.id === sh.id ? { ...x, [f]: v, updated_name: s.me.name } : x) } : s.t };
+      });
+    });
+  }
+
+  async setShot(sh, patch) {
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_shots').update({ ...patch, updated_name: this.state.me.name }).eq('id', sh.id);
+      if (error) throw error;
+      await this.refreshTask();
+    });
+  }
+
+  // Shot numbers always run 1..n in board order, so a delete or a move never
+  // leaves two "Shot 3"s or a gap.
+  async renumber(order) {
+    const jobs = order.map((sh, k) => (sh.sort !== k || sh.shot_no !== k + 1)
+      ? this.sb.from('crew_shots').update({ sort: k, shot_no: k + 1 }).eq('id', sh.id) : null).filter(Boolean);
+    const res = await Promise.all(jobs);
+    const bad = res.find(r => r.error); if (bad) throw bad.error;
+  }
+
+  async moveShot(i, dir) {
+    const shots = this.state.t.shots.slice(), j = i + dir;
+    if (j < 0 || j >= shots.length) return;
+    const tmp = shots[i]; shots[i] = shots[j]; shots[j] = tmp;
+    await this.run(async () => { await this.renumber(shots); await this.refreshTask(); });
+  }
+
+  async removeShot(sh) {
+    if (!confirm('Delete shot ' + sh.shot_no + '?')) return;
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_shots').delete().eq('id', sh.id);
+      if (error) throw error;
+      if (sh.image_path) await this.sb.storage.from(BUCKET).remove([sh.image_path]);
+      await this.renumber(this.state.t.shots.filter(x => x.id !== sh.id));
+      await this.refreshTask();
+    });
+  }
+
+  async onFrameFile(e) {
+    const f = (e.target.files || [])[0]; e.target.value = '';
+    const sh = this.frameTarget, t = this.state.t; if (!f || !sh || !t) return;
+    if (!f.type.startsWith('image/')) { this.flash('A frame has to be an image.', true); return; }
+    this.flash('Uploading frame…');
+    await this.run(async () => {
+      const up = await this.upload(t.id, f, 'frame');
+      const { error } = await this.sb.from('crew_shots').update({ image_path: up.path, updated_name: this.state.me.name }).eq('id', sh.id);
+      if (error) { await this.sb.storage.from(BUCKET).remove([up.path]); throw error; }
+      if (sh.image_path) await this.sb.storage.from(BUCKET).remove([sh.image_path]);
+      await this.refreshTask();
+    }, 'Frame added.');
+  }
+
+  async sendMessage() {
+    const s = this.state, body = s.draft.trim();
+    const taskId = s.page === 'task' ? s.taskId : null;
+    if ((!body && !s.pendingFile) || s.sending) return;
+    this.setState({ sending: true });
+    await this.run(async () => {
+      let attachment_path = null;
+      if (s.pendingFile && taskId) attachment_path = (await this.upload(taskId, s.pendingFile, 'chat')).path;
+      const { error } = await this.sb.from('crew_messages').insert({ task_id: taskId, body, attachment_path, author_name: s.me.name });
+      if (error) { if (attachment_path) await this.sb.storage.from(BUCKET).remove([attachment_path]); throw error; }
+      this.setState({ draft: '', pendingFile: null });
+      await this.loadMessages(taskId);
+    });
+    this.setState({ sending: false });
+  }
+
+  async sendRef() {
+    const s = this.state, body = s.refDraft.trim();
+    const tid = s.page === 'task' ? s.taskId : null;
+    if (!body || !s.openRef || (s.page === 'task' && !tid)) return;
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_messages').insert({ task_id: tid, ref_type: s.openRef.type, ref_id: s.openRef.id, body, author_name: s.me.name });
+      if (error) throw error;
+      this.setState({ refDraft: '' });
+      await this.loadMessages(tid);
+    });
+  }
+
+  async deleteMessage(m) {
+    if (!confirm('Delete this message?')) return;
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_messages').delete().eq('id', m.id);
+      if (error) throw error;
+      if (m.attachment_path) await this.sb.storage.from(BUCKET).remove([m.attachment_path]);
+      await this.loadMessages(m.task_id);
+    });
+  }
+
+  async toggleReaction(type, id, glyph) {
+    const s = this.state, taskId = s.page === 'task' ? s.taskId : null;
+    const mine = s.reactions.find(r => r.target_type === type && r.target_id === id && r.glyph === glyph && r.uid === s.me.uid);
+    await this.run(async () => {
+      const q = mine ? this.sb.from('crew_reactions').delete().eq('id', mine.id) : this.sb.from('crew_reactions').insert({ task_id: taskId, target_type: type, target_id: id, glyph });
+      const { error } = await q; if (error) throw error;
+      await this.loadMessages(taskId);
+    });
+  }
+
+  async restoreTask(t) {
+    await this.run(async () => {
+      const { error } = await this.sb.from('crew_tasks').update({ trashed_at: null }).eq('id', t.id);
+      if (error) throw error;
+      await this.loadAll();
+    }, 'Restored.');
+  }
+
+  async purgeNow(t) {
+    if (!confirm('Delete "' + t.title + '" for good?\n\nThe task, chat, boards and every uploaded file go. This cannot be undone.')) return;
+    await this.run(async () => { await this.purge(t.id); await this.loadTrash(false); }, 'Deleted for good.');
+  }
+
+  // ---- Board (canvas) ----------------------------------------------------------
+
+  boardKey() {
+    const s = this.state;
+    if (s.phase !== 'app') return null;
+    if (s.page === 'board') return 'crew';
+    if (s.page === 'task' && s.tab === 'mood' && s.taskId) return s.taskId;
+    return null;
+  }
+
+  enterBoard(key) {
+    this._boardKey = key; this._fitted = false;
+    this.setState({ board: { key, items: [], links: [], loading: true }, sel: null, editing: null, arrowFrom: null, dragPos: null, cursors: {}, present: [], boardNote: '', tplOpen: false, openRef: null, view: { x: 60, y: 60, z: 1 } });
+    this.loadBoard(key).catch(e => { if (this._boardKey === key) this.setState(s => ({ boardNote: friendly(e), board: s.board ? { ...s.board, loading: false } : s.board })); });
+    if (key === 'crew') this.loadMessages(null).catch(console.error);
+    this.joinBoardPresence(key);
+  }
+
+  leaveBoard() {
+    if (this.boardCh && this.sb) { try { this.sb.removeChannel(this.boardCh); } catch (e) {} }
+    this.boardCh = null; clearInterval(this.curPrune); this._boardKey = null; this.drag = null; this.pinch = null;
+  }
+
+  async loadBoard(key) {
+    const sb = this.sb, crew = key === 'crew';
+    let qi = sb.from('crew_mood_items').select('*').order('z').order('created_at');
+    let ql = sb.from('crew_board_links').select('*');
+    qi = crew ? qi.is('task_id', null) : qi.eq('task_id', key);
+    ql = crew ? ql.is('task_id', null) : ql.eq('task_id', key);
+    let [i, l] = await Promise.all([qi, ql]);
+    let setup = !!l.error;
+    if (i.error && (i.error.code === '42703' || /does not exist/i.test(i.error.message || ''))) {
+      setup = true;
+      let q2 = sb.from('crew_mood_items').select('*').order('created_at');
+      q2 = crew ? q2.is('task_id', null) : q2.eq('task_id', key);
+      i = await q2;
+    }
+    if (i.error) throw i.error;
+    const items = (i.data || []).map(x => ({ ...x }));
+    let k = 0;
+    items.forEach(it => {
+      const d = CARD_DEF[it.kind] || CARD_DEF.note;
+      if (it.x == null || it.y == null) { it.x = (k % 4) * 280; it.y = Math.floor(k / 4) * 300; k++; }
+      if (it.w == null) it.w = d.w;
+      if (it.h == null) it.h = d.h;
+    });
+    await this.sign(items.map(x => x.storage_path));
+    if (this._boardKey !== key) return;
+    this.setState({ board: { key, items, links: l.error ? [] : (l.data || []), loading: false },
+      boardNote: setup ? 'The board needs one more database step. Until the admin runs crew-board.sql, cards can\'t be placed or moved.' : '' },
+      () => { if (!this._fitted && items.length && this.canvasEl) { this._fitted = true; this.fitBoard(); } });
+  }
+
+  joinBoardPresence(key) {
+    const me = this.state.me; if (!me || !this.sb) return;
+    const color = userColor(me.uid);
+    const ch = this.sb.channel('crew-board-' + key, { config: { broadcast: { self: false }, presence: { key: me.uid } } });
+    ch.on('broadcast', { event: 'cur' }, msg => {
+        const p = msg && msg.payload; if (!p || p.uid === me.uid || this._boardKey !== key) return;
+        this.setState(s => ({ cursors: { ...s.cursors, [p.uid]: { ...p, t: Date.now() } } }));
+      })
+      .on('presence', { event: 'sync' }, () => {
+        const st = ch.presenceState(), seen = {}, list = [];
+        Object.values(st).forEach(arr => (arr || []).forEach(p => { if (p && p.uid && !seen[p.uid]) { seen[p.uid] = 1; list.push(p); } }));
+        if (this._boardKey === key) this.setState({ present: list });
+      })
+      .subscribe(status => { if (status === 'SUBSCRIBED') ch.track({ uid: me.uid, name: me.name, color }); });
+    this.boardCh = ch;
+    clearInterval(this.curPrune);
+    this.curPrune = setInterval(() => {
+      const now = Date.now(), c = this.state.cursors, old = Object.keys(c).filter(u => now - c[u].t > 6000);
+      if (old.length) { const n = { ...c }; old.forEach(u => delete n[u]); this.setState({ cursors: n }); }
+    }, 2000);
+  }
+
+  sendCursor(w) {
+    const now = Date.now(), me = this.state.me;
+    if (!this.boardCh || !me || now - (this._curT || 0) < 70) return;
+    this._curT = now;
+    this.boardCh.send({ type: 'broadcast', event: 'cur', payload: { uid: me.uid, name: String(me.name || '').split(' ')[0], color: userColor(me.uid), x: Math.round(w.x), y: Math.round(w.y) } });
+  }
+
+  toWorld(cx, cy) {
+    const el = this.canvasEl; if (!el) return { x: 0, y: 0 };
+    const r = el.getBoundingClientRect(), v = (this._rp && this._rp.view) || this.state.view;
+    return { x: (cx - r.left - v.x) / v.z, y: (cy - r.top - v.y) / v.z };
+  }
+  viewCenter() {
+    const el = this.canvasEl; if (!el) return { x: 200, y: 200 };
+    const r = el.getBoundingClientRect(); return this.toWorld(r.left + r.width / 2, r.top + r.height / 2);
+  }
+  posOf(it) {
+    const d = this.state.dragPos;
+    const p = { x: Number(it.x) || 0, y: Number(it.y) || 0, w: Number(it.w) || 100, h: Number(it.h) || 100 };
+    return d && d.id === it.id ? { ...p, ...d } : p;
+  }
+  raf(patch) {
+    this._rp = { ...(this._rp || {}), ...patch };
+    if (this._rid) return;
+    this._rid = requestAnimationFrame(() => { const p = this._rp; this._rp = null; this._rid = 0; if (p) this.setState(p); });
+  }
+  setView(v) { this.raf({ view: v }); }
+  zoomAt(cx, cy, f) {
+    const el = this.canvasEl; if (!el) return;
+    const r = el.getBoundingClientRect(), v = (this._rp && this._rp.view) || this.state.view;
+    const nz = Math.min(3, Math.max(0.15, v.z * f)), px = cx - r.left, py = cy - r.top;
+    this.setView({ x: px - (px - v.x) * (nz / v.z), y: py - (py - v.y) * (nz / v.z), z: nz });
+  }
+  zoomCenter(f) { const el = this.canvasEl; if (!el) return; const r = el.getBoundingClientRect(); this.zoomAt(r.left + r.width / 2, r.top + r.height / 2, f); }
+  fitBoard() {
+    const el = this.canvasEl, b = this.state.board; if (!el || !b) return;
+    if (!b.items.length) { this.setState({ view: { x: 60, y: 60, z: 1 } }); return; }
+    let a = Infinity, c = Infinity, e = -Infinity, g = -Infinity;
+    b.items.forEach(it => { const p = this.posOf(it); a = Math.min(a, p.x); c = Math.min(c, p.y); e = Math.max(e, p.x + p.w); g = Math.max(g, p.y + p.h); });
+    const r = el.getBoundingClientRect();
+    const z = Math.max(0.15, Math.min(1.2, (r.width - 80) / ((e - a) || 1), (r.height - 80) / ((g - c) || 1)));
+    this.setState({ view: { x: r.width / 2 - ((a + e) / 2) * z, y: r.height / 2 - ((c + g) / 2) * z, z } });
+  }
+  topZ() { const b = this.state.board; return b ? b.items.reduce((m, i) => Math.max(m, i.z || 0), 0) : 0; }
+  boardItem(id) { const b = this.state.board; return b ? b.items.find(i => i.id === id) : null; }
+  capture(e) { try { this.canvasEl && this.canvasEl.setPointerCapture(e.pointerId); } catch (_) {} }
+
+  onCanvasDown(e) {
+    const s = this.state; if (!s.board) return;
+    const t = e.target;
+    if (t.closest && t.closest('[data-nodrag]')) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    this.ptrs = this.ptrs || new Map();
+    this.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (this.ptrs.size === 2) {
+      const [p1, p2] = [...this.ptrs.values()];
+      this.pinch = { d: Math.hypot(p1.x - p2.x, p1.y - p2.y) || 1, v: { ...s.view }, mx: (p1.x + p2.x) / 2, my: (p1.y + p2.y) / 2 };
+      this.drag = null; if (this.livePath) this.livePath.setAttribute('d', '');
+      this.capture(e); return;
+    }
+    const rz = t.closest('[data-resize]'), card = t.closest('[data-card]'), lk = t.closest('[data-link]'), sk = t.closest('[data-stroke]');
+    if (s.tool === 'pen' && !rz) {
+      const w = this.toWorld(e.clientX, e.clientY);
+      this.drag = { mode: 'pen', pts: [[w.x, w.y]] };
+      if (this.livePath) { this.livePath.setAttribute('stroke', s.pen.c); this.livePath.setAttribute('stroke-width', s.pen.w); this.livePath.setAttribute('d', ''); }
+      this.capture(e); return;
+    }
+    if (rz) {
+      const id = rz.getAttribute('data-resize'), it = this.boardItem(id); if (!it) return;
+      const p = this.posOf(it); this.drag = { mode: 'resize', id, sx: e.clientX, sy: e.clientY, w0: p.w, h0: p.h };
+      this.capture(e); return;
+    }
+    const hit = card ? card.getAttribute('data-card') : sk ? sk.getAttribute('data-stroke') : null;
+    if (hit) {
+      if (s.tool === 'arrow') { this.arrowClick(hit); return; }
+      if (s.editing === hit) return;
+      const it = this.boardItem(hit); if (!it) return;
+      const p = this.posOf(it);
+      if (s.sel !== hit || s.editing) this.setState({ sel: hit, editing: null });
+      this.drag = { mode: 'move', id: hit, sx: e.clientX, sy: e.clientY, x0: p.x, y0: p.y, moved: false };
+      this.capture(e); return;
+    }
+    if (lk) { this.setState({ sel: 'link:' + lk.getAttribute('data-link'), editing: null }); return; }
+    if (s.sel || s.editing || s.arrowFrom) this.setState({ sel: null, editing: null, arrowFrom: null, openRef: null });
+    this.drag = { mode: 'pan', sx: e.clientX, sy: e.clientY, x0: s.view.x, y0: s.view.y };
+    this.capture(e);
+  }
+
+  onCanvasMove(e) {
+    if (!this.state.board) return;
+    if (this.ptrs && this.ptrs.has(e.pointerId)) this.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (e.pointerType !== 'touch') this.sendCursor(this.toWorld(e.clientX, e.clientY));
+    if (this.pinch && this.ptrs && this.ptrs.size === 2) {
+      const [p1, p2] = [...this.ptrs.values()], P = this.pinch, r = this.canvasEl.getBoundingClientRect();
+      const d = Math.hypot(p1.x - p2.x, p1.y - p2.y) || 1, nz = Math.min(3, Math.max(0.15, P.v.z * d / P.d));
+      const mx = (p1.x + p2.x) / 2 - r.left, my = (p1.y + p2.y) / 2 - r.top;
+      const wx = (P.mx - r.left - P.v.x) / P.v.z, wy = (P.my - r.top - P.v.y) / P.v.z;
+      this.setView({ x: mx - wx * nz, y: my - wy * nz, z: nz }); return;
+    }
+    const d = this.drag; if (!d) return;
+    const z = this.state.view.z, dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+    if (d.mode === 'pan') this.setView({ ...this.state.view, x: d.x0 + dx, y: d.y0 + dy });
+    else if (d.mode === 'move') { if (Math.abs(dx) + Math.abs(dy) > 3) d.moved = true; if (d.moved) this.raf({ dragPos: { id: d.id, x: d.x0 + dx / z, y: d.y0 + dy / z } }); }
+    else if (d.mode === 'resize') this.raf({ dragPos: { id: d.id, w: Math.max(60, d.w0 + dx / z), h: Math.max(40, d.h0 + dy / z) } });
+    else if (d.mode === 'pen') {
+      const w = this.toWorld(e.clientX, e.clientY), last = d.pts[d.pts.length - 1];
+      if (Math.hypot(w.x - last[0], w.y - last[1]) > 1.5 / z) { d.pts.push([w.x, w.y]); if (this.livePath) this.livePath.setAttribute('d', ptsToD(d.pts)); }
+    }
+  }
+
+  onCanvasUp(e) {
+    if (this.ptrs) this.ptrs.delete(e.pointerId);
+    if (this.pinch) { if (!this.ptrs || this.ptrs.size < 2) this.pinch = null; return; }
+    const d = this.drag; this.drag = null; if (!d) return;
+    const z = this.state.view.z, dx = e.clientX - d.sx, dy = e.clientY - d.sy, now = Date.now();
+    if (d.mode === 'move' && d.moved) this.patchItem(d.id, { x: Math.round(d.x0 + dx / z), y: Math.round(d.y0 + dy / z), z: this.topZ() + 1 }, { dragPos: null });
+    else if (d.mode === 'move') {
+      if (this._tap && this._tap.id === d.id && now - this._tap.t < 380) { this._tap = null; this.editCard(d.id); }
+      else this._tap = { id: d.id, t: now };
+    } else if (d.mode === 'resize') this.patchItem(d.id, { w: Math.round(Math.max(60, d.w0 + dx / z)), h: Math.round(Math.max(40, d.h0 + dy / z)) }, { dragPos: null });
+    else if (d.mode === 'pen') { if (this.livePath) this.livePath.setAttribute('d', ''); if (d.pts.length > 1) this.saveStroke(d.pts); }
+    else if (d.mode === 'pan' && Math.abs(dx) + Math.abs(dy) < 4) {
+      if (this._tap && this._tap.id === '__bg' && now - this._tap.t < 380 && this.state.tool === 'select') { this._tap = null; this.addCard('note', this.toWorld(e.clientX, e.clientY)); }
+      else this._tap = { id: '__bg', t: now };
+    }
+  }
+
+  editCard(id) {
+    const it = this.boardItem(id); if (!it || !EDITABLE[it.kind]) return;
+    this.setState({ sel: id, editing: id }, () => this.focusEdit(id));
+  }
+  focusEdit(id) {
+    setTimeout(() => {
+      const el = this.canvasEl && this.canvasEl.querySelector('[data-edit="' + id + '"]');
+      if (el) { el.focus(); try { const n = el.value.length; el.setSelectionRange(n, n); } catch (_) {} }
+    }, 40);
+  }
+
+  async patchItem(id, patch, extra) {
+    if (this._rp) delete this._rp.dragPos;
+    this.setState(s => ({ ...(extra || {}), board: s.board ? { ...s.board, items: s.board.items.map(i => i.id === id ? { ...i, ...patch } : i) } : s.board }));
+    const { error } = await this.sb.from('crew_mood_items').update(patch).eq('id', id);
+    if (error) { this.flash(friendly(error), true); if (this._boardKey) this.loadBoard(this._boardKey).catch(() => {}); }
+  }
+
+  async createItem(row, opt) {
+    const b = this.state.board; if (!b) return null;
+    opt = opt || {};
+    const full = { ...row, task_id: b.key === 'crew' ? null : b.key, z: row.z != null ? row.z : this.topZ() + 1, added_name: this.state.me.name };
+    const { data, error } = await this.sb.from('crew_mood_items').insert(full).select('*').single();
+    if (error) { this.flash(friendly(error), true); return null; }
+    if (this._boardKey !== b.key) return data;
+    this.setState(s => ({
+      board: s.board && s.board.key === b.key ? { ...s.board, items: s.board.items.some(i => i.id === data.id) ? s.board.items : [...s.board.items, data] } : s.board,
+      sel: opt.keepTool ? s.sel : data.id, editing: opt.edit ? data.id : s.editing, tool: opt.keepTool ? s.tool : 'select',
+    }), () => { if (opt.edit) this.focusEdit(data.id); });
+    return data;
+  }
+
+  addCard(kind, at) {
+    const d = CARD_DEF[kind], c = at || this.viewCenter();
+    const n = (this.state.board ? this.state.board.items.length : 0) % 6;
+    const row = { kind, x: Math.round(c.x - d.w / 2 + (at ? 0 : n * 18)), y: Math.round(c.y - d.h / 2 + (at ? 0 : n * 18)), w: d.w, h: d.h };
+    if (kind === 'sticky') row.color = STICKY[n % STICKY.length];
+    if (kind === 'todo') { row.title = 'To-do'; row.body = { items: [] }; }
+    if (kind === 'swatch') row.color = '#0A6E58';
+    return this.createItem(row, { edit: !!EDITABLE[kind] });
+  }
+
+  async addBoardLink() {
+    const l = this.state.linkForm; let url = l.url.trim(); if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    let ok = false; try { const u = new URL(url); ok = /^https?:$/.test(u.protocol) && !!u.hostname && !/\s/.test(url); } catch (e) {}
+    if (!ok) { this.flash("That doesn't look like a web link.", true); return; }
+    const d = CARD_DEF.link, c = this.viewCenter(), h = linkInfo(url).thumb ? d.h : 120;
+    const row = await this.createItem({ kind: 'link', url, title: l.title.trim() || null, x: Math.round(c.x - d.w / 2), y: Math.round(c.y - h / 2), w: d.w, h }, {});
+    if (row) this.setState({ linkForm: { url: '', title: '' } });
+  }
+
+  async addFiles(files, at) {
+    const b = this.state.board; if (!b || !files.length) return;
+    const folder = b.key === 'crew' ? 'board' : b.key, c = at || this.viewCenter();
+    let k = 0, ok = 0;
+    for (const file of files) {
+      this.setState({ uploading: 'Uploading ' + (k + 1) + ' of ' + files.length + '…' });
+      try {
+        const up = await this.upload(folder, file, 'board');
+        let w = CARD_DEF[up.kind].w, h = CARD_DEF[up.kind].h;
+        if (up.kind === 'image') { try { const bmp = await createImageBitmap(file); h = Math.max(80, Math.min(560, Math.round(w * bmp.height / bmp.width))); } catch (_) {} }
+        const row = await this.createItem({ kind: up.kind, storage_path: up.path, size_bytes: up.size, title: (file.name || '').slice(0, 120), x: Math.round(c.x - w / 2 + k * 24), y: Math.round(c.y - h / 2 + k * 24), w, h }, {});
+        if (!row) await this.sb.storage.from(BUCKET).remove([up.path]); else ok++;
+      } catch (err) { this.flash(friendly(err), true); }
+      k++;
+    }
+    this.setState({ uploading: '' });
+    if (ok) { await this.sign((this.state.board ? this.state.board.items : []).map(i => i.storage_path)); this.flash(ok + (ok === 1 ? ' file' : ' files') + ' added to the board.'); }
+  }
+
+  placeShot(shotId, at) {
+    const d = CARD_DEF.shot, c = at || this.viewCenter();
+    return this.createItem({ kind: 'shot', shot_id: shotId, x: Math.round(c.x - d.w / 2), y: Math.round(c.y - d.h / 2), w: d.w, h: d.h }, {});
+  }
+
+  async saveStroke(pts) {
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x = Math.min(...xs), y = Math.min(...ys);
+    let rel = pts.map(p => [Math.round((p[0] - x) * 10) / 10, Math.round((p[1] - y) * 10) / 10]);
+    if (rel.length > 1500) { const step = Math.ceil(rel.length / 1500); rel = rel.filter((_, i) => i % step === 0 || i === rel.length - 1); }
+    await this.createItem({ kind: 'stroke', x: Math.round(x), y: Math.round(y), w: Math.max(1, Math.round(Math.max(...xs) - x)), h: Math.max(1, Math.round(Math.max(...ys) - y)), color: this.state.pen.c, body: { pts: rel, w: this.state.pen.w } }, { keepTool: true });
+  }
+
+  arrowClick(id) {
+    const s = this.state;
+    if (!s.arrowFrom) { this.setState({ arrowFrom: id, sel: id }); return; }
+    if (s.arrowFrom === id) { this.setState({ arrowFrom: null }); return; }
+    const from = s.arrowFrom; this.setState({ arrowFrom: null });
+    this.createLink(from, id);
+  }
+  async createLink(from, to) {
+    const b = this.state.board; if (!b || b.links.some(l => l.from_id === from && l.to_id === to)) return;
+    const { data, error } = await this.sb.from('crew_board_links').insert({ task_id: b.key === 'crew' ? null : b.key, from_id: from, to_id: to }).select('*').single();
+    if (error) { this.flash(friendly(error), true); return; }
+    this.setState(s => ({ board: s.board && s.board.key === b.key ? { ...s.board, links: s.board.links.some(l => l.id === data.id) ? s.board.links : [...s.board.links, data] } : s.board }));
+  }
+  async deleteLink(id) {
+    this.setState(s => ({ sel: null, board: s.board ? { ...s.board, links: s.board.links.filter(l => l.id !== id) } : s.board }));
+    const { error } = await this.sb.from('crew_board_links').delete().eq('id', id);
+    if (error) this.flash(friendly(error), true);
+  }
+
+  async deleteItem(it) {
+    if (!it) return;
+    if (it.storage_path && !confirm('Delete this file from the board?')) return;
+    this.setState(s => ({ sel: null, editing: null, openRef: null, board: s.board ? { ...s.board, items: s.board.items.filter(i => i.id !== it.id), links: s.board.links.filter(l => l.from_id !== it.id && l.to_id !== it.id) } : s.board }));
+    const { error } = await this.sb.from('crew_mood_items').delete().eq('id', it.id);
+    if (error) { this.flash(friendly(error), true); if (this._boardKey) this.loadBoard(this._boardKey).catch(() => {}); return; }
+    if (it.storage_path) await this.sb.storage.from(BUCKET).remove([it.storage_path]);
+  }
+  deleteSelected() {
+    const s = this.state; if (!s.sel) return;
+    if (String(s.sel).startsWith('link:')) { this.deleteLink(s.sel.slice(5)); return; }
+    const it = this.boardItem(s.sel); if (!it) return;
+    if (!(s.me.is_manager || it.added_by === s.me.uid)) { this.flash('Only the person who added it, or HR/admin, can delete it.', true); return; }
+    this.deleteItem(it);
+  }
+
+  onBoardText(e, it) {
+    const f = e.target.getAttribute('data-f'), v = e.target.value;
+    this.setState(s => ({ boardEdits: { ...s.boardEdits, [it.id]: { ...(s.boardEdits[it.id] || {}), [f]: v } } }));
+  }
+  onBoardBlur(e, it) {
+    const f = e.target.getAttribute('data-f'), ed = this.state.boardEdits[it.id];
+    if (!ed || !(f in ed)) return;
+    const v = String(ed[f]), rest = { ...ed }; delete rest[f];
+    this.setState(s => ({ boardEdits: { ...s.boardEdits, [it.id]: rest } }));
+    const cur = this.boardItem(it.id) || it;
+    if ((cur[f] || '') !== v) this.patchItem(it.id, { [f]: v.slice(0, f === 'title' ? 300 : 5000) });
+  }
+  todoItems(it) { const cur = this.boardItem(it.id) || it; return cur.body && Array.isArray(cur.body.items) ? cur.body.items : []; }
+  setTodos(it, items) { const cur = this.boardItem(it.id) || it; this.patchItem(it.id, { body: { ...(cur.body || {}), items } }); }
+  toggleTodo(it, k) { this.setTodos(it, this.todoItems(it).map((x, j) => j === k ? { ...x, d: !x.d } : x)); }
+  removeTodo(it, k) { this.setTodos(it, this.todoItems(it).filter((_, j) => j !== k)); }
+  addTodo(it) { const t = this.state.todoDraft.trim(); if (!t) return; this.setState({ todoDraft: '' }); this.setTodos(it, [...this.todoItems(it), { t: t.slice(0, 200), d: false }]); }
+  onSwatchColor(it, v) {
+    if (!/^#[0-9a-f]{6}$/i.test(v)) return;
+    this.setState(s => ({ board: s.board ? { ...s.board, items: s.board.items.map(i => i.id === it.id ? { ...i, color: v } : i) } : s.board }));
+    clearTimeout(this._swT); this._swT = setTimeout(() => this.patchItem(it.id, { color: v }), 350);
+  }
+
+  async applyTemplate(key) {
+    const tpl = TEMPLATES[key], b = this.state.board; if (!tpl || !b) return;
+    this.setState({ tplOpen: false, uploading: 'Adding ' + tpl.label.toLowerCase() + '…' });
+    const dims = tpl.cards.map(c => ({ x: c.x, y: c.y, w: c.w || CARD_DEF[c.k].w, h: c.h || CARD_DEF[c.k].h }));
+    const minX = Math.min(...dims.map(d => d.x)), minY = Math.min(...dims.map(d => d.y));
+    const maxX = Math.max(...dims.map(d => d.x + d.w)), maxY = Math.max(...dims.map(d => d.y + d.h));
+    const cc = this.viewCenter(), ox = Math.round(cc.x - (minX + maxX) / 2), oy = Math.round(cc.y - (minY + maxY) / 2);
+    const ids = []; let z = this.topZ();
+    for (let i = 0; i < tpl.cards.length; i++) {
+      const c = tpl.cards[i], d = dims[i];
+      const row = await this.createItem({ kind: c.k, x: ox + d.x, y: oy + d.y, w: d.w, h: d.h, note: c.note || null, title: c.title || null, color: c.color || null, body: c.body || null, z: ++z }, { keepTool: true });
+      ids.push(row ? row.id : null);
+    }
+    for (const [a, bb] of tpl.links || []) if (ids[a] && ids[bb]) await this.createLink(ids[a], ids[bb]);
+    this.setState({ uploading: '' });
+    this.fitBoard();
+  }
+
+  reactsFor(index, type, id) {
+    const list = index[type + ':' + id] || [], uid = this.state.me.uid;
+    return GLYPHS.map(g => {
+      const hits = list.filter(r => r.glyph === g), mine = hits.some(r => r.uid === uid);
+      return { glyph: g, count: hits.length || '', bg: mine ? '#E3F2EE' : '#FFFFFF', border: mine ? '#0A6E58' : '#DDE3E1', color: mine ? '#0A6E58' : '#4A524F', go: () => this.toggleReaction(type, id, g) };
+    });
+  }
+
+  renderVals() {
+    const s = this.state, me = s.me || {};
+    const name = id => { const r = s.roster.find(x => x.person_id === id); return r ? r.full_name : 'Former crew'; };
+    const isManager = !!me.is_manager, isAdmin = !!me.is_admin;
+    const set = k => e => this.setState({ [k]: e.target.value });
+    const narrow = s.narrow;
+
+    const itemsByTask = {};
+    s.allItems.forEach(i => { (itemsByTask[i.task_id] = itemsByTask[i.task_id] || { n: 0, d: 0 }); itemsByTask[i.task_id].n++; if (i.done) itemsByTask[i.task_id].d++; });
+    const prog = id => { const p = itemsByTask[id] || { n: 0, d: 0 }; return { pct: p.n ? Math.round(p.d * 100 / p.n) : 0, label: p.n ? p.d + ' of ' + p.n + ' done' : 'No checklist yet' }; };
+    const whenOf = t => [t.shoot_date ? fmtDate(t.shoot_date) : 'Date to be set', t.call_time, t.location].filter(Boolean).join(' · ');
+
+    const active = s.tasks.filter(t => t.status !== 'done'), done = s.tasks.filter(t => t.status === 'done');
+    const navTasks = [...active, ...done].map(t => {
+      const on = s.page === 'task' && s.taskId === t.id;
+      return { title: t.title, meta: KINDS[t.kind] + (t.shoot_date ? ' · ' + fmtShort(t.shoot_date) : '') + (t.status === 'done' ? ' · done' : ''), bg: on ? '#E3F2EE' : 'transparent', color: t.status === 'done' ? '#6B7572' : on ? '#0A6E58' : '#1B1D1E', go: () => this.openTask(t.id) };
+    });
+    const navBtn = (page, label, count) => ({ label, count: count == null ? '' : count, bg: s.page === page ? '#E3F2EE' : 'transparent', color: s.page === page ? '#0A6E58' : '#1B1D1E', go: () => this.go(page) });
+    const navTop = [navBtn('today', 'Today'), navBtn('channel', 'Crew channel'), navBtn('board', 'Crew board')];
+    const navBottom = [];
+    if (me.person_id || me.request_status) navBottom.push(navBtn('profile', 'My profile'));
+    if (isManager) navBottom.push(navBtn('trash', 'Trash', s.trash.length || ''));
+    if (isAdmin) navBottom.push({ label: 'Approve sign-ups', count: '↗', bg: 'transparent', color: '#1B1D1E', go: () => { location.href = 'admin.html'; } });
+
+    const t = s.tasks.find(x => x.id === s.taskId);
+    const crewOf = id => s.members.filter(m => m.task_id === id).map(m => ({ id: m.person_id, name: name(m.person_id) }));
+    const onTask = t && me.person_id && s.members.some(m => m.task_id === t.id && m.person_id === me.person_id);
+    const td = s.t && t && s.t.id === t.id ? s.t : null;
+
+    let task = null, itemsVM = [], partVM = [], checkinsVM = [], moodVM = [], shotsVM = [], tabs = [], storySummary = '';
+    const rxIndex = {};
+    s.reactions.forEach(r => { (rxIndex[r.target_type + ':' + r.target_id] = rxIndex[r.target_type + ':' + r.target_id] || []).push(r); });
+    const comments = {};
+    s.chat.filter(m => m.ref_type).forEach(m => { (comments[m.ref_id] = comments[m.ref_id] || []).push({ author: m.author_name || 'Crew', time: fmtTime(m.created_at), body: m.body }); });
+    const refOpen = (type, id) => s.openRef && s.openRef.type === type && s.openRef.id === id;
+    const toggleRef = (type, id) => () => this.setState({ openRef: refOpen(type, id) ? null : { type, id }, refDraft: '' });
+    const commentLabel = id => { const n = (comments[id] || []).length; return n ? n + (n === 1 ? ' comment' : ' comments') : 'Comment'; };
+
+    if (t) {
+      const items = td ? td.items : [];
+      const doneN = items.filter(i => i.done).length;
+      const avg = td && td.part.length ? Math.round(td.part.reduce((a, p) => a + (p.last_percent || 0), 0) / td.part.length) : null;
+      const pct = items.length ? Math.round(doneN * 100 / items.length) : (avg || 0);
+      task = {
+        title: t.title, kindLabel: KINDS[t.kind], status: t.status, statusLabel: STATUSES[t.status], statusColor: STATUS_COLOR[t.status],
+        shootLabel: t.shoot_date ? fmtDate(t.shoot_date) + (t.call_time ? ' · call ' + t.call_time : '') : 'Date to be set',
+        locationLabel: t.location || '—', dueLabel: t.due_date ? fmtDate(t.due_date) : '—', crew: crewOf(t.id),
+        brief: t.brief || '', hasBrief: !!t.brief, pct,
+        progressLabel: (items.length ? doneN + ' of ' + items.length + ' checklist items done' : 'No checklist yet') + (avg != null ? ' · crew average ' + avg + '%' : ''),
+      };
+      if (td) {
+        itemsVM = items.map(i => ({
+          title: i.title, section: SECTIONS[i.section], assignee: i.assignee ? name(i.assignee) : 'Anyone', tick: i.done ? '✓' : '', boxBg: i.done ? '#0A6E58' : '#FFFFFF',
+          color: i.done ? '#6B7572' : '#1B1D1E', strike: i.done ? 'line-through' : 'none', doneMeta: i.done ? (i.done_by_name || 'Done') + (i.done_at ? ' · ' + ago(i.done_at) : '') : '',
+          toggle: () => this.toggleItem(i), remove: () => this.removeItem(i),
+        }));
+        partVM = td.part.map(p => {
+          const stale = !p.last_active || (Date.now() - new Date(p.last_active)) > 2 * 864e5;
+          return { name: p.full_name, role: roleLabel(p.primary_role), items: p.items_total ? p.items_done + ' / ' + p.items_total : '—', pct: p.last_percent == null ? '—' : p.last_percent + '%', checkins: p.checkins, messages: p.messages, uploads: p.uploads, active: ago(p.last_active), activeColor: stale ? '#B4433A' : '#1B1D1E' };
+        });
+        checkinsVM = td.checkins.slice(0, 40).map(c => ({ day: dayLabel(c.day), name: name(c.person_id), pct: c.percent, note: c.note || '' }));
+        const total = td.shots.reduce((a, x) => a + (Number(x.duration_s) || 0), 0);
+        const locked = td.shots.filter(x => x.status !== 'idea').length;
+        storySummary = td.shots.length ? td.shots.length + (td.shots.length === 1 ? ' shot' : ' shots') + ' · ' + locked + ' locked or shot' + (total ? ' · runs ' + dur(total) : '') : '';
+        shotsVM = td.shots.map((sh, i) => {
+          const v = f => { const x = this.shotVal(sh, f); return x == null ? '' : x; };
+          return {
+            no: sh.shot_no, noLabel: 'Shot ' + sh.shot_no, title: v('title'), description: v('description'), framing: v('framing'), lens: v('lens'), movement: v('movement'), duration: v('duration_s'),
+            status: sh.status, statusColor: SHOT_COLOR[sh.status], url: s.urls[sh.image_path] || '', hasFrame: !!(sh.image_path && s.urls[sh.image_path]), noFrame: !(sh.image_path && s.urls[sh.image_path]),
+            isFirst: i === 0, isLast: i === td.shots.length - 1, canDelete: isManager || sh.created_by === me.uid,
+            by: sh.updated_name ? 'Last edit ' + sh.updated_name + ' · ' + ago(sh.updated_at) : '',
+            onChange: e => { const f = e.target.getAttribute('data-f'), val = e.target.value; this.setState(st => ({ shotEdits: { ...st.shotEdits, [sh.id]: { ...(st.shotEdits[sh.id] || {}), [f]: val } } })); },
+            onBlur: e => this.saveShotField(sh, e.target.getAttribute('data-f')),
+            onStatus: e => this.setShot(sh, { status: e.target.value }),
+            pickFrame: () => { this.frameTarget = sh; this.frameInput && this.frameInput.click(); },
+            up: () => this.moveShot(i, -1), down: () => this.moveShot(i, 1), remove: () => this.removeShot(sh),
+            reacts: this.reactsFor(rxIndex, 'shot', sh.id), commentLabel: commentLabel(sh.id), comments: comments[sh.id] || [], isOpen: refOpen('shot', sh.id), toggleComments: toggleRef('shot', sh.id),
+          };
+        });
+      }
+      const threadN = s.chat.filter(m => !m.ref_type).length;
+      tabs = [['overview', 'Overview', ''], ['mood', 'Board', s.board && s.board.key === t.id ? (s.board.items.filter(i => i.kind !== 'stroke').length || '') : ''], ['story', 'Storyboard', td ? td.shots.length || '' : ''], ['discussion', 'Discussion', td ? threadN || '' : '']]
+        .map(([k, l, c]) => ({ label: l, count: c, line: s.tab === k ? '#0A6E58' : 'transparent', color: s.tab === k ? '#0A6E58' : '#4A524F', go: () => this.setState({ tab: k, openRef: null }) }));
+    }
+
+    let prevDay = '';
+    const chatVM = s.chat.filter(m => !m.ref_type).map(m => {
+      const dk = dayKey(m.created_at), showDay = dk !== prevDay; prevDay = dk;
+      const p = m.attachment_path, ext = p ? p.split('.').pop().toLowerCase() : '';
+      const isImage = !!p && /^(jpg|jpeg|png|webp|gif|heic|heif)$/.test(ext), isVideo = !!p && /^(mp4|mov|webm)$/.test(ext);
+      const mine = m.author === me.uid;
+      return {
+        showDay, dayLabel: dayLabel(dk), author: m.author_name || 'Crew', initials: initials(m.author_name), time: fmtTime(m.created_at),
+        avBg: mine ? '#0A6E58' : '#E3F2EE', avColor: mine ? '#FFFFFF' : '#0A6E58', body: m.body, hasBody: !!m.body,
+        url: p ? s.urls[p] || '' : '', isImage, isVideo, isFile: !!p && !isImage && !isVideo, fileName: fileName(p),
+        canDelete: mine || isManager, remove: () => this.deleteMessage(m), reacts: this.reactsFor(rxIndex, 'message', m.id),
+      };
+    });
+
+    const myTasks = active.filter(x => isManager || s.members.some(m => m.task_id === x.id && m.person_id === me.person_id));
+    const todayCards = myTasks.map(x => {
+      const p = prog(x.id), mineOn = me.person_id && s.members.some(m => m.task_id === x.id && m.person_id === me.person_id), checked = s.myToday.includes(x.id);
+      return {
+        kind: KINDS[x.kind], status: STATUSES[x.status], statusColor: STATUS_COLOR[x.status], title: x.title, when: whenOf(x), pct: p.pct, progressLabel: p.label,
+        checkLabel: mineOn ? (checked ? '✓ Checked in today' : 'Not checked in today') : crewOf(x.id).length + ' crew on this', checkColor: mineOn && !checked ? '#B4433A' : '#0A6E58',
+        go: () => this.openTask(x.id),
+      };
+    });
+    const hour = new Date().getHours();
+    const first = String(me.name || '').split(' ')[0];
+
+    const f = s.form;
+    const roster = s.roster;
+
+    // ---- board view-model
+    const B = s.board, V = s.view, h = React.createElement;
+    let cardsVM = [], linksSvg = null, strokesSvg = null, cursorsVM = [], presentVM = [], selLabel = '', selColors = [], selActions = [], cmtList = [], drawerShots = [];
+    const showBoard = !!B && ((s.page === 'task' && s.tab === 'mood' && !!td) || s.page === 'board');
+    if (showBoard) {
+      const byId = {}; B.items.forEach(i => { byId[i.id] = i; });
+      const shotsById = {}; (td ? td.shots : []).forEach(x => { shotsById[x.id] = x; });
+      cardsVM = B.items.filter(i => i.kind !== 'stroke').map(it => {
+        const p = this.posOf(it), k = it.kind, sel = s.sel === it.id, editing = s.editing === it.id, ed = s.boardEdits[it.id] || {};
+        const rx = rxIndex['mood:' + it.id] || [], votes = rx.filter(r => r.glyph === '▲').length, nCom = (comments[it.id] || []).length;
+        const sh = k === 'shot' ? shotsById[it.shot_id] : null;
+        const safe = k === 'link' && /^https?:\/\/[^\s]+$/i.test(it.url || ''), li = safe ? linkInfo(it.url) : null;
+        const todos = k === 'todo' ? this.todoItems(it).map((x, j) => ({ t: x.t, tick: x.d ? '✓' : '', box: x.d ? '#0A6E58' : '#FFFFFF', color: x.d ? '#6B7572' : '#1B1D1E', strike: x.d ? 'line-through' : 'none', toggle: () => this.toggleTodo(it, j), remove: () => this.removeTodo(it, j) })) : [];
+        const frame = sh && sh.image_path ? s.urls[sh.image_path] || '' : '';
+        return {
+          id: it.id, x: p.x, y: p.y, w: p.w, h: p.h, z: (it.z || 0) + 1,
+          bg: k === 'sticky' ? (it.color || STICKY[0]) : k === 'heading' ? 'transparent' : '#FFFFFF',
+          border: k === 'heading' ? '1px solid transparent' : k === 'sticky' ? '1px solid rgba(22,35,31,.06)' : '1px solid #DDE3E1',
+          shadow: k === 'sticky' ? '0 6px 14px rgba(22,35,31,.10)' : k === 'heading' ? 'none' : '0 1px 2px rgba(22,35,31,.06)',
+          outline: sel ? '2px solid #0A6E58' : s.arrowFrom === it.id ? '2px dashed #10AF8B' : 'none',
+          cursor: editing ? 'text' : s.tool === 'arrow' ? 'crosshair' : s.tool === 'pen' ? 'crosshair' : 'grab',
+          isSel: sel, isText: k === 'note' || k === 'sticky' || k === 'heading', isTodo: k === 'todo', isSwatch: k === 'swatch', isLink: safe,
+          isImage: k === 'image', isVideo: k === 'video', isPdf: k === 'pdf', isShot: k === 'shot',
+          text: ed.note != null ? ed.note : (it.note || ''), title: ed.title != null ? ed.title : (it.title || ''),
+          ph: k === 'heading' ? 'Heading' : k === 'sticky' ? 'Sticky note' : 'Write a note…',
+          pad: k === 'heading' ? '6px 4px' : '14px', fs: k === 'heading' ? '28px' : k === 'sticky' ? '17px' : '14px', fw: k === 'heading' ? '300' : '400',
+          pe: editing ? 'auto' : 'none', onText: e => this.onBoardText(e, it), onBlur: e => this.onBoardBlur(e, it),
+          todos, todoSummary: todos.length ? todos.filter(x => x.tick).length + ' / ' + todos.length : '', onTodoKey: e => { if (e.key === 'Enter') this.addTodo(it); },
+          color: it.color || '#0A6E58', hex: (it.color || '#0A6E58').toUpperCase(), onColor: e => this.onSwatchColor(it, e.target.value),
+          url: s.urls[it.storage_path] || '', fileName: it.title || fileName(it.storage_path),
+          href: safe ? it.url : '', host: li ? li.label : '', thumb: li ? li.thumb : '', hasThumb: !!(li && li.thumb),
+          linkTitle: it.title || (it.url || '').replace(/^https?:\/\/(www\.)?/, '').slice(0, 80),
+          frameUrl: frame, hasFrame: !!frame, noFrame: !frame, shotLabel: sh ? 'Shot ' + sh.shot_no : 'Shot removed', shotTitle: sh ? [sh.title, sh.lens].filter(Boolean).join(' · ') : '',
+          showFooter: votes > 0 || nCom > 0, footer: [votes ? '▲ ' + votes : '', nCom ? nCom + (nCom === 1 ? ' comment' : ' comments') : ''].filter(Boolean).join(' · '),
+        };
+      });
+      const edge = (p, tx, ty) => {
+        const cx = p.x + p.w / 2, cy = p.y + p.h / 2, dx = tx - cx, dy = ty - cy;
+        if (!dx && !dy) return [cx, cy];
+        const t = Math.min(dx ? (p.w / 2 + 6) / Math.abs(dx) : Infinity, dy ? (p.h / 2 + 6) / Math.abs(dy) : Infinity);
+        return [cx + dx * t, cy + dy * t];
+      };
+      const marker = (id, fill) => h('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, h('path', { d: 'M0 0 L10 5 L0 10 z', fill }));
+      linksSvg = h('svg', { style: { position: 'absolute', left: 0, top: 0, width: 1, height: 1, overflow: 'visible', pointerEvents: 'none', zIndex: 0 } },
+        h('defs', null, marker('crew-ah', '#4A524F'), marker('crew-ah-sel', '#0A6E58')),
+        B.links.map(l => {
+          const A = byId[l.from_id], Z = byId[l.to_id]; if (!A || !Z) return null;
+          const pa = this.posOf(A), pz = this.posOf(Z);
+          const [x1, y1] = edge(pa, pz.x + pz.w / 2, pz.y + pz.h / 2), [x2, y2] = edge(pz, pa.x + pa.w / 2, pa.y + pa.h / 2);
+          const d = 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2, on = s.sel === 'link:' + l.id;
+          return h('g', { key: l.id },
+            h('path', { d, stroke: on ? '#0A6E58' : '#4A524F', strokeWidth: on ? 3 : 2, fill: 'none', markerEnd: on ? 'url(#crew-ah-sel)' : 'url(#crew-ah)' }),
+            h('path', { d, stroke: 'transparent', strokeWidth: 16, fill: 'none', 'data-link': l.id, style: { pointerEvents: s.tool === 'pen' ? 'none' : 'stroke', cursor: 'pointer' } }));
+        }));
+      strokesSvg = h('svg', { style: { position: 'absolute', left: 0, top: 0, width: 1, height: 1, overflow: 'visible', pointerEvents: 'none', zIndex: 2147483000 } },
+        B.items.filter(i => i.kind === 'stroke' && i.body && Array.isArray(i.body.pts)).map(st => {
+          const p = this.posOf(st), w = Number(st.body.w) || 4, on = s.sel === st.id;
+          const d = 'M' + st.body.pts.map(q => (p.x + q[0]).toFixed(1) + ' ' + (p.y + q[1]).toFixed(1)).join(' L');
+          return h('g', { key: st.id },
+            on ? h('path', { d, stroke: '#10AF8B', strokeOpacity: 0.35, strokeWidth: w + 8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }) : null,
+            h('path', { d, stroke: st.color || '#16231F', strokeWidth: w, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { d, stroke: 'transparent', strokeWidth: Math.max(14, w + 10), fill: 'none', 'data-stroke': st.id, style: { pointerEvents: s.tool === 'pen' ? 'none' : 'stroke', cursor: 'move' } }));
+        }),
+        h('path', { ref: this.setLivePathRef, fill: 'none', stroke: s.pen.c, strokeWidth: s.pen.w, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+      cursorsVM = Object.values(s.cursors).map(c => ({ x: c.x, y: c.y, name: c.name || 'Crew', color: c.color || '#0A6E58', inv: (1 / V.z).toFixed(3) }));
+      presentVM = s.present.filter(p => p.uid !== me.uid).map(p => ({ name: p.name || 'Crew', initials: initials(p.name), color: p.color || '#0A6E58' }));
+      const selIt = s.sel && !String(s.sel).startsWith('link:') ? byId[s.sel] : null;
+      if (selIt) {
+        const k = selIt.kind, rx = rxIndex['mood:' + selIt.id] || [], mine = rx.some(r => r.glyph === '▲' && r.uid === me.uid), votes = rx.filter(r => r.glyph === '▲').length, nCom = (comments[selIt.id] || []).length;
+        selLabel = KIND_LABEL[k] + (selIt.added_name ? ' · ' + selIt.added_name : '');
+        const pal = k === 'sticky' ? STICKY : k === 'stroke' ? INKS : [];
+        selColors = pal.map(c => ({ c, ring: (selIt.color || pal[0]) === c ? '#10AF8B' : 'rgba(255,255,255,.25)', go: () => this.patchItem(selIt.id, { color: c }) }));
+        const acts = [];
+        if (EDITABLE[k]) acts.push({ label: 'Edit', go: () => this.editCard(selIt.id) });
+        if (k !== 'stroke') {
+          acts.push({ label: (mine ? '▲ Voted' : '▲ Vote') + (votes ? ' ' + votes : ''), go: () => this.toggleReaction('mood', selIt.id, '▲'), on: mine });
+          acts.push({ label: 'Comments' + (nCom ? ' ' + nCom : ''), go: () => this.setState({ openRef: { type: 'mood', id: selIt.id }, refDraft: '' }), on: !!(s.openRef && s.openRef.id === selIt.id) });
+          acts.push({ label: 'Connect', go: () => this.setState({ tool: 'arrow', arrowFrom: selIt.id }) });
+        }
+        acts.push({ label: 'Bring front', go: () => this.patchItem(selIt.id, { z: this.topZ() + 1 }) });
+        if (isManager || selIt.added_by === me.uid) acts.push({ label: 'Delete', go: () => this.deleteItem(selIt), danger: true });
+        selActions = acts.map(a => ({ label: a.label, go: a.go, bg: a.on ? '#0A6E58' : 'transparent', color: a.danger ? '#F4B4AC' : '#FFFFFF' }));
+      } else if (s.sel && String(s.sel).startsWith('link:')) {
+        const lid = s.sel.slice(5); selLabel = 'Arrow';
+        selActions = [{ label: 'Delete arrow', go: () => this.deleteLink(lid), bg: 'transparent', color: '#F4B4AC' }];
+      }
+      if (s.openRef && s.openRef.type === 'mood' && byId[s.openRef.id]) cmtList = comments[s.openRef.id] || [];
+      drawerShots = s.page === 'task' && td ? td.shots.map(sh => {
+        const u = sh.image_path ? s.urls[sh.image_path] || '' : '';
+        return { label: 'Shot ' + sh.shot_no + (sh.title ? ' · ' + sh.title : ''), no: 'Shot ' + sh.shot_no, url: u, hasFrame: !!u, noFrame: !u,
+          onDrag: e => { e.dataTransfer.setData('text/x-crew-shot', sh.id); e.dataTransfer.effectAllowed = 'copy'; }, place: () => this.placeShot(sh.id) };
+      }) : [];
+    }
+    const toolBtn = (key, label, hint) => { const on = s.tool === key; return { label, hint, bg: on ? '#0A6E58' : '#FFFFFF', color: on ? '#FFFFFF' : '#1B1D1E', border: on ? '#0A6E58' : '#DDE3E1', go: () => this.setState({ tool: on && key !== 'select' ? 'select' : key, arrowFrom: null, editing: null, tplOpen: false }) }; };
+    const plainBtn = (label, hint, go, on) => ({ label, hint, go, bg: on ? '#0A6E58' : '#FFFFFF', color: on ? '#FFFFFF' : '#1B1D1E', border: on ? '#0A6E58' : '#DDE3E1' });
+    const boardTools = [
+      toolBtn('select', 'Select', 'Move, select, pan (Esc)'), toolBtn('pen', 'Pen', 'Freehand drawing'), toolBtn('arrow', 'Arrow', 'Connect two cards'),
+      plainBtn('Note', 'Add a note', () => this.addCard('note')), plainBtn('Sticky', 'Add a sticky note', () => this.addCard('sticky')),
+      plainBtn('Heading', 'Add a heading', () => this.addCard('heading')), plainBtn('To-do', 'Add a to-do list', () => this.addCard('todo')),
+      plainBtn('Swatch', 'Add a colour swatch', () => this.addCard('swatch')), toolBtn('link', 'Link', 'Add a web link'),
+      plainBtn(s.uploading ? 'Uploading…' : 'Upload', 'Photos, video, PDF — or drop files on the board', () => this.boardInput && this.boardInput.click()),
+    ].concat(s.page === 'task' ? [plainBtn('Shots', 'Drag storyboard frames onto the board', () => this.setState({ shotDrawer: !s.shotDrawer }), s.shotDrawer)] : [])
+     .concat([plainBtn('Templates', 'Mood board, shot plan, call sheet', () => this.setState({ tplOpen: !s.tplOpen, tool: 'select' }), s.tplOpen)]);
+    const zoomTools = [
+      { label: '−', hint: 'Zoom out', go: () => this.zoomCenter(1 / 1.2) }, { label: Math.round(V.z * 100) + '%', hint: 'Back to 100%', go: () => this.zoomCenter(1 / V.z) },
+      { label: '+', hint: 'Zoom in', go: () => this.zoomCenter(1.2) }, { label: 'Fit', hint: 'Fit everything in view', go: () => this.fitBoard() },
+      { label: s.boardFull ? 'Exit full' : 'Full screen', hint: 'Esc to exit', go: () => this.setState({ boardFull: !s.boardFull }, () => requestAnimationFrame(() => this.fitBoard())) },
+    ];
+    const boardHint = s.uploading ? s.uploading : s.tool === 'pen' ? 'Draw on the board. Pick a colour and width.' : s.tool === 'arrow' ? (s.arrowFrom ? 'Now click the card the arrow points to.' : 'Click the card the arrow starts from.') : s.tool === 'link' ? 'Paste a link — YouTube, Pinterest, Drive, Instagram…' : s.tplOpen ? 'Start from a template — it lands in the middle of your view.' : '';
+
+    const authMode = s.authMode;
+    const revoked = !!me.access_revoked || (me.request_status === 'approved' && !me.is_crew && !me.is_manager);
+    const authLinks = authMode === 'signin'
+      ? [{ label: 'Create an account', go: () => this.setState({ authMode: 'signup', authErr: '', authMsg: '' }) }, { label: 'Forgot password', go: () => this.setState({ authMode: 'reset', authErr: '', authMsg: '' }) }]
+      : authMode === 'newpass' ? [] : [{ label: 'Back to sign in', go: () => this.setState({ authMode: 'signin', authErr: '', authMsg: '' }) }];
+
+    const pageTitle = s.page === 'task' && t ? t.title : s.page === 'channel' ? 'Crew channel' : s.page === 'form' ? (f && f.id ? 'Edit task' : 'Issue a task') : s.page === 'trash' ? 'Trash' : s.page === 'profile' ? 'My profile' : s.page === 'board' ? 'Crew board' : 'Today';
+    const showChat = s.page === 'channel' || (s.page === 'task' && !!td && s.tab === 'discussion');
+
+    return {
+      isBoot: s.phase === 'boot', bootText: s.bootText,
+      showAuth: s.phase === 'auth', showWaiting: s.phase === 'waiting', showApp: s.phase === 'app',
+      authTitle: { signin: 'Crew sign in', signup: 'Create your crew account', reset: 'Reset password', newpass: 'Set a new password' }[authMode],
+      authCta: s.busy ? 'One moment…' : { signin: 'Sign in', signup: 'Create account', reset: 'Send reset link', newpass: 'Save password' }[authMode],
+      authNeedsEmail: authMode !== 'newpass', authNeedsProfile: authMode === 'signup',
+      fullName: s.fullName, phone: s.phone, crewRole: s.crewRole, roleOpts: CREW_ROLES.map(([v, l]) => ({ v, l })), authNeedsPassword: authMode !== 'reset', authNeedsConfirm: authMode === 'signup' || authMode === 'newpass',
+      pwPlaceholder: authMode === 'signin' ? 'Password' : 'New password — 8 characters or more', pwAutocomplete: authMode === 'signin' ? 'current-password' : 'new-password',
+      authNote: authMode === 'signup' ? "Use any email you check. We'll send a link to confirm it, then the admin approves your access." : authMode === 'signin' ? 'New to the crew? Create an account — the admin approves it before you see any tasks.' : '',
+      email: s.email, password: s.password, password2: s.password2, authErr: s.authErr, authMsg: s.authMsg, busy: s.busy, authLinks,
+      onAuthField: e => this.setState({ [e.target.getAttribute('data-k')]: e.target.value, authErr: '' }),
+      onAuthKey: e => { if (e.key === 'Enter') this.authSubmit(); },
+      authSubmit: () => this.authSubmit(),
+      meEmail: me.email || s.sessionEmail || '', meErr: s.phase === 'waiting' ? s.meErr : '', reload: () => location.reload(),
+      waitTitle: revoked ? 'Access removed' : me.request_status === 'pending' ? 'Waiting for approval' : me.request_status === 'declined' ? 'Request declined' : 'Request crew access',
+      waitText: revoked ? "The admin removed your access to the crew page. If that's a mistake, talk to HR, then send a new request below." : me.request_status === 'pending' ? 'Your request is with the admin. Once it is approved, your tasks appear here — check back later.' : me.request_status === 'declined' ? 'The admin declined this request. If that is a mistake, talk to HR, then send it again below.' : 'This account has no access to the crew page yet. Send a request and the admin will review it.',
+      waitCanRequest: revoked || me.request_status !== 'pending', requestAccess: () => this.requestAccess(),
+      showError: s.phase === 'error', errorText: s.meErr, retry: () => this.afterSignIn(),
+      signOut: async () => { if (this.sb) await this.sb.auth.signOut(); this.resetAll(); },
+
+      narrow, sideOpen: s.sideOpen, toggleSide: () => this.setState({ sideOpen: !s.sideOpen }), pageTitle,
+      sideDisplay: !narrow || s.sideOpen ? 'flex' : 'none', sidePos: narrow ? 'fixed' : 'sticky', mainPad: narrow ? '84px 18px 48px' : '44px clamp(24px,4vw,56px) 64px',
+      meName: me.name || '', meInitials: initials(me.name), meRoleLabel: isAdmin ? 'Admin' : me.role === 'hr' ? 'HR' : 'Crew',
+      navTop, navBottom, navTasks, noNavTasks: !navTasks.length, navTasksLabel: isManager ? 'All tasks' : 'My tasks',
+      noTasksNote: isManager ? 'No tasks yet. Issue the first one.' : "You're not on any task yet.",
+      isManager, notManager: !isManager, newTask: () => this.go('form', { form: this.blankForm() }),
+      toast: s.toast, toastBg: s.toastErr ? '#B4433A' : '#0A6E58',
+
+      pageToday: s.page === 'today', todayLabel: new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' }),
+      greeting: (hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening') + (first ? ', ' + first : ''),
+      todaySub: isManager ? active.length + (active.length === 1 ? ' task' : ' tasks') + ' in progress across the crew.' : myTasks.length ? 'Check in on each task you are on — a line on what you did and how far along your part is.' : '',
+      todayCards, noActive: !todayCards.length, noActiveNote: isManager ? 'Nothing in progress. Issue a task to get the crew started.' : "Nothing assigned to you right now. When HR or the admin adds you to a task, it shows up here.",
+
+      pageForm: s.page === 'form' && !!f, form: f || this.blankForm(), formIsNew: !(f && f.id), formEyebrow: f && f.id ? 'Edit task' : 'New task',
+      formHeading: f && f.title ? f.title : f && f.id ? 'Edit task' : 'Issue a task', formCta: s.busy ? 'Saving…' : f && f.id ? 'Save changes' : 'Issue task',
+      kindChips: Object.keys(KINDS).map(k => { const on = f && f.kind === k; return { label: KINDS[k], bg: on ? '#0A6E58' : '#FFFFFF', color: on ? '#FFFFFF' : '#1B1D1E', border: on ? '#0A6E58' : '#DDE3E1', pick: () => this.setState(st => ({ form: { ...st.form, kind: k } })) }; }),
+      onForm: e => { const k = e.target.getAttribute('data-k'), v = e.target.value; this.setState(st => ({ form: { ...st.form, [k]: v } })); },
+      onStarter: e => { const v = e.target.checked; this.setState(st => ({ form: { ...st.form, starter: v } })); },
+      formMemberCount: f ? f.members.length : 0, noRoster: !roster.length,
+      rosterPick: roster.map(r => { const on = !!f && f.members.includes(r.person_id); return { name: r.full_name, role: roleLabel(r.primary_role), tick: on ? '✓' : '', boxBg: on ? '#0A6E58' : '#FFFFFF', bg: on ? '#F3FAF8' : '#FFFFFF', border: on ? '#0A6E58' : '#DDE3E1', toggle: () => this.setState(st => ({ form: { ...st.form, members: on ? st.form.members.filter(x => x !== r.person_id) : [...st.form.members, r.person_id] } })) }; }),
+      saveTask: () => this.saveTask(), cancelForm: () => { const id = f && f.id; this.setState({ form: null }); if (id) this.openTask(id); else this.go('today'); },
+
+      pageTask: s.page === 'task', taskLoading: s.page === 'task' && !td, hasTask: !!(t && td), task: task || { crew: [] },
+      editTask: () => this.go('form', { form: { id: t.id, kind: t.kind, title: t.title, shoot_date: t.shoot_date || '', call_time: t.call_time || '', location: t.location || '', due_date: t.due_date || '', brief: t.brief || '', members: crewOf(t.id).map(c => c.id), starter: false } }),
+      trashTask: () => this.trashTask(), onTaskStatus: e => this.setTaskStatus(e.target.value),
+      statusOpts: Object.keys(STATUSES).map(v => ({ v, l: STATUSES[v] })), sectionOpts: Object.keys(SECTIONS).map(v => ({ v, l: SECTIONS[v] })), shotStatusOpts: Object.keys(SHOT_ST).map(v => ({ v, l: SHOT_ST[v] })),
+      tabs, tabOverview: s.tab === 'overview', tabMood: s.tab === 'mood', tabStory: s.tab === 'story',
+
+      canCheckIn: !!onTask && t.status !== 'done', ciNote: s.ci.note, ciPercent: s.ci.percent, ciCta: s.ci.saved ? 'Update' : 'Post check-in',
+      ciStatus: s.ci.saved ? '✓ Posted today — you can still update it' : 'Not posted yet today',
+      onCiNote: e => this.setState({ ci: { ...s.ci, note: e.target.value } }), onCiPercent: e => this.setState({ ci: { ...s.ci, percent: Number(e.target.value) } }),
+      postCheckin: () => this.postCheckin(),
+      itemsVM, noItems: !!td && !itemsVM.length, newItem: s.newItem,
+      onNewItem: e => { const k = e.target.getAttribute('data-k'), v = e.target.value; this.setState(st => ({ newItem: { ...st.newItem, [k]: v } })); },
+      onNewItemKey: e => { if (e.key === 'Enter') this.addItem(); }, addItem: () => this.addItem(),
+      partVM, checkinsVM, noCheckins: !!td && !checkinsVM.length,
+
+      showBoard, pageCrewBoard: s.page === 'board', boardTools, zoomTools, presentVM, cardsVM, linksSvg, strokesSvg, cursorsVM,
+      setCanvas: this.setCanvasRef, setBoardInput: el => { this.boardInput = el; },
+      onBoardFiles: e => { const fl = Array.from(e.target.files || []); e.target.value = ''; this.addFiles(fl); },
+      onCanvasDown: e => this.onCanvasDown(e), onCanvasMove: e => this.onCanvasMove(e), onCanvasUp: e => this.onCanvasUp(e),
+      onCanvasDragOver: e => { e.preventDefault(); },
+      onCanvasDrop: e => { e.preventDefault(); const at = this.toWorld(e.clientX, e.clientY), shot = e.dataTransfer.getData('text/x-crew-shot'); if (shot) { this.placeShot(shot, at); return; } const fl = Array.from(e.dataTransfer.files || []); if (fl.length) this.addFiles(fl, at); },
+      boardPos: s.boardFull ? 'fixed' : 'relative', boardZ: s.boardFull ? 90 : 1,
+      boardHeight: s.boardFull ? '100dvh' : s.page === 'board' ? (narrow ? 'calc(100dvh - 170px)' : 'calc(100dvh - 230px)') : (narrow ? 'calc(100dvh - 120px)' : '78vh'),
+      drawerPos: narrow ? 'absolute' : 'relative', drawerShadow: narrow ? '8px 0 24px rgba(22,35,31,.18)' : 'none',
+      worldTransform: 'translate(' + V.x + 'px, ' + V.y + 'px) scale(' + V.z + ')',
+      gridSize: (24 * V.z) + 'px ' + (24 * V.z) + 'px', gridPos: V.x + 'px ' + V.y + 'px',
+      boardCursor: s.tool === 'pen' || s.tool === 'arrow' ? 'crosshair' : 'default',
+      boardLoading: !!(B && B.loading), boardNote: s.boardNote, boardEmpty: !!(B && !B.loading && !B.items.length && !s.boardNote),
+      boardSubBar: !!boardHint || s.tool === 'link' || s.tool === 'pen' || s.tplOpen, boardHint,
+      toolLink: s.tool === 'link', toolPen: s.tool === 'pen', tplOpen: s.tplOpen,
+      tplVM: Object.keys(TEMPLATES).map(k => ({ label: TEMPLATES[k].label, go: () => this.applyTemplate(k) })),
+      penColors: INKS.map(c => ({ c, ring: s.pen.c === c ? '#10AF8B' : '#FFFFFF', go: () => this.setState({ pen: { ...s.pen, c } }) })),
+      penWidths: PEN_W.map(([l, w]) => ({ label: l, bg: s.pen.w === w ? '#0A6E58' : '#FFFFFF', color: s.pen.w === w ? '#FFFFFF' : '#1B1D1E', go: () => this.setState({ pen: { ...s.pen, w } }) })),
+      linkForm: s.linkForm, onLinkForm: e => { const k = e.target.getAttribute('data-k'), v = e.target.value; this.setState(st => ({ linkForm: { ...st.linkForm, [k]: v } })); },
+      onLinkKey: e => { if (e.key === 'Enter') this.addBoardLink(); }, addBoardLink: () => this.addBoardLink(),
+      shotDrawerOpen: s.shotDrawer && s.page === 'task', drawerShots, noDrawerShots: !drawerShots.length,
+      hasSel: !!selActions.length, selLabel, selColors, selActions,
+      cmtOpen: !!(showBoard && s.openRef && s.openRef.type === 'mood'), cmtList, noCmts: !cmtList.length, closeComments: () => this.setState({ openRef: null }),
+      todoDraft: s.todoDraft, onTodoDraft: e => this.setState({ todoDraft: e.target.value }),
+      refDraft: s.refDraft, onRefDraft: set('refDraft'), onRefKey: e => { if (e.key === 'Enter') this.sendRef(); }, sendRef: () => this.sendRef(),
+
+      setFrameInput: el => { this.frameInput = el; }, onFrameFile: e => this.onFrameFile(e),
+      storyViews: [['cards', 'Frames'], ['table', 'Shot list']].map(([k, l]) => ({ label: l, bg: s.storyView === k ? '#0A6E58' : '#FFFFFF', color: s.storyView === k ? '#FFFFFF' : '#4A524F', go: () => this.setState({ storyView: k }) })),
+      storyCards: s.storyView === 'cards', storyTable: s.storyView === 'table', storySummary, shotsVM, noShots: !!td && !shotsVM.length, addShot: () => this.addShot(),
+
+      showChat, pageChannel: s.page === 'channel', chatVM, noChat: !chatVM.length,
+      noChatNote: s.page === 'channel' ? 'Nothing here yet. Say hello to the crew.' : 'No discussion yet. Questions, decisions and updates for this task go here.',
+      chatHeight: s.page === 'channel' ? (narrow ? 'calc(100dvh - 270px)' : 'calc(100dvh - 330px)') : (narrow ? '60dvh' : '56vh'),
+      setChatBox: el => { this.chatBox = el; }, setChatInput: el => { this.chatInput = el; },
+      draft: s.draft, onDraft: set('draft'), onDraftKey: e => { if (e.key === 'Enter' && !e.shiftKey && !(window.matchMedia && matchMedia('(pointer:coarse)').matches)) { e.preventDefault(); this.sendMessage(); } },
+      sendMessage: () => this.sendMessage(), sending: s.sending, chatPlaceholder: s.page === 'channel' ? 'Message the whole crew' : 'Message everyone on this task',
+      canAttach: s.page === 'task', pickChatFile: () => this.chatInput && this.chatInput.click(),
+      onChatFile: e => { const fl = (e.target.files || [])[0]; e.target.value = ''; if (fl) this.setState({ pendingFile: fl }); },
+      hasPendingFile: !!s.pendingFile, pendingName: s.pendingFile ? s.pendingFile.name : '', clearPending: () => this.setState({ pendingFile: null }),
+
+      pageProfile: s.page === 'profile', profileLoading: s.page === 'profile' && !s.pform,
+      hasProfile: s.page === 'profile' && !!s.pform, pform: s.pform || { full_name: '', phone: '', primary_role: '' },
+      profileEmail: (s.profile && s.profile.email) || me.email || '', profileCrewId: (s.profile && s.profile.crew_id) || '',
+      hasCrewId: !!(s.profile && s.profile.crew_id), profileInitials: initials(s.pform ? s.pform.full_name : me.name),
+      profileRole: s.pform ? roleLabel(s.pform.primary_role) || 'Position not set' : '',
+      profilePending: !!(s.profile && s.profile.pending_change), profileMsg: s.profileMsg, profileErr: s.profileErr,
+      profileNote: me.person_id ? 'Changes to your name, position or phone go to the admin for approval before they reach your crew record.' : 'These are the details the admin sees on your sign-up.',
+      onPform: e => { const k = e.target.getAttribute('data-k'), v = e.target.value; this.setState(st => ({ pform: { ...st.pform, [k]: v }, profileMsg: '', profileErr: '' })); },
+      saveProfile: () => this.saveProfile(), profileCta: s.busy ? 'Saving…' : me.person_id ? 'Save and send for approval' : 'Save',
+      pageTrash: s.page === 'trash' && isManager, noTrash: !s.trash.length,
+      trashVM: s.trash.map(x => {
+        const left = x.purge_after ? Math.max(0, Math.ceil((new Date(x.purge_after) - Date.now()) / 864e5)) : 7;
+        return { title: x.title, meta: KINDS[x.kind] + ' · trashed ' + ago(x.trashed_at), left: left <= 0 ? 'Deleting on next open' : left === 1 ? 'Deletes in 1 day' : 'Deletes in ' + left + ' days', restore: () => this.restoreTask(x), purge: () => this.purgeNow(x) };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

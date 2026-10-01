@@ -3,3 +3,4 @@
 /f/*   /feedback.html?t=:splat       200
 /admin /admin.html                 200
 /work  /portfolio.html              200
+/crew  /crew.html                  200

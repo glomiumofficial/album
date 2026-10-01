@@ -168,7 +168,7 @@
       </sc-if>
       <sc-if value="{{ roleMissing }}" hint-placeholder-val="{{ false }}">
         <div style="padding:12px clamp(20px,5vw,60px); background:#FDF9F0; border-bottom:1px solid #EFE1C6">
-          <span style="font-size:12px; color:#8A6D3B">No workspace role assigned to this account yet — you can see the album and project list only. Media, billing, crew and payouts open up once an admin adds a row to <b>staff_roles</b>.</span>
+          <span style="font-size:12px; color:#6E5626">This login has no admin panel access. Crew accounts work on the <a href="crew.html">crew page</a> only. Staff get access once an admin adds a row to <b>staff_roles</b>.</span>
         </div>
       </sc-if>
 
@@ -1725,6 +1725,59 @@
             <button onClick="{{ rf.go }}" style="padding:8px 15px; background:{{ rf.bg }}; border:1px solid {{ rf.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ rf.color }}; cursor:pointer">{{ rf.label }}</button>
           </sc-for>
         </div>
+        <sc-if value="{{ showCrewSignups }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Crew page sign-ups</span>
+            <span style="font-size:11px; color:#4A524F">{{ crewSignupsLabel }}</span>
+          </div>
+          <sc-if value="{{ crewSignupNote }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:13px; color:#8A6D3B; line-height:1.6">{{ crewSignupNote }}</span>
+          </sc-if>
+          <sc-if value="{{ noCrewSignups }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:14px; color:#4A524F; line-height:1.7">{{ noCrewSignupsHint }}</span>
+          </sc-if>
+          <sc-for list="{{ crewSignupsVM }}" as="cs" hint-placeholder-count="0">
+            <div style="display:flex; flex-direction:column; gap:14px; padding:18px 20px; border:1px solid var(--line); border-radius:0">
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                <span style="font-size:10px; padding:3px 9px; border-radius:0; background:#DDEFE8; color:#0A6E58; letter-spacing:.18em; text-transform:uppercase">Crew sign-up</span>
+                <div style="display:flex; flex-direction:column; gap:3px; min-width:0; flex:1 1 220px">
+                  <span style="font-size:15px; color:#1B1D1E">{{ cs.name }} <span style="font-size:12px; color:#4A524F">{{ cs.email }}</span></span>
+                  <span style="font-size:11px; color:#4A524F">{{ cs.meta }}</span>
+                </div>
+                <span style="font-size:11px; color:{{ cs.confirmColor }}">{{ cs.confirmLabel }}</span>
+                <span style="font-size:10px; padding:3px 9px; border-radius:0; background:{{ cs.statusBg }}; color:{{ cs.statusColor }}; letter-spacing:.18em; text-transform:uppercase">{{ cs.statusLabel }}</span>
+              </div>
+              <sc-if value="{{ cs.isPending }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:14px; border-top:1px solid var(--line)">
+                  <select value="{{ cs.linkValue }}" onChange="{{ cs.onLink }}" style="flex:1 1 280px; min-width:0; padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; background:#fff; color:#1B1D1E">
+                    <option value="">Create a new crew record from this sign-up</option>
+                    <sc-for list="{{ crewLinkOptions }}" as="cl" hint-placeholder-count="0"><option value="{{ cl.value }}">Link to {{ cl.label }}</option></sc-for>
+                  </select>
+                  <button onClick="{{ cs.approve }}" style="padding:9px 16px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Approve</button>
+                  <button onClick="{{ cs.decline }}" style="padding:9px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; color:#B4433A; cursor:pointer">Decline</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ cs.linkedLabel }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px; color:#4A524F">{{ cs.linkedLabel }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ hasCrewAccess }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; padding:4px 20px; border:1px solid var(--line); border-radius:0">
+              <span style="padding:12px 0 6px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">Who can open the crew page</span>
+              <sc-for list="{{ crewAccessVM }}" as="ca" hint-placeholder-count="0">
+                <div style="display:flex; align-items:center; gap:12px; padding:11px 0; border-top:1px solid #F1F4F3; flex-wrap:wrap">
+                  <div style="flex:1 1 220px; min-width:0; display:flex; flex-direction:column"><span style="font-size:14px; color:{{ ca.nameColor }}">{{ ca.name }}</span><span style="font-size:12px; color:#4A524F; overflow-wrap:anywhere">{{ ca.email }}</span></div>
+                  <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:{{ ca.stateColor }}">{{ ca.state }}</span>
+                  <button onClick="{{ ca.toggle }}" style="padding:7px 13px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:{{ ca.btnColor }}; cursor:pointer">{{ ca.btn }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Crew record changes</span>
+        </sc-if>
         <sc-if value="{{ hasNoApprovals }}" hint-placeholder-val="{{ true }}">
           <span style="font-size:14px; color:#4A524F; line-height:1.7">{{ emptyApprovalsHint }}</span>
         </sc-if>
@@ -5929,9 +5982,11 @@ const bookingStatusLabel = k => (BOOKING_STATUSES[k] || [k])[0];
 const PACKAGE_DESC = 'Photography & Videography';
 
 const CREW_ROLES = [
-  ['photographer', 'Photographer'], ['videographer', 'Videographer'], ['photo_editor', 'Photo editor'],
-  ['video_editor', 'Video editor'], ['art_director', 'Art director'], ['social_media_marketer', 'Social media marketer'],
-  ['content_writer', 'Content writer'], ['drone_operator', 'Drone operator'], ['assistant', 'Assistant'],
+  ['photographer', 'Photographer'], ['videographer', 'Videographer'], ['photo_videographer', 'Photo & videographer'],
+  ['photo_editor', 'Photo editor'], ['video_editor', 'Video editor'], ['art_director', 'Art director'],
+  ['model', 'Model'], ['makeup_artist', 'Makeup artist'], ['hair_stylist', 'Hair stylist'], ['stylist', 'Stylist / wardrobe'],
+  ['social_media_marketer', 'Social media marketer'], ['content_writer', 'Content writer'], ['drone_operator', 'Drone operator'],
+  ['assistant', 'Assistant'],
 ];
 const ROLE_LABEL = CREW_ROLES.reduce((m, [k, v]) => { m[k] = v; return m; }, {});
 const STAFF_ROLE_LABEL = { admin: 'Admin', creative: 'Creative', accounts: 'Accounts', hr: 'People & HR', none: 'No role set' };
@@ -6367,6 +6422,7 @@ class Component extends DCLogic {
     role: null,
     people: [], peopleQuery: '', personId: null, personForm: null, personStatus: '', personMode: 'view',
     changeRequests: [], requestStatus: '', requestFilter: 'pending', requestOpen: null,
+    crewSignups: [], crewAccessRows: [], crewLink: {}, crewSignupNote: '',
     workload: [], workloadFailed: false, works: [], workFilter: 'active', workStatus: '',
     personRates: [], rateLabel: '', rateAmount: '',
     agDeliverables: [], dlFor: '', dlLabel: '', dlQty: '1', dlRate: '', dlStatus: '',
@@ -9357,14 +9413,14 @@ class Component extends DCLogic {
           canLog: x.state === 'unpaid' && this.can('moneyEdit'),
           canIssue: x.state === 'draft' && x.i.type === 'tax' && this.can('moneyEdit'),
           issue: () => this.markInvoiceIssued(x.i),
-          canCancel: (x.state === 'draft' || x.state === 'unpaid' || x.state === 'proforma' || (pro && x.state === 'sent')) && this.can('moneyEdit'),
+          canCancel: (x.state === 'draft' || x.state === 'unpaid' || x.state === 'proforma' || (pro && x.state === 'sent')) && x.i.status !== 'cancelled' && this.can('moneyEdit'),
           canEdit: pro && x.state !== 'cancelled' && x.i.pdf_source !== 'uploaded' && this.can('moneyEdit'),
           edit: () => this.niEdit(x.i),
           canSend: pro && x.state !== 'cancelled' && this.can('moneyEdit'),
           sendLabel: x.state === 'sent' ? 'Send again' : 'Send',
           send: () => this.openComposer(x.i),
           canCreditNote: x.state === 'unpaid' && x.i.type === 'tax',
-          cancelLabel: x.i.status === 'draft' && this.isDraftNo(x.i.number) ? 'Delete draft' : 'Cancel',
+          cancelLabel: x.i.type !== 'proforma' && x.i.status === 'draft' && this.isDraftNo(x.i.number) ? 'Delete draft' : 'Cancel',
           cancel: () => this.cancelInvoice(x.i),
           logPayment: () => this.goLogPayment(x.i),
           preview: () => (x.i.pdf_source === 'uploaded' ? this.viewUploadedPdf(x.i) : this.openInvoicePreview(x.i)),
@@ -10571,9 +10627,12 @@ class Component extends DCLogic {
   }
 
   async cancelInvoice(inv) {
+    if (inv.status === 'cancelled') return;
+    // A proforma is a quote: sent or not, it is cancelled in one step and keeps
+    // its PRO number, so the list shows what was quoted and withdrawn.
+    if (inv.type === 'proforma') return this.cancelProforma(inv);
     // Older drafts already hold an INV number; those are cancelled, not deleted.
     if (inv.status === 'draft' && !(inv.type === 'tax' && !this.isDraftNo(inv.number))) return this.deleteInvoice(inv);
-    if (inv.status === 'cancelled') return;
     const { data: rc } = await this.sb.from('payments_received').select('id').eq('invoice_id', inv.id).limit(1);
     if (rc && rc.length) { this.afterInvoiceChange({ message: inv.number + ' has payments logged. Reverse them in Money in first, or raise a credit note.' }); return; }
     const credit = inv.type === 'tax' && inv.status !== 'draft';
@@ -10612,6 +10671,24 @@ class Component extends DCLogic {
     this.afterInvoiceChange(error && /cancel|check constraint/i.test(error.message || '') ? { message: 'Run album-system/finance-audit-2026-09.sql in Supabase first.' } : error, inv.number + ' cancelled' + (cnNo ? ' · credit note ' + cnNo + ' issued.' : '.'));
   }
 
+  async cancelProforma(inv) {
+    if (!window.confirm('Cancel proforma ' + inv.number + ' (' + fmtINR(inv.total) + ')? It stays in the list as cancelled.')) return;
+    const { data, error } = await this.sb.from('invoices')
+      .update({ status: 'cancelled', cancelled_at: new Date().toISOString(), cancel_reason: 'Withdrawn' })
+      .eq('id', inv.id).neq('status', 'cancelled').select('id');
+    if (error) {
+      this.afterInvoiceChange(/cancel|check constraint/i.test(error.message || '') ? { message: 'The database does not accept "cancelled" yet \u2014 run the SQL for proforma cancel, then try again.' } : error);
+      return;
+    }
+    if (!data || !data.length) {
+      const { data: now } = await this.sb.from('invoices').select('status').eq('id', inv.id).maybeSingle();
+      this.afterInvoiceChange({ message: !now ? inv.number + ' no longer exists.' : now.status === 'cancelled' ? inv.number + ' was already cancelled.'
+        : 'Your login is not allowed to change ' + inv.number + ' (database permissions) \u2014 nothing was cancelled.' });
+      return;
+    }
+    this.afterInvoiceChange(null, inv.number + ' cancelled.');
+  }
+
   afterInvoiceChange(error, okMsg) {
     const msg = error ? error.message : okMsg;
     this.setState({ invStatus: msg, finStatus: error ? msg : '' });
@@ -10625,17 +10702,16 @@ class Component extends DCLogic {
     if (inv.status && inv.status !== 'draft') { this.afterInvoiceChange({ message: inv.number + ' has been issued — cancel it instead, so the number series stays unbroken.' }); return; }
     if (inv.type === 'tax' && !this.isDraftNo(inv.number)) { this.afterInvoiceChange({ message: inv.number + ' already holds a GST number — cancel it instead.' }); return; }
     if (!window.confirm('Delete this draft?')) return;
-    const { error } = await this.sb.from('invoices').delete().eq('id', inv.id);
+    const { data, error } = await this.sb.from('invoices').delete().eq('id', inv.id).select('id');
     if (error) {
-      this.setState({ invStatus: /violates foreign key|still referenced/i.test(error.message || '')
+      this.afterInvoiceChange({ message: /violates foreign key|still referenced/i.test(error.message || '')
         ? 'This invoice has payments recorded against it. Delete those receipts first, or leave it and issue a credit note.'
         : error.message });
       return;
     }
-    if (!this.state.current) { if (this.state.view === 'finInvoices' || this.state.view === 'finProforma') this.loadFinInvoices(); return; }
-    this.loadInvoices(this.state.current.id);
-    // A deleted invoice releases its lines (on delete set null); show them as unbilled again.
-    if (this.state.current && this.state.current._table === 'projects') this.loadPricing(this.state.current.id);
+    if (!data || !data.length) { this.afterInvoiceChange({ message: 'Your login is not allowed to delete this draft (database permissions) \u2014 nothing was deleted.' }); return; }
+    // Refreshes both the open project and the Finance list, whichever is showing.
+    this.afterInvoiceChange(null, 'Draft deleted.');
   }
 
   // The PDF is a JPEG of the page, so pixels × quality set the file size. A
@@ -12856,6 +12932,7 @@ class Component extends DCLogic {
   async loadChangeRequests(roleOverride) {
     const role = roleOverride || this.state.role;
     if (['admin', 'hr'].indexOf(role) === -1) return;
+    if (role === 'admin') this.loadCrewSignups();
     const base = this.sb.from('people_change_requests').select('*');
     const { data, error } = this.state.requestFilter === 'pending'
       ? await base.eq('status', 'pending').order('created_at', { ascending: true })
@@ -12869,6 +12946,51 @@ class Component extends DCLogic {
       return;
     }
     this.setState({ changeRequests: data || [], requestStatus: '' });
+  }
+
+  // ---- Crew page sign-ups (crew.html) -------------------------------------------
+  // Anyone can create a crew account; nothing is visible to them until approved here.
+
+  async loadCrewSignups() {
+    const [rq, ac] = await Promise.all([
+      this.sb.rpc('crew_signup_list', { p_pending_only: this.state.requestFilter === 'pending' }),
+      this.sb.rpc('crew_access_list'),
+    ]);
+    if (rq.error) {
+      const missing = rq.error.code === 'PGRST202' || /could not find the function/i.test(rq.error.message || '');
+      this.setState({ crewSignups: [], crewAccessRows: [], crewSignupNote: missing ? 'Run crew-tasks-schema.sql, then crew-signup-approval.sql, in Supabase to see crew page sign-ups here.' : rq.error.message });
+      return;
+    }
+    this.setState({ crewSignups: rq.data || [], crewAccessRows: ac.error ? [] : (ac.data || []), crewSignupNote: '' });
+  }
+
+  async approveCrewSignup(r, personId) {
+    const target = personId ? this.state.people.find(p => p.id === personId) : null;
+    const who = r.full_name || r.email;
+    if (!confirm(target ? 'Approve ' + r.email + ' and link it to ' + target.full_name + '\u2019s crew record?' : 'Approve ' + r.email + ' and create a new crew record for ' + who + '?')) return;
+    const { error } = await this.sb.rpc('crew_approve_signup', { p_request: r.id, p_person: personId || null });
+    if (error) { this.setState({ requestStatus: error.message }); return; }
+    this.setState({ requestStatus: 'Approved \u2014 ' + who + ' can open the crew page now.' });
+    this.loadCrewSignups(); this.loadPeople();
+    setTimeout(() => this.setState({ requestStatus: '' }), 5000);
+  }
+
+  async declineCrewSignup(r) {
+    if (!confirm('Decline the crew page sign-up from ' + r.email + '?')) return;
+    const { error } = await this.sb.rpc('crew_decline_signup', { p_request: r.id });
+    if (error) { this.setState({ requestStatus: error.message }); return; }
+    this.setState({ requestStatus: 'Declined.' });
+    this.loadCrewSignups();
+    setTimeout(() => this.setState({ requestStatus: '' }), 2500);
+  }
+
+  async toggleCrewAccess(a) {
+    if (!a.revoked_at && !confirm('Remove crew page access for ' + a.full_name + '? It takes effect immediately.')) return;
+    const { error } = await this.sb.from('crew_allowlist').update({ revoked_at: a.revoked_at ? null : new Date().toISOString() }).eq('email', a.email);
+    if (error) { this.setState({ requestStatus: error.message }); return; }
+    this.setState({ requestStatus: a.revoked_at ? 'Access restored.' : 'Access removed.' });
+    this.loadCrewSignups();
+    setTimeout(() => this.setState({ requestStatus: '' }), 2500);
   }
 
   async submitPersonRequest(kind, payload, personId) {
@@ -16043,7 +16165,8 @@ class Component extends DCLogic {
 
     const ws = this.activeWorkspace();
     const nav = [];
-    const pendingRequests = s.changeRequests.filter(r => r.status === 'pending').length;
+    const pendingRequests = s.changeRequests.filter(r => r.status === 'pending').length
+      + s.crewSignups.filter(r => r.status === 'pending').length;
     let finGroups = [];
     if (ws === 'finance') {
       // Five questions, not ten screens: where do we stand, what are the jobs
@@ -16266,6 +16389,32 @@ class Component extends DCLogic {
         approve: () => this.approveRequest(r), reject: () => this.rejectRequest(r),
       };
     });
+    const crewSignupsVM = !onApprovals ? [] : s.crewSignups.map(r => {
+      const match = s.people.find(p => p.email && String(p.email).trim().toLowerCase() === r.email);
+      const link = Object.prototype.hasOwnProperty.call(s.crewLink, r.id) ? s.crewLink[r.id] : (match ? match.id : '');
+      const st = r.status;
+      return {
+        name: r.full_name || r.email.split('@')[0], email: r.email,
+        meta: [ROLE_LABEL[r.primary_role] || (r.primary_role ? r.primary_role.replace(/_/g, ' ') : ''), r.phone, 'signed up ' + fmtStampTime(r.created_at)].filter(Boolean).join(' \u00b7 '),
+        confirmLabel: r.confirmed ? 'Email confirmed' : 'Email not confirmed yet',
+        confirmColor: r.confirmed ? '#0A6E58' : '#8A6D3B',
+        statusLabel: st === 'pending' ? 'Waiting' : st === 'approved' ? 'Approved' : 'Declined',
+        statusBg: st === 'approved' ? '#DDEFE8' : st === 'declined' ? '#F7E9E7' : '#EFE9DA',
+        statusColor: st === 'approved' ? '#0A6E58' : st === 'declined' ? '#B4433A' : '#8A6D3B',
+        isPending: st === 'pending', linkValue: link,
+        linkedLabel: st === 'approved' && r.person_name ? 'Linked to ' + r.person_name + (r.reviewed_at ? ' \u00b7 ' + fmtStampTime(r.reviewed_at) : '') : '',
+        onLink: e => { const v = e.target.value; this.setState(x => ({ crewLink: { ...x.crewLink, [r.id]: v } })); },
+        approve: () => this.approveCrewSignup(r, link), decline: () => this.declineCrewSignup(r),
+      };
+    });
+    const crewLinkOptions = !onApprovals ? [] : s.people.filter(p => p.active !== false)
+      .map(p => ({ value: p.id, label: p.full_name + (p.crew_id ? ' \u00b7 ' + p.crew_id : '') + (p.email ? ' \u00b7 ' + p.email : '') }));
+    const crewAccessVM = !onApprovals ? [] : s.crewAccessRows.map(a => ({
+      name: a.full_name, email: a.email, nameColor: a.revoked_at ? '#6B7572' : '#1B1D1E',
+      state: a.revoked_at ? 'Removed' : 'Has access', stateColor: a.revoked_at ? '#B4433A' : '#0A6E58',
+      btn: a.revoked_at ? 'Restore' : 'Remove access', btnColor: a.revoked_at ? '#0A6E58' : '#B4433A',
+      toggle: () => this.toggleCrewAccess(a),
+    }));
     const requestFilterVM = !onApprovals ? [] : this.chips(
       [['pending', 'Waiting'], ['all', 'Everything']], s.requestFilter,
       key => this.setState({ requestFilter: key, requestOpen: null }, () => this.loadChangeRequests()));
@@ -17211,6 +17360,13 @@ class Component extends DCLogic {
       ...careerVals,
 
       approvalsVM, hasNoApprovals: approvalsVM.length === 0,
+      showCrewSignups: this.can('peopleApprove'), crewSignupsVM, crewLinkOptions, crewAccessVM,
+      hasCrewAccess: crewAccessVM.length > 0, crewSignupNote: s.crewSignupNote,
+      noCrewSignups: crewSignupsVM.length === 0 && !s.crewSignupNote,
+      noCrewSignupsHint: s.requestFilter === 'pending' ? 'No one waiting. People who create an account on the crew page appear here.' : 'No crew page sign-ups yet.',
+      crewSignupsLabel: s.requestFilter === 'pending'
+        ? crewSignupsVM.length + (crewSignupsVM.length === 1 ? ' waiting' : ' waiting')
+        : crewSignupsVM.length + (crewSignupsVM.length === 1 ? ' sign-up' : ' sign-ups'),
       requestFilterVM,
       approvalsCountLabel: s.requestFilter === 'pending'
         ? approvalsVM.length + (approvalsVM.length === 1 ? ' request waiting' : ' requests waiting')
