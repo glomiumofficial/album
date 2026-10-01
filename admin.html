@@ -5835,6 +5835,10 @@ const EMAILJS_TEMPLATE_ID = 'template_9xph63f';
 // in the body.
 const EMAILJS_INVOICE_TEMPLATE_ID = 'template_lgfvfhb';
 const EMAILJS_PUBLIC_KEY = 'rRmmmx6iCKnvLcEuR';
+// Must equal Template → Attachments → Variable Attachment → "Parameter name"
+// in EmailJS. If it does not, EmailJS reads the PDF as a plain variable and
+// rejects it at the 50 KB variable cap, whatever the plan.
+const EMAILJS_ATTACHMENT_PARAM = 'invoice_pdf';
 const EMAILJS_VARS_LIMIT_KB = 500;
 // Base64 grows a file by 4/3 and the email body rides in the same payload, so
 // the PDF itself must stay under ~3/4 of what is left after the body.
@@ -11093,11 +11097,11 @@ class Component extends DCLogic {
         body_html: html,
         invoice_number: inv.number, invoice_date: inv.issue_date ? fmtDay(inv.issue_date) : '', invoice_amount: fmtINR(inv.total),
         invoice_link: pdfUrl, invoice_filename: fileName,
-      }, dataUri, !!pdfUrl);
+      }, dataUri, pdfUrl);
       stage = 'updating the record';
       await this.markSent(inv, pdfUrl);
       this.cmpBlob = null;
-      this.setState({ cmpOpen: false, cmpBusy: false, cmpStatus: '', niDone: 'Sent ' + inv.number + ' to ' + to + (!pdfUrl ? ' — the PDF did not reach storage, so the email has the attachment but no download link.' : attached ? '.' : ' — the PDF was too large to attach, so it went as the download link.') });
+      this.setState({ cmpOpen: false, cmpBusy: false, cmpStatus: '', niDone: 'Sent ' + inv.number + ' to ' + to + (!pdfUrl ? ' — the PDF did not reach storage, so the email has the attachment but no download link.' : attached ? '.' : ' — sent with the download link only; the attachment is not set up in EmailJS (see the browser console).') });
       setTimeout(() => this.setState({ niDone: '' }), 6000);
       this.loadFinInvoices();
     } catch (e) {
@@ -11223,11 +11227,11 @@ class Component extends DCLogic {
         body_html: bodyHtml,
         invoice_number: inv.number, invoice_date: invoiceDate, invoice_amount: fmtINR(inv.total),
         invoice_link: pdfUrl, invoice_filename: inv.number + '.pdf',
-      }, dataUri, !!pdfUrl);
+      }, dataUri, pdfUrl);
       stage = 'updating the invoice record';
       await this.markSent(inv, pdfUrl);
       const note = !pdfUrl ? ' \u2014 the PDF did not reach storage, so the email has the attachment but no download link.'
-        : attached ? '.' : ' \u2014 the PDF was too large to attach, so it went as the download link.';
+        : attached ? '.' : ' \u2014 sent with the download link only; the attachment is not set up in EmailJS (see the browser console).';
       this.setState({
         invStatus: 'Sent ' + inv.number + note,
         showInvoicePreview: false, previewInvoice: null,
@@ -11256,28 +11260,35 @@ class Component extends DCLogic {
     if (error) console.warn('[invoice] sent, but the record did not update:', error.message);
   }
 
-  // EmailJS caps the whole variables payload (500 KB on the paid plan). The PDF
-  // travels ONCE, as a base64 data URI in invoice_pdf — the variable the
-  // template's Attachments row is bound to. Base64 is ~1.33× the file, so PDFs
-  // over ~370 KB cannot ride along; those go out with the download link only.
-  // If EmailJS still rejects on size, retry without the attachment.
-  async sendInvoiceMail(mailer, params, dataUri, hasLink) {
+  // EmailJS takes a Variable Attachment as base64 OR a URL. The stored PDF's
+  // signed link goes first: a few hundred bytes, so no size limit can trip and
+  // EmailJS fetches the file itself. Only when storage failed does the PDF ride
+  // as base64. A "size limit" error on that path means the template's
+  // attachment parameter is not named EMAILJS_ATTACHMENT_PARAM.
+  async sendInvoiceMail(mailer, params, dataUri, pdfUrl) {
     const send = p => mailer.send(EMAILJS_SERVICE_ID, EMAILJS_INVOICE_TEMPLATE_ID, p, { publicKey: EMAILJS_PUBLIC_KEY });
     const bytes = p => new Blob([JSON.stringify(p)]).size;
-    const withPdf = Object.assign({}, params, { invoice_pdf: dataUri });
-    console.info('[invoice] email payload', Math.round(bytes(withPdf) / 1024) + ' KB (PDF ' + Math.round(String(dataUri).length * 0.75 / 1024) + ' KB, body ' + Math.round(bytes(params) / 1024) + ' KB)');
-    const fits = bytes(withPdf) < EMAILJS_VARS_LIMIT_KB * 1000 - 4000;
-    if (fits) {
-      try { await send(withPdf); return true; }
-      catch (e) {
-        if (!(hasLink && /size limit/i.test(e.text || e.message || ''))) throw e;
-        console.warn('[invoice] attachment rejected on size, sending link only:', e.text || e);
-      }
-    } else if (!hasLink) {
-      throw new Error('The email with its PDF is ' + Math.round(bytes(withPdf) / 1000) + ' KB, over the ' + EMAILJS_VARS_LIMIT_KB + ' KB limit, and the PDF did not reach storage for a link. Use the generated PDF, or upload a smaller one.');
+    const msg = e => String((e && (e.text || e.message)) || e || '');
+    const wrongParam = () => new Error('EmailJS treated the PDF as text, not an attachment. In EmailJS open template ' + EMAILJS_INVOICE_TEMPLATE_ID
+      + ' → Attachments → Variable Attachment and set Parameter name to "' + EMAILJS_ATTACHMENT_PARAM + '" (filename {{invoice_filename}}, content type PDF), save, and send again.');
+    if (pdfUrl) {
+      try {
+        await send(Object.assign({}, params, { [EMAILJS_ATTACHMENT_PARAM]: pdfUrl }));
+        console.info('[invoice] sent with attachment by link · payload ' + Math.round(bytes(params) / 1024) + ' KB');
+        return true;
+      } catch (e) { console.warn('[invoice] link attachment failed, trying the file itself:', msg(e)); }
     }
-    await send(Object.assign({}, params, { invoice_pdf: '' }));
-    return false;
+    const withPdf = Object.assign({}, params, { [EMAILJS_ATTACHMENT_PARAM]: dataUri });
+    console.info('[invoice] sending with attachment inline · payload ' + Math.round(bytes(withPdf) / 1024) + ' KB');
+    try { await send(withPdf); return true; }
+    catch (e) {
+      if (!/size limit/i.test(msg(e))) throw e;
+      if (!pdfUrl) throw wrongParam();
+      // Still deliver: the email carries the download button.
+      await send(Object.assign({}, params, { [EMAILJS_ATTACHMENT_PARAM]: '' }));
+      console.warn('[invoice] ' + wrongParam().message);
+      return false;
+    }
   }
 
   async sendEmail(params) {
