@@ -28,7 +28,7 @@
   html { -webkit-text-size-adjust:100%; }
   body { -webkit-tap-highlight-color:transparent; }
   @media (pointer:coarse) {
-    input, select, textarea { font-size:max(16px, var(--fs, 16px)) !important; }
+    input, select, textarea, [data-rich] { font-size:max(16px, var(--fs, 16px)) !important; }
     [data-tap] { min-height:44px; }
     [data-tap-sq] { min-width:30px !important; min-height:30px !important; }
   }
@@ -462,12 +462,22 @@
                           <sc-if value="{{ sh.isOpen }}" hint-placeholder-val="{{ false }}">
                             <div style="display:flex; flex-direction:column; gap:8px; padding-top:8px; border-top:1px solid #EEF2F1">
                               <sc-for list="{{ sh.comments }}" as="cc" hint-placeholder-count="0">
-                                <div style="display:flex; flex-direction:column; gap:2px"><span style="font-size:11px; color:#6B7572">{{ cc.author }} · {{ cc.time }}</span><span style="font-size:13px; line-height:1.55; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere">{{ cc.body }}</span></div>
+                                <div style="display:flex; flex-direction:column; gap:2px"><span style="font-size:11px; color:#6B7572">{{ cc.author }} · {{ cc.time }}</span><span style="font-size:13px; line-height:1.55; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere"><sc-for list="{{ cc.segs }}" as="sg" hint-placeholder-count="1"><span onClick="{{ sg.go }}" style="color:{{ sg.color }}; font-weight:{{ sg.fw }}; background:{{ sg.bg }}; text-decoration:{{ sg.td }}; cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></span></div>
                               </sc-for>
                               <div style="display:flex; gap:6px">
-                                <input placeholder="Comment" value="{{ refDraft }}" onChange="{{ onRefDraft }}" onKeyDown="{{ onRefKey }}" style="flex:1; min-width:0; padding:8px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px">
+                                <input placeholder="Comment — @ person, # to-do" value="{{ refDraft }}" onChange="{{ onRefDraft }}" onKeyDown="{{ onRefKey }}" style="flex:1; min-width:0; padding:8px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px">
                                 <button data-tap="1" onClick="{{ sendRef }}" style="padding:8px 12px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:10px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Post</button>
                               </div>
+                              <sc-if value="{{ showMentionRef }}" hint-placeholder-val="{{ false }}">
+                  <div data-nodrag="1" style="display:flex; flex-direction:column; border:1px solid #DDE3E1; background:#FFFFFF; max-height:230px; overflow-y:auto">
+                    <sc-for list="{{ mentionPick }}" as="mp" hint-placeholder-count="0">
+                      <button data-tap="1" onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ mp.go }}" style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:#FFFFFF; border:none; border-bottom:1px solid #EEF2F1; text-align:left; cursor:pointer">
+                        <span style="flex:0 0 26px; height:26px; display:grid; place-items:center; background:#E3F2EE; color:#0A6E58; font-size:10px; letter-spacing:.04em">{{ mp.initials }}</span>
+                        <span style="display:flex; flex-direction:column; min-width:0"><span style="font-size:14px; color:#1B1D1E">{{ mp.name }}</span><span style="font-size:11px; color:#6B7572">{{ mp.role }}</span></span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
                             </div>
                           </sc-if>
                         </div>
@@ -600,7 +610,8 @@
                     <sc-for list="{{ cardsVM }}" as="c" hint-placeholder-count="0">
                       <div data-card="{{ c.id }}" style="position:absolute; left:{{ c.x }}px; top:{{ c.y }}px; width:{{ c.w }}px; height:{{ c.h }}px; z-index:{{ c.z }}; display:flex; flex-direction:column; background:{{ c.bg }}; border:{{ c.border }}; outline:{{ c.outline }}; outline-offset:2px; box-shadow:{{ c.shadow }}; overflow:hidden; cursor:{{ c.cursor }}">
                         <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ false }}">
-                          <textarea data-edit="{{ c.id }}" data-f="note" tabIndex="-1" value="{{ c.text }}" onChange="{{ c.onText }}" onBlur="{{ c.onBlur }}" placeholder="{{ c.ph }}" style="flex:1 1 auto; width:100%; min-height:0; padding:{{ c.pad }}; border:none; outline:none; resize:none; background:transparent; font-family:inherit; --fs:{{ c.fs }}; font-size:{{ c.fs }}; font-weight:{{ c.fw }}; line-height:1.45; color:#1B1D1E; pointer-events:{{ c.pe }}"></textarea>
+                          <div data-edit="{{ c.id }}" data-rich="1" ref="{{ c.setRich }}" onBlur="{{ c.onRichBlur }}" onPaste="{{ onRichPaste }}" style="flex:1 1 auto; width:100%; min-height:0; overflow:auto; padding:{{ c.pad }}; outline:none; font-family:inherit; --fs:{{ c.fs }}; font-size:{{ c.fs }}; font-weight:{{ c.fw }}; line-height:1.45; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere; pointer-events:{{ c.pe }}; user-select:{{ c.us }}; -webkit-user-select:{{ c.us }}"></div>
+                          <sc-if value="{{ c.showPh }}" hint-placeholder-val="{{ false }}"><span style="position:absolute; left:{{ c.phl }}; top:{{ c.pht }}; font-size:{{ c.fs }}; font-weight:{{ c.fw }}; color:#9AA5A1; pointer-events:none">{{ c.ph }}</span></sc-if>
                         </sc-if>
                         <sc-if value="{{ c.isTodo }}" hint-placeholder-val="{{ false }}">
                           <div style="flex:1 1 auto; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:7px; padding:12px">
@@ -704,7 +715,7 @@
                         <button onClick="{{ scl.go }}" aria-label="Colour" style="flex:0 0 22px; width:22px; height:22px; padding:0; background:{{ scl.c }}; border:2px solid {{ scl.ring }}; border-radius:0; cursor:pointer"></button>
                       </sc-for>
                       <sc-for list="{{ selActions }}" as="sa" hint-placeholder-count="0">
-                        <button data-tap="1" onClick="{{ sa.go }}" style="flex:0 0 auto; padding:7px 10px; background:{{ sa.bg }}; color:{{ sa.color }}; border:none; border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; white-space:nowrap">{{ sa.label }}</button>
+                        <button data-tap="1" onPointerDown="{{ sa.keep }}" onMouseDown="{{ sa.keep }}" onClick="{{ sa.go }}" style="flex:0 0 auto; padding:7px 10px; background:{{ sa.bg }}; color:{{ sa.color }}; border:none; border-radius:0; font-size:{{ sa.fs }}; font-weight:{{ sa.fw }}; font-style:{{ sa.fst }}; text-decoration:{{ sa.td }}; letter-spacing:.12em; text-transform:{{ sa.tt }}; cursor:pointer; white-space:nowrap">{{ sa.label }}</button>
                       </sc-for>
                     </div>
                   </sc-if>
@@ -717,11 +728,21 @@
                       <div style="flex:1 1 auto; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:14px">
                         <sc-if value="{{ noCmts }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">No comments yet.</span></sc-if>
                         <sc-for list="{{ cmtList }}" as="cm" hint-placeholder-count="0">
-                          <div style="display:flex; flex-direction:column; gap:2px"><span style="font-size:11px; color:#6B7572">{{ cm.author }} · {{ cm.time }}</span><span style="font-size:14px; line-height:1.55; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere">{{ cm.body }}</span></div>
+                          <div style="display:flex; flex-direction:column; gap:2px"><span style="font-size:11px; color:#6B7572">{{ cm.author }} · {{ cm.time }}</span><span style="font-size:14px; line-height:1.55; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere"><sc-for list="{{ cm.segs }}" as="sg" hint-placeholder-count="1"><span onClick="{{ sg.go }}" style="color:{{ sg.color }}; font-weight:{{ sg.fw }}; background:{{ sg.bg }}; text-decoration:{{ sg.td }}; cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></span></div>
                         </sc-for>
                       </div>
+                      <sc-if value="{{ showMentionRef }}" hint-placeholder-val="{{ false }}">
+                  <div data-nodrag="1" style="display:flex; flex-direction:column; border:1px solid #DDE3E1; background:#FFFFFF; max-height:230px; overflow-y:auto">
+                    <sc-for list="{{ mentionPick }}" as="mp" hint-placeholder-count="0">
+                      <button data-tap="1" onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ mp.go }}" style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:#FFFFFF; border:none; border-bottom:1px solid #EEF2F1; text-align:left; cursor:pointer">
+                        <span style="flex:0 0 26px; height:26px; display:grid; place-items:center; background:#E3F2EE; color:#0A6E58; font-size:10px; letter-spacing:.04em">{{ mp.initials }}</span>
+                        <span style="display:flex; flex-direction:column; min-width:0"><span style="font-size:14px; color:#1B1D1E">{{ mp.name }}</span><span style="font-size:11px; color:#6B7572">{{ mp.role }}</span></span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
                       <div style="display:flex; gap:6px; padding:10px; border-top:1px solid #DDE3E1">
-                        <input placeholder="Comment" value="{{ refDraft }}" onChange="{{ onRefDraft }}" onKeyDown="{{ onRefKey }}" style="flex:1 1 auto; min-width:0; padding:9px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px">
+                        <input placeholder="Comment — @ person, # to-do" value="{{ refDraft }}" onChange="{{ onRefDraft }}" onKeyDown="{{ onRefKey }}" style="flex:1 1 auto; min-width:0; padding:9px 10px; border:1px solid #DDE3E1; border-radius:0; font-size:13px">
                         <button data-tap="1" onClick="{{ sendRef }}" style="padding:9px 12px; background:#0A6E58; color:#FFFFFF; border:none; border-radius:0; font-size:10px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Post</button>
                       </div>
                     </div>
@@ -754,7 +775,7 @@
                         <span style="font-size:11px; color:#6B7572">{{ m.time }}</span>
                         <sc-if value="{{ m.canDelete }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.remove }}" style="padding:0; background:none; border:none; font-size:11px; color:#B4433A; cursor:pointer">Delete</button></sc-if>
                       </div>
-                      <sc-if value="{{ m.hasBody }}" hint-placeholder-val="{{ true }}"><span style="font-size:15px; line-height:1.6; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere">{{ m.body }}</span></sc-if>
+                      <sc-if value="{{ m.hasBody }}" hint-placeholder-val="{{ true }}"><span style="font-size:15px; line-height:1.6; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere"><sc-for list="{{ m.segs }}" as="sg" hint-placeholder-count="1"><span onClick="{{ sg.go }}" style="color:{{ sg.color }}; font-weight:{{ sg.fw }}; background:{{ sg.bg }}; text-decoration:{{ sg.td }}; cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></span></sc-if>
                       <sc-if value="{{ m.isImage }}" hint-placeholder-val="{{ false }}"><a href="{{ m.url }}" target="_blank" rel="noopener"><img src="{{ m.url }}" alt="" loading="lazy" style="display:block; max-width:min(340px,100%); max-height:300px; border:1px solid #DDE3E1"></a></sc-if>
                       <sc-if value="{{ m.isVideo }}" hint-placeholder-val="{{ false }}"><video src="{{ m.url }}" controls playsinline preload="metadata" style="display:block; max-width:min(380px,100%); background:#16231F"></video></sc-if>
                       <sc-if value="{{ m.isFile }}" hint-placeholder-val="{{ false }}"><a href="{{ m.url }}" target="_blank" rel="noopener" style="align-self:flex-start; padding:8px 12px; border:1px solid #DDE3E1; font-size:13px">{{ m.fileName }}</a></sc-if>
@@ -770,6 +791,16 @@
               <div style="display:flex; flex-direction:column; gap:8px; padding:12px; border-top:1px solid #DDE3E1; background:#F7FAF9">
                 <sc-if value="{{ hasPendingFile }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex; gap:10px; align-items:center; font-size:12px; color:#4A524F"><span>Attached: {{ pendingName }}</span><button onClick="{{ clearPending }}" style="padding:0; background:none; border:none; font-size:12px; color:#B4433A; cursor:pointer">Remove</button></div>
+                </sc-if>
+                <sc-if value="{{ showMentionChat }}" hint-placeholder-val="{{ false }}">
+                  <div data-nodrag="1" style="display:flex; flex-direction:column; border:1px solid #DDE3E1; background:#FFFFFF; max-height:230px; overflow-y:auto">
+                    <sc-for list="{{ mentionPick }}" as="mp" hint-placeholder-count="0">
+                      <button data-tap="1" onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ mp.go }}" style="display:flex; align-items:center; gap:10px; padding:8px 12px; background:#FFFFFF; border:none; border-bottom:1px solid #EEF2F1; text-align:left; cursor:pointer">
+                        <span style="flex:0 0 26px; height:26px; display:grid; place-items:center; background:#E3F2EE; color:#0A6E58; font-size:10px; letter-spacing:.04em">{{ mp.initials }}</span>
+                        <span style="display:flex; flex-direction:column; min-width:0"><span style="font-size:14px; color:#1B1D1E">{{ mp.name }}</span><span style="font-size:11px; color:#6B7572">{{ mp.role }}</span></span>
+                      </button>
+                    </sc-for>
+                  </div>
                 </sc-if>
                 <div style="display:flex; gap:8px; align-items:flex-end">
                   <textarea rows="2" placeholder="{{ chatPlaceholder }}" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" style="flex:1; min-width:0; padding:10px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; line-height:1.5; resize:none; background:#fff"></textarea>
@@ -829,6 +860,26 @@
             </sc-if>
           </sc-if>
 
+          <sc-if value="{{ pageMentions }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px">
+              <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">Where someone tagged you</span>
+              <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Mentions</h1>
+            </div>
+            <sc-if value="{{ noMentions }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px; line-height:1.7; color:#4A524F">{{ noMentionsNote }}</span></sc-if>
+            <div style="display:flex; flex-direction:column; border-top:1px solid #EEF2F1">
+              <sc-for list="{{ mentionsVM }}" as="mn" hint-placeholder-count="0">
+                <button data-tap="1" onClick="{{ mn.go }}" style="display:flex; flex-direction:column; gap:5px; padding:14px 12px; background:{{ mn.bg }}; border:none; border-bottom:1px solid #EEF2F1; text-align:left; cursor:pointer">
+                  <div style="display:flex; gap:10px; align-items:baseline; flex-wrap:wrap">
+                    <span style="font-size:14px; font-weight:500; color:#1B1D1E">{{ mn.author }}</span>
+                    <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#0A6E58">{{ mn.where }}</span>
+                    <span style="font-size:11px; color:#6B7572">{{ mn.time }}</span>
+                  </div>
+                  <span style="font-size:15px; line-height:1.55; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere"><sc-for list="{{ mn.segs }}" as="sg" hint-placeholder-count="1"><span onClick="{{ sg.go }}" style="color:{{ sg.color }}; font-weight:{{ sg.fw }}; background:{{ sg.bg }}; text-decoration:{{ sg.td }}; cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+
           <sc-if value="{{ pageTrash }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; flex-direction:column; gap:6px">
               <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">HR and admin</span>
@@ -878,6 +929,36 @@ const INKS = ['#16231F', '#0A6E58', '#B4433A', '#2F5D8A'];
 const PEN_W = [['Fine', 2], ['Medium', 4], ['Bold', 9]];
 const userColor = uid => { const p = ['#0A6E58', '#2F5D8A', '#8A5A00', '#B4433A', '#6B4FA0', '#1F7A8C']; let h = 0; for (const ch of String(uid || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return p[h % p.length]; };
 const ptsToD = pts => pts.length ? 'M' + pts.map(p => (+p[0]).toFixed(1) + ' ' + (+p[1]).toFixed(1)).join(' L') : '';
+const escH = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const RICH_OK = { B: 'b', STRONG: 'b', I: 'i', EM: 'i', U: 'u', BR: 'br', DIV: 'div', P: 'div' };
+const RICH_DROP = { SCRIPT: 1, STYLE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, TEMPLATE: 1, NOSCRIPT: 1, SVG: 1, MATH: 1, LINK: 1, META: 1, IMG: 1, VIDEO: 1, AUDIO: 1, CANVAS: 1, FORM: 1, INPUT: 1, BUTTON: 1, TEXTAREA: 1, SELECT: 1, OPTION: 1 };
+// Note text is HTML other people wrote. It is rebuilt from a whitelist — b, i, u,
+// br, div with text-align — before it ever reaches innerHTML. No attributes survive.
+const sanitizeRich = html => {
+  if (!html) return '';
+  let doc; try { doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html'); } catch (e) { return escH(html); }
+  const walk = node => {
+    let out = '';
+    node.childNodes.forEach(n => {
+      if (n.nodeType === 3) { out += escH(n.nodeValue); return; }
+      if (n.nodeType !== 1) return;
+      const tag = String(n.tagName).toUpperCase(); if (RICH_DROP[tag]) return;
+      const t = RICH_OK[tag], st = n.style || {};
+      if (t === 'br') { out += '<br>'; return; }
+      let s = walk(n);
+      const fw = st.fontWeight, bold = fw === 'bold' || fw === 'bolder' || +fw >= 600;
+      const und = /underline/.test(String(st.textDecoration || '') + ' ' + String(st.textDecorationLine || ''));
+      if (t === 'b' || bold) s = '<b>' + s + '</b>';
+      if (t === 'i' || st.fontStyle === 'italic') s = '<i>' + s + '</i>';
+      if (t === 'u' || und) s = '<u>' + s + '</u>';
+      if (t === 'div') { const al = String(st.textAlign || n.getAttribute('align') || '').toLowerCase(); s = '<div' + (/^(left|center|right)$/.test(al) ? ' style="text-align:' + al + '"' : '') + '>' + s + '</div>'; }
+      out += s;
+    });
+    return out;
+  };
+  return walk(doc.body.firstChild || doc.body).slice(0, 40000);
+};
+const plainToRich = t => escH(t).replace(/\n/g, '<br>');
 const TEMPLATES = {
   mood: { label: 'Mood board', cards: [
     { k: 'heading', x: 0, y: 0, w: 560, note: 'Mood' },
@@ -948,6 +1029,7 @@ class Component extends DCLogic {
     ci: { note: '', percent: 0 }, newItem: { title: '', section: 'general', assignee: '' }, linkForm: { url: '', title: '' }, noteDraft: '',
     uploading: '', shotEdits: {},
     board: null, view: { x: 60, y: 60, z: 1 }, tool: 'select', sel: null, editing: null, arrowFrom: null, dragPos: null,
+    mentionables: [], mentionQ: null, mentionPicks: {}, mentions: [], mentionsSeen: '', mentionsSeenPrev: '',
     cursors: {}, present: [], boardFull: false, shotDrawer: false, tplOpen: false, pen: { c: '#16231F', w: 4 }, boardEdits: {}, todoDraft: '', boardNote: '',
   };
 
@@ -974,14 +1056,20 @@ class Component extends DCLogic {
       const tg = e.target, typing = tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT' || tg.isContentEditable);
       if (e.key === 'Escape') { this.setState({ tool: 'select', sel: null, editing: null, arrowFrom: null, tplOpen: false, boardFull: false }); if (typing) tg.blur(); return; }
       if (typing) return;
+      const mod = e.metaKey || e.ctrlKey, k = String(e.key).toLowerCase();
+      if (mod && k === 'z') { e.preventDefault(); if (e.shiftKey) this.redo(); else this.undo(); return; }
+      if (mod && k === 'y') { e.preventDefault(); this.redo(); return; }
       if ((e.key === 'Delete' || e.key === 'Backspace') && this.state.sel) { e.preventDefault(); this.deleteSelected(); }
     };
     window.addEventListener('keydown', this.onKey);
+    this.onHide = () => this.flushHist();
+    window.addEventListener('pagehide', this.onHide);
     this.boot();
   }
   componentWillUnmount() {
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('pagehide', this.onHide);
     this.leaveBoard();
     if (this.rt && this.sb) this.sb.removeChannel(this.rt);
   }
@@ -1043,7 +1131,14 @@ class Component extends DCLogic {
 
   subscribe() {
     if (this.rt) return;
-    const bump = () => { clearTimeout(this.rtT); this.rtT = setTimeout(() => this.reloadChat(), 250); };
+    const bump = p => {
+      clearTimeout(this.rtT); this.rtT = setTimeout(() => this.reloadChat(), 250);
+      const n = p && p.new, me = this.state.me;
+      if (p && p.eventType === 'INSERT' && n && Array.isArray(n.mentions) && me && n.mentions.includes(me.uid) && n.author !== me.uid) {
+        this.flash((n.author_name || 'Someone') + ' mentioned you');
+        this.loadMentions();
+      }
+    };
     const board = p => {
       const s = this.state; if (s.page !== 'task' || !s.taskId) return;
       const tid = (p.new && p.new.task_id) || (p.old && p.old.task_id);
@@ -1088,6 +1183,138 @@ class Component extends DCLogic {
     for (const r of [tk, mb, it, ci, ro]) if (r.error) throw r.error;
     this.setState({ tasks: tk.data || [], members: mb.data || [], allItems: it.data || [], myToday: (ci.data || []).map(x => x.task_id), roster: ro.data || [] });
     if (me.is_manager) await this.loadTrash(true);
+    let seen = ''; try { seen = localStorage.getItem('crew-mentions-seen:' + me.uid) || ''; } catch (e) {}
+    this.setState({ mentionsSeen: seen });
+    this.loadMentions();
+  }
+
+  async loadMentions() {
+    const me = this.state.me; if (!me || !me.uid) return;
+    const { data, error } = await this.sb.from('crew_messages').select('id, task_id, ref_type, ref_id, author, author_name, body, mentions, created_at')
+      .contains('mentions', [me.uid]).order('created_at', { ascending: false }).limit(60);
+    if (!error) this.setState({ mentions: data || [] });
+  }
+
+  // Who you can @: from the database when crew-mentions.sql is installed; otherwise
+  // the roster already on the page (names still insert, nobody is notified).
+  loadMentionables(taskId) {
+    const mk = taskId || 'crew';
+    if (this._mkey === mk && this.state.mentionables.length) return;
+    this._mkey = mk; this._names = this._names || {};
+    const fallback = () => {
+      const s = this.state, ids = taskId ? new Set(s.members.filter(m => m.task_id === taskId).map(m => m.person_id)) : null;
+      const list = (s.roster || []).filter(r => r.full_name && (!ids || ids.has(r.person_id)) && r.person_id !== (s.me && s.me.person_id))
+        .map(r => ({ uid: null, key: 'p:' + r.person_id, name: r.full_name, role: r.primary_role }));
+      this.setState({ mentionables: list });
+    };
+    fallback();
+    this.sb.rpc('crew_mentionables', { p_task: taskId || null }).then(r => {
+      if (this._mkey !== mk) return;
+      if (r.error) { console.warn('crew_mentionables:', r.error.message); return; }
+      if (!r.data || !r.data.length) return;
+      r.data.forEach(p => { this._names[p.uid] = p.name; });
+      this.setState({ mentionables: r.data.map(p => ({ ...p, key: p.uid })) });
+    }, () => {});
+  }
+
+  onMentionInput(field, e) {
+    const v = e.target.value, pos = e.target.selectionStart != null ? e.target.selectionStart : v.length;
+    const m = v.slice(0, pos).match(/(^|\s)([@#])([^\s@#]{0,24})$/);
+    this._mentionEl = e.target;
+    if (m && !this.state.mentionables.length) this.loadMentionables(this.state.page === 'task' ? this.state.taskId : (this.state.page === 'board' || this.state.page === 'channel' ? null : this.state.taskId));
+    this.setState({ [field]: v, mentionQ: m ? { field, sym: m[2], q: m[3].toLowerCase(), start: pos - m[3].length - 1, end: pos } : null });
+  }
+  // # tags: inside a task, that task's to-dos (and the task itself); elsewhere, your tasks.
+  hashTargets() {
+    const s = this.state, out = [];
+    const td = s.page === 'task' && s.t && s.t.id === s.taskId ? s.t : null;
+    if (td) (td.items || []).forEach(i => { if (i.title) out.push({ kind: 'item', id: i.id, task_id: td.id, name: String(i.title).trim(), role: i.done ? 'To-do · done' : 'To-do' }); });
+    (s.tasks || []).forEach(t => { if (t.title) out.push({ kind: 'task', id: t.id, task_id: t.id, name: String(t.title).trim(), role: (KINDS[t.kind] || 'Task') + (t.shoot_date ? ' · ' + t.shoot_date : '') }); });
+    return out;
+  }
+  goHash(h, e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (h.kind === 'item' && this.state.page === 'task' && this.state.taskId === h.task_id) { this.setState({ tab: 'overview', openRef: null }); this.flash('To-do: ' + h.name); return; }
+    this.openTask(h.task_id, 'overview');
+  }
+  mentionList() {
+    const s = this.state, q = s.mentionQ; if (!q) return [];
+    if (q.sym === '#') {
+      const seen = {};
+      return this.hashTargets().filter(h => { const k = h.kind + h.id; if (seen[k]) return false; seen[k] = 1; return !q.q || h.name.toLowerCase().includes(q.q); })
+        .slice(0, 8).map(h => ({ ...h, hash: true }));
+    }
+    return s.mentionables.filter(p => (!p.uid || p.uid !== (s.me && s.me.uid)) && (!q.q || String(p.name || '').toLowerCase().split(/\s+/).some(w => w.startsWith(q.q)))).slice(0, 6);
+  }
+  pickMention(p) {
+    const mq = this.state.mentionQ; if (!mq) return;
+    const v = this.state[mq.field] || '', ins = (p.hash ? '#' : '@') + p.name + ' ', nv = v.slice(0, mq.start) + ins + v.slice(mq.end), caret = mq.start + ins.length;
+    if (!p.hash) (this._names = this._names || {})[p.key] = p.name;
+    this.setState(s => ({ [mq.field]: nv, mentionQ: null, mentionPicks: p.hash ? s.mentionPicks : { ...s.mentionPicks, [p.key]: p.name } }), () => {
+      const el = this._mentionEl; if (el) { el.focus(); try { el.setSelectionRange(caret, caret); } catch (_) {} }
+    });
+  }
+  mentionsIn(body) { const p = this.state.mentionPicks; return Object.keys(p).filter(k => !k.startsWith('p:') && body.includes('@' + p[k])); }
+  segsFor(body, ments) {
+    const noop = () => {}, plainSeg = t => ({ t, color: 'inherit', fw: 'inherit', bg: 'transparent', td: 'none', cur: 'inherit', go: noop });
+    if (!body || (body.indexOf('@') < 0 && body.indexOf('#') < 0)) return [plainSeg(body || '')];
+    const nm = this._names || {}, names = new Set((ments || []).map(u => nm[u]).filter(Boolean));
+    if (body.indexOf('@') >= 0) (this.state.mentionables || []).forEach(p => { if (p.name && body.includes('@' + p.name)) names.add(p.name); });
+    const hashes = {};
+    if (body.indexOf('#') >= 0) this.hashTargets().forEach(h => { if (h.name && body.includes('#' + h.name) && !hashes[h.name]) hashes[h.name] = h; });
+    const toks = [...[...names].map(n => '@' + n), ...Object.keys(hashes).map(n => '#' + n)].sort((x, y) => y.length - x.length);
+    if (!toks.length) return [plainSeg(body)];
+    const re = new RegExp('(' + toks.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'g');
+    return body.split(re).filter(x => x !== '').map(x => {
+      if (x.charAt(0) === '@' && names.has(x.slice(1))) return { t: x, color: '#0A6E58', fw: '500', bg: '#E3F2EE', td: 'none', cur: 'inherit', go: noop };
+      const h = x.charAt(0) === '#' && hashes[x.slice(1)];
+      if (h) return { t: x, color: '#1B1D1E', fw: '500', bg: '#EEF2F1', td: 'underline', cur: 'pointer', go: e => this.goHash(h, e) };
+      return plainSeg(x);
+    });
+  }
+  async insertMessage(row) {
+    let r = await this.sb.from('crew_messages').insert(row);
+    if (r.error && row.mentions && /mentions/i.test(r.error.message || '')) { const { mentions, ...rest } = row; r = await this.sb.from('crew_messages').insert(rest); }
+    return r;
+  }
+  openMention(m) {
+    if (!m.task_id) {
+      if (m.ref_type === 'mood') { this._pendingRef = { type: 'mood', id: m.ref_id }; this.go('board'); }
+      else this.go('channel');
+      return;
+    }
+    if (m.ref_type === 'mood') { this._pendingRef = { type: 'mood', id: m.ref_id }; this.openTask(m.task_id, 'mood'); return; }
+    this.openTask(m.task_id, m.ref_type === 'shot' ? 'story' : 'discussion').then(() => { if (m.ref_type === 'shot') this.setState({ openRef: { type: 'shot', id: m.ref_id } }); });
+  }
+
+  richHtml(it) {
+    const raw = it.body && typeof it.body.html === 'string' ? it.body.html : plainToRich(it.note || '');
+    this._san = this._san || new Map();
+    if (this._san.has(raw)) return this._san.get(raw);
+    const clean = sanitizeRich(raw);
+    if (this._san.size > 400) this._san.clear();
+    this._san.set(raw, clean); return clean;
+  }
+  bindRich(el, it, editing) {
+    if (!el) return;
+    const want = editing ? 'true' : 'false';
+    if (el.getAttribute('contenteditable') !== want) el.setAttribute('contenteditable', want);
+    if (document.activeElement === el) return;
+    const html = this.richHtml(it);
+    if (el.__v !== html) { el.innerHTML = html; el.__v = html; }
+  }
+  onRichBlur(e, it) {
+    const el = e.currentTarget, clean = sanitizeRich(el.innerHTML);
+    const text = String(el.innerText || '').replace(/\n{3,}/g, '\n\n').trim().slice(0, 5000);
+    el.__v = clean;
+    const cur = this.boardItem(it.id) || it;
+    if (clean !== this.richHtml(cur)) this.patchItem(it.id, { note: text, body: { ...(cur.body || {}), html: clean } });
+  }
+  fmt(cmd) {
+    const id = this.state.editing, el = id && this.canvasEl && this.canvasEl.querySelector('[data-edit="' + id + '"]');
+    if (!el) return;
+    if (document.activeElement !== el) el.focus();
+    try { document.execCommand('styleWithCSS', false, /^justify/.test(cmd)); document.execCommand(cmd, false, null); } catch (_) {}
   }
 
   async loadTrash(autoPurge) {
@@ -1127,6 +1354,12 @@ class Component extends DCLogic {
   go(page, extra) {
     this.setState({ page, sideOpen: false, openRef: null, draft: '', pendingFile: null, ...(extra || {}) });
     if (page === 'channel') this.run(() => this.loadMessages(null));
+    if (page === 'mentions') {
+      const now = new Date().toISOString(), uid = this.state.me && this.state.me.uid;
+      this.setState(st => ({ mentionsSeenPrev: st.mentionsSeen, mentionsSeen: now }));
+      try { if (uid) localStorage.setItem('crew-mentions-seen:' + uid, now); } catch (e) {}
+      this.loadMentions();
+    }
     if (page === 'trash') this.run(() => this.loadTrash(false));
     if (page === 'profile') this.run(() => this.loadProfile());
     if (page === 'today') this.run(() => this.loadAll());
@@ -1165,6 +1398,8 @@ class Component extends DCLogic {
 
   async loadMessages(taskId) {
     const sb = this.sb;
+    this._mkey = null;
+    this.loadMentionables(taskId);
     let q = sb.from('crew_messages').select('*').order('created_at', { ascending: true }).limit(600);
     let r = sb.from('crew_reactions').select('*');
     q = taskId ? q.eq('task_id', taskId) : q.is('task_id', null);
@@ -1225,7 +1460,11 @@ class Component extends DCLogic {
         if (s.password.length < 8) throw new Error('Use at least 8 characters for your password.');
         if (s.password !== s.password2) throw new Error("The two passwords don't match.");
         const { data, error } = await sb.auth.signUp({ email, password: s.password, options: { emailRedirectTo: back, data: { app: 'crew', full_name: s.fullName.trim(), phone: s.phone.trim(), primary_role: s.crewRole } } });
-        if (error) throw new Error(/registered|exists/i.test(error.message) ? 'An account already exists for this email — sign in instead.' : error.message);
+        if (error) throw new Error(/registered|exists/i.test(error.message) ? 'An account already exists for this email — sign in instead.'
+          : /signups? not allowed|signup.*disabled/i.test(error.message) ? "New accounts are switched off right now. Ask the admin to turn on crew sign-ups, then try again."
+          : /email rate limit/i.test(error.message) ? "We can't send the confirmation email right now — too many went out this hour. Try again later, or ask the admin."
+          : /rate limit|too many/i.test(error.message) ? 'Too many tries — wait a minute, then try again.'
+          : error.message);
         if (data && data.session) { await this.afterSignIn(); return; }
         this.setState({ authMode: 'signin', password: '', password2: '', authMsg: 'Account created. Open the confirmation link we emailed you, then sign in — the admin approves your access before tasks appear.' });
       } else if (s.authMode === 'reset') {
@@ -1456,9 +1695,10 @@ class Component extends DCLogic {
     await this.run(async () => {
       let attachment_path = null;
       if (s.pendingFile && taskId) attachment_path = (await this.upload(taskId, s.pendingFile, 'chat')).path;
-      const { error } = await this.sb.from('crew_messages').insert({ task_id: taskId, body, attachment_path, author_name: s.me.name });
+      const ments = this.mentionsIn(body);
+      const { error } = await this.insertMessage({ task_id: taskId, body, attachment_path, author_name: s.me.name, ...(ments.length ? { mentions: ments } : {}) });
       if (error) { if (attachment_path) await this.sb.storage.from(BUCKET).remove([attachment_path]); throw error; }
-      this.setState({ draft: '', pendingFile: null });
+      this.setState({ draft: '', pendingFile: null, mentionPicks: {}, mentionQ: null });
       await this.loadMessages(taskId);
     });
     this.setState({ sending: false });
@@ -1469,9 +1709,10 @@ class Component extends DCLogic {
     const tid = s.page === 'task' ? s.taskId : null;
     if (!body || !s.openRef || (s.page === 'task' && !tid)) return;
     await this.run(async () => {
-      const { error } = await this.sb.from('crew_messages').insert({ task_id: tid, ref_type: s.openRef.type, ref_id: s.openRef.id, body, author_name: s.me.name });
+      const ments = this.mentionsIn(body);
+      const { error } = await this.insertMessage({ task_id: tid, ref_type: s.openRef.type, ref_id: s.openRef.id, body, author_name: s.me.name, ...(ments.length ? { mentions: ments } : {}) });
       if (error) throw error;
-      this.setState({ refDraft: '' });
+      this.setState({ refDraft: '', mentionPicks: {}, mentionQ: null });
       await this.loadMessages(tid);
     });
   }
@@ -1527,7 +1768,84 @@ class Component extends DCLogic {
     this.joinBoardPresence(key);
   }
 
+  // ---- Undo / redo — your own board actions, newest first, 60 steps ----------
+  hist() {
+    if (!this._hist || this._hist.key !== this._boardKey) this._hist = { key: this._boardKey, undo: [], redo: [] };
+    return this._hist;
+  }
+  record(op) {
+    if (this._busyHist) return;
+    if (this._batch) { this._batch.push(op); return; }
+    const h = this.hist();
+    h.undo.push(op);
+    if (h.undo.length > 60) this.dropOp(h.undo.shift(), false);
+    h.redo.forEach(o => this.dropOp(o, true)); h.redo = [];
+    this.setState(s => ({ histTick: (s.histTick || 0) + 1 }));
+  }
+  // A deleted file stays in storage while its delete can still be undone; once the
+  // step falls off the history (or you leave the board) the file goes for good.
+  filesOf(op, fromRedo) {
+    if (op.type === 'batch') return op.ops.flatMap(o => this.filesOf(o, fromRedo));
+    if (!fromRedo && op.type === 'delete' && op.row.storage_path) return [op.row.storage_path];
+    if (fromRedo && op.type === 'create' && op.row.storage_path) return [op.row.storage_path];
+    return [];
+  }
+  dropOp(op, fromRedo) {
+    const paths = this.filesOf(op, fromRedo);
+    if (paths.length && this.sb) this.sb.storage.from(BUCKET).remove(paths).catch(() => {});
+  }
+  flushHist() {
+    const h = this._hist; if (!h) return;
+    h.undo.forEach(o => this.dropOp(o, false)); h.redo.forEach(o => this.dropOp(o, true));
+    this._hist = null;
+  }
+  async undo() { await this.stepHist('undo'); }
+  async redo() { await this.stepHist('redo'); }
+  async stepHist(dir) {
+    const h = this.hist(), from = dir === 'undo' ? h.undo : h.redo, to = dir === 'undo' ? h.redo : h.undo;
+    if (this._busyHist || !from.length) return;
+    const op = from.pop();
+    this._busyHist = true;
+    try { await this.applyOp(op, dir); to.push(op); }
+    catch (e) { this.flash(friendly(e), true); if (this._boardKey) this.loadBoard(this._boardKey).catch(() => {}); }
+    finally { this._busyHist = false; this.setState(s => ({ histTick: (s.histTick || 0) + 1, sel: null, editing: null })); }
+  }
+  async applyOp(op, dir) {
+    const u = dir === 'undo';
+    if (op.type === 'patch') { await this.patchItem(op.id, u ? op.before : op.after, null, true); return; }
+    if (op.type === 'create') { if (u) await this.rawDeleteItem(op.row.id); else await this.rawInsertItem(op.row, []); return; }
+    if (op.type === 'delete') { if (u) await this.rawInsertItem(op.row, op.links); else await this.rawDeleteItem(op.row.id); return; }
+    if (op.type === 'link-create') { if (u) await this.rawDeleteLink(op.link.id); else await this.rawInsertLink(op.link); return; }
+    if (op.type === 'link-delete') { if (u) await this.rawInsertLink(op.link); else await this.rawDeleteLink(op.link.id); return; }
+    if (op.type === 'batch') { const list = u ? op.ops.slice().reverse() : op.ops; for (const o of list) await this.applyOp(o, dir); }
+  }
+  async rawInsertItem(row, links) {
+    const keep = ['id', 'task_id', 'kind', 'storage_path', 'url', 'title', 'note', 'size_bytes', 'x', 'y', 'w', 'h', 'z', 'color', 'body', 'shot_id', 'added_name'];
+    const clean = {}; keep.forEach(k => { if (row[k] !== undefined) clean[k] = row[k]; });
+    const { data, error } = await this.sb.from('crew_mood_items').insert(clean).select('*').single();
+    if (error) throw error;
+    this.setState(s => ({ board: s.board ? { ...s.board, items: s.board.items.some(i => i.id === data.id) ? s.board.items : [...s.board.items, data] } : s.board }));
+    for (const l of links || []) { try { await this.rawInsertLink(l); } catch (_) {} }
+    if (data.storage_path) await this.sign([data.storage_path]);
+  }
+  async rawDeleteItem(id) {
+    this.setState(s => ({ board: s.board ? { ...s.board, items: s.board.items.filter(i => i.id !== id), links: s.board.links.filter(l => l.from_id !== id && l.to_id !== id) } : s.board }));
+    const { error } = await this.sb.from('crew_mood_items').delete().eq('id', id);
+    if (error) throw error;
+  }
+  async rawInsertLink(l) {
+    const { data, error } = await this.sb.from('crew_board_links').insert({ id: l.id, task_id: l.task_id, from_id: l.from_id, to_id: l.to_id, label: l.label || null }).select('*').single();
+    if (error) throw error;
+    this.setState(s => ({ board: s.board ? { ...s.board, links: s.board.links.some(x => x.id === data.id) ? s.board.links : [...s.board.links, data] } : s.board }));
+  }
+  async rawDeleteLink(id) {
+    this.setState(s => ({ board: s.board ? { ...s.board, links: s.board.links.filter(l => l.id !== id) } : s.board }));
+    const { error } = await this.sb.from('crew_board_links').delete().eq('id', id);
+    if (error) throw error;
+  }
+
   leaveBoard() {
+    this.flushHist();
     if (this.boardCh && this.sb) { try { this.sb.removeChannel(this.boardCh); } catch (e) {} }
     this.boardCh = null; clearInterval(this.curPrune); this._boardKey = null; this.drag = null; this.pinch = null;
   }
@@ -1559,7 +1877,10 @@ class Component extends DCLogic {
     if (this._boardKey !== key) return;
     this.setState({ board: { key, items, links: l.error ? [] : (l.data || []), loading: false },
       boardNote: setup ? 'The board needs one more database step. Until the admin runs crew-board.sql, cards can\'t be placed or moved.' : '' },
-      () => { if (!this._fitted && items.length && this.canvasEl) { this._fitted = true; this.fitBoard(); } });
+      () => {
+        if (!this._fitted && items.length && this.canvasEl) { this._fitted = true; this.fitBoard(); }
+        const pr = this._pendingRef; if (pr && items.some(x => x.id === pr.id)) { this._pendingRef = null; this.setState({ sel: pr.id, openRef: pr }); }
+      });
   }
 
   joinBoardPresence(key) {
@@ -1718,12 +2039,22 @@ class Component extends DCLogic {
   focusEdit(id) {
     setTimeout(() => {
       const el = this.canvasEl && this.canvasEl.querySelector('[data-edit="' + id + '"]');
-      if (el) { el.focus(); try { const n = el.value.length; el.setSelectionRange(n, n); } catch (_) {} }
+      if (!el) return;
+      el.focus();
+      if (el.getAttribute('data-rich')) { try { const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch (_) {} }
+      else { try { const n = el.value.length; el.setSelectionRange(n, n); } catch (_) {} }
     }, 40);
   }
 
-  async patchItem(id, patch, extra) {
+  async patchItem(id, patch, extra, noHist) {
     if (this._rp) delete this._rp.dragPos;
+    if (!noHist && !this._busyHist) {
+      const cur = this.boardItem(id);
+      if (cur) {
+        const before = {}; Object.keys(patch).forEach(k => { before[k] = cur[k] === undefined ? null : cur[k]; });
+        if (JSON.stringify(before) !== JSON.stringify(patch)) this.record({ type: 'patch', id, before, after: { ...patch } });
+      }
+    }
     this.setState(s => ({ ...(extra || {}), board: s.board ? { ...s.board, items: s.board.items.map(i => i.id === id ? { ...i, ...patch } : i) } : s.board }));
     const { error } = await this.sb.from('crew_mood_items').update(patch).eq('id', id);
     if (error) { this.flash(friendly(error), true); if (this._boardKey) this.loadBoard(this._boardKey).catch(() => {}); }
@@ -1735,6 +2066,7 @@ class Component extends DCLogic {
     const full = { ...row, task_id: b.key === 'crew' ? null : b.key, z: row.z != null ? row.z : this.topZ() + 1, added_name: this.state.me.name };
     const { data, error } = await this.sb.from('crew_mood_items').insert(full).select('*').single();
     if (error) { this.flash(friendly(error), true); return null; }
+    if (!this._busyHist) this.record({ type: 'create', row: { ...data } });
     if (this._boardKey !== b.key) return data;
     this.setState(s => ({
       board: s.board && s.board.key === b.key ? { ...s.board, items: s.board.items.some(i => i.id === data.id) ? s.board.items : [...s.board.items, data] } : s.board,
@@ -1805,9 +2137,12 @@ class Component extends DCLogic {
     const b = this.state.board; if (!b || b.links.some(l => l.from_id === from && l.to_id === to)) return;
     const { data, error } = await this.sb.from('crew_board_links').insert({ task_id: b.key === 'crew' ? null : b.key, from_id: from, to_id: to }).select('*').single();
     if (error) { this.flash(friendly(error), true); return; }
+    if (!this._busyHist) this.record({ type: 'link-create', link: { ...data } });
     this.setState(s => ({ board: s.board && s.board.key === b.key ? { ...s.board, links: s.board.links.some(l => l.id === data.id) ? s.board.links : [...s.board.links, data] } : s.board }));
   }
   async deleteLink(id) {
+    const ln = this.state.board && this.state.board.links.find(l => l.id === id);
+    if (ln && !this._busyHist) this.record({ type: 'link-delete', link: { ...ln } });
     this.setState(s => ({ sel: null, board: s.board ? { ...s.board, links: s.board.links.filter(l => l.id !== id) } : s.board }));
     const { error } = await this.sb.from('crew_board_links').delete().eq('id', id);
     if (error) this.flash(friendly(error), true);
@@ -1815,11 +2150,13 @@ class Component extends DCLogic {
 
   async deleteItem(it) {
     if (!it) return;
-    if (it.storage_path && !confirm('Delete this file from the board?')) return;
+    const b0 = this.state.board, links = b0 ? b0.links.filter(l => l.from_id === it.id || l.to_id === it.id) : [];
+    const snap = { ...(this.boardItem(it.id) || it) };
     this.setState(s => ({ sel: null, editing: null, openRef: null, board: s.board ? { ...s.board, items: s.board.items.filter(i => i.id !== it.id), links: s.board.links.filter(l => l.from_id !== it.id && l.to_id !== it.id) } : s.board }));
     const { error } = await this.sb.from('crew_mood_items').delete().eq('id', it.id);
     if (error) { this.flash(friendly(error), true); if (this._boardKey) this.loadBoard(this._boardKey).catch(() => {}); return; }
-    if (it.storage_path) await this.sb.storage.from(BUCKET).remove([it.storage_path]);
+    this.record({ type: 'delete', row: snap, links });
+    this.flash(KIND_LABEL[snap.kind] + ' deleted — Undo brings it back.');
   }
   deleteSelected() {
     const s = this.state; if (!s.sel) return;
@@ -1849,7 +2186,13 @@ class Component extends DCLogic {
   onSwatchColor(it, v) {
     if (!/^#[0-9a-f]{6}$/i.test(v)) return;
     this.setState(s => ({ board: s.board ? { ...s.board, items: s.board.items.map(i => i.id === it.id ? { ...i, color: v } : i) } : s.board }));
-    clearTimeout(this._swT); this._swT = setTimeout(() => this.patchItem(it.id, { color: v }), 350);
+    if (!this._swOrig || this._swOrig.id !== it.id) { const cur = this.boardItem(it.id) || it; this._swOrig = { id: it.id, color: cur.color || null }; }
+    clearTimeout(this._swT);
+    this._swT = setTimeout(() => {
+      const o = this._swOrig; this._swOrig = null;
+      if (o && o.color !== v) this.record({ type: 'patch', id: it.id, before: { color: o.color }, after: { color: v } });
+      this.patchItem(it.id, { color: v }, null, true);
+    }, 350);
   }
 
   async applyTemplate(key) {
@@ -1860,12 +2203,15 @@ class Component extends DCLogic {
     const maxX = Math.max(...dims.map(d => d.x + d.w)), maxY = Math.max(...dims.map(d => d.y + d.h));
     const cc = this.viewCenter(), ox = Math.round(cc.x - (minX + maxX) / 2), oy = Math.round(cc.y - (minY + maxY) / 2);
     const ids = []; let z = this.topZ();
+    this._batch = [];
     for (let i = 0; i < tpl.cards.length; i++) {
       const c = tpl.cards[i], d = dims[i];
       const row = await this.createItem({ kind: c.k, x: ox + d.x, y: oy + d.y, w: d.w, h: d.h, note: c.note || null, title: c.title || null, color: c.color || null, body: c.body || null, z: ++z }, { keepTool: true });
       ids.push(row ? row.id : null);
     }
     for (const [a, bb] of tpl.links || []) if (ids[a] && ids[bb]) await this.createLink(ids[a], ids[bb]);
+    const ops = this._batch || []; this._batch = null;
+    if (ops.length) this.record({ type: 'batch', ops });
     this.setState({ uploading: '' });
     this.fitBoard();
   }
@@ -1896,7 +2242,9 @@ class Component extends DCLogic {
       return { title: t.title, meta: KINDS[t.kind] + (t.shoot_date ? ' · ' + fmtShort(t.shoot_date) : '') + (t.status === 'done' ? ' · done' : ''), bg: on ? '#E3F2EE' : 'transparent', color: t.status === 'done' ? '#6B7572' : on ? '#0A6E58' : '#1B1D1E', go: () => this.openTask(t.id) };
     });
     const navBtn = (page, label, count) => ({ label, count: count == null ? '' : count, bg: s.page === page ? '#E3F2EE' : 'transparent', color: s.page === page ? '#0A6E58' : '#1B1D1E', go: () => this.go(page) });
-    const navTop = [navBtn('today', 'Today'), navBtn('channel', 'Crew channel'), navBtn('board', 'Crew board')];
+    const seenAt = s.mentionsSeen ? new Date(s.mentionsSeen).getTime() : 0;
+    const unseen = s.mentions.filter(m => new Date(m.created_at).getTime() > seenAt && m.author !== me.uid).length;
+    const navTop = [navBtn('today', 'Today'), navBtn('mentions', 'Mentions', unseen || ''), navBtn('channel', 'Crew channel'), navBtn('board', 'Crew board')];
     const navBottom = [];
     if (me.person_id || me.request_status) navBottom.push(navBtn('profile', 'My profile'));
     if (isManager) navBottom.push(navBtn('trash', 'Trash', s.trash.length || ''));
@@ -1911,7 +2259,7 @@ class Component extends DCLogic {
     const rxIndex = {};
     s.reactions.forEach(r => { (rxIndex[r.target_type + ':' + r.target_id] = rxIndex[r.target_type + ':' + r.target_id] || []).push(r); });
     const comments = {};
-    s.chat.filter(m => m.ref_type).forEach(m => { (comments[m.ref_id] = comments[m.ref_id] || []).push({ author: m.author_name || 'Crew', time: fmtTime(m.created_at), body: m.body }); });
+    s.chat.filter(m => m.ref_type).forEach(m => { (comments[m.ref_id] = comments[m.ref_id] || []).push({ author: m.author_name || 'Crew', time: fmtTime(m.created_at), body: m.body, segs: this.segsFor(m.body, m.mentions) }); });
     const refOpen = (type, id) => s.openRef && s.openRef.type === type && s.openRef.id === id;
     const toggleRef = (type, id) => () => this.setState({ openRef: refOpen(type, id) ? null : { type, id }, refDraft: '' });
     const commentLabel = id => { const n = (comments[id] || []).length; return n ? n + (n === 1 ? ' comment' : ' comments') : 'Comment'; };
@@ -1972,7 +2320,7 @@ class Component extends DCLogic {
       return {
         showDay, dayLabel: dayLabel(dk), author: m.author_name || 'Crew', initials: initials(m.author_name), time: fmtTime(m.created_at),
         avBg: mine ? '#0A6E58' : '#E3F2EE', avColor: mine ? '#FFFFFF' : '#0A6E58', body: m.body, hasBody: !!m.body,
-        url: p ? s.urls[p] || '' : '', isImage, isVideo, isFile: !!p && !isImage && !isVideo, fileName: fileName(p),
+        url: p ? s.urls[p] || '' : '', isImage, isVideo, segs: this.segsFor(m.body, m.mentions), isFile: !!p && !isImage && !isVideo, fileName: fileName(p),
         canDelete: mine || isManager, remove: () => this.deleteMessage(m), reacts: this.reactsFor(rxIndex, 'message', m.id),
       };
     });
@@ -2019,6 +2367,9 @@ class Component extends DCLogic {
           ph: k === 'heading' ? 'Heading' : k === 'sticky' ? 'Sticky note' : 'Write a note…',
           pad: k === 'heading' ? '6px 4px' : '14px', fs: k === 'heading' ? '28px' : k === 'sticky' ? '17px' : '14px', fw: k === 'heading' ? '300' : '400',
           pe: editing ? 'auto' : 'none', onText: e => this.onBoardText(e, it), onBlur: e => this.onBoardBlur(e, it),
+          setRich: el => this.bindRich(el, it, editing), onRichBlur: e => this.onRichBlur(e, it), us: editing ? 'text' : 'none',
+          showPh: !editing && !this.richHtml(it).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim(),
+          phl: k === 'heading' ? '4px' : '14px', pht: k === 'heading' ? '6px' : '14px',
           todos, todoSummary: todos.length ? todos.filter(x => x.tick).length + ' / ' + todos.length : '', onTodoKey: e => { if (e.key === 'Enter') this.addTodo(it); },
           color: it.color || '#0A6E58', hex: (it.color || '#0A6E58').toUpperCase(), onColor: e => this.onSwatchColor(it, e.target.value),
           url: s.urls[it.storage_path] || '', fileName: it.title || fileName(it.storage_path),
@@ -2065,18 +2416,28 @@ class Component extends DCLogic {
         const pal = k === 'sticky' ? STICKY : k === 'stroke' ? INKS : [];
         selColors = pal.map(c => ({ c, ring: (selIt.color || pal[0]) === c ? '#10AF8B' : 'rgba(255,255,255,.25)', go: () => this.patchItem(selIt.id, { color: c }) }));
         const acts = [];
-        if (EDITABLE[k]) acts.push({ label: 'Edit', go: () => this.editCard(selIt.id) });
-        if (k !== 'stroke') {
+        const richEdit = s.editing === selIt.id && (k === 'note' || k === 'sticky' || k === 'heading');
+        if (richEdit) {
+          const keep = e => e.preventDefault();
+          [['B', 'bold', { fw: '700' }], ['I', 'italic', { fst: 'italic' }], ['U', 'underline', { td: 'underline' }],
+           ['Left', 'justifyLeft'], ['Centre', 'justifyCenter'], ['Right', 'justifyRight']]
+            .forEach(([l, c, st]) => acts.push({ label: l, go: () => this.fmt(c), keep, fs: l.length === 1 ? '14px' : '11px', tt: 'none', ...(st || {}) }));
+          acts.push({ label: 'Done', go: () => { const el = this.canvasEl && this.canvasEl.querySelector('[data-edit="' + selIt.id + '"]'); if (el) el.blur(); this.setState({ editing: null }); }, on: true });
+        }
+        if (!richEdit && EDITABLE[k]) acts.push({ label: 'Edit', go: () => this.editCard(selIt.id) });
+        if (k !== 'stroke' && !richEdit) {
           acts.push({ label: (mine ? '▲ Voted' : '▲ Vote') + (votes ? ' ' + votes : ''), go: () => this.toggleReaction('mood', selIt.id, '▲'), on: mine });
           acts.push({ label: 'Comments' + (nCom ? ' ' + nCom : ''), go: () => this.setState({ openRef: { type: 'mood', id: selIt.id }, refDraft: '' }), on: !!(s.openRef && s.openRef.id === selIt.id) });
           acts.push({ label: 'Connect', go: () => this.setState({ tool: 'arrow', arrowFrom: selIt.id }) });
         }
-        acts.push({ label: 'Bring front', go: () => this.patchItem(selIt.id, { z: this.topZ() + 1 }) });
-        if (isManager || selIt.added_by === me.uid) acts.push({ label: 'Delete', go: () => this.deleteItem(selIt), danger: true });
-        selActions = acts.map(a => ({ label: a.label, go: a.go, bg: a.on ? '#0A6E58' : 'transparent', color: a.danger ? '#F4B4AC' : '#FFFFFF' }));
+        if (!richEdit) acts.push({ label: 'Bring front', go: () => this.patchItem(selIt.id, { z: this.topZ() + 1 }) });
+        if (!richEdit && (isManager || selIt.added_by === me.uid)) acts.push({ label: 'Delete', go: () => this.deleteItem(selIt), danger: true });
+        const noop = () => {};
+        selActions = acts.map(a => ({ label: a.label, go: a.go, keep: a.keep || noop, bg: a.on ? '#0A6E58' : 'transparent', color: a.danger ? '#F4B4AC' : '#FFFFFF',
+          fs: a.fs || '11px', fw: a.fw || '400', fst: a.fst || 'normal', td: a.td || 'none', tt: a.tt || 'uppercase' }));
       } else if (s.sel && String(s.sel).startsWith('link:')) {
         const lid = s.sel.slice(5); selLabel = 'Arrow';
-        selActions = [{ label: 'Delete arrow', go: () => this.deleteLink(lid), bg: 'transparent', color: '#F4B4AC' }];
+        selActions = [{ label: 'Delete arrow', go: () => this.deleteLink(lid), keep: () => {}, bg: 'transparent', color: '#F4B4AC', fs: '11px', fw: '400', fst: 'normal', td: 'none', tt: 'uppercase' }];
       }
       if (s.openRef && s.openRef.type === 'mood' && byId[s.openRef.id]) cmtList = comments[s.openRef.id] || [];
       drawerShots = s.page === 'task' && td ? td.shots.map(sh => {
@@ -2087,7 +2448,10 @@ class Component extends DCLogic {
     }
     const toolBtn = (key, label, hint) => { const on = s.tool === key; return { label, hint, bg: on ? '#0A6E58' : '#FFFFFF', color: on ? '#FFFFFF' : '#1B1D1E', border: on ? '#0A6E58' : '#DDE3E1', go: () => this.setState({ tool: on && key !== 'select' ? 'select' : key, arrowFrom: null, editing: null, tplOpen: false }) }; };
     const plainBtn = (label, hint, go, on) => ({ label, hint, go, bg: on ? '#0A6E58' : '#FFFFFF', color: on ? '#FFFFFF' : '#1B1D1E', border: on ? '#0A6E58' : '#DDE3E1' });
+    const H = this._hist && this._hist.key === this._boardKey ? this._hist : { undo: [], redo: [] };
+    const histBtn = (label, hint, go, n) => ({ label, hint, go, bg: '#FFFFFF', color: n ? '#1B1D1E' : '#B8C2BF', border: '#DDE3E1' });
     const boardTools = [
+      histBtn('↶ Undo', 'Undo (Ctrl/⌘ Z)', () => this.undo(), H.undo.length), histBtn('↷ Redo', 'Redo (Shift Ctrl/⌘ Z)', () => this.redo(), H.redo.length),
       toolBtn('select', 'Select', 'Move, select, pan (Esc)'), toolBtn('pen', 'Pen', 'Freehand drawing'), toolBtn('arrow', 'Arrow', 'Connect two cards'),
       plainBtn('Note', 'Add a note', () => this.addCard('note')), plainBtn('Sticky', 'Add a sticky note', () => this.addCard('sticky')),
       plainBtn('Heading', 'Add a heading', () => this.addCard('heading')), plainBtn('To-do', 'Add a to-do list', () => this.addCard('todo')),
@@ -2102,13 +2466,25 @@ class Component extends DCLogic {
     ];
     const boardHint = s.uploading ? s.uploading : s.tool === 'pen' ? 'Draw on the board. Pick a colour and width.' : s.tool === 'arrow' ? (s.arrowFrom ? 'Now click the card the arrow points to.' : 'Click the card the arrow starts from.') : s.tool === 'link' ? 'Paste a link — YouTube, Pinterest, Drive, Instagram…' : s.tplOpen ? 'Start from a template — it lands in the middle of your view.' : '';
 
+    const mList = this.mentionList();
+    const mentionPick = mList.map(p => ({ name: p.name, initials: p.hash ? '#' : initials(p.name), role: p.hash ? p.role : p.role === 'admin' ? 'Admin' : p.role === 'hr' ? 'HR' : roleLabel(p.role), go: () => this.pickMention(p) }));
+    const prevSeen = s.mentionsSeenPrev ? new Date(s.mentionsSeenPrev).getTime() : 0;
+    const mentionsVM = s.mentions.map(m => {
+      const tk = m.task_id ? s.tasks.find(x => x.id === m.task_id) : null;
+      return {
+        author: m.author_name || 'Crew', time: dayLabel(dayKey(m.created_at)) + ' · ' + fmtTime(m.created_at),
+        where: m.task_id ? (tk ? tk.title : 'A task') + (m.ref_type === 'mood' ? ' · board' : m.ref_type === 'shot' ? ' · storyboard' : '') : m.ref_type === 'mood' ? 'Crew board' : 'Crew channel',
+        segs: this.segsFor(m.body, m.mentions), bg: new Date(m.created_at).getTime() > prevSeen ? '#F3FAF8' : '#FFFFFF', go: () => this.openMention(m),
+      };
+    });
+
     const authMode = s.authMode;
     const revoked = !!me.access_revoked || (me.request_status === 'approved' && !me.is_crew && !me.is_manager);
     const authLinks = authMode === 'signin'
       ? [{ label: 'Create an account', go: () => this.setState({ authMode: 'signup', authErr: '', authMsg: '' }) }, { label: 'Forgot password', go: () => this.setState({ authMode: 'reset', authErr: '', authMsg: '' }) }]
       : authMode === 'newpass' ? [] : [{ label: 'Back to sign in', go: () => this.setState({ authMode: 'signin', authErr: '', authMsg: '' }) }];
 
-    const pageTitle = s.page === 'task' && t ? t.title : s.page === 'channel' ? 'Crew channel' : s.page === 'form' ? (f && f.id ? 'Edit task' : 'Issue a task') : s.page === 'trash' ? 'Trash' : s.page === 'profile' ? 'My profile' : s.page === 'board' ? 'Crew board' : 'Today';
+    const pageTitle = s.page === 'task' && t ? t.title : s.page === 'channel' ? 'Crew channel' : s.page === 'form' ? (f && f.id ? 'Edit task' : 'Issue a task') : s.page === 'trash' ? 'Trash' : s.page === 'profile' ? 'My profile' : s.page === 'board' ? 'Crew board' : s.page === 'mentions' ? 'Mentions' : 'Today';
     const showChat = s.page === 'channel' || (s.page === 'task' && !!td && s.tab === 'discussion');
 
     return {
@@ -2192,7 +2568,13 @@ class Component extends DCLogic {
       hasSel: !!selActions.length, selLabel, selColors, selActions,
       cmtOpen: !!(showBoard && s.openRef && s.openRef.type === 'mood'), cmtList, noCmts: !cmtList.length, closeComments: () => this.setState({ openRef: null }),
       todoDraft: s.todoDraft, onTodoDraft: e => this.setState({ todoDraft: e.target.value }),
-      refDraft: s.refDraft, onRefDraft: set('refDraft'), onRefKey: e => { if (e.key === 'Enter') this.sendRef(); }, sendRef: () => this.sendRef(),
+      refDraft: s.refDraft, onRefDraft: e => this.onMentionInput('refDraft', e), sendRef: () => this.sendRef(),
+      onRefKey: e => { if (e.key === 'Enter') { e.preventDefault(); if (s.mentionQ && mList.length) this.pickMention(mList[0]); else this.sendRef(); } else if (e.key === 'Escape') this.setState({ mentionQ: null }); },
+      mentionPick, keepFocus: e => e.preventDefault(),
+      showMentionChat: !!(s.mentionQ && s.mentionQ.field === 'draft' && mList.length), showMentionRef: !!(s.mentionQ && s.mentionQ.field === 'refDraft' && mList.length),
+      onRichPaste: e => { e.preventDefault(); const t = (e.clipboardData || window.clipboardData).getData('text/plain'); try { document.execCommand('insertText', false, t); } catch (_) {} },
+      pageMentions: s.page === 'mentions', mentionsVM, noMentions: !mentionsVM.length,
+      noMentionsNote: 'Nobody has tagged you yet. When someone types @ and your name in a chat or comment, it shows up here.',
 
       setFrameInput: el => { this.frameInput = el; }, onFrameFile: e => this.onFrameFile(e),
       storyViews: [['cards', 'Frames'], ['table', 'Shot list']].map(([k, l]) => ({ label: l, bg: s.storyView === k ? '#0A6E58' : '#FFFFFF', color: s.storyView === k ? '#FFFFFF' : '#4A524F', go: () => this.setState({ storyView: k }) })),
@@ -2202,8 +2584,13 @@ class Component extends DCLogic {
       noChatNote: s.page === 'channel' ? 'Nothing here yet. Say hello to the crew.' : 'No discussion yet. Questions, decisions and updates for this task go here.',
       chatHeight: s.page === 'channel' ? (narrow ? 'calc(100dvh - 270px)' : 'calc(100dvh - 330px)') : (narrow ? '60dvh' : '56vh'),
       setChatBox: el => { this.chatBox = el; }, setChatInput: el => { this.chatInput = el; },
-      draft: s.draft, onDraft: set('draft'), onDraftKey: e => { if (e.key === 'Enter' && !e.shiftKey && !(window.matchMedia && matchMedia('(pointer:coarse)').matches)) { e.preventDefault(); this.sendMessage(); } },
-      sendMessage: () => this.sendMessage(), sending: s.sending, chatPlaceholder: s.page === 'channel' ? 'Message the whole crew' : 'Message everyone on this task',
+      draft: s.draft, onDraft: e => this.onMentionInput('draft', e),
+      onDraftKey: e => {
+        if (s.mentionQ && mList.length && (e.key === 'Enter' || e.key === 'Tab')) { e.preventDefault(); this.pickMention(mList[0]); return; }
+        if (e.key === 'Escape') { this.setState({ mentionQ: null }); return; }
+        if (e.key === 'Enter' && !e.shiftKey && !(window.matchMedia && matchMedia('(pointer:coarse)').matches)) { e.preventDefault(); this.sendMessage(); }
+      },
+      sendMessage: () => this.sendMessage(), sending: s.sending, chatPlaceholder: s.page === 'channel' ? 'Message the whole crew — @ person, # task' : 'Message everyone on this task — @ person, # to-do',
       canAttach: s.page === 'task', pickChatFile: () => this.chatInput && this.chatInput.click(),
       onChatFile: e => { const fl = (e.target.files || [])[0]; e.target.value = ''; if (fl) this.setState({ pendingFile: fl }); },
       hasPendingFile: !!s.pendingFile, pendingName: s.pendingFile ? s.pendingFile.name : '', clearPending: () => this.setState({ pendingFile: null }),
