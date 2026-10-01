@@ -136,6 +136,7 @@
         <div style="position:fixed; top:0; left:0; right:0; z-index:30; height:56px; display:flex; align-items:center; gap:14px; padding:0 16px; background:#FFFFFF; border-bottom:1px solid #DDE3E1">
           <button data-tap="1" onClick="{{ toggleSide }}" style="padding:8px 12px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#0A6E58; cursor:pointer">Menu</button>
           <span style="font-size:14px; color:#1B1D1E; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0">{{ pageTitle }}</span>
+          <button data-tap="1" onClick="{{ refreshHere }}" title="Refresh this page" style="flex:0 0 auto; margin-left:auto; padding:8px 12px; background:none; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#1B1D1E; cursor:pointer">{{ refreshLabel }}</button>
         </div>
         <sc-if value="{{ sideOpen }}" hint-placeholder-val="{{ false }}">
           <div onClick="{{ toggleSide }}" style="position:fixed; inset:0; z-index:39; background:rgba(22,35,31,.28)"></div>
@@ -180,6 +181,7 @@
           <sc-for list="{{ navBottom }}" as="nb" hint-placeholder-count="0">
             <button data-tap="1" onClick="{{ nb.go }}" style="display:flex; justify-content:space-between; padding:8px 10px; background:{{ nb.bg }}; border:none; border-radius:0; font-size:13px; color:{{ nb.color }}; text-align:left; cursor:pointer"><span>{{ nb.label }}</span><span style="font-size:11px; color:#6B7572">{{ nb.count }}</span></button>
           </sc-for>
+          <button data-tap="1" onClick="{{ refreshHere }}" style="padding:8px 10px; background:none; border:none; font-size:13px; color:#1B1D1E; text-align:left; cursor:pointer">{{ refreshLabelLong }}</button>
           <button onClick="{{ signOut }}" style="padding:8px 10px; background:none; border:none; font-size:13px; color:#6B7572; text-align:left; cursor:pointer">Sign out</button>
         </div>
       </aside>
@@ -1074,6 +1076,7 @@ class Component extends DCLogic {
     if (this.rt && this.sb) this.sb.removeChannel(this.rt);
   }
   componentDidUpdate() {
+    this.writePlace();
     const lock = !!this.state.boardFull;
     if (lock !== !!this._locked) { this._locked = lock; document.body.style.overflow = lock ? 'hidden' : ''; }
     const bk = this.boardKey();
@@ -1116,6 +1119,7 @@ class Component extends DCLogic {
       this.setState({ me, phase: 'app', authErr: '', authMsg: '', password: '', password2: '' });
       await this.loadAll();
       this.subscribe();
+      await this.restorePlace();
     } catch (e) {
       console.error(e);
       let email = '';
@@ -1349,6 +1353,62 @@ class Component extends DCLogic {
     const urls = { ...this.state.urls };
     (data || []).forEach(d => { if (d.signedUrl) urls[d.path] = d.signedUrl; });
     this.setState({ urls });
+  }
+
+  placeHash() {
+    const s = this.state;
+    if (s.page === 'task' && s.taskId) return '#/task/' + s.taskId + '/' + (s.tab || 'overview') + (s.openRef ? '/' + s.openRef.type + ':' + s.openRef.id : '');
+    if (s.page === 'form') return s.form && s.form.id ? '#/task/' + s.form.id : '#/today';
+    return '#/' + (s.page || 'today');
+  }
+  writePlace() {
+    if (this.state.phase !== 'app' || this._restoring) return;
+    const h = this.placeHash();
+    if (location.hash !== h) { try { history.replaceState(null, '', location.pathname + location.search + h); } catch (_) {} }
+    try { sessionStorage.setItem('crew-place', h); } catch (_) {}
+  }
+  async restorePlace() {
+    let h = location.hash;
+    if (!/^#\/(task|today|mentions|channel|board|trash|profile|access|approvals|people)/.test(h)) { try { h = sessionStorage.getItem('crew-place') || ''; } catch (_) { h = ''; } }
+    const p = h.replace(/^#\//, '').split('/');
+    if (!p[0] || p[0] === 'today') return false;
+    this._restoring = true;
+    try {
+      if (p[0] === 'task' && p[1] && /^[0-9a-f-]{36}$/i.test(p[1])) {
+        if (!this.state.tasks.some(t => t.id === p[1])) return false;
+        const tab = /^(overview|mood|story|discussion|people|checkins)$/.test(p[2] || '') ? p[2] : 'overview';
+        await this.openTask(p[1], tab);
+        const m = /^(mood|shot):([0-9a-f-]{36})$/i.exec(p[3] || '');
+        if (m) { if (m[1] === 'mood') this._pendingRef = { type: 'mood', id: m[2] }; else this.setState({ openRef: { type: 'shot', id: m[2] } }); }
+        return true;
+      }
+      const page = p[0];
+      if ((page === 'trash' || page === 'access' || page === 'approvals') && !(this.state.me && this.state.me.is_manager)) return false;
+      if (!/^(mentions|channel|board|trash|profile|access|approvals|people)$/.test(page)) return false;
+      this.go(page);
+      return true;
+    } catch (_) { return false; }
+    finally { this._restoring = false; setTimeout(() => this.writePlace(), 0); }
+  }
+  // Refresh in place: reload this page's data without leaving it.
+  async refreshHere() {
+    if (this._refreshing) return;
+    this._refreshing = true; this.setState({ refreshing: true });
+    try {
+      const s = this.state;
+      await this.loadAll();
+      if (s.page === 'task' && s.taskId) {
+        await this.loadTask(s.taskId, false);
+        if (this._boardKey && this.loadBoard) await this.loadBoard(this._boardKey);
+        if (this.loadMessages) await this.loadMessages(s.taskId);
+      } else if (s.page === 'channel') await this.loadMessages(null);
+      else if (s.page === 'board' && this._boardKey && this.loadBoard) await this.loadBoard(this._boardKey);
+      else if (s.page === 'mentions') await this.loadMentions();
+      else if (s.page === 'trash') await this.loadTrash(false);
+      else if (s.page === 'profile') await this.loadProfile();
+      this.flash('Up to date.');
+    } catch (e) { this.flash(friendly(e), true); }
+    finally { this._refreshing = false; this.setState({ refreshing: false }); }
   }
 
   go(page, extra) {
@@ -2505,9 +2565,10 @@ class Component extends DCLogic {
       waitText: revoked ? "The admin removed your access to the crew page. If that's a mistake, talk to HR, then send a new request below." : me.request_status === 'pending' ? 'Your request is with the admin. Once it is approved, your tasks appear here — check back later.' : me.request_status === 'declined' ? 'The admin declined this request. If that is a mistake, talk to HR, then send it again below.' : 'This account has no access to the crew page yet. Send a request and the admin will review it.',
       waitCanRequest: revoked || me.request_status !== 'pending', requestAccess: () => this.requestAccess(),
       showError: s.phase === 'error', errorText: s.meErr, retry: () => this.afterSignIn(),
-      signOut: async () => { if (this.sb) await this.sb.auth.signOut(); this.resetAll(); },
+      signOut: async () => { try { sessionStorage.removeItem('crew-place'); history.replaceState(null, '', location.pathname + location.search); } catch (_) {} if (this.sb) await this.sb.auth.signOut(); this.resetAll(); },
 
       narrow, sideOpen: s.sideOpen, toggleSide: () => this.setState({ sideOpen: !s.sideOpen }), pageTitle,
+      refreshHere: () => this.refreshHere(), refreshLabel: s.refreshing ? '…' : '↻', refreshLabelLong: s.refreshing ? 'Refreshing…' : '↻ Refresh',
       sideDisplay: !narrow || s.sideOpen ? 'flex' : 'none', sidePos: narrow ? 'fixed' : 'sticky', mainPad: narrow ? '84px 18px 48px' : '44px clamp(24px,4vw,56px) 64px',
       meName: me.name || '', meInitials: initials(me.name), meRoleLabel: isAdmin ? 'Admin' : me.role === 'hr' ? 'HR' : 'Crew',
       navTop, navBottom, navTasks, noNavTasks: !navTasks.length, navTasksLabel: isManager ? 'All tasks' : 'My tasks',
