@@ -814,6 +814,16 @@
                       <sc-if value="{{ m.hasBody }}" hint-placeholder-val="{{ true }}"><span style="font-size:15px; line-height:1.6; color:#1B1D1E; white-space:pre-wrap; overflow-wrap:anywhere"><sc-for list="{{ m.segs }}" as="sg" hint-placeholder-count="1"><span onClick="{{ sg.go }}" style="color:{{ sg.color }}; font-weight:{{ sg.fw }}; background:{{ sg.bg }}; text-decoration:{{ sg.td }}; cursor:{{ sg.cur }}">{{ sg.t }}</span></sc-for></span></sc-if>
                       <sc-if value="{{ m.isImage }}" hint-placeholder-val="{{ false }}"><a href="{{ m.url }}" target="_blank" rel="noopener"><img src="{{ m.url }}" alt="" loading="lazy" style="display:block; max-width:min(340px,100%); max-height:300px; border:1px solid #DDE3E1"></a></sc-if>
                       <sc-if value="{{ m.isVideo }}" hint-placeholder-val="{{ false }}"><video src="{{ m.url }}" controls playsinline preload="metadata" style="display:block; max-width:min(380px,100%); background:#16231F"></video></sc-if>
+                      <sc-if value="{{ m.isAudio }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; align-items:center; gap:12px; align-self:flex-start; width:min(300px,100%); padding:6px 14px 6px 6px; border:1px solid #DDE3E1; background:#F7FAF9">
+                          <button data-tap="1" onClick="{{ m.playVoice }}" aria-label="{{ m.voiceAria }}" style="flex:0 0 44px; height:44px; display:grid; place-items:center; padding:0; background:#0A6E58; border:none; border-radius:0; cursor:pointer">
+                            <sc-if value="{{ m.voicePlaying }}" hint-placeholder-val="{{ false }}"><span style="display:flex; gap:4px"><span style="width:4px; height:14px; background:#FFFFFF"></span><span style="width:4px; height:14px; background:#FFFFFF"></span></span></sc-if>
+                            <sc-if value="{{ m.voiceIdle }}" hint-placeholder-val="{{ true }}"><span style="width:0; height:0; margin-left:4px; border-left:12px solid #FFFFFF; border-top:7px solid transparent; border-bottom:7px solid transparent"></span></sc-if>
+                          </button>
+                          <div onClick="{{ m.seekVoice }}" style="flex:1 1 auto; min-width:0; height:28px; display:flex; align-items:center; cursor:pointer"><div style="position:relative; width:100%; height:2px; background:#DDE3E1"><div style="position:absolute; left:0; top:0; bottom:0; width:{{ m.voicePct }}; background:#0A6E58"></div></div></div>
+                          <span style="flex:0 0 auto; font-size:12px; letter-spacing:.04em; color:#4A524F; font-variant-numeric:tabular-nums">{{ m.voiceTime }}</span>
+                        </div>
+                      </sc-if>
                       <sc-if value="{{ m.isFile }}" hint-placeholder-val="{{ false }}"><a href="{{ m.url }}" target="_blank" rel="noopener" style="align-self:flex-start; padding:8px 12px; border:1px solid #DDE3E1; font-size:13px">{{ m.fileName }}</a></sc-if>
                       <div style="display:flex; gap:6px; flex-wrap:wrap">
                         <sc-for list="{{ m.reacts }}" as="r" hint-placeholder-count="0">
@@ -838,13 +848,32 @@
                     </sc-for>
                   </div>
                 </sc-if>
+                <sc-if value="{{ recording }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:8px; align-items:stretch">
+                    <div role="status" style="flex:1; min-width:0; display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #DDE3E1; background:#FFFFFF">
+                      <span style="flex:0 0 10px; height:10px; background:#B4433A"></span>
+                      <span style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4433A">Recording</span>
+                      <span style="font-size:15px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ recTime }}</span>
+                      <span style="margin-left:auto; font-size:11px; color:#6B7572; white-space:nowrap">{{ recLimit }}</span>
+                    </div>
+                    <button data-tap="1" onClick="{{ cancelVoice }}" style="flex:0 0 auto; min-width:44px; padding:12px 14px; background:#FFFFFF; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4433A; cursor:pointer">Cancel</button>
+                    <button data-tap="1" onClick="{{ sendVoiceNow }}" style="flex:0 0 auto; padding:12px 18px; background:#0A6E58; color:#FFFFFF; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Send</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ notRecording }}" hint-placeholder-val="{{ true }}">
                 <div style="display:flex; gap:8px; align-items:flex-end">
                   <textarea rows="2" aria-label="Message" placeholder="{{ chatPlaceholder }}" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" style="flex:1; min-width:0; padding:10px 12px; border:1px solid #DDE3E1; border-radius:0; font-size:15px; line-height:1.5; resize:none; background:#fff"></textarea>
                   <sc-if value="{{ canAttach }}" hint-placeholder-val="{{ false }}">
                     <button data-tap="1" onClick="{{ pickChatFile }}" aria-label="Attach a photo, video or PDF" style="flex:0 0 auto; min-width:44px; padding:12px; background:#fff; border:1px solid #DDE3E1; border-radius:0; font-size:{{ attachFs }}; line-height:1; letter-spacing:.16em; text-transform:uppercase; color:#0A6E58; cursor:pointer">{{ attachLabel }}</button>
                   </sc-if>
+                  <sc-if value="{{ canVoice }}" hint-placeholder-val="{{ false }}">
+                    <button data-tap="1" onClick="{{ startVoice }}" disabled="{{ sending }}" aria-label="Record a voice note" title="Voice note" style="flex:0 0 auto; min-width:44px; min-height:44px; padding:10px 12px; display:grid; place-items:center; background:#FFFFFF; border:1px solid #DDE3E1; border-radius:0; cursor:pointer">
+                      <span style="display:flex; flex-direction:column; align-items:center"><span style="width:8px; height:13px; border:2px solid #0A6E58; border-radius:6px"></span><span style="width:14px; height:6px; margin-top:-4px; border:2px solid #0A6E58; border-top:none; border-radius:0 0 8px 8px"></span><span style="width:2px; height:3px; background:#0A6E58"></span></span>
+                    </button>
+                  </sc-if>
                   <button data-tap="1" onClick="{{ sendMessage }}" disabled="{{ sending }}" style="padding:12px 18px; background:#0A6E58; color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Send</button>
                 </div>
+                </sc-if>
               </div>
             </div>
           </sc-if>
@@ -1012,6 +1041,11 @@ const CREW_ROLES = [['model', 'Model'], ['makeup_artist', 'Makeup artist'], ['ha
 const ROLE_NAME = CREW_ROLES.reduce((m, [k, v]) => { m[k] = v; return m; }, {});
 const STARTER = [['Mood board — first pass', 'moodboard'], ['Storyboard — shot list', 'storyboard'], ['Recce / location check', 'shoot'], ['Gear list', 'shoot'], ['Call sheet shared', 'shoot']];
 const ALLOWED = /^(image\/|video\/(mp4|quicktime|webm)$|application\/pdf$)/;
+const AUDIO_OK = /^audio\/(mp4|webm|ogg|mpeg|aac|x-m4a)$/;
+const AUDIO_EXT = /^(m4a|weba|ogg|oga|mp3|aac)$/;
+const VOICE_MAX = 300;
+const clock = s => { s = Math.max(0, Math.round(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const voiceSecs = p => { const m = /\/voice-\d+-[a-z0-9]+-(\d+)s\./.exec(p || ''); return m ? +m[1] : 0; };
 const CARD_DEF = { note: { w: 240, h: 150 }, sticky: { w: 180, h: 180 }, heading: { w: 360, h: 64 }, todo: { w: 240, h: 210 }, swatch: { w: 140, h: 170 }, link: { w: 260, h: 210 }, image: { w: 260, h: 200 }, video: { w: 320, h: 220 }, pdf: { w: 220, h: 130 }, shot: { w: 260, h: 210 }, stroke: { w: 10, h: 10 } };
 const KIND_LABEL = { note: 'Note', sticky: 'Sticky', heading: 'Heading', todo: 'To-do', swatch: 'Swatch', link: 'Link', image: 'Photo', video: 'Video', pdf: 'PDF', shot: 'Shot', stroke: 'Drawing' };
 const EDITABLE = { note: 1, sticky: 1, heading: 1, todo: 1, swatch: 1 };
@@ -1116,7 +1150,7 @@ class Component extends DCLogic {
     busy: false, me: null, meErr: '', page: 'today', taskId: null, tab: 'overview',
     tasks: [], members: [], allItems: [], myToday: [], roster: [], people: [], access: [], trash: [],
     t: null, chat: [], reactions: [], urls: {}, narrow: typeof window !== 'undefined' && window.innerWidth < 880, sideOpen: false,
-    toast: '', toastErr: false, form: null, storyView: 'cards', openRef: null, draft: '', refDraft: '', pendingFile: null, sending: false,
+    toast: '', toastErr: false, form: null, storyView: 'cards', openRef: null, draft: '', refDraft: '', pendingFile: null, sending: false, rec: null, voice: { path: null, playing: false, t: 0 },
     ci: { note: '', percent: 0 }, newItem: { title: '', section: 'general', assignee: '' }, linkForm: { url: '', title: '' }, noteDraft: '',
     uploading: '', shotEdits: {},
     multi: [], marquee: null, erasing: {}, addOpen: false,
@@ -1167,6 +1201,7 @@ class Component extends DCLogic {
     this.boot();
   }
   componentWillUnmount() {
+    this.stopVoice(false); if (this._audio) this._audio.pause();
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('keydown', this.onKey);
     window.removeEventListener('hashchange', this.onHash);
@@ -1575,6 +1610,7 @@ class Component extends DCLogic {
   async testPush() { const { error } = await this.sb.rpc('crew_push_test'); this.flash(error ? friendly(error) : 'Test sent — it should arrive in a few seconds.', !!error); }
 
   go(page, extra) {
+    if (this._rec) this.stopVoice(false);
     this.setState({ page, sideOpen: false, openRef: null, draft: '', pendingFile: null, ...(extra || {}) });
     if (page === 'channel') this.run(() => this.loadMessages(null));
     if (page === 'leads') this.run(() => this.loadLeads());
@@ -1591,6 +1627,7 @@ class Component extends DCLogic {
   }
 
   async openTask(id, tab) {
+    if (this._rec) this.stopVoice(false);
     this.setState({ page: 'task', taskId: id, tab: tab || 'overview', t: null, sideOpen: false, openRef: null, draft: '', pendingFile: null, shotEdits: {}, newItem: { title: '', section: 'general', assignee: '' } });
     await this.run(() => this.loadTask(id, true));
   }
@@ -1646,7 +1683,7 @@ class Component extends DCLogic {
   async refreshTask() { if (this.state.taskId) await this.loadTask(this.state.taskId, false); }
 
   async upload(taskId, file, prefix) {
-    if (!ALLOWED.test(file.type || '')) throw new Error(file.name + ': only photos, MP4/MOV/WebM video and PDF can be uploaded.');
+    if (!ALLOWED.test(file.type || '') && !(prefix === 'voice' && AUDIO_OK.test(file.type || ''))) throw new Error(file.name + ': only photos, MP4/MOV/WebM video and PDF can be uploaded.');
     let blob = file, type = file.type, ext = extOf(file);
     if (type.startsWith('image/') && !/gif|heic|heif/.test(type) && file.size > 1.5 * 1024 * 1024) {
       try {
@@ -1927,6 +1964,79 @@ class Component extends DCLogic {
       await this.loadMessages(taskId);
     });
     this.setState({ sending: false });
+  }
+
+  async startVoice() {
+    if (this._rec || this.state.sending) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) { this.flash("This browser can't record voice notes.", true); return; }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+    catch (e) { this.flash(e && e.name === 'NotAllowedError' ? 'Microphone is blocked. Allow it for this site in your settings.' : 'No microphone found.', true); return; }
+    const ok = t => { try { return MediaRecorder.isTypeSupported(t); } catch (_) { return false; } };
+    const type = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'].find(ok);
+    let mr;
+    try { mr = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 64000 } : undefined); }
+    catch (e) { stream.getTracks().forEach(t => t.stop()); this.flash("This browser can't record voice notes.", true); return; }
+    const r = { mr, stream, chunks: [], t0: Date.now(), send: false, page: this.state.page, taskId: this.state.taskId };
+    mr.ondataavailable = e => { if (e.data && e.data.size) r.chunks.push(e.data); };
+    mr.onstop = () => this.finishVoice(r);
+    this._rec = r;
+    if (this._audio) this._audio.pause();
+    mr.start(1000);
+    this._recTick = setInterval(() => {
+      const secs = (Date.now() - r.t0) / 1000;
+      if (secs >= VOICE_MAX) this.stopVoice(true); else this.setState({ rec: { secs } });
+    }, 250);
+    this.setState({ rec: { secs: 0 } });
+  }
+  stopVoice(send) {
+    const r = this._rec; if (!r) return;
+    this._rec = null; clearInterval(this._recTick);
+    r.send = send; r.secs = (Date.now() - r.t0) / 1000;
+    this.setState({ rec: null });
+    try { if (r.mr.state !== 'inactive') r.mr.stop(); else this.finishVoice(r); } catch (_) { this.finishVoice(r); }
+  }
+  async finishVoice(r) {
+    if (r.done) return; r.done = true;
+    r.stream.getTracks().forEach(t => t.stop());
+    if (!r.send) return;
+    if (r.secs < 1 || !r.chunks.length) { this.flash('Too short — hold on a little longer.', true); return; }
+    let base = (r.mr.mimeType || r.chunks[0].type || 'audio/webm').split(';')[0].trim();
+    if (!base.startsWith('audio/')) base = base.replace(/^video\//, 'audio/');
+    if (!AUDIO_OK.test(base)) base = 'audio/webm';
+    const ext = /mp4|aac|m4a/.test(base) ? 'm4a' : /ogg/.test(base) ? 'ogg' : 'weba';
+    const file = new File(r.chunks, Math.round(r.secs) + 's.' + ext, { type: base });
+    const s = this.state, taskId = r.page === 'task' ? r.taskId : null;
+    if (r.page === 'task' && !taskId) return;
+    this.setState({ sending: true });
+    await this.run(async () => {
+      const path = (await this.upload(taskId || 'channel', file, 'voice')).path;
+      const { error } = await this.insertMessage({ task_id: taskId, body: '', attachment_path: path, author_name: s.me.name });
+      if (error) { await this.sb.storage.from(BUCKET).remove([path]); throw error; }
+      await this.loadMessages(taskId);
+    });
+    this.setState({ sending: false });
+  }
+  toggleVoice(path) {
+    const url = this.state.urls[path]; if (!url) return;
+    const a0 = this._audio;
+    if (a0 && this.state.voice.path === path) { if (a0.paused) a0.play().catch(() => {}); else a0.pause(); return; }
+    if (a0) { a0.pause(); a0.src = ''; }
+    const a = new Audio(); a.preload = 'auto'; this._audio = a;
+    const sync = () => { if (this._audio === a) this.setState({ voice: { path, playing: !a.paused, t: a.currentTime || 0 } }); };
+    a.ontimeupdate = sync; a.onplay = sync; a.onpause = sync;
+    a.onended = () => { if (this._audio === a) this.setState({ voice: { path: null, playing: false, t: 0 } }); };
+    a.onerror = () => { if (this._audio === a) { this.setState({ voice: { path: null, playing: false, t: 0 } }); this.flash("This voice note won't play on this device.", true); } };
+    a.src = url;
+    this.setState({ voice: { path, playing: true, t: 0 } });
+    a.play().catch(() => sync());
+  }
+  seekVoice(path, secs, e) {
+    const a = this._audio; if (!a || this.state.voice.path !== path) { this.toggleVoice(path); return; }
+    const d = isFinite(a.duration) && a.duration > 0 ? a.duration : secs; if (!d) return;
+    const b = e.currentTarget.getBoundingClientRect();
+    a.currentTime = Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)) * d;
+    if (a.paused) a.play().catch(() => {});
   }
 
   async sendRef() {
@@ -2623,12 +2733,16 @@ class Component extends DCLogic {
     const chatVM = s.chat.filter(m => !m.ref_type).map(m => {
       const dk = dayKey(m.created_at), showDay = dk !== prevDay; prevDay = dk;
       const p = m.attachment_path, ext = p ? p.split('.').pop().toLowerCase() : '';
-      const isImage = !!p && /^(jpg|jpeg|png|webp|gif|heic|heif)$/.test(ext), isVideo = !!p && /^(mp4|mov|webm)$/.test(ext);
+      const isImage = !!p && /^(jpg|jpeg|png|webp|gif|heic|heif)$/.test(ext), isVideo = !!p && /^(mp4|mov|webm)$/.test(ext), isAudio = !!p && AUDIO_EXT.test(ext);
       const mine = m.author === me.uid;
+      const vSecs = isAudio ? voiceSecs(p) : 0, vOn = isAudio && s.voice.path === p, vPlay = vOn && s.voice.playing, vT = vOn ? s.voice.t : 0;
       return {
         showDay, dayLabel: dayLabel(dk), author: m.author_name || 'Crew', initials: initials(m.author_name), time: fmtTime(m.created_at),
         avBg: mine ? '#0A6E58' : '#E3F2EE', avColor: mine ? '#FFFFFF' : '#0A6E58', body: m.body, hasBody: !!m.body,
-        url: p ? s.urls[p] || '' : '', isImage, isVideo, segs: this.segsFor(m.body, m.mentions), isFile: !!p && !isImage && !isVideo, fileName: fileName(p),
+        url: p ? s.urls[p] || '' : '', isImage, isVideo, segs: this.segsFor(m.body, m.mentions), isFile: !!p && !isImage && !isVideo && !isAudio, fileName: fileName(p),
+        isAudio, voicePlaying: vPlay, voiceIdle: !vPlay, voiceAria: (vPlay ? 'Pause' : 'Play') + ' voice note, ' + clock(vSecs),
+        voiceTime: vOn && vT > 0 ? clock(vT) + ' / ' + clock(vSecs) : clock(vSecs), voicePct: vSecs ? Math.min(100, vT / vSecs * 100).toFixed(1) + '%' : '0%',
+        playVoice: () => this.toggleVoice(p), seekVoice: e => this.seekVoice(p, vSecs, e),
         canDelete: mine || isManager, remove: () => this.deleteMessage(m), reacts: this.reactsFor(rxIndex, 'message', m.id),
       };
     });
@@ -2959,6 +3073,9 @@ class Component extends DCLogic {
       },
       sendMessage: () => this.sendMessage(), sending: s.sending, chatPlaceholder: narrow ? 'Message · @ person · # ' + (s.page === 'channel' ? 'task' : 'to-do') : s.page === 'channel' ? 'Message the whole crew — @ person, # task' : 'Message everyone on this task — @ person, # to-do',
       canAttach: s.page === 'task', pickChatFile: () => this.chatInput && this.chatInput.click(),
+      canVoice: typeof window !== 'undefined' && !!window.MediaRecorder, recording: !!s.rec, notRecording: !s.rec,
+      recTime: s.rec ? clock(Math.floor(s.rec.secs)) : '0:00', recLimit: s.rec && s.rec.secs > VOICE_MAX - 30 ? 'Stops at ' + clock(VOICE_MAX) : 'Max ' + clock(VOICE_MAX),
+      startVoice: () => this.startVoice(), cancelVoice: () => this.stopVoice(false), sendVoiceNow: () => this.stopVoice(true),
       onChatFile: e => { const fl = (e.target.files || [])[0]; e.target.value = ''; if (fl) this.setState({ pendingFile: fl }); },
       hasPendingFile: !!s.pendingFile, pendingName: s.pendingFile ? s.pendingFile.name : '', clearPending: () => this.setState({ pendingFile: null }),
 
