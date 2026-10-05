@@ -1,6 +1,6 @@
 // glomium crew — keeps the app shell available offline. Task data always comes
 // live from Supabase; nothing private is cached here.
-const V = 'crew-shell-v2';
+const V = 'crew-shell-v3';
 const SHELL = ['/crew.html', '/support.js', '/crew-offline.html', '/assets/wordmark-green.png', '/assets/infinity.svg', '/assets/crew-icon-192.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('crew-shell-') && k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
@@ -18,10 +18,13 @@ self.addEventListener('fetch', e => {
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'glomium crew', {
-    body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag,
-    icon: '/assets/crew-icon-192.png', data: { url: d.url || '/crew.html' },
-  }));
+  e.waitUntil(Promise.all([
+    self.registration.showNotification(d.title || 'glomium crew', {
+      body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag,
+      icon: '/assets/crew-icon-192.png', data: { url: d.url || '/crew.html' },
+    }),
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => list.forEach(c => c.postMessage({ type: 'crew-push' }))),
+  ]));
 });
 self.addEventListener('notificationclick', e => {
   e.notification.close();
