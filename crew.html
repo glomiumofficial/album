@@ -12,6 +12,13 @@
 <meta name="robots" content="noindex, nofollow">
 <title>glomium — crew</title>
 <link rel="icon" href="assets/infinity.svg" type="image/svg+xml">
+<link rel="manifest" href="crew.webmanifest">
+<link rel="apple-touch-icon" href="assets/crew-icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="glomium crew">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1105,6 +1112,9 @@ class Component extends DCLogic {
       if ((e.key === 'Delete' || e.key === 'Backspace') && this.state.sel) { e.preventDefault(); this.deleteSelected(); }
     };
     window.addEventListener('keydown', this.onKey);
+    if ('serviceWorker' in navigator && location.protocol === 'https:' && /\/crew(\.html)?$/.test(location.pathname)) {
+      navigator.serviceWorker.register('crew-sw.js', { scope: './' }).catch(() => {});
+    }
     this.onHide = () => this.flushHist();
     window.addEventListener('pagehide', this.onHide);
     this.boot();
