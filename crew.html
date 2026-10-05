@@ -208,6 +208,15 @@
           </sc-if>
 
           <sc-if value="{{ pageToday }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ showPushPrompt }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 16px; background:#F3FAF8; border:1px solid #DDE3E1">
+                <span style="flex:1 1 220px; font-size:14px; line-height:1.6; color:#1B1D1E">{{ pushPromptText }}</span>
+                <div style="display:flex; gap:8px">
+                  <button data-tap="1" onClick="{{ pushPromptGo }}" style="padding:10px 16px; background:#0A6E58; color:#FFFFFF; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">{{ pushPromptCta }}</button>
+                  <button data-tap="1" onClick="{{ pushPromptHide }}" style="padding:10px 12px; background:none; color:#4A524F; border:1px solid #DDE3E1; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Not now</button>
+                </div>
+              </div>
+            </sc-if>
             <div style="display:flex; flex-direction:column; gap:6px">
               <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">{{ todayLabel }}</span>
               <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2; color:#1B1D1E">{{ greeting }}</h1>
@@ -887,6 +896,38 @@
             </sc-if>
           </sc-if>
 
+          <sc-if value="{{ pageAlerts }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px">
+              <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">This phone</span>
+              <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Notifications</h1>
+              <span style="font-size:14px; line-height:1.7; color:#4A524F; max-width:560px">{{ pushStatus }}</span>
+            </div>
+            <sc-if value="{{ pushNeedsInstall }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:8px; padding:16px; background:#F3FAF8; border:1px solid #DDE3E1; max-width:560px">
+                <span style="font-size:14px; font-weight:500; color:#1B1D1E">On iPhone, install the app first</span>
+                <span style="font-size:14px; line-height:1.7; color:#4A524F">1. Open this page in Safari.<br>2. Tap Share, then Add to Home Screen.<br>3. Open glomium crew from your Home Screen and come back here.</span>
+              </div>
+            </sc-if>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <button data-tap="1" onClick="{{ pushToggle }}" style="padding:12px 18px; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer; background:{{ pushCtaBg }}; color:{{ pushCtaColor }}; border:1px solid #0A6E58">{{ pushCta }}</button>
+              <sc-if value="{{ pushOn }}" hint-placeholder-val="{{ false }}">
+                <button data-tap="1" onClick="{{ pushTest }}" style="padding:12px 18px; border-radius:0; font-size:11px; letter-spacing:.22em; text-transform:uppercase; cursor:pointer; background:#FFFFFF; color:#0A6E58; border:1px solid #DDE3E1">Send a test</button>
+              </sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; border-top:1px solid #EEF2F1; max-width:640px">
+              <span style="padding:14px 4px 6px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">Tell me about</span>
+              <sc-for list="{{ nprefsVM }}" as="np" hint-placeholder-count="4">
+                <button data-tap="1" role="switch" aria-checked="{{ np.checked }}" onClick="{{ np.go }}" style="display:flex; align-items:center; gap:14px; padding:14px 4px; background:none; border:none; border-bottom:1px solid #EEF2F1; text-align:left; cursor:pointer">
+                  <div style="display:flex; flex-direction:column; gap:2px; flex:1 1 auto; min-width:0">
+                    <span style="font-size:15px; color:#1B1D1E">{{ np.label }}</span>
+                    <span style="font-size:13px; line-height:1.5; color:#6B7572">{{ np.sub }}</span>
+                  </div>
+                  <span style="flex:0 0 auto; width:46px; height:26px; padding:3px; display:flex; justify-content:{{ np.justify }}; background:{{ np.track }}; border:1px solid {{ np.border }}"><span style="width:18px; height:18px; background:{{ np.knob }}"></span></span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+
           <sc-if value="{{ pageLeads }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; flex-direction:column; gap:6px">
               <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6B7572">Admin only</span>
@@ -957,6 +998,8 @@
 const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 const BUCKET = 'crew-tasks';
+const VAPID_PUBLIC = 'BPS55X58p2Bohm_kk-Psbn_-imqmHsWVgizGg3x8VB5493sm7i1OMG7yLZ7vJY-GE1xfnMBrfQEYgu8yXaSlOrM';
+const urlB64 = s => { const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
 const MAX_BYTES = 50 * 1024 * 1024;
 const KINDS = { upcoming_shoot: 'Upcoming shoot', trial_shoot: 'Trial shoot', reshoot: 'Reshoot', other: 'Other' };
 const STATUSES = { open: 'Issued', in_progress: 'In progress', done: 'Done' };
@@ -1076,7 +1119,8 @@ class Component extends DCLogic {
     toast: '', toastErr: false, form: null, storyView: 'cards', openRef: null, draft: '', refDraft: '', pendingFile: null, sending: false,
     ci: { note: '', percent: 0 }, newItem: { title: '', section: 'general', assignee: '' }, linkForm: { url: '', title: '' }, noteDraft: '',
     uploading: '', shotEdits: {},
-    multi: [], marquee: null, erasing: {}, addOpen: false, leadIds: [], leadsNote: '',
+    multi: [], marquee: null, erasing: {}, addOpen: false,
+    push: { supported: false, on: false, perm: 'default', needsInstall: false }, pushBusy: false, nprefs: null, pushPromptHidden: false, leadIds: [], leadsNote: '',
     board: null, view: { x: 60, y: 60, z: 1 }, tool: 'select', sel: null, editing: null, arrowFrom: null, dragPos: null,
     mentionables: [], mentionQ: null, mentionPicks: {}, mentions: [], mentionsSeen: '', mentionsSeenPrev: '',
     cursors: {}, present: [], boardFull: false, shotDrawer: false, tplOpen: false, pen: { c: '#16231F', w: 4 }, boardEdits: {}, todoDraft: '', boardNote: '',
@@ -1115,6 +1159,9 @@ class Component extends DCLogic {
     if ('serviceWorker' in navigator && location.protocol === 'https:' && /\/crew(\.html)?$/.test(location.pathname)) {
       navigator.serviceWorker.register('crew-sw.js', { scope: './' }).catch(() => {});
     }
+    this.onHash = () => { if (this.state.phase === 'app' && location.hash && location.hash !== this.placeHash()) this.restorePlace(); };
+    window.addEventListener('hashchange', this.onHash);
+    try { this.state.pushPromptHidden = localStorage.getItem('crew-push-prompt') === 'hidden'; } catch (_) {}
     this.onHide = () => this.flushHist();
     window.addEventListener('pagehide', this.onHide);
     this.boot();
@@ -1122,6 +1169,7 @@ class Component extends DCLogic {
   componentWillUnmount() {
     window.removeEventListener('resize', this.onResize);
     window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('hashchange', this.onHash);
     window.removeEventListener('pagehide', this.onHide);
     this.leaveBoard();
     if (this.rt && this.sb) this.sb.removeChannel(this.rt);
@@ -1172,6 +1220,7 @@ class Component extends DCLogic {
       await this.loadAll();
       this.subscribe();
       await this.restorePlace();
+      this.checkPush();
     } catch (e) {
       console.error(e);
       let email = '';
@@ -1421,7 +1470,7 @@ class Component extends DCLogic {
   }
   async restorePlace() {
     let h = location.hash;
-    if (!/^#\/(task|today|mentions|channel|board|trash|profile|access|approvals|people|leads)/.test(h)) { try { h = sessionStorage.getItem('crew-place') || ''; } catch (_) { h = ''; } }
+    if (!/^#\/(task|today|mentions|channel|board|trash|profile|access|approvals|people|leads|alerts)/.test(h)) { try { h = sessionStorage.getItem('crew-place') || ''; } catch (_) { h = ''; } }
     const p = h.replace(/^#\//, '').split('/');
     if (!p[0] || p[0] === 'today') return false;
     this._restoring = true;
@@ -1437,7 +1486,7 @@ class Component extends DCLogic {
       const page = p[0];
       if ((page === 'trash' || page === 'access' || page === 'approvals') && !(this.state.me && this.state.me.is_manager)) return false;
       if (page === 'leads' && !(this.state.me && this.state.me.is_admin)) return false;
-      if (!/^(mentions|channel|board|trash|profile|access|approvals|people|leads)$/.test(page)) return false;
+      if (!/^(mentions|channel|board|trash|profile|access|approvals|people|leads|alerts)$/.test(page)) return false;
       this.go(page);
       return true;
     } catch (_) { return false; }
@@ -1476,10 +1525,60 @@ class Component extends DCLogic {
     this.flash((r ? r.full_name : 'Crew') + (on ? ' can now issue tasks.' : ' is no longer a task lead.'));
   }
 
+  pushInfo() {
+    const ua = navigator.userAgent || '', ios = /iP(hone|ad|od)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+    const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && location.protocol === 'https:';
+    return { ios, standalone, supported, needsInstall: ios && !standalone, perm: 'Notification' in window ? Notification.permission : 'unsupported' };
+  }
+  async checkPush() {
+    const info = this.pushInfo(); let on = false;
+    if (info.supported && info.perm === 'granted') {
+      try { const reg = await navigator.serviceWorker.getRegistration(); const sub = reg && await reg.pushManager.getSubscription(); on = !!sub; } catch (_) {}
+    }
+    this.setState({ push: { ...info, on } });
+  }
+  async enablePush() {
+    const info = this.pushInfo();
+    if (info.needsInstall) { this.go('alerts'); return; }
+    if (!info.supported) { this.flash("This browser can't show notifications. Try Chrome on Android or the installed app on iPhone.", true); return; }
+    this.setState({ pushBusy: true });
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { this.flash(perm === 'denied' ? 'Notifications are blocked — allow them for glomium crew in your phone settings.' : 'Notifications were not turned on.', true); return; }
+      const reg = await navigator.serviceWorker.register('crew-sw.js', { scope: './' });
+      await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64(VAPID_PUBLIC) });
+      const j = sub.toJSON();
+      const { error } = await this.sb.rpc('crew_push_subscribe', { p_endpoint: j.endpoint, p_p256dh: j.keys.p256dh, p_auth: j.keys.auth, p_ua: (navigator.userAgent || '').slice(0, 200) });
+      if (error) throw error;
+      this.flash('Notifications are on for this phone.');
+    } catch (e) {
+      this.flash(/crew_push_subscribe|schema cache|function/i.test(String(e && e.message)) ? 'Notifications need a one-time setup by the admin first.' : friendly(e), true);
+    } finally { this.setState({ pushBusy: false }); this.checkPush(); this.loadNotifyPrefs(); }
+  }
+  async disablePush(silent) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration(), sub = reg && await reg.pushManager.getSubscription();
+      if (sub) { if (this.sb) await this.sb.rpc('crew_push_unsubscribe', { p_endpoint: sub.endpoint }); await sub.unsubscribe(); }
+    } catch (_) {}
+    if (!silent) { this.flash('Notifications are off for this phone.'); this.checkPush(); }
+  }
+  async loadNotifyPrefs() { try { const { data, error } = await this.sb.rpc('crew_my_notify_prefs'); if (!error && data) this.setState({ nprefs: data }); } catch (_) {} }
+  async setNotifyPref(k, v) {
+    const p = { chat: true, mention: true, task: true, board: true, ...(this.state.nprefs || {}), [k]: v };
+    this.setState({ nprefs: p });
+    const { error } = await this.sb.rpc('crew_set_notify_prefs', { p_chat: p.chat, p_mention: p.mention, p_task: p.task, p_board: p.board });
+    if (error) this.flash(friendly(error), true);
+  }
+  async testPush() { const { error } = await this.sb.rpc('crew_push_test'); this.flash(error ? friendly(error) : 'Test sent — it should arrive in a few seconds.', !!error); }
+
   go(page, extra) {
     this.setState({ page, sideOpen: false, openRef: null, draft: '', pendingFile: null, ...(extra || {}) });
     if (page === 'channel') this.run(() => this.loadMessages(null));
     if (page === 'leads') this.run(() => this.loadLeads());
+    if (page === 'alerts') { this.checkPush(); this.loadNotifyPrefs(); }
     if (page === 'mentions') {
       const now = new Date().toISOString(), uid = this.state.me && this.state.me.uid;
       this.setState(st => ({ mentionsSeenPrev: st.mentionsSeen, mentionsSeen: now }));
@@ -2454,6 +2553,7 @@ class Component extends DCLogic {
     const navTop = [navBtn('today', 'Today'), navBtn('mentions', 'Mentions', unseen || ''), navBtn('channel', 'Crew channel'), navBtn('board', 'Crew board')];
     const navBottom = [];
     if (me.person_id || me.request_status) navBottom.push(navBtn('profile', 'My profile'));
+    navBottom.push(navBtn('alerts', 'Notifications', s.push.on ? '' : 'Off'));
     if (isManager) navBottom.push(navBtn('trash', 'Trash', s.trash.length || ''));
     if (isAdmin) navBottom.push(navBtn('leads', 'Task leads'));
     if (isAdmin) navBottom.push({ label: 'Approve sign-ups', count: '↗', bg: 'transparent', color: '#1B1D1E', go: () => { location.href = 'admin.html'; } });
@@ -2718,7 +2818,7 @@ class Component extends DCLogic {
       ? [{ label: 'Create an account', go: () => this.setState({ authMode: 'signup', authErr: '', authMsg: '' }) }, { label: 'Forgot password', go: () => this.setState({ authMode: 'reset', authErr: '', authMsg: '' }) }]
       : authMode === 'newpass' ? [] : [{ label: 'Back to sign in', go: () => this.setState({ authMode: 'signin', authErr: '', authMsg: '' }) }];
 
-    const pageTitle = s.page === 'task' && t ? t.title : s.page === 'channel' ? 'Crew channel' : s.page === 'form' ? (f && f.id ? 'Edit task' : 'Issue a task') : s.page === 'trash' ? 'Trash' : s.page === 'profile' ? 'My profile' : s.page === 'board' ? 'Crew board' : s.page === 'mentions' ? 'Mentions' : s.page === 'leads' ? 'Task leads' : 'Today';
+    const pageTitle = s.page === 'task' && t ? t.title : s.page === 'channel' ? 'Crew channel' : s.page === 'form' ? (f && f.id ? 'Edit task' : 'Issue a task') : s.page === 'trash' ? 'Trash' : s.page === 'profile' ? 'My profile' : s.page === 'board' ? 'Crew board' : s.page === 'mentions' ? 'Mentions' : s.page === 'leads' ? 'Task leads' : s.page === 'alerts' ? 'Notifications' : 'Today';
     const showChat = s.page === 'channel' || (s.page === 'task' && !!td && s.tab === 'discussion');
 
     return {
@@ -2739,7 +2839,7 @@ class Component extends DCLogic {
       waitText: revoked ? "The admin removed your access to the crew page. If that's a mistake, talk to HR, then send a new request below." : me.request_status === 'pending' ? 'Your request is with the admin. Once it is approved, your tasks appear here — check back later.' : me.request_status === 'declined' ? 'The admin declined this request. If that is a mistake, talk to HR, then send it again below.' : 'This account has no access to the crew page yet. Send a request and the admin will review it.',
       waitCanRequest: revoked || me.request_status !== 'pending', requestAccess: () => this.requestAccess(),
       showError: s.phase === 'error', errorText: s.meErr, retry: () => this.afterSignIn(),
-      signOut: async () => { try { sessionStorage.removeItem('crew-place'); history.replaceState(null, '', location.pathname + location.search); } catch (_) {} if (this.sb) await this.sb.auth.signOut(); this.resetAll(); },
+      signOut: async () => { await this.disablePush(true); try { sessionStorage.removeItem('crew-place'); history.replaceState(null, '', location.pathname + location.search); } catch (_) {} if (this.sb) await this.sb.auth.signOut(); this.resetAll(); },
 
       narrow, sideOpen: s.sideOpen, toggleSide: () => this.setState({ sideOpen: !s.sideOpen }), pageTitle,
       refreshHere: () => this.refreshHere(), refreshLabel: s.refreshing ? '…' : 'Refresh', refreshLabelLong: s.refreshing ? 'Refreshing…' : '↻ Refresh',
@@ -2748,6 +2848,25 @@ class Component extends DCLogic {
       navTop, navBottom, navTasks, noNavTasks: !navTasks.length, navTasksLabel: canIssue ? 'All tasks' : 'My tasks',
       noTasksNote: canIssue ? 'No tasks yet. Issue the first one.' : "You're not on any task yet.",
       isManager: canIssue, notManager: !canIssue, isManagerOnly: isManager,
+      pageAlerts: s.page === 'alerts', pushOn: !!s.push.on, pushNeedsInstall: !!s.push.needsInstall,
+      pushStatus: s.push.on ? 'On for this phone. You get alerts for chats, mentions, new tasks and board updates — choose which below.'
+        : s.push.needsInstall ? 'iPhone shows notifications only for apps on your Home Screen.'
+        : s.push.perm === 'denied' ? 'Blocked on this phone. Allow notifications for this site or app in your phone settings, then come back.'
+        : !s.push.supported ? "This browser can't show notifications. Use Chrome on Android, or the installed app on iPhone."
+        : 'Off for this phone. Turn on to hear about chats, mentions, new tasks and board updates.',
+      pushCta: s.pushBusy ? 'Working…' : s.push.on ? 'Turn off on this phone' : 'Turn on notifications',
+      pushCtaBg: s.push.on ? '#FFFFFF' : '#0A6E58', pushCtaColor: s.push.on ? '#0A6E58' : '#FFFFFF',
+      pushToggle: () => { if (s.pushBusy) return; if (s.push.on) this.disablePush(); else this.enablePush(); }, pushTest: () => this.testPush(),
+      nprefsVM: [['mention', 'Mentions', 'When someone tags you with @'], ['chat', 'Chats and comments', 'Task chat, the crew channel and comments on cards'],
+                 ['task', 'Tasks and to-dos', "When you're added to a task, given a to-do, or a shoot date or status changes"],
+                 ['board', 'Boards and storyboards', 'When crew add to a mood board or storyboard you are on']].map(([k, label, sub]) => {
+        const on = !s.nprefs || s.nprefs[k] !== false;
+        return { label, sub, checked: on ? 'true' : 'false', justify: on ? 'flex-end' : 'flex-start', track: on ? '#0A6E58' : '#FFFFFF', border: on ? '#0A6E58' : '#B8C2BF', knob: on ? '#FFFFFF' : '#B8C2BF', go: () => this.setNotifyPref(k, !on) };
+      }),
+      showPushPrompt: s.page === 'today' && !s.push.on && !s.pushPromptHidden && s.push.perm !== 'denied' && (s.push.supported || s.push.needsInstall),
+      pushPromptText: s.push.needsInstall ? 'Add glomium crew to your Home Screen to get notifications on this iPhone.' : 'Get notified on this phone about chats, mentions and new tasks.',
+      pushPromptCta: s.push.needsInstall ? 'Show me how' : 'Turn on', pushPromptGo: () => { if (s.push.needsInstall) this.go('alerts'); else this.enablePush(); },
+      pushPromptHide: () => { try { localStorage.setItem('crew-push-prompt', 'hidden'); } catch (_) {} this.setState({ pushPromptHidden: true }); },
       pageLeads: s.page === 'leads' && isAdmin, leadsNote: s.leadsNote,
       leadsVM: s.roster.filter(r => r.full_name).slice().sort((a, b) => a.full_name.localeCompare(b.full_name)).map(r => {
         const on = s.leadIds.includes(r.person_id);

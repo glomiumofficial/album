@@ -12,6 +12,7 @@ Supabase, so the host only ever serves files.
 | `admin.html` | The staff workspace. Sign-in page. |
 | `album.html` | The wedding album a client receives. |
 | `commercial.html` | The project page a commercial/festival/digital/press client receives. |
+| `crew.html` | Crew task page. Crew sign up with their own email; admin approves in Approvals. Share `/crew`. |
 | `feedback.html` | The confidential freelancer feedback form. Opens only with a token: `/f/<token>`. |
 | `portfolio.html` | Private portfolio for clients. Unlisted, `noindex`. Share `/work`. |
 | `image-slot.js` | Media slots used by the portfolio. |
@@ -100,3 +101,10 @@ work for the freelancer. Opened without a token, `feedback.html` deliberately sh
 
 The folder is a copy, not a live link. When `album-system/*.html` changes, re-copy
 the changed files into `album-dist/` and redeploy (or push, if you wired up Git).
+
+## Crew task page — one-time setup
+
+1. Run `album-system/crew-tasks-schema.sql`, then `album-system/crew-signup-approval.sql`.
+2. Authentication → Providers → Email: **Allow new users to sign up** ON, **Confirm email** ON.
+3. Redirect URLs must include `https://album.glomium.co/**`.
+4. Crew create their own account at `/crew` with any email. Each sign-up appears in the admin panel → **Approvals** → Crew page sign-ups. Approve it (link to an existing crew record, or create one) and they're in.
