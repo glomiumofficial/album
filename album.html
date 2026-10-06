@@ -528,7 +528,13 @@ class Component extends DCLogic {
         ev = rpc.data.event; media = rpc.data.media || [];
       }
       this.setState({ loading: false, event: ev, media: (media || []).filter(x => x.url) });
+      this.logVisit(slug);
     } catch (e) { this.setState({ loading: false, loadError: OFFLINE }); }
+  }
+
+  logVisit(slug) {
+    if (this._logged === slug) return; this._logged = slug;
+    this.sb.rpc('log_album_visit', { p_slug: slug }).then(() => {}, () => {});
   }
 
   share() {

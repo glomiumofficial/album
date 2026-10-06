@@ -1821,6 +1821,57 @@
       </div>
       </sc-if>
 
+      <sc-if value="{{ isVisitors }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+          <span style="font-size:22px; font-weight:300; color:#16231F">Visitors · albums &amp; portfolio</span>
+          <span style="font-size:12px; color:#5C6864">{{ visitSummary }}</span>
+          <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ visitStatus }}</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+          <sc-for list="{{ visitRangeVM }}" as="vr" hint-placeholder-count="4">
+            <button onClick="{{ vr.go }}" style="padding:8px 15px; background:{{ vr.bg }}; border:1px solid {{ vr.border }}; border-radius:3px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:{{ vr.color }}; cursor:pointer">{{ vr.label }}</button>
+          </sc-for>
+          <input value="{{ visitQ }}" onInput="{{ onVisitQ }}" placeholder="Search page, IP, country, device" style="flex:1 1 220px; min-width:0; padding:9px 12px; border:1px solid var(--line); border-radius:3px; font:inherit; font-size:13px; color:#16231F; background:#fff">
+          <button onClick="{{ refreshVisits }}" style="padding:8px 14px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Refresh</button>
+          <button onClick="{{ clearVisits }}" style="padding:8px 13px; background:none; border:1px solid var(--line); border-radius:3px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#B4433A; cursor:pointer">Clear log</button>
+        </div>
+        <span style="font-size:12px; color:#67746F; line-height:1.7">IP and country are read by the server, so they can't be faked from the page. Repeat opens within 30 minutes count as one visit. Entries are deleted automatically after 180 days. Only admins can see this page.</span>
+        <sc-if value="{{ hasNoVisits }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:14px; color:#5C6864; line-height:1.7">{{ noVisitsNote }}</span>
+        </sc-if>
+        <div style="display:flex; flex-direction:column; gap:14px">
+          <sc-for list="{{ visitGroupsVM }}" as="vg" hint-placeholder-count="0">
+            <div style="display:flex; flex-direction:column; border:1px solid var(--line); background:#fff">
+              <div style="display:flex; align-items:center; gap:14px; padding:14px 16px; flex-wrap:wrap">
+                <button onClick="{{ vg.toggle }}" style="width:28px; height:28px; flex:none; background:none; border:1px solid var(--line); border-radius:3px; font-size:15px; line-height:1; color:var(--green-deep); cursor:pointer">{{ vg.arrow }}</button>
+                <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 220px; min-width:0">
+                  <button onClick="{{ vg.openPage }}" style="padding:0; background:none; border:none; font:inherit; font-size:16px; font-weight:400; color:#16231F; text-align:left; cursor:pointer; overflow-wrap:anywhere" style-hover="color:var(--green-deep)">{{ vg.page }}</button>
+                  <span style="font-size:11px; color:#67746F; overflow-wrap:anywhere">{{ vg.sub }}</span>
+                </div>
+                <span style="font-size:12px; color:#5C6864">{{ vg.stats }}</span>
+              </div>
+              <sc-if value="{{ vg.open }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; border-top:1px solid var(--line)">
+                  <sc-for list="{{ vg.rows }}" as="vv" hint-placeholder-count="0">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px 16px; padding:11px 16px; border-bottom:1px solid #F1F4F3; align-items:baseline">
+                      <span style="font-size:12px; color:#5C6864">{{ vv.when }}</span>
+                      <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                        <span style="font-size:13px; color:#16231F; font-variant-numeric:tabular-nums; overflow-wrap:anywhere">{{ vv.ip }}</span>
+                        <span style="font-size:11px; color:#67746F">{{ vv.country }}</span>
+                      </div>
+                      <span style="font-size:13px; color:#3F4A47">{{ vv.device }}</span>
+                      <span style="font-size:12px; color:#5C6864">{{ vv.views }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
       <sc-if value="{{ isSchedule }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:24px">
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
@@ -6026,6 +6077,8 @@ const CAPS = {
   talentFeedback: ['admin'],
   // Adding, editing or removing a crew member is an admin decision; HR proposes.
   peopleApprove: ['admin'],
+  // Album visitor log: IP addresses are personal data, so admin alone reads them.
+  visitors:    ['admin'],
   payouts:     ['admin', 'accounts', 'hr'],
   payoutsEdit: ['admin', 'accounts', 'hr'],
   // Money in: accounts and admin log receipts; HR reads, because billing is
@@ -6611,6 +6664,84 @@ class Component extends DCLogic {
     this.setState({ workspace: ws }, () => this.goWorkspace(ws === 'finance' ? 'finance' : 'dashboard'));
   }
 
+  async loadVisits() {
+    if (!this.can('visitors')) return;
+    const days = Number(this.state.visitRange || 30);
+    this.setState({ visitStatus: 'loading…' });
+    let q = this.sb.from('album_visits').select('*').order('last_seen', { ascending: false }).limit(2000);
+    if (days) q = q.gte('last_seen', new Date(Date.now() - days * 86400000).toISOString());
+    const [{ data, error }, ev] = await Promise.all([q, this.sb.from('events').select('slug, couple_names, event_date').limit(2000)]);
+    const visitNames = {};
+    (ev.data || []).forEach(e => { if (e.slug) visitNames[e.slug] = { name: e.couple_names || e.slug, date: e.event_date }; });
+    this.setState({ visitNames });
+    if (error) { this.setState({ visits: [], visitStatus: /album_visits/.test(error.message || '') ? 'run album-visits.sql in supabase first.' : 'could not load: ' + error.message }); return; }
+    this.setState({ visits: data || [], visitStatus: '' });
+  }
+
+  async clearVisits() {
+    if (!this.can('visitors') || !confirm('Delete the entire visitor log? This cannot be undone.')) return;
+    const { error } = await this.sb.from('album_visits').delete().gte('id', 0);
+    if (error) { this.setState({ visitStatus: 'could not delete: ' + error.message }); return; }
+    this.setState({ visits: [], visitStatus: 'visitor log cleared.' });
+  }
+
+  visitorsVM() {
+    const s = this.state;
+    if (s.view !== 'visitors' || !this.can('visitors')) return { isVisitors: false, visitRangeVM: [], visitsVM: [] };
+    const all = s.visits || [];
+    const needle = (s.visitQ || '').trim().toLowerCase();
+    const device = ua => {
+      ua = ua || '';
+      const os = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android' : /Mac OS X/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : '';
+      const br = /Edg\//.test(ua) ? 'Edge' : /CriOS|Chrome\//.test(ua) ? 'Chrome' : /FxiOS|Firefox\//.test(ua) ? 'Firefox' : /Instagram/.test(ua) ? 'Instagram' : /FBAN|FBAV/.test(ua) ? 'Facebook' : /WhatsApp/.test(ua) ? 'WhatsApp' : /Safari\//.test(ua) ? 'Safari' : '';
+      return [os, br].filter(Boolean).join(' · ') || 'Unknown';
+    };
+    const when = t => { const d = new Date(t); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }); };
+    const names = s.visitNames || {};
+    const pageName = slug => slug === 'portfolio' ? 'Portfolio page' : (names[slug] ? names[slug].name : slug);
+    const rows = all.map(v => ({ v, dev: device(v.user_agent), page: pageName(v.slug) }))
+      .filter(r => !needle || [r.page, r.v.slug, r.v.ip, r.v.country, r.dev].some(x => String(x || '').toLowerCase().includes(needle)));
+    const ips = new Set(rows.map(r => r.v.ip).filter(Boolean)), albums = new Set(rows.map(r => r.v.slug));
+    const views = rows.reduce((n, r) => n + (r.v.views || 1), 0);
+    const range = String(s.visitRange || 30);
+    return {
+      isVisitors: true,
+      visitStatus: s.visitStatus || '',
+      visitSummary: views + (views === 1 ? ' view' : ' views') + ' · ' + ips.size + (ips.size === 1 ? ' ip address' : ' ip addresses') + ' · ' + albums.size + (albums.size === 1 ? ' page' : ' pages'),
+      visitRangeVM: [['7', '7 days'], ['30', '30 days'], ['90', '90 days'], ['0', 'All (180 days)']].map(([k, label]) => ({
+        label, go: () => this.setState({ visitRange: k }, () => this.loadVisits()),
+        bg: range === k ? 'var(--green)' : 'none', border: range === k ? 'var(--green)' : 'var(--line)', color: range === k ? '#FFFFFF' : 'var(--green-deep)',
+      })),
+      visitQ: s.visitQ || '', onVisitQ: e => this.setState({ visitQ: e.target.value }),
+      refreshVisits: () => this.loadVisits(), clearVisits: () => this.clearVisits(),
+      hasNoVisits: rows.length === 0,
+      noVisitsNote: all.length ? 'Nothing matches that search.' : 'No visits in this period yet.',
+      visitGroupsVM: (() => {
+        const groups = {};
+        rows.forEach(r => { (groups[r.v.slug] = groups[r.v.slug] || { slug: r.v.slug, page: r.page, list: [] }).list.push(r); });
+        const shut = s.visitShut || {};
+        return Object.values(groups)
+          .sort((a, b) => (a.slug === 'portfolio' ? -1 : b.slug === 'portfolio' ? 1 : a.page.localeCompare(b.page, 'en', { sensitivity: 'base' })))
+          .map(g => {
+            const gv = g.list.reduce((n, r) => n + (r.v.views || 1), 0), gi = new Set(g.list.map(r => r.v.ip).filter(Boolean)).size;
+            const open = !shut[g.slug];
+            return {
+              page: g.page,
+              sub: g.slug === 'portfolio' ? 'portfolio.html' : '/album/' + g.slug + (names[g.slug] && names[g.slug].date ? ' · ' + new Date(names[g.slug].date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''),
+              stats: gv + (gv === 1 ? ' view' : ' views') + ' · ' + gi + (gi === 1 ? ' ip' : ' ips') + ' · last ' + when(g.list[0].v.last_seen),
+              open, arrow: open ? '−' : '+',
+              toggle: () => this.setState(st => ({ visitShut: { ...(st.visitShut || {}), [g.slug]: open } })),
+              openPage: () => window.open(g.slug === 'portfolio' ? 'portfolio.html' : 'album.html?event=' + encodeURIComponent(g.slug), '_blank'),
+              rows: g.list.slice(0, 300).map(({ v, dev }) => ({
+                when: when(v.last_seen), ip: v.ip || '—', country: v.country || '—', device: dev,
+                views: (v.views || 1) > 1 ? (v.views + ' views') : '1 view',
+              })),
+            };
+          });
+      })(),
+    };
+  }
+
   goWorkspace(view) {
     if (view === this.state.view) return;
     this.setState({ view, current: null, media: [], assignments: [], costing: null });
@@ -6620,6 +6751,7 @@ class Component extends DCLogic {
     if (view === 'talent') this.loadTalent();
     if (view === 'digital') this.loadDigital();
     if (view === 'approvals') { this.loadChangeRequests(); if (!this.state.people.length) this.loadPeople(); }
+    if (view === 'visitors') this.loadVisits();
     if (view === 'payouts') {
       this.loadPayouts(); this.loadManualPays(); this.loadPayRoster(); this.loadPayJobs();
     }
@@ -16193,6 +16325,7 @@ class Component extends DCLogic {
       // Only inside the division it belongs to.
       if (this.can('digital') && s.division === 'digital') nav.push({ key: 'digital', label: 'Digital' });
       if (this.can('peopleApprove')) nav.push({ key: 'approvals', label: 'Approvals' + (pendingRequests ? ' (' + pendingRequests + ')' : '') });
+      if (this.can('visitors')) nav.push({ key: 'visitors', label: 'Visitors' });
     }
     // A pay profile opened from Finance is still Finance's People pay.
     const navKey = (s.view === 'talent' && this.can('people')) ? 'people'
@@ -17251,10 +17384,11 @@ class Component extends DCLogic {
         color: s.view === pair[0] ? 'var(--green-deep)' : '#67746F',
       })),
 
-      isWorkspace: !roleLoading && !picking && !wsPick && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || s.view === 'portfolio' || FIN_VIEWS.indexOf(s.view) !== -1),
+      isWorkspace: !roleLoading && !picking && !wsPick && (s.view === 'dashboard' || s.view === 'people' || s.view === 'talent' || s.view === 'payouts' || s.view === 'schedule' || s.view === 'approvals' || s.view === 'visitors' || s.view === 'money' || s.view === 'spend' || s.view === 'digital' || s.view === 'shoots' || s.view === 'portfolio' || FIN_VIEWS.indexOf(s.view) !== -1),
       isPeople: s.view === 'people', isPayouts: s.view === 'payouts', isSchedule: onSchedule,
       isMoney: onMoney,
       isApprovals: s.view === 'approvals',
+      ...this.visitorsVM(),
       worksVM, workFilterVM, workStatus: s.workStatus,
       hasNoWorks: worksVM.length === 0,
       workCountLabel: worksVM.length + (worksVM.length === 1 ? ' project' : ' projects'),

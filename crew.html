@@ -846,6 +846,11 @@
               </div>
             </sc-if>
             <input type="file" accept="image/*,video/mp4,video/quicktime,video/webm,application/pdf" ref="{{ setChatInput }}" onChange="{{ onChatFile }}" style="display:none">
+            <sc-if value="{{ canWipeChat }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; justify-content:flex-end; margin-bottom:-6px">
+                <button onClick="{{ wipeChat }}" style="min-height:44px; padding:0 4px; background:none; border:none; font:inherit; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4473A; cursor:pointer">{{ wipeChatLabel }}</button>
+              </div>
+            </sc-if>
             <div style="display:flex; flex-direction:column; border:1px solid var(--line)">
               <div ref="{{ setChatBox }}" style="height:{{ chatHeight }}; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding:8px 20px 16px; display:flex; flex-direction:column">
                 <sc-if value="{{ noChat }}" hint-placeholder-val="{{ false }}"><span style="margin:auto; font-size:13px; color:var(--mute); text-align:center">{{ noChatNote }}</span></sc-if>
@@ -2282,6 +2287,35 @@ class Component extends DCLogic {
     });
   }
 
+  async wipeChat() {
+    const s = this.state, taskId = s.page === 'task' ? s.taskId : null;
+    if (!(s.me && s.me.is_admin) || s.wiping) return;
+    const msgs = s.chat.filter(m => !m.ref_type), files = msgs.filter(m => m.attachment_path).length;
+    const where = taskId ? 'this task discussion' : 'the crew channel';
+    if (!confirm('Delete the entire chat in ' + where + '?\n\n' + msgs.length + ' message' + (msgs.length === 1 ? '' : 's') + (files ? ' and ' + files + ' shared file' + (files === 1 ? '' : 's') + ' (photos, videos, voice notes)' : '') + ' will be removed for everyone and wiped from storage.\n\nThis cannot be undone.')) return;
+    haptic('warn');
+    this.setState({ wiping: true });
+    await this.run(async () => {
+      let paths = [];
+      const r = await this.sb.rpc('crew_wipe_chat', { p_task: taskId });
+      if (!r.error) paths = r.data || [];
+      else if (/crew_wipe_chat|PGRST202|does not exist/i.test((r.error.code || '') + ' ' + (r.error.message || ''))) {
+        let q = this.sb.from('crew_messages').select('id, attachment_path').is('ref_type', null);
+        q = taskId ? q.eq('task_id', taskId) : q.is('task_id', null);
+        const { data, error } = await q; if (error) throw error;
+        paths = (data || []).map(x => x.attachment_path).filter(Boolean);
+        const ids = (data || []).map(x => x.id);
+        for (let i = 0; i < ids.length; i += 200) { const d = await this.sb.from('crew_messages').delete().in('id', ids.slice(i, i + 200)); if (d.error) throw d.error; }
+      } else throw r.error;
+      const st = this.sb.storage.from(BUCKET), uniq = [...new Set(paths)];
+      let failed = 0;
+      for (let i = 0; i < uniq.length; i += 100) { const x = await st.remove(uniq.slice(i, i + 100)); if (x.error) failed += uniq.slice(i, i + 100).length; }
+      await this.loadMessages(taskId);
+      if (failed) throw new Error('Chat deleted, but ' + failed + ' file' + (failed === 1 ? '' : 's') + ' could not be removed from storage.');
+    }, 'Chat deleted' + (files ? ' · ' + files + ' file' + (files === 1 ? '' : 's') + ' freed' : '') + '.');
+    this.setState({ wiping: false });
+  }
+
   async toggleReaction(type, id, glyph) {
     const s = this.state, taskId = s.page === 'task' ? s.taskId : null;
     const mine = s.reactions.find(r => r.target_type === type && r.target_id === id && r.glyph === glyph && r.uid === s.me.uid);
@@ -3350,6 +3384,7 @@ class Component extends DCLogic {
       storyCards: s.storyView === 'cards', storyTable: s.storyView === 'table', storySummary, shotsVM, noShots: !!td && !shotsVM.length, addShot: () => this.addShot(),
 
       showChat, pageChannel: s.page === 'channel', chatVM, noChat: !chatVM.length,
+      canWipeChat: isAdmin && chatVM.length > 0, wipeChat: () => this.wipeChat(), wipeChatLabel: s.wiping ? 'Deleting…' : 'Delete entire chat',
       noChatNote: s.page === 'channel' ? 'Nothing here yet. Say hello to the crew.' : 'No discussion yet. Questions, decisions and updates for this task go here.',
       chatHeight: s.page === 'channel' ? (narrow ? 'calc(100dvh - 196px - env(safe-area-inset-top) - env(safe-area-inset-bottom))' : 'calc(100dvh - 352px)') : (narrow ? '62dvh' : '58vh'),
       setChatBox: el => { this.chatBox = el; }, setChatInput: el => { this.chatInput = el; },

@@ -1019,6 +1019,7 @@ class Component extends DCLogic {
         get('portfolio_works?select=id,title,category,story,cover_url,cover_grid_url,film_url,film_poster_url,sort_order&published=eq.true&order=sort_order.asc,created_at.asc'),
         get('portfolio_media?select=id,work_id,section,kind,url,url_grid,poster_url,caption,width,height,sort_order&order=sort_order.asc,created_at.asc')]);
       await new Promise(r => this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.dirty = true; this.onHash(); r(); }));
+      if (this.hosted() && !this._logged) { this._logged = true; fetch(URL + '/rest/v1/rpc/log_album_visit', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_slug: 'portfolio' }), keepalive: true }).catch(() => {}); }
     } catch (e) { await new Promise(r => this.setState({ db: { works: [], media: [] }, dbFail: true }, r)); }
   }
   works() {
