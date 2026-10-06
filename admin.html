@@ -1824,7 +1824,7 @@
       <sc-if value="{{ isVisitors }}" hint-placeholder-val="{{ false }}">
       <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
         <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
-          <span style="font-size:22px; font-weight:300; color:#16231F">Visitors · albums &amp; portfolio</span>
+          <span style="font-size:22px; font-weight:300; color:#16231F">Visitors · site, portfolio &amp; albums</span>
           <span style="font-size:12px; color:#5C6864">{{ visitSummary }}</span>
           <span style="font-size:12px; color:var(--green-deep); margin-left:auto">{{ visitStatus }}</span>
         </div>
@@ -6698,7 +6698,7 @@ class Component extends DCLogic {
     };
     const when = t => { const d = new Date(t); return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }); };
     const names = s.visitNames || {};
-    const pageName = slug => slug === 'portfolio' ? 'Portfolio page' : (names[slug] ? names[slug].name : slug);
+    const pageName = slug => slug === 'home' ? 'glomium.co home page' : slug === 'portfolio' ? 'Portfolio page' : (names[slug] ? names[slug].name : slug);
     const rows = all.map(v => ({ v, dev: device(v.user_agent), page: pageName(v.slug) }))
       .filter(r => !needle || [r.page, r.v.slug, r.v.ip, r.v.country, r.dev].some(x => String(x || '').toLowerCase().includes(needle)));
     const ips = new Set(rows.map(r => r.v.ip).filter(Boolean)), albums = new Set(rows.map(r => r.v.slug));
@@ -6721,17 +6721,17 @@ class Component extends DCLogic {
         rows.forEach(r => { (groups[r.v.slug] = groups[r.v.slug] || { slug: r.v.slug, page: r.page, list: [] }).list.push(r); });
         const shut = s.visitShut || {};
         return Object.values(groups)
-          .sort((a, b) => (a.slug === 'portfolio' ? -1 : b.slug === 'portfolio' ? 1 : a.page.localeCompare(b.page, 'en', { sensitivity: 'base' })))
+          .sort((a, b) => { const top = x => x === 'home' ? 0 : x === 'portfolio' ? 1 : 2; return (top(a.slug) - top(b.slug)) || a.page.localeCompare(b.page, 'en', { sensitivity: 'base' }); })
           .map(g => {
             const gv = g.list.reduce((n, r) => n + (r.v.views || 1), 0), gi = new Set(g.list.map(r => r.v.ip).filter(Boolean)).size;
             const open = !shut[g.slug];
             return {
               page: g.page,
-              sub: g.slug === 'portfolio' ? 'portfolio.html' : '/album/' + g.slug + (names[g.slug] && names[g.slug].date ? ' · ' + new Date(names[g.slug].date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''),
+              sub: g.slug === 'home' ? 'glomium.co' : g.slug === 'portfolio' ? 'portfolio.html' : '/album/' + g.slug + (names[g.slug] && names[g.slug].date ? ' · ' + new Date(names[g.slug].date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''),
               stats: gv + (gv === 1 ? ' view' : ' views') + ' · ' + gi + (gi === 1 ? ' ip' : ' ips') + ' · last ' + when(g.list[0].v.last_seen),
               open, arrow: open ? '−' : '+',
               toggle: () => this.setState(st => ({ visitShut: { ...(st.visitShut || {}), [g.slug]: open } })),
-              openPage: () => window.open(g.slug === 'portfolio' ? 'portfolio.html' : 'album.html?event=' + encodeURIComponent(g.slug), '_blank'),
+              openPage: () => window.open(g.slug === 'home' ? 'https://glomium.co' : g.slug === 'portfolio' ? 'portfolio.html' : 'album.html?event=' + encodeURIComponent(g.slug), '_blank'),
               rows: g.list.slice(0, 300).map(({ v, dev }) => ({
                 when: when(v.last_seen), ip: v.ip || '—', country: v.country || '—', device: dev,
                 views: (v.views || 1) > 1 ? (v.views + ' views') : '1 view',
