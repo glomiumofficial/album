@@ -23,8 +23,8 @@
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
 <style>
   :root { color-scheme:light dark;
     --bg:#FFFFFF; --surface:#FFFFFF; --soft:#F7FAF9; --tint:#F3FAF8; --tint2:#E3F2EE; --track:#E8EEEC; --line:#DDE3E1; --line2:#EEF2F1;
@@ -622,7 +622,7 @@
           <sc-if value="{{ showBoard }}" hint-placeholder-val="{{ false }}">
             <sc-if value="{{ pageBoardHead }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex; flex-direction:column; gap:6px">
-                <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--mute)">Everyone on the crew list</span>
+                <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--mute)">Visible to everyone</span>
                 <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Crew board</h1>
               </div>
             </sc-if>
@@ -841,7 +841,7 @@
           <sc-if value="{{ showChat }}" hint-placeholder-val="{{ false }}">
             <sc-if value="{{ pageChannelHead }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex; flex-direction:column; gap:6px">
-                <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--mute)">Everyone on the crew list</span>
+                <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--mute)">Visible to everyone</span>
                 <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Crew channel</h1>
               </div>
             </sc-if>
@@ -3250,7 +3250,7 @@ class Component extends DCLogic {
       pageTasks: s.page === 'tasks', taskRows, noTaskRows: !taskRows.length,
       noTaskRowsNote: tf === 'done' ? 'Nothing finished yet.' : canIssue ? 'No live tasks. Issue one to get the crew moving.' : "You're not on a live task yet.",
       taskFilters: [['active', 'Active', active.length], ['done', 'Done', done.length]].map(([k, l, n]) => ({ label: l + ' · ' + n, on: tf === k ? 'true' : 'false', bg: tf === k ? 'var(--fill)' : 'var(--surface)', color: tf === k ? '#FFFFFF' : 'var(--body)', go: () => this.setState({ taskFilter: k }) })),
-      inboxRows: [{ label: 'Crew channel', sub: 'Everyone on the crew list', icon: IC.channel, go: () => this.go('channel') }, { label: 'Notifications', sub: s.push.on ? 'On for this device' : 'Off for this device', icon: IC.bell, go: () => this.go('alerts') }],
+      inboxRows: [{ label: 'Crew channel', sub: 'Visible to everyone', icon: IC.channel, go: () => this.go('channel') }, { label: 'Notifications', sub: s.push.on ? 'On for this device' : 'Off for this device', icon: IC.bell, go: () => this.go('alerts') }],
       settingsRows: [...navBottom.filter(x => x.label !== 'My profile').map(x => ({ label: x.label, count: x.count, go: x.go })),
         { label: 'Vibrate on tap', count: s.hapticsOff ? 'Off' : 'On', go: () => { const off = !s.hapticsOff; try { localStorage.setItem('crew-haptics', off ? 'off' : 'on'); } catch (_) {} this.setState({ hapticsOff: off }); if (!off) haptic('select'); } }],
       pageChannelHead: s.page === 'channel' && !narrow, pageBoardHead: s.page === 'board' && !narrow,

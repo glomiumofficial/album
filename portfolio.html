@@ -89,7 +89,7 @@ a:hover { color: #10AF8B; }
   <section id="works" ref="{{ worksRef }}" data-screen-label="02 works" style="position: relative; padding: clamp(140px, 16vw, 240px) clamp(20px, 4vw, 56px) clamp(120px, 14vw, 200px);">
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: last baseline; gap: 36px 64px;">
       <div data-reveal="" style="display: flex; flex-direction: column; gap: 22px; min-width: 0;">
-        <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">02 — selected works</span>
+        <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">02 — portfolio</span>
         <h2 style="margin: 0; font-weight: 200; font-size: clamp(44px, 10vw, 190px); line-height: 0.92; letter-spacing: -0.04em; white-space: nowrap; color: #1B1D1E;">selected <span style="font-style: italic; color: #10AF8B;">works</span></h2>
       </div>
       <sc-if value="{{ hasCats }}" hint-placeholder-val="{{ false }}">
@@ -356,8 +356,8 @@ a:hover { color: #10AF8B; }
   <sc-if value="{{ loaderOn }}" hint-placeholder-val="{{ true }}">
     <div ref="{{ loaderRef }}" style="position: fixed; inset: 0; z-index: 200; background: #FFFFFF; clip-path: inset(0% 0% 0% 0%); transition: clip-path 1.1s cubic-bezier(.77,0,.18,1); display: flex; flex-direction: column; justify-content: space-between; padding: 22px clamp(20px, 4vw, 56px) clamp(28px, 5vh, 48px); box-sizing: border-box; overflow: hidden;">
       <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(62vw 62vw at 12% 8%, rgba(16,175,139,0.13), transparent 65%), radial-gradient(52vw 52vw at 92% 86%, rgba(16,175,139,0.08), transparent 65%);"></div>
-      <div style="position: relative; display: flex; justify-content: space-between; align-items: center; gap: 24px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
-        <img src="assets/wordmark-green.png" alt="glomium" style="height: 20px; width: auto;">
+      <div style="position: relative; display: flex; justify-content: space-between; align-items: baseline; gap: 24px; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">
+        <img src="assets/wordmark-green.png" alt="glomium" style="display: block; height: 20px; width: auto;">
         <span>a private reel</span>
       </div>
       <div style="position: relative; display: flex; justify-content: center;">
@@ -1019,7 +1019,7 @@ class Component extends DCLogic {
         get('portfolio_works?select=id,title,category,story,cover_url,cover_grid_url,film_url,film_poster_url,sort_order&published=eq.true&order=sort_order.asc,created_at.asc'),
         get('portfolio_media?select=id,work_id,section,kind,url,url_grid,poster_url,caption,width,height,sort_order&order=sort_order.asc,created_at.asc')]);
       await new Promise(r => this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.dirty = true; this.onHash(); r(); }));
-      if (this.hosted() && !this._logged) { this._logged = true; fetch(URL + '/rest/v1/rpc/log_album_visit', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_slug: 'portfolio' }), keepalive: true }).catch(() => {}); }
+      if (this.hosted() && !this._logged) { this._logged = true; fetch(URL + '/rest/v1/rpc/log_album_visit', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_slug: 'portfolio', p_meta: (() => { const n = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {}; let s = '', tz = ''; try { s = sessionStorage.getItem('g_sid') || ''; if (!s) { s = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2); sessionStorage.setItem('g_sid', s); } } catch (e) {} try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {} return { session: s, path: location.pathname + location.search, method: 'GET', status: n.responseStatus || 200, size: Math.round(n.transferSize || n.encodedBodySize || 0) || null, referrer: document.referrer || null, auth: 'anon', screen: screen.width + 'x' + screen.height + '@' + (window.devicePixelRatio || 1), viewport: innerWidth + 'x' + innerHeight, lang: navigator.language || '', tz }; })() }), keepalive: true }).catch(() => {}); }
     } catch (e) { await new Promise(r => this.setState({ db: { works: [], media: [] }, dbFail: true }, r)); }
   }
   works() {
