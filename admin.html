@@ -183,6 +183,22 @@
               <input placeholder="Project title (optional)" value="{{ newProjTitle }}" onChange="{{ onNewProjTitleChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none" style-focus="border-color:var(--green)">
               <input placeholder="Sector — e.g. Speciality coffee" value="{{ newSector }}" onChange="{{ onNewSectorChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none" style-focus="border-color:var(--green)">
             </div>
+            <sc-if value="{{ hasNewCustSuggest }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:8px">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Existing customers</span>
+                <div style="display:flex; flex-wrap:wrap; gap:8px">
+                  <sc-for list="{{ newCustSuggestVM }}" as="o" hint-placeholder-count="0">
+                    <button onClick="{{ o.pick }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:9px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; cursor:pointer; text-align:left; font-family:inherit" style-hover="border-color:var(--green)"><span style="font-size:13px; color:#1B1D1E">{{ o.name }}</span><span style="font-size:12px; color:#6B7572">{{ o.meta }}</span></button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasNewCustPick }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; background:#F2F7F5; border:1px solid var(--line)">
+                <span style="flex:1 1 220px; font-size:12px; color:#1B1D1E; line-height:1.5">Linked to {{ newCustPickName }} — contact and tax details copy over.</span>
+                <button onClick="{{ clearNewCustPick }}" style="padding:8px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; font-family:inherit" style-hover="border-color:var(--green)">Unlink</button>
+              </div>
+            </sc-if>
             <sc-if value="{{ createProjectError }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#B4433A">{{ createProjectError }}</span></sc-if>
             <span style="font-size:11px; color:#6B7572; line-height:1.5">Starts in Planning, dated today. Palette, logos and media go in once the project is open.</span>
             <div>
@@ -247,6 +263,22 @@
             <input placeholder="Venue (optional)" value="{{ newVenue }}" onChange="{{ onNewVenueChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none" style-focus="border-color:var(--green)">
             <input placeholder="slug (auto from names)" value="{{ newSlug }}" onChange="{{ onNewSlugChange }}" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none" style-focus="border-color:var(--green)">
           </div>
+          <sc-if value="{{ hasNewCustSuggest }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Existing customers</span>
+              <div style="display:flex; flex-wrap:wrap; gap:8px">
+                <sc-for list="{{ newCustSuggestVM }}" as="o" hint-placeholder-count="0">
+                  <button onClick="{{ o.pick }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:9px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; cursor:pointer; text-align:left; font-family:inherit" style-hover="border-color:var(--green)"><span style="font-size:13px; color:#1B1D1E">{{ o.name }}</span><span style="font-size:12px; color:#6B7572">{{ o.meta }}</span></button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasNewCustPick }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; background:#F2F7F5; border:1px solid var(--line)">
+              <span style="flex:1 1 220px; font-size:12px; color:#1B1D1E; line-height:1.5">Linked to {{ newCustPickName }} — contact and tax details copy over.</span>
+              <button onClick="{{ clearNewCustPick }}" style="padding:8px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; font-family:inherit" style-hover="border-color:var(--green)">Unlink</button>
+            </div>
+          </sc-if>
           <sc-if value="{{ createHint }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#6B7572; line-height:1.5">{{ createHint }}</span></sc-if>
           <sc-if value="{{ createError }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#B4433A">{{ createError }}</span></sc-if>
           <div>
@@ -2649,6 +2681,200 @@
             <span style="font-size:12px; color:#B4433A">{{ invStatus }}</span>
           </div>
         </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isFinCustomers }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:clamp(20px,5vw,60px); max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
+        <sc-if value="{{ custMissing }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px; color:#B4433A; line-height:1.6">Run album-system/customers-2026-10.sql in Supabase — the contact person, address, refund account and activity log are not set up yet.</span>
+        </sc-if>
+
+        <sc-if value="{{ custListMode }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap">
+            <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Customers</span>
+            <span style="font-size:12px; color:#4A524F">{{ custCount }} · details stay on each job; editing here updates every job at once.</span>
+            <span style="font-size:12px; color:{{ custStatusColor }}; margin-left:auto">{{ custStatus }}</span>
+          </div>
+          <sc-if value="{{ hasCustPairs }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:4px; padding:20px 22px; border:1px solid #EADFC6; background:#FDF9F0">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding-bottom:8px">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#9A6A12">Possibly the same customer</span>
+                <span style="font-size:12px; color:#4A524F; line-height:1.6">{{ custPairsNote }}</span>
+              </div>
+              <sc-for list="{{ custPairsVM }}" as="p" hint-placeholder-count="0">
+                <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px 0; border-top:1px solid #EADFC6">
+                  <div style="flex:1 1 180px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                    <span style="font-size:14px; color:#1B1D1E; overflow-wrap:anywhere">{{ p.aName }}</span>
+                    <span style="font-size:12px; color:#6B7572">{{ p.aMeta }}</span>
+                  </div>
+                  <span style="flex:0 1 180px; font-size:12px; color:#9A6A12; overflow-wrap:anywhere">{{ p.why }}</span>
+                  <div style="flex:1 1 180px; display:flex; flex-direction:column; gap:2px; min-width:0">
+                    <span style="font-size:14px; color:#1B1D1E; overflow-wrap:anywhere">{{ p.bName }}</span>
+                    <span style="font-size:12px; color:#6B7572">{{ p.bMeta }}</span>
+                  </div>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <button onClick="{{ p.merge }}" disabled="{{ p.busy }}" style="padding:8px 13px; background:var(--green-deep); border:1px solid var(--green-deep); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#FFFFFF; cursor:pointer; font-family:inherit" style-hover="background:#1B1D1E">Same customer</button>
+                    <button onClick="{{ p.apart }}" disabled="{{ p.busy }}" style="padding:8px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; font-family:inherit" style-hover="border-color:var(--green)">Different</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <input value="{{ custQ }}" onChange="{{ onCustQ }}" placeholder="Search name, GSTIN, PAN, phone, email or contact" style="padding:12px 14px; border:1px solid var(--line); border-radius:0; font-size:14px; color:#1B1D1E; outline:none; font-family:inherit" style-focus="border-color:var(--green)">
+          <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-bottom:none">
+            <sc-for list="{{ custListVM }}" as="c" hint-placeholder-count="6">
+              <div onClick="{{ c.open }}" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:14px 18px; border-bottom:1px solid var(--line); cursor:pointer" style-hover="background:#FAFCFB">
+                <div style="flex:1 1 220px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                  <span style="font-size:15px; color:#1B1D1E; overflow-wrap:anywhere">{{ c.name }}</span>
+                  <span style="font-size:12px; color:#6B7572">{{ c.meta }}</span>
+                </div>
+                <span style="flex:0 1 200px; font-size:12px; color:#4A524F; overflow-wrap:anywhere">{{ c.contact }}</span>
+                <span style="flex:0 0 150px; font-size:12px; color:{{ c.taxColor }}; font-variant-numeric:tabular-nums">{{ c.tax }}</span>
+                <span style="flex:0 0 120px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#9A6A12; text-align:right">{{ c.conflictLabel }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ custNoResults }}" hint-placeholder-val="{{ false }}">
+              <span style="padding:18px; font-size:13px; color:#6B7572; border-bottom:1px solid var(--line)">{{ custEmptyNote }}</span>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ custDetailMode }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px">
+            <button onClick="{{ backToCustomers }}" style="align-self:flex-start; padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; font-family:inherit">← All customers</button>
+            <div style="display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap">
+              <div style="flex:1 1 280px; display:flex; flex-direction:column; gap:6px; min-width:0">
+                <span style="font-size:31px; line-height:1.28; font-weight:300; color:#1B1D1E; overflow-wrap:anywhere">{{ custTitle }}</span>
+                <span style="font-size:12px; color:#6B7572">{{ custMeta }}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                <span style="font-size:12px; color:{{ custStatusColor }}">{{ custStatus }}</span>
+                <button onClick="{{ saveCustomer }}" disabled="{{ custBusy }}" style="padding:11px 22px; background:var(--green-deep); color:#FFFFFF; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit" style-hover="background:#1B1D1E">{{ custSaveLabel }}</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:28px; flex-wrap:wrap; padding:20px 22px; border:1px solid var(--line); border-radius:0">
+            <sc-for list="{{ custSegVM }}" as="sg" hint-placeholder-count="2">
+              <div style="display:flex; flex-direction:column; gap:8px; flex:0 1 auto; min-width:0">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ sg.label }}</span>
+                <div style="display:flex; flex-wrap:wrap; border:1px solid var(--line); align-self:flex-start">
+                  <sc-for list="{{ sg.optsVM }}" as="o" hint-placeholder-count="2">
+                    <button onClick="{{ o.go }}" style="padding:10px 16px; background:{{ o.bg }}; color:{{ o.color }}; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ sg.hasNote }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:{{ sg.noteColor }}; line-height:1.6; max-width:340px">{{ sg.note }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-for list="{{ custSectionsVM }}" as="sec" hint-placeholder-count="4">
+            <div style="display:flex; flex-direction:column; gap:12px; padding:20px 22px; border:1px solid var(--line); border-radius:0; gap:16px">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">{{ sec.title }}</span>
+                <span style="font-size:12px; color:#6B7572">{{ sec.note }}</span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px">
+                <sc-for list="{{ sec.fieldsVM }}" as="x" hint-placeholder-count="3">
+                  <div style="display:flex; flex-direction:column; gap:6px; min-width:0; grid-column:{{ x.span }}">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                    <sc-if value="{{ x.isInput }}" hint-placeholder-val="{{ true }}">
+                      <input type="{{ x.type }}" value="{{ x.value }}" onChange="{{ x.onChange }}" placeholder="{{ x.placeholder }}" style="padding:12px 14px; border:1px solid {{ x.border }}; border-radius:0; font-size:14px; color:#1B1D1E; outline:none; font-family:inherit; background:#FFFFFF; min-width:0" style-focus="border-color:var(--green)">
+                    </sc-if>
+                    <sc-if value="{{ x.isArea }}" hint-placeholder-val="{{ false }}">
+                      <textarea rows="3" value="{{ x.value }}" onChange="{{ x.onChange }}" placeholder="{{ x.placeholder }}" style="padding:12px 14px; border:1px solid {{ x.border }}; border-radius:0; font-size:14px; color:#1B1D1E; outline:none; font-family:inherit; background:#FFFFFF; min-width:0; resize:vertical; line-height:1.6" style-focus="border-color:var(--green)"></textarea>
+                    </sc-if>
+                    <sc-if value="{{ x.hasNote }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:12px; color:{{ x.noteColor }}; line-height:1.5">{{ x.note }}</span>
+                    </sc-if>
+                    <sc-if value="{{ x.hasConflict }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:8px; padding:10px 12px; background:#FDF9F0; border:1px solid #EADFC6">
+                        <span style="font-size:12px; color:#9A6A12; line-height:1.5">{{ x.conflictNote }}</span>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px">
+                          <sc-for list="{{ x.conflictVM }}" as="o" hint-placeholder-count="0">
+                            <button onClick="{{ o.pick }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:7px 10px; background:{{ o.bg }}; border:1px solid {{ o.border }}; border-radius:0; cursor:pointer; text-align:left; font-family:inherit; max-width:100%">
+                              <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere; white-space:pre-line">{{ o.value }}</span>
+                              <span style="font-size:12px; color:#6B7572">{{ o.src }}</span>
+                            </button>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+
+          <div style="display:flex; flex-direction:column; gap:12px; padding:20px 22px; border:1px solid var(--line); border-radius:0">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Jobs</span>
+              <span style="font-size:12px; color:#6B7572">{{ custJobsNote }}</span>
+            </div>
+            <sc-for list="{{ custJobsVM }}" as="j" hint-placeholder-count="2">
+              <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px 0; border-top:1px solid var(--line)">
+                <div style="flex:1 1 220px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                  <span style="font-size:14px; color:#1B1D1E; overflow-wrap:anywhere">{{ j.label }}</span>
+                  <span style="font-size:12px; color:#6B7572">{{ j.meta }}</span>
+                </div>
+                <sc-if value="{{ j.hasLink }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-width:0">
+                    <span style="font-size:12px; color:{{ j.linkColor }}">{{ j.linkNote }}</span>
+                    <button onClick="{{ j.copyLink }}" style="padding:8px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; font-family:inherit" style-hover="border-color:var(--green)">{{ j.copyLabel }}</button>
+                    <button onClick="{{ j.viewLink }}" style="padding:8px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; font-family:inherit" style-hover="border-color:var(--green)">{{ j.viewLabel }}</button>
+                  </div>
+                </sc-if>
+                <button onClick="{{ j.open }}" style="padding:8px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; font-family:inherit" style-hover="border-color:var(--green)">Open</button>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px; padding:20px 22px; border:1px solid var(--line); border-radius:0">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Invoices &amp; payments</span>
+              <span style="font-size:12px; color:#6B7572">{{ custInvNote }}</span>
+            </div>
+            <sc-if value="{{ custNoInv }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">No invoices yet.</span></sc-if>
+            <sc-for list="{{ custInvVM }}" as="i" hint-placeholder-count="0">
+              <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:12px 0; border-top:1px solid var(--line)">
+                <div style="flex:1 1 220px; display:flex; flex-direction:column; gap:3px; min-width:0">
+                  <span style="font-size:14px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ i.number }}</span>
+                  <span style="font-size:12px; color:#6B7572">{{ i.meta }}</span>
+                </div>
+                <div style="flex:0 1 220px; display:flex; flex-direction:column; gap:3px; text-align:right">
+                  <span style="font-size:14px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ i.totalFmt }}</span>
+                  <span style="font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums">{{ i.paidNote }}</span>
+                </div>
+                <span style="flex:0 0 96px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ i.statusColor }}; text-align:right">{{ i.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:22px; align-items:start">
+            <div style="display:flex; flex-direction:column; gap:12px; padding:20px 22px; border:1px solid var(--line); border-radius:0">
+              <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Emails sent</span>
+              <sc-if value="{{ custNoEmails }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; color:#6B7572">Nothing sent yet.</span></sc-if>
+              <sc-for list="{{ custEmailsVM }}" as="e" hint-placeholder-count="0">
+                <div style="display:flex; flex-direction:column; gap:3px; padding:11px 0; border-top:1px solid var(--line)">
+                  <span style="font-size:14px; color:#1B1D1E; overflow-wrap:anywhere">{{ e.subject }}</span>
+                  <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ e.meta }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; padding:20px 22px; border:1px solid var(--line); border-radius:0">
+              <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Activity</span>
+              <sc-for list="{{ custActVM }}" as="a" hint-placeholder-count="0">
+                <div style="display:flex; gap:14px; padding:10px 0; border-top:1px solid var(--line)">
+                  <span style="flex:0 0 96px; font-size:12px; color:#8A9390; font-variant-numeric:tabular-nums">{{ a.when }}</span>
+                  <span style="flex:1 1 auto; font-size:13px; color:#4A524F; line-height:1.5; overflow-wrap:anywhere">{{ a.text }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
         </sc-if>
       </div>
       </sc-if>
@@ -5971,6 +6197,16 @@ const EMAILJS_PDF_BUDGET = Math.floor((EMAILJS_VARS_LIMIT_KB * 1000 - 40000) * 0
 const GSTIN_RE = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 const PAN_RE = /^[A-Z]{5}\d{4}[A-Z]$/;
 const HOME_STATE_CODE = '32'; // Kerala — CGST + SGST inside, IGST outside
+const GST_STATES = { '01': 'Jammu & Kashmir', '02': 'Himachal Pradesh', '03': 'Punjab', '04': 'Chandigarh', '05': 'Uttarakhand', '06': 'Haryana', '07': 'Delhi', '08': 'Rajasthan', '09': 'Uttar Pradesh', '10': 'Bihar', '11': 'Sikkim', '12': 'Arunachal Pradesh', '13': 'Nagaland', '14': 'Manipur', '15': 'Mizoram', '16': 'Tripura', '17': 'Meghalaya', '18': 'Assam', '19': 'West Bengal', '20': 'Jharkhand', '21': 'Odisha', '22': 'Chhattisgarh', '23': 'Madhya Pradesh', '24': 'Gujarat', '26': 'Dadra & Nagar Haveli and Daman & Diu', '27': 'Maharashtra', '29': 'Karnataka', '30': 'Goa', '31': 'Lakshadweep', '32': 'Kerala', '33': 'Tamil Nadu', '34': 'Puducherry', '35': 'Andaman & Nicobar Islands', '36': 'Telangana', '37': 'Andhra Pradesh', '38': 'Ladakh', '97': 'Other territory' };
+// Customer fields kept on every job. Refund bank details are not here — they
+// live in customer_refund_bank, which only Finance can read.
+const CUST_FIELDS = [
+  ['client_type', 'type'], ['client_name', 'name'], ['client_bill_to', 'billed to'], ['client_phone', 'phone'], ['client_email', 'email'],
+  ['client_contact_name', 'contact name'], ['client_contact_role', 'contact role'], ['client_contact_phone', 'contact phone'], ['client_contact_email', 'contact email'],
+  ['client_gstin', 'GSTIN'], ['client_pan', 'PAN'], ['client_state', 'place of supply'], ['client_address', 'billing address'],
+];
+const CUST_BANK = [['holder', 'Account holder'], ['bank_name', 'Bank'], ['account_no', 'Account number'], ['ifsc', 'IFSC']];
+const IFSC_RE = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 
 // Booking enquiries to freelance talent. There is no EmailJS-side design: the
 // template in EmailJS holds nothing but {{{body_html}}} (triple braces, so the
@@ -6374,7 +6610,7 @@ function loadLib(name) {
 }
 
 const WS_STORAGE_KEY = 'gl_workspace';
-const FIN_VIEWS = ['finance', 'finMaster', 'finProjects', 'finInvoices', 'finProforma', 'money', 'payouts', 'spend', 'finPeople', 'finInventory', 'finPayroll'];
+const FIN_VIEWS = ['finance', 'finMaster', 'finCustomers', 'finProjects', 'finInvoices', 'finProforma', 'money', 'payouts', 'spend', 'finPeople', 'finInventory', 'finPayroll'];
 const INV_CATS = [['camera', 'Camera'], ['lens', 'Lens'], ['computer', 'Mac / computer'], ['lighting', 'Lighting'], ['audio', 'Audio'], ['storage', 'SSD / drive'], ['memory', 'Memory card'], ['drone', 'Drone'], ['support', 'Tripod / rig / gimbal'], ['power', 'Batteries / power'], ['accessory', 'Accessory'], ['other', 'Other']];
 const INV_PREFIX = { camera: 'CAM', lens: 'LEN', computer: 'MAC', lighting: 'LGT', audio: 'AUD', storage: 'SSD', memory: 'MEM', drone: 'DRN', support: 'RIG', power: 'PWR', accessory: 'ACC', other: 'OTH' };
 const INV_STATUS = [['in_use', 'In use', '#DDEFE8', '#0A6E58'], ['spare', 'Spare', '#F1F4F3', '#5C6864'], ['repair', 'In repair', '#FDF9F0', '#8A6D3B'], ['lost', 'Lost', '#F7E9E7', '#B4433A'], ['sold', 'Sold / retired', '#EEEEEE', '#5C6864']];
@@ -6479,6 +6715,8 @@ class Component extends DCLogic {
     editCouple: '', editDate: '', editTaken: '', editDelivered: '', editVenue: '', editSlug: '', copyLabel: 'Copy public link', copied: false,
     editClientName: '', editClientPhone: '', editClientEmail: '', editClientPan: '', clientStatus: '',
     editPackagePrice: '', editClientGstin: '', editClientState: '',
+    custRows: [], custInv: [], custRcv: [], custLog: [], custBank: {}, custOpen: null, custForm: null, custBase: null,
+    custQ: '', custStatus: '', custOk: true, custBusy: false, custMissing: false, custCopied: '', newCustPick: null,
     bankName: '', bankAccount: '', bankIfsc: '', upiId: '', settingsStatus: '',
     posEdits: {},
     invoices: [], invStatus: '', showInvoiceForm: false,
@@ -6583,7 +6821,7 @@ class Component extends DCLogic {
     this.sb = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
     this.setState({ bootError: '' });
     const { data } = await this.sb.auth.getSession();
-    if (data.session) { this.startLoader(); this.setState({ view: 'dashboard' }); this.loadRole().catch(e => this.setState({ role: 'none', roleError: String((e && e.message) || e) })); this.loadForDivision(storedDivision); }
+    if (data.session) { this.secLog('admin_session_resumed', 'saved sign-in' + (data.session.user && data.session.user.email ? ' · ' + data.session.user.email : '')); this.startLoader(); this.setState({ view: 'dashboard' }); this.loadRole().catch(e => this.setState({ role: 'none', roleError: String((e && e.message) || e) })); this.loadForDivision(storedDivision); }
     this.sb.auth.onAuthStateChange((_e, session) => {
       // The role belongs to the session, not the page — refetch it on every sign-in,
       // or a second user signing in on this browser inherits the first one's access.
@@ -6607,7 +6845,10 @@ class Component extends DCLogic {
     // away took its nav button off the header while the screen itself stayed
     // up, so the panel sat on Digital & social with nothing on the page — no
     // active tab, no back — to leave it with.
-    const leaving = this.state.view === 'digital' && key !== 'digital';
+    // Picking a division means "show me its albums": any studio page that isn't
+    // per-division (portfolio, people, shoots…) gives way to the dashboard.
+    // Schedule stays, it reloads for the new division.
+    const leaving = this.state.view !== 'schedule' && FIN_VIEWS.indexOf(this.state.view) === -1;
     this.setState({
       division: key, pickingDivision: false,
       view: leaving ? 'dashboard' : this.state.view,
@@ -6735,8 +6976,17 @@ class Component extends DCLogic {
   installSecurityLog() {
     if (window.__glmSec) return; window.__glmSec = true;
     const orig = window.fetch.bind(window);
+    // "JWT issued at future" (PGRST303): a token Supabase Auth has just refreshed
+    // reaches the database a moment before its clock catches up. Not a refusal —
+    // wait and resend once, and never log it.
+    const skewed = async r => { if (r.status !== 401) return false; try { return /PGRST303|issued at future/i.test(await r.clone().text()); } catch (e) { return false; } };
     window.fetch = async (input, init) => {
-      const res = await orig(input, init);
+      let res = await orig(input, init);
+      if (typeof input === 'string' && input.indexOf(SUPABASE_URL) === 0 && await skewed(res)) {
+        await new Promise(r => setTimeout(r, 1500));
+        res = await orig(input, init);
+        if (await skewed(res)) { await new Promise(r => setTimeout(r, 3000)); res = await orig(input, init); }
+      }
       try { this.watchRequest(input, init || {}, res).catch(() => {}); } catch (e) {}
       return res;
     };
@@ -6759,7 +7009,7 @@ class Component extends DCLogic {
     if (!res.ok) {
       if (status !== 401 && status !== 403 && !(store && status === 400)) return;
       let t = ''; try { t = await res.clone().text(); } catch (e) {}
-      if (/jwt expired/i.test(t)) return;
+      if (/jwt expired|PGRST303|issued at future/i.test(t)) return;
       if (/invalid api key|no api key|apikey/i.test(t)) return log('API_key_failure', t.slice(0, 160));
       if (store) { if (status !== 400 || /row-level security|unauthori[sz]ed|not allowed|permission|denied|403/i.test(t)) log('storage_access_denied', t.slice(0, 160)); return; }
       return log('permission_denied', t.slice(0, 160));
@@ -6883,6 +7133,7 @@ class Component extends DCLogic {
     if (view === 'spend') { this.loadSpend(); if (!(this.state.talent || []).length) this.loadTalent(); }
     if (view === 'finance' || view === 'finProjects') this.loadFinance();
     if (view === 'finMaster') { this.loadFinance(); this.loadMaster(); }
+    if (view === 'finCustomers') { this.setState({ custOpen: null, custForm: null }); this.loadCustomers(); }
     if (view === 'finInvoices' || view === 'finProforma') this.loadFinInvoices();
     if (view === 'finPeople') this.loadFinPeople();
     if (view === 'finPayroll') this.loadPayroll();
@@ -6914,6 +7165,7 @@ class Component extends DCLogic {
       digPosts: [], digKeywords: [], digRanks: [], digDeals: [], digBills: [],
       acctForm: null, secretShown: null, secretValue: '', termsForm: null, dealForm: null,
       digClients: [], digHolders: [], digLoading: false,
+      custRows: [], custInv: [], custRcv: [], custLog: [], custBank: {}, custOpen: null, custForm: null, newCustPick: null,
     });
     // The live channel outlives the session otherwise, and keeps firing queries
     // as a signed-out user.
@@ -6953,12 +7205,14 @@ class Component extends DCLogic {
     const slug = typed ? this.slugify(typed)
       : this.slugify(couple) + '-' + this.randSuffix(8);
     this.setState({ creating: true, createError: '' });
+    const seed = await this.custSeed();
     const { error } = await this.sb.from('events').insert({
+      ...seed,
       couple_names: couple, event_date: this.state.newDate || null, venue: this.state.newVenue || null, slug,
       production_status: 'planning', taken_date: new Date().toISOString().slice(0, 10),
     });
     if (error) { this.setState({ creating: false, createError: this.schemaHint(error.message) }); return; }
-    this.setState({ creating: false, newCouple: '', newDate: '', newVenue: '', newSlug: '' });
+    this.setState({ creating: false, newCouple: '', newDate: '', newVenue: '', newSlug: '', newCustPick: null, custRows: [] });
     this.loadEvents();
   }
 
@@ -7031,6 +7285,7 @@ class Component extends DCLogic {
     this.setState({ view: to, editorFrom: null, current: null, media: [], assignments: [], costing: null, agEdits: {} });
     if (to === 'finance' || to === 'finProjects') { this.loadFinance(); return; }
     if (to === 'finMaster') { this.loadFinance(); this.loadMaster(); return; }
+    if (to === 'finCustomers') { const open = this.state.custOpen; this.loadCustomers().then(() => { if (open) this.openCustomer(open); }); return; }
     if (to === 'finInvoices' || to === 'finProforma') { this.loadFinInvoices(); return; }
     if (to !== 'dashboard') return;
     this.loadForDivision();
@@ -7091,7 +7346,7 @@ class Component extends DCLogic {
       bill_pan: this.state.editClientPan || '',
       bill_email: this.state.editClientEmail || '',
     };
-    if (this.state.editClientName) billPatch.bill_name = this.state.editClientName;
+    if (this.state.editClientName) billPatch.bill_name = this.billedName(c, this.state.editClientName);
     const { count: syncedCount, error: syncErr } = await this.sb.from('invoices')
       .update(billPatch, { count: 'exact' })
       .eq(this.parentCol(c), c.id).eq('status', 'draft');
@@ -7294,13 +7549,15 @@ class Component extends DCLogic {
     if (!name) { this.setState({ createProjectError: 'Client / brand name is required.' }); return; }
     const slug = this.slugify(name) + '-' + this.randSuffix(8);
     this.setState({ creatingProject: true, createProjectError: '' });
+    const seed = await this.custSeed();
     const { error } = await this.sb.from('projects').insert({
+      ...seed,
       client_name: name, project_title: this.state.newProjTitle || null, sector: this.state.newSector || null,
       division: this.state.division, slug, production_status: 'planning',
       taken_date: new Date().toISOString().slice(0, 10),
     });
     if (error) { this.setState({ creatingProject: false, createProjectError: this.schemaHint(error.message) }); return; }
-    this.setState({ creatingProject: false, newClientName: '', newProjTitle: '', newSector: '' });
+    this.setState({ creatingProject: false, newClientName: '', newProjTitle: '', newSector: '', newCustPick: null, custRows: [] });
     this.loadProjects(this.state.division);
   }
 
@@ -8523,8 +8780,8 @@ class Component extends DCLogic {
     const prefix = type === 'proforma' ? 'PRO' : type === 'credit' ? 'CN' : 'INV';
     // Read every number this year and take the numeric max: a text sort puts
     // -1000 below -999, and counting rows re-issues a deleted invoice's number.
-    const { data, error } = await this.sb.from('invoices').select('number')
-      .like('number', prefix + '-' + year + '-%').limit(10000);
+    const { data, error } = await this.selectAll(() => this.sb.from('invoices').select('number')
+      .like('number', prefix + '-' + year + '-%').order('id'));
     // A failed read must never fall through to "nothing issued yet".
     if (error) throw new Error('Could not read the last invoice number (' + error.message + ') \u2014 nothing was created.');
     const last = (data || []).reduce((m, r) => { const n = parseInt(String(r.number).split('-').pop(), 10); return isFinite(n) && n > m ? n : m; }, 0);
@@ -8532,6 +8789,20 @@ class Component extends DCLogic {
   }
 
   r2(n) { return Math.round(((Number(n) || 0) + Number.EPSILON) * 100) / 100; }
+
+  // Supabase returns at most 1,000 rows a request whatever .limit() asks for, so
+  // every ledger past that size was silently cut short. Page until a short page;
+  // build() must return a fresh, stably ordered query each time.
+  async selectAll(build) {
+    const size = 1000, out = [];
+    for (let from = 0; from < 100000; from += size) {
+      const { data, error } = await build().range(from, from + size - 1);
+      if (error) return { data: out.length ? out : null, error };
+      out.push(...(data || []));
+      if (!data || data.length < size) break;
+    }
+    return { data: out, error: null };
+  }
   gstStateCode(gstin) { const g = String(gstin || '').trim().toUpperCase(); return GSTIN_RE.test(g) ? g.slice(0, 2) : ''; }
   taxIdProblem(gstin, pan) {
     const g = String(gstin || '').trim().toUpperCase(), p = String(pan || '').trim().toUpperCase();
@@ -8564,7 +8835,7 @@ class Component extends DCLogic {
   async generateInvoice() {
     const s = this.state, ev = s.current;
     const flash = msg => { this.setState({ invStatus: msg }); setTimeout(() => this.setState({ invStatus: '' }), 4000); };
-    const name = String(s.editClientName || ev.client_name || '').trim();
+    const name = this.billedName(ev, String(s.editClientName || ev.client_name || '').trim());
     if (!name) return flash('Add and save a client name first.');
     const gstin = String(s.editClientGstin || ev.client_gstin || '').trim().toUpperCase();
     let pan = String(s.editClientPan || ev.client_pan || '').trim().toUpperCase();
@@ -8771,7 +9042,7 @@ class Component extends DCLogic {
     this.setState({ prMonth: m, prStatus: this.state.view === 'finPayroll' ? 'Loading…' : this.state.prStatus });
     const [pp, sl] = await Promise.all([
       this.sb.from('people').select('*').order('full_name', { ascending: true }),
-      this.sb.from('people_payments').select('*').eq('kind', 'salary').order('period', { ascending: false }).limit(5000),
+      this.selectAll(() => this.sb.from('people_payments').select('*').eq('kind', 'salary').order('period', { ascending: false }).order('id')),
     ]);
     this.setState({
       prPeople: pp.data || [], prSlips: sl.error ? [] : (sl.data || []),
@@ -8891,9 +9162,9 @@ class Component extends DCLogic {
     this.loadSpend();
     if (!(this.state.talent || []).length) this.loadTalent();
     const [ex, cm, cp] = await Promise.all([
-      this.sb.from('expenses').select('id, project_id, event_id, spend_date, category, vendor, note, amount').order('spend_date', { ascending: false }).limit(3000),
+      this.selectAll(() => this.sb.from('expenses').select('id, project_id, event_id, spend_date, category, vendor, note, amount').order('spend_date', { ascending: false }).order('id')),
       this.sb.from('commitments').select('*').order('start_date', { ascending: true }),
-      this.sb.from('commitment_payments').select('*').order('due_date', { ascending: false }).limit(3000),
+      this.selectAll(() => this.sb.from('commitment_payments').select('*').order('due_date', { ascending: false }).order('id')),
     ]);
     const missing = !!cm.error && /commitments|schema cache|does not exist/i.test(cm.error.message || '');
     this.setState({
@@ -8986,12 +9257,13 @@ class Component extends DCLogic {
       spendBy[k] = (spendBy[k] || 0) + Number(e.amount || 0);
     });
 
-    // A client is the name on the record, not the job. Mr Fone's trial,
-    // campaign and retainer are three projects and one client.
+    // A client is the customer, not the job. Mr Fone's trial, campaign and
+    // retainer are three projects and one client. Jobs merged on the Customers
+    // page share a customer_key; unreviewed ones still group by name.
     const clients = {};
     recs.forEach(r => {
       const name = ((r.kind === 'event' ? (r.rec.client_name || r.rec.couple_names) : r.rec.client_name) || r.label || 'Unnamed').trim();
-      const key = name.toLowerCase().replace(/\s+/g, ' ');
+      const key = r.rec.customer_key ? 'k:' + r.rec.customer_key : name.toLowerCase().replace(/\s+/g, ' ');
       const c = clients[key] || (clients[key] = { key, name, jobs: [], price: 0, cost: 0, costKnown: false, invoiced: 0, received: 0, spent: 0, divisions: {} });
       const spent = spendBy[r.kind + ':' + r.id] || 0;
       c.jobs.push({ r, spent });
@@ -9142,12 +9414,12 @@ class Component extends DCLogic {
   async loadFinance() {
     this.setState({ finStatus: 'Loading…' });
     const [pb, pr, ev, inv, rc, dl] = await Promise.all([
-      this.sb.from('project_billing').select('*'),
-      this.sb.from('projects').select('*').order('created_at', { ascending: false }).limit(500),
-      this.sb.from('events').select('*').order('event_date', { ascending: false }).limit(500),
-      this.sb.from('invoices').select('id, number, type, status, total, issue_date, due_date, event_id, project_id, bill_name').limit(3000),
-      this.sb.from('payments_received').select('invoice_id, amount').limit(5000),
-      this.sb.from('project_price_lines').select('project_id, amount, bill_on').is('invoice_id', null).not('bill_on', 'is', null),
+      this.selectAll(() => this.sb.from('project_billing').select('*').order('project_id')),
+      this.selectAll(() => this.sb.from('projects').select('*').order('created_at', { ascending: false }).order('id')),
+      this.selectAll(() => this.sb.from('events').select('*').order('event_date', { ascending: false }).order('id')),
+      this.selectAll(() => this.sb.from('invoices').select('id, number, type, status, total, issue_date, due_date, event_id, project_id, bill_name').order('id')),
+      this.selectAll(() => this.sb.from('payments_received').select('invoice_id, amount').order('id')),
+      this.selectAll(() => this.sb.from('project_price_lines').select('project_id, amount, bill_on').is('invoice_id', null).not('bill_on', 'is', null).order('id')),
     ]);
     const err = pr.error || ev.error || inv.error;
     this.setState({
@@ -9162,9 +9434,9 @@ class Component extends DCLogic {
   async loadFinInvoices() {
     this.setState({ finStatus: 'Loading…' });
     const [inv, rc] = await Promise.all([
-      this.sb.from('invoices').select('*, events(couple_names), projects(client_name, project_title)')
-        .order('issue_date', { ascending: false }).limit(1500),
-      this.sb.from('payments_received').select('invoice_id, amount').limit(5000),
+      this.selectAll(() => this.sb.from('invoices').select('*, events(couple_names), projects(client_name, project_title)')
+        .order('issue_date', { ascending: false }).order('id')),
+      this.selectAll(() => this.sb.from('payments_received').select('invoice_id, amount').order('id')),
     ]);
     this.setState({
       finInvList: inv.data || [], finInvReceipts: rc.error ? [] : (rc.data || []),
@@ -9187,9 +9459,9 @@ class Component extends DCLogic {
 
   async loadShootsOnly() {
     const [pr, ev, sh] = await Promise.all([
-      this.sb.from('projects').select('id,project_title,client_name,division,divisions').limit(500),
-      this.sb.from('events').select('id,couple_names,event_date').limit(500),
-      this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).limit(1000),
+      this.selectAll(() => this.sb.from('projects').select('id,project_title,client_name,division,divisions').order('id')),
+      this.selectAll(() => this.sb.from('events').select('id,couple_names,event_date').order('id')),
+      this.selectAll(() => this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).order('id')),
     ]);
     const patch = { spendProjects: pr.data || [], spendEvents: ev.data || [], spendShoots: sh.data || [] };
     const err = sh.error || pr.error || ev.error;
@@ -9198,6 +9470,473 @@ class Component extends DCLogic {
   }
 
   openFinRecord(r) { if (r.kind === 'project') this.openProject(r.rec); else this.openEvent(r.rec); }
+
+  // ---- Customers ------------------------------------------------------------------
+  // Details stay on each job. A customer is the jobs sharing a customer_key; a job
+  // nobody has reviewed stands alone until it is merged or kept apart.
+
+  custName(rec) { return String((rec && (rec.client_name || rec.couple_names)) || '').trim(); }
+
+  custNorm(f, v) {
+    const t = String(v == null ? '' : v).trim();
+    if (/email/.test(f)) return t.toLowerCase();
+    if (/gstin|pan|ifsc|account_no/.test(f)) return t.toUpperCase().replace(/\s+/g, '');
+    return f === 'client_address' ? t.replace(/[ \t]+/g, ' ') : t.replace(/\s+/g, ' ');
+  }
+
+  // A business can be billed in its own name or its contact person's.
+  billedName(rec, fallback) {
+    const r = rec || {}, c = String(r.client_contact_name || '').trim();
+    return r.client_type === 'business' && r.client_bill_to === 'contact' && c ? c : fallback;
+  }
+
+  custJobLabel(r) {
+    return r.table === 'events' ? (r.rec.couple_names || 'Wedding') : (r.rec.project_title || r.rec.client_name || 'Untitled project');
+  }
+
+  async ensureCustRows() {
+    if (this.state.custRows.length || this._custRowsBusy) return;
+    this._custRowsBusy = true;
+    try { await this.loadCustRows(); } finally { this._custRowsBusy = false; }
+  }
+
+  async loadCustRows() {
+    const [ev, pr] = await Promise.all([
+      this.selectAll(() => this.sb.from('events').select('*').order('created_at', { ascending: false }).order('id')),
+      this.selectAll(() => this.sb.from('projects').select('*').order('created_at', { ascending: false }).order('id')),
+    ]);
+    const err = ev.error || pr.error;
+    if (err) { this.setState({ custStatus: err.message, custOk: false }); return false; }
+    const rows = (ev.data || []).map(r => ({ table: 'events', rec: Object.assign({}, r, { _table: 'events' }) }))
+      .concat((pr.data || []).map(r => ({ table: 'projects', rec: Object.assign({}, r, { _table: 'projects' }) })));
+    await new Promise(res => this.setState({ custRows: rows, custMissing: rows.length > 0 && !rows.some(r => 'customer_key' in r.rec) }, res));
+    return true;
+  }
+
+  async loadCustomers() {
+    this.setState({ custStatus: 'Loading…', custOk: true });
+    if (!(await this.loadCustRows())) return;
+    const [inv, rc, lg, bk] = await Promise.all([
+      this.selectAll(() => this.sb.from('invoices').select('id, number, type, status, total, issue_date, sent_at, bill_email, event_id, project_id').order('id')),
+      this.selectAll(() => this.sb.from('payments_received').select('invoice_id, amount, received_on').order('id')),
+      this.selectAll(() => this.sb.from('client_log').select('*').order('created_at', { ascending: false }).order('id')),
+      this.selectAll(() => this.sb.from('customer_refund_bank').select('*').order('customer_key')),
+    ]);
+    const bank = {};
+    (bk.data || []).forEach(b => { bank[b.customer_key] = b; });
+    await new Promise(res => this.setState({
+      custInv: inv.data || [], custRcv: rc.data || [], custLog: lg.data || [], custBank: bank,
+      custMissing: this.state.custMissing || !!lg.error || !!bk.error,
+      custStatus: inv.error ? inv.error.message : '', custOk: !inv.error,
+    }, res));
+  }
+
+  async logClient(rec, kind, summary, toEmail) {
+    if (!rec || !rec.id) return '';
+    const row = { kind, summary: String(summary || '').slice(0, 400), to_email: toEmail || null };
+    row[this.parentCol(rec)] = rec.id;
+    try {
+      const { error } = await this.sb.from('client_log').insert(row);
+      if (error) { console.warn('[client_log]', error.message); return error.message; }
+    } catch (e) { return String(e.message || e); }
+    return '';
+  }
+
+  custModel() {
+    const s = this.state, memo = this._custMemo;
+    if (memo && memo.rows === s.custRows && memo.log === s.custLog) return memo;
+    const groups = {};
+    s.custRows.forEach(r => {
+      const cid = r.rec.customer_key || 'row:' + r.table + ':' + r.rec.id;
+      (groups[cid] = groups[cid] || { cid, keyed: !!r.rec.customer_key, rows: [] }).rows.push(r);
+    });
+    const list = Object.keys(groups).map(k => groups[k]);
+    list.forEach(g => {
+      g.rows.sort((a, b) => String(b.rec.created_at || '').localeCompare(String(a.rec.created_at || '')));
+      g.name = g.rows.map(r => this.custName(r.rec)).find(Boolean) || 'Unnamed';
+      g.pick = f => { const r = g.rows.find(x => String(x.rec[f] == null ? '' : x.rec[f]).trim()); return r ? String(r.rec[f]).trim() : ''; };
+      g.divs = {};
+      g.rows.forEach(r => (r.table === 'events' ? ['wedding'] : (Array.isArray(r.rec.divisions) && r.rec.divisions.length ? r.rec.divisions : [r.rec.division]))
+        .forEach(d => { if (d) g.divs[d] = true; }));
+      g.gstins = {};
+      g.rows.forEach(r => { const v = this.custNorm('client_gstin', r.rec.client_gstin); if (v) g.gstins[v] = true; });
+      g.conflicts = CUST_FIELDS.filter(f => new Set(g.rows.map(r => this.custNorm(f[0], r.rec[f[0]])).filter(Boolean)).size > 1).map(f => f[0]);
+    });
+    // GSTIN first, then email, phone, and last the exact name.
+    const sig = [
+      ['gstin', r => this.custNorm('client_gstin', r.client_gstin), 'same GSTIN '],
+      ['email', r => this.custNorm('client_email', r.client_email), 'same email '],
+      ['phone', r => { const d = String(r.client_phone || '').replace(/\D/g, ''); return d.length >= 10 ? d.slice(-10) : ''; }, 'same phone '],
+      ['name', r => this.custName(r).toLowerCase(), 'same name'],
+    ];
+    const apart = {};
+    s.custLog.forEach(l => { if (l.kind === 'not_same' && l.summary) apart[l.summary] = true; });
+    const pairs = {};
+    sig.forEach((sg, rank) => {
+      const idx = {};
+      list.forEach(g => {
+        const seen = {};
+        g.rows.forEach(r => { const v = sg[1](r.rec); if (v && !seen[v]) { seen[v] = 1; (idx[v] = idx[v] || []).push(g.cid); } });
+      });
+      Object.keys(idx).forEach(v => {
+        const c = idx[v];
+        for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) {
+          const pk = [c[i], c[j]].sort().join('|');
+          if (apart[pk] || pairs[pk]) continue;
+          const a = groups[c[i]], b = groups[c[j]];
+          // Two registered businesses with different GSTINs are not one by name alone.
+          const ga = Object.keys(a.gstins), gb = Object.keys(b.gstins);
+          if (sg[0] === 'name' && ga.length && gb.length && !ga.some(x => b.gstins[x])) continue;
+          pairs[pk] = { pk, a, b, rank, why: sg[0] === 'phone' ? sg[2] + v.replace(/(\d{5})(\d{5})/, '$1 $2') : sg[0] === 'name' ? sg[2] : sg[2] + v };
+        }
+      });
+    });
+    this._custMemo = { rows: s.custRows, log: s.custLog, groups, list, pairs: Object.keys(pairs).map(k => pairs[k]).sort((x, y) => x.rank - y.rank) };
+    return this._custMemo;
+  }
+
+  openCustomer(cid) {
+    const g = this.custModel().groups[cid];
+    if (!g) { this.setState({ custOpen: null, custForm: null }); return; }
+    const form = {};
+    CUST_FIELDS.forEach(f => { form[f[0]] = g.pick(f[0]); });
+    if (!form.client_name) form.client_name = g.name;
+    if (!form.client_type) form.client_type = form.client_gstin || g.rows.every(r => r.table === 'projects') ? 'business' : 'individual';
+    if (!form.client_bill_to) form.client_bill_to = 'entity';
+    const b = (g.keyed && this.state.custBank[g.cid]) || {};
+    CUST_BANK.forEach(f => { form[f[0]] = b[f[0]] || ''; });
+    this.setState({ custOpen: cid, custForm: form, custBase: Object.assign({}, form), custStatus: '', custOk: true, custCopied: '' });
+    window.scrollTo(0, 0);
+  }
+
+  custSay(msg) {
+    return /customer_key|client_contact|client_type|client_bill_to|client_address|client_log|customer_refund_bank|schema cache/i.test(msg || '')
+      ? 'Run album-system/customers-2026-10.sql in Supabase first.' : msg;
+  }
+
+  async custSetKey(rows, key) {
+    const res = await Promise.all(['events', 'projects'].map(t => {
+      const ids = rows.filter(r => r.table === t).map(r => r.rec.id);
+      return ids.length ? this.sb.from(t).update({ customer_key: key }).in('id', ids) : null;
+    }).filter(Boolean));
+    const e = res.map(r => r.error).find(Boolean);
+    return e ? this.custSay(e.message) : '';
+  }
+
+  async saveCustomer() {
+    const s = this.state, g = this.custModel().groups[s.custOpen], f = s.custForm;
+    if (!g || !f || s.custBusy) return;
+    const say = (m, ok) => this.setState({ custStatus: m, custOk: !!ok, custBusy: false });
+    const clean = {};
+    CUST_FIELDS.forEach(x => { clean[x[0]] = this.custNorm(x[0], f[x[0]]) || null; });
+    if (!clean.client_name) return say('Name the customer first.');
+    if (clean.client_type !== 'business') clean.client_bill_to = 'entity';
+    const bad = this.taxIdProblem(clean.client_gstin, clean.client_pan);
+    if (bad) return say(bad);
+    const ifsc = this.custNorm('ifsc', f.ifsc);
+    if (ifsc && !IFSC_RE.test(ifsc)) return say('IFSC ' + ifsc + ' is not valid \u2014 11 characters, like HDFC0001234.');
+    this.setState({ custBusy: true, custStatus: 'Saving…', custOk: true });
+    const key = g.keyed ? g.cid : 'c' + this.randSuffix(12);
+    const ids = t => g.rows.filter(r => r.table === t).map(r => r.rec.id);
+    const res = await Promise.all(['events', 'projects'].filter(t => ids(t).length)
+      .map(t => this.sb.from(t).update(Object.assign({}, clean, { customer_key: key })).in('id', ids(t)).select('id')));
+    const err = res.map(r => r.error).find(Boolean);
+    if (err) return say(this.custSay(err.message));
+    const wrote = res.reduce((t, r) => t + (r.data || []).length, 0);
+    // Refund details: their own table, Finance-only.
+    let bankErr = '';
+    const bankRow = { customer_key: key, updated_at: new Date().toISOString() };
+    CUST_BANK.forEach(x => { bankRow[x[0]] = this.custNorm(x[0], f[x[0]]) || null; });
+    if (CUST_BANK.some(x => bankRow[x[0]]) || s.custBank[key]) {
+      const r = await this.sb.from('customer_refund_bank').upsert(bankRow);
+      if (r.error) bankErr = this.custSay(r.error.message);
+    }
+    // Draft invoices follow the customer; issued ones stay as issued.
+    const billPatch = { bill_name: this.billedName(clean, clean.client_name), bill_gstin: clean.client_gstin || '', bill_pan: clean.client_pan || '', bill_email: clean.client_email || '' };
+    let drafts = 0;
+    for (const [t, col] of [['events', 'event_id'], ['projects', 'project_id']]) {
+      if (!ids(t).length) continue;
+      const r = await this.sb.from('invoices').update(billPatch, { count: 'exact' }).in(col, ids(t)).eq('status', 'draft');
+      if (!r.error) drafts += r.count || 0;
+    }
+    const changed = CUST_FIELDS.filter(x => (this.custNorm(x[0], s.custBase[x[0]]) || null) !== clean[x[0]] || g.conflicts.indexOf(x[0]) !== -1).map(x => x[1])
+      .concat(CUST_BANK.some(x => this.custNorm(x[0], s.custBase[x[0]]) !== this.custNorm(x[0], f[x[0]])) ? ['refund account'] : []);
+    const jobs = g.rows.length + (g.rows.length === 1 ? ' job' : ' jobs');
+    if (changed.length) await this.logClient(g.rows[0].rec, 'edit', 'Updated ' + changed.join(', ') + ' on ' + jobs);
+    await this.loadCustomers();
+    this.openCustomer(key);
+    this.setState({
+      custOk: !bankErr && wrote === g.rows.length,
+      custStatus: wrote < g.rows.length ? 'Saved to ' + wrote + ' of ' + jobs + ' \u2014 your login cannot change the rest.'
+        : bankErr ? 'Saved, but the refund account did not: ' + bankErr
+        : 'Saved to ' + jobs + (drafts ? ' \u00b7 ' + drafts + ' draft invoice' + (drafts > 1 ? 's' : '') + ' updated' : '') + '.',
+    });
+  }
+
+  async mergeCustomers(p) {
+    if (this.state.custBusy) return;
+    this.setState({ custBusy: true, custStatus: 'Merging…', custOk: true });
+    const key = p.a.keyed ? p.a.cid : p.b.keyed ? p.b.cid : 'c' + this.randSuffix(12);
+    const e = await this.custSetKey(p.a.rows.concat(p.b.rows).filter(r => r.rec.customer_key !== key), key);
+    if (e) { this.setState({ custBusy: false, custStatus: e, custOk: false }); return; }
+    const other = [p.a, p.b].find(g => g.keyed && g.cid !== key);
+    if (other && this.state.custBank[other.cid] && !this.state.custBank[key]) {
+      await this.sb.from('customer_refund_bank').update({ customer_key: key }).eq('customer_key', other.cid);
+    }
+    await this.logClient(p.a.rows[0].rec, 'merge', 'Merged ' + p.a.name + ' and ' + p.b.name + ' (' + p.why.trim() + ')');
+    await this.loadCustomers();
+    this.setState({ custBusy: false, custStatus: 'Merged into one customer.', custOk: true });
+  }
+
+  // Both sides get a key, so the decision is pinned to the customers and not
+  // undone by the next job that shares an email.
+  async keepCustomersApart(p) {
+    if (this.state.custBusy) return;
+    this.setState({ custBusy: true, custStatus: 'Saving…', custOk: true });
+    try {
+      const fix = async g => { if (g.keyed) return g.cid; const k = 'c' + this.randSuffix(12); const e = await this.custSetKey(g.rows, k); if (e) throw new Error(e); return k; };
+      const ka = await fix(p.a), kb = await fix(p.b);
+      const e = await this.logClient(p.a.rows[0].rec, 'not_same', [ka, kb].sort().join('|'));
+      if (e) throw new Error(this.custSay(e));
+      await this.loadCustomers();
+      this.setState({ custBusy: false, custStatus: 'Kept as two customers.', custOk: true });
+    } catch (err) { this.setState({ custBusy: false, custStatus: String(err.message || err), custOk: false }); }
+  }
+
+  // Picking an existing customer on a new job copies their details and key.
+  async custSeed() {
+    const s = this.state;
+    const g = s.newCustPick && s.custRows.length ? this.custModel().groups[s.newCustPick] : null;
+    if (!g) return {};
+    const key = g.keyed ? g.cid : 'c' + this.randSuffix(12);
+    if (!g.keyed && await this.custSetKey(g.rows, key)) return {};
+    const out = { customer_key: key };
+    CUST_FIELDS.forEach(f => { const v = g.pick(f[0]); if (v) out[f[0]] = v; });
+    return out;
+  }
+
+  newCustVM() {
+    const s = this.state;
+    const m = s.custRows.length ? this.custModel() : null;
+    const pick = m && s.newCustPick ? m.groups[s.newCustPick] : null;
+    const q = String(s.newClientName || s.newCouple || '').trim().toLowerCase();
+    let sugg = [];
+    if (m && !pick && q.length >= 2) {
+      sugg = m.list.filter(g => g.name.toLowerCase().indexOf(q) !== -1)
+        .sort((a, b) => (b.name.toLowerCase().indexOf(q) === 0) - (a.name.toLowerCase().indexOf(q) === 0) || a.name.localeCompare(b.name))
+        .slice(0, 5);
+    }
+    return {
+      hasNewCustSuggest: sugg.length > 0,
+      newCustSuggestVM: sugg.map(g => ({
+        key: g.cid, name: g.name,
+        meta: [g.rows.length + (g.rows.length === 1 ? ' job' : ' jobs'), g.pick('client_email') || g.pick('client_phone')].filter(Boolean).join(' \u00b7 '),
+        pick: () => this.setState(st => Object.assign({ newCustPick: g.cid }, st.newClientName ? { newClientName: g.name } : {})),
+      })),
+      hasNewCustPick: !!pick, newCustPickName: pick ? pick.name : '',
+      clearNewCustPick: () => this.setState({ newCustPick: null }),
+    };
+  }
+
+  customersVM() {
+    const s = this.state, m = this.custModel();
+    const jobsN = n => n + (n === 1 ? ' job' : ' jobs');
+    const divLabel = g => Object.keys(g.divs).map(d => DIVISION_LABEL[d] || d).join(', ');
+    const g = s.custOpen && s.custForm ? m.groups[s.custOpen] : null;
+    const out = {
+      isFinCustomers: true, custMissing: !!s.custMissing, custListMode: !g, custDetailMode: !!g,
+      custStatus: s.custStatus || '', custStatusColor: s.custOk === false ? '#B4433A' : 'var(--green-deep)',
+    };
+    if (!g) {
+      const q = (s.custQ || '').trim().toLowerCase();
+      const list = m.list.filter(x => !q || [x.name, x.pick('client_gstin'), x.pick('client_pan'), x.pick('client_email'), x.pick('client_phone'), x.pick('client_contact_name')]
+        .join(' ').toLowerCase().indexOf(q) !== -1)
+        .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+      const pairs = m.pairs;
+      return Object.assign(out, {
+        custCount: m.list.length + (m.list.length === 1 ? ' customer' : ' customers'),
+        custQ: s.custQ || '', onCustQ: e => this.setState({ custQ: e.target.value }),
+        custListVM: list.map(x => {
+          const gst = x.pick('client_gstin'), contact = x.pick('client_contact_name');
+          return {
+            key: x.cid, name: x.name, meta: [jobsN(x.rows.length), divLabel(x)].filter(Boolean).join(' \u00b7 '),
+            contact: contact ? 'Contact \u00b7 ' + contact : '',
+            tax: gst || 'No GSTIN', taxColor: gst ? '#1B1D1E' : '#8A9390',
+            conflictLabel: x.conflicts.length ? x.conflicts.length + (x.conflicts.length === 1 ? ' field differs' : ' fields differ') : '',
+            open: () => this.openCustomer(x.cid),
+          };
+        }),
+        custNoResults: !list.length,
+        custEmptyNote: s.custStatus === 'Loading…' ? 'Loading…' : q ? 'Nobody matches \u201c' + (s.custQ || '').trim() + '\u201d.' : 'No customers yet \u2014 they appear as jobs are created.',
+        hasCustPairs: pairs.length > 0,
+        custPairsNote: 'Matched on GSTIN, email, phone or name. Nothing merges until you say so.' + (pairs.length > 8 ? ' Showing 8 of ' + pairs.length + '.' : ''),
+        custPairsVM: pairs.slice(0, 8).map(p => ({
+          key: p.pk, aName: p.a.name, aMeta: [jobsN(p.a.rows.length), divLabel(p.a)].filter(Boolean).join(' \u00b7 '),
+          bName: p.b.name, bMeta: [jobsN(p.b.rows.length), divLabel(p.b)].filter(Boolean).join(' \u00b7 '),
+          why: p.why.trim(), busy: !!s.custBusy, merge: () => this.mergeCustomers(p), apart: () => this.keepCustomersApart(p),
+        })),
+      });
+    }
+
+    const f = s.custForm;
+    const isBiz = f.client_type === 'business';
+    const setVal = (k, v) => this.setState(st => {
+      const nf = Object.assign({}, st.custForm, { [k]: v });
+      if (k === 'client_gstin') {
+        const gg = this.custNorm('client_gstin', v);
+        if (GSTIN_RE.test(gg)) { nf.client_pan = gg.slice(2, 12); if (GST_STATES[gg.slice(0, 2)]) nf.client_state = GST_STATES[gg.slice(0, 2)]; }
+      }
+      return { custForm: nf };
+    });
+    const conflictOf = k => {
+      const vals = {};
+      g.rows.forEach(r => { const v = this.custNorm(k, r.rec[k]); if (v) (vals[v] = vals[v] || []).push(this.custJobLabel(r)); });
+      const keys = Object.keys(vals);
+      return keys.length > 1 ? keys.map(v => ({ v, src: vals[v] })) : null;
+    };
+    const field = (k, label, o) => {
+      o = o || {};
+      const val = f[k] == null ? '' : String(f[k]);
+      const cur = this.custNorm(k, val);
+      const c = o.bank ? null : conflictOf(k);
+      const problem = o.check ? o.check(cur) : '';
+      const hint = !problem && o.hint ? o.hint(cur) : '';
+      return {
+        key: k, label, value: val, onChange: e => setVal(k, e.target.value), placeholder: o.placeholder || '', type: o.type || 'text',
+        isArea: !!o.area, isInput: !o.area, span: o.area ? '1 / -1' : 'auto',
+        border: problem ? '#B4433A' : c ? '#D8C79E' : 'var(--line)',
+        hasNote: !!(problem || hint), note: problem || hint, noteColor: problem ? '#B4433A' : '#6B7572',
+        hasConflict: !!c, conflictNote: c ? 'Jobs disagree. Pick one or type a new value \u2014 saving writes it to all ' + jobsN(g.rows.length) + '.' : '',
+        conflictVM: (c || []).map(x => ({
+          key: x.v, value: x.v, src: x.src.slice(0, 3).join(', ') + (x.src.length > 3 ? ' +' + (x.src.length - 3) : ''),
+          pick: () => setVal(k, x.v),
+          bg: cur === x.v ? '#E7F4EF' : '#FFFFFF', border: cur === x.v ? 'var(--green)' : 'var(--line)',
+        })),
+      };
+    };
+    const email = v => v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Check this email address.' : '';
+    const gst = this.custNorm('client_gstin', f.client_gstin);
+    const sections = [
+      { key: 'who', title: isBiz ? 'Business' : 'Customer', note: isBiz ? 'The entity \u2014 company, firm or brand.' : 'The person we work for.',
+        fieldsVM: [field('client_name', isBiz ? 'Business name' : 'Full name'), field('client_phone', 'Phone', { type: 'tel' }), field('client_email', 'Email', { type: 'email', check: email })] },
+      isBiz ? { key: 'contact', title: 'Contact person', note: 'Who we deal with day to day.',
+        fieldsVM: [field('client_contact_name', 'Name'), field('client_contact_role', 'Role', { placeholder: 'e.g. Marketing head' }),
+          field('client_contact_phone', 'Phone', { type: 'tel' }), field('client_contact_email', 'Email', { type: 'email', check: email })] } : null,
+      { key: 'tax', title: 'Tax identity', note: 'Used on invoices. Drafts update when you save; issued invoices stay as issued.',
+        fieldsVM: [
+          field('client_gstin', 'GSTIN', { placeholder: 'Blank if unregistered',
+            check: v => v && !GSTIN_RE.test(v) ? 'Not a valid GSTIN \u2014 15 characters, like 32ABCDE1234F1Z5.' : '',
+            hint: v => v ? (GST_STATES[v.slice(0, 2)] || 'Unknown state code') + ' \u00b7 PAN and state filled from it.' : '' }),
+          field('client_pan', 'PAN', {
+            check: v => v && !PAN_RE.test(v) ? 'Not a valid PAN \u2014 10 characters, like ABCDE1234F.'
+              : v && GSTIN_RE.test(gst) && gst.slice(2, 12) !== v ? 'Does not match the GSTIN (its characters 3\u201312).' : '' }),
+          field('client_state', 'Place of supply', { placeholder: 'State', hint: () => 'Kerala bills CGST + SGST; anywhere else IGST.' }),
+        ] },
+      { key: 'addr', title: 'Billing address', note: 'Kept on record \u2014 not printed on invoices yet.',
+        fieldsVM: [field('client_address', 'Address', { area: true, placeholder: 'Building, street, city, PIN' })] },
+      { key: 'bank', title: 'Refund account', note: 'Only Finance logins can read this.',
+        fieldsVM: [field('holder', 'Account holder', { bank: true }), field('bank_name', 'Bank', { bank: true }),
+          field('account_no', 'Account number', { bank: true }),
+          field('ifsc', 'IFSC', { bank: true, check: v => v && !IFSC_RE.test(v) ? 'Not a valid IFSC \u2014 11 characters, like HDFC0001234.' : '' })] },
+    ].filter(Boolean);
+
+    const seg = (k, label, opts, note) => {
+      const c = conflictOf(k);
+      const name = v => ((opts.find(o => o[0] === v) || [0, v])[1]).toLowerCase();
+      return {
+        key: k, label,
+        optsVM: opts.map(o => ({ key: o[0], label: o[1], go: () => setVal(k, o[0]),
+          bg: f[k] === o[0] ? 'var(--green-deep)' : '#FFFFFF', color: f[k] === o[0] ? '#FFFFFF' : 'var(--green-deep)' })),
+        hasNote: !!(c || note), noteColor: c ? '#9A6A12' : '#6B7572',
+        note: c ? 'Jobs disagree \u2014 ' + c.map(x => name(x.v) + ' on ' + x.src.length).join(', ') + '. Saving writes this choice to all.' : note,
+      };
+    };
+    const contactName = String(f.client_contact_name || '').trim();
+    const billNote = f.client_bill_to === 'contact' && !contactName ? 'Add the contact person\u2019s name, or invoices fall back to the business name.'
+      : 'New and draft invoices are made out to ' + (this.billedName(f, String(f.client_name || '').trim()) || '\u2014') + '.';
+
+    const evIds = {}, prIds = {};
+    g.rows.forEach(r => { (r.table === 'events' ? evIds : prIds)[r.rec.id] = r; });
+    const jobOf = x => (x.event_id && evIds[x.event_id]) || (x.project_id && prIds[x.project_id]) || null;
+    const typeL = t => ({ tax: 'Tax invoice', proforma: 'Proforma', credit: 'Credit note' }[t] || 'Invoice');
+    const invs = s.custInv.filter(jobOf).sort((a, b) => String(b.issue_date || '').localeCompare(String(a.issue_date || '')));
+    const rcvBy = {};
+    s.custRcv.forEach(r => { (rcvBy[r.invoice_id] = rcvBy[r.invoice_id] || []).push(r); });
+    const live = invs.filter(i => i.type === 'tax' && (i.status === 'sent' || i.status === 'paid'));
+    const sum = (arr, fn) => arr.reduce((t, x) => t + fn(x), 0);
+    const got = i => sum(rcvBy[i.id] || [], r => Number(r.amount || 0));
+    const stamp = iso => {
+      const d = new Date(iso);
+      if (!iso || isNaN(d)) return '';
+      return String(iso).length <= 10 ? fmtDay(iso) : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' + d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+    };
+    const logs = s.custLog.filter(jobOf);
+    const mailLogs = logs.filter(l => l.kind === 'email');
+    const mails = mailLogs.map(l => ({ at: l.created_at, subject: l.summary || 'Email', to: l.to_email, by: l.actor_email, job: jobOf(l) }))
+      .concat(invs.filter(i => i.sent_at && !mailLogs.some(l => String(l.summary || '').indexOf(i.number) !== -1))
+        .map(i => ({ at: i.sent_at, subject: typeL(i.type) + ' ' + i.number, to: i.bill_email, by: '', job: jobOf(i) })))
+      .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    const acts = [];
+    g.rows.forEach(r => {
+      const lb = this.custJobLabel(r);
+      if (r.rec.created_at) acts.push({ at: r.rec.created_at, text: 'Job created \u00b7 ' + lb });
+      if (r.rec.delivered_date) acts.push({ at: r.rec.delivered_date, text: 'Delivered \u00b7 ' + lb });
+    });
+    invs.forEach(i => {
+      if (i.status !== 'draft' && i.issue_date) acts.push({ at: i.issue_date, text: typeL(i.type) + ' ' + i.number + ' issued \u00b7 ' + fmtINR(i.total) + (i.status === 'cancelled' ? ' \u00b7 later cancelled' : '') });
+      (rcvBy[i.id] || []).forEach(r => acts.push({ at: r.received_on, text: fmtINR(r.amount) + ' received against ' + i.number }));
+    });
+    logs.filter(l => l.kind === 'edit' || l.kind === 'merge').forEach(l => acts.push({ at: l.created_at, text: l.summary + (l.actor_email ? ' \u00b7 ' + l.actor_email : '') }));
+    acts.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+
+    return Object.assign(out, {
+      custTitle: String(f.client_name || '').trim() || g.name,
+      custMeta: [jobsN(g.rows.length), divLabel(g), isBiz && contactName ? 'contact ' + contactName : ''].filter(Boolean).join(' \u00b7 '),
+      custBusy: !!s.custBusy, custSaveLabel: s.custBusy ? 'Saving…' : 'Save to ' + jobsN(g.rows.length),
+      saveCustomer: () => this.saveCustomer(),
+      backToCustomers: () => this.setState({ custOpen: null, custForm: null, custStatus: '', custOk: true }),
+      custSegVM: [
+        seg('client_type', 'Customer is', [['business', 'A business'], ['individual', 'A person']]),
+        isBiz ? seg('client_bill_to', 'Invoices are billed to', [['entity', 'The business'], ['contact', 'Contact person']], billNote) : null,
+      ].filter(Boolean),
+      custSectionsVM: sections,
+      custJobsNote: 'Across every division. Album and project links are what the customer opens.',
+      custJobsVM: g.rows.map(r => {
+        const rec = r.rec, isEv = r.table === 'events', url = this.clientUrl(rec), k = r.table + rec.id;
+        const divs = isEv ? ['wedding'] : (Array.isArray(rec.divisions) && rec.divisions.length ? rec.divisions : [rec.division]);
+        const st = rec.delivered_date ? 'Delivered' : rec.production_status ? rec.production_status.charAt(0).toUpperCase() + rec.production_status.slice(1).replace(/_/g, ' ') : '';
+        return {
+          key: k, label: this.custJobLabel(r),
+          meta: [divs.filter(Boolean).map(d => DIVISION_LABEL[d] || d).join(', '), (isEv ? rec.event_date : rec.start_date || rec.taken_date) ? fmtDay(isEv ? rec.event_date : rec.start_date || rec.taken_date) : '', st].filter(Boolean).join(' \u00b7 '),
+          hasLink: !!url, linkNote: rec.published === false ? 'Hidden from the customer' : '', linkColor: '#9A6A12',
+          copyLabel: s.custCopied === k ? 'Copied' : 'Copy link', viewLabel: isEv ? 'View album' : 'View page',
+          copyLink: () => navigator.clipboard.writeText(url).then(() => { this.setState({ custCopied: k }); setTimeout(() => this.setState({ custCopied: '' }), 2000); }),
+          viewLink: () => window.open(url, '_blank', 'noopener'),
+          open: () => (isEv ? this.openEvent(rec) : this.openProject(rec)),
+        };
+      }),
+      custNoInv: !invs.length,
+      custInvNote: live.length ? fmtINR(sum(live, i => Number(i.total || 0))) + ' invoiced \u00b7 ' + fmtINR(sum(live, got)) + ' received' : '',
+      custInvVM: invs.map(i => {
+        const paid = got(i), last = (rcvBy[i.id] || []).map(r => r.received_on).sort().pop();
+        const st = i.status === 'cancelled' ? 'Cancelled' : i.status === 'draft' ? 'Draft' : i.type !== 'tax' ? 'Sent'
+          : paid >= Number(i.total || 0) - 1 ? 'Paid' : paid > 0 ? 'Part paid' : 'Unpaid';
+        const job = jobOf(i);
+        return {
+          key: i.id, number: i.number || '\u2014',
+          meta: [typeL(i.type), i.issue_date ? fmtDay(i.issue_date) : '', job ? this.custJobLabel(job) : ''].filter(Boolean).join(' \u00b7 '),
+          totalFmt: fmtINR(i.total), paidNote: paid ? fmtINR(paid) + ' received' + (last ? ' \u00b7 ' + fmtDay(last) : '') : '',
+          status: st, statusColor: st === 'Unpaid' ? '#B4433A' : st === 'Paid' ? '#0E8E72' : st === 'Part paid' ? '#9A6A12' : '#6B7572',
+        };
+      }),
+      custNoEmails: !mails.length,
+      custEmailsVM: mails.slice(0, 40).map((e, n) => ({
+        key: n, subject: e.subject,
+        meta: [stamp(e.at), e.to ? 'to ' + e.to : '', e.by ? 'by ' + e.by : '', e.job ? this.custJobLabel(e.job) : ''].filter(Boolean).join(' \u00b7 '),
+      })),
+      custActVM: acts.slice(0, 40).map((a, n) => ({ key: n, when: String(a.at || '').length <= 10 ? fmtDay(a.at) : fmtDay(String(a.at).slice(0, 10)), text: a.text })),
+    });
+  }
 
   // ---- New invoice, raised straight from Finance → Invoices ----------------------
   // Pick the project, its client details and unbilled sold lines come across;
@@ -9495,6 +10234,7 @@ class Component extends DCLogic {
       isFinOverview: false, isFinProjects: false, isFinInvoices: false, isFinPeople: false, isShoots: false,
       finKpisVM: [], finBillSoonVM: [], finOverdueVM: [], finLowMarginVM: [], finRowsVM: [], finDivisionOptsVM: [],
       finInvRowsVM: [], finInvFilterVM: [], finPeopleVM: [], finPeopleChipsVM: [], isFinMaster: false, isFinInventory: false, isFinPayroll: false, prRowsVM: [], invListVM: [], invCatChipsVM: [], invCatOptsVM: [], invStatusOptsVM: [], invInfoVM: [],
+      isFinCustomers: false,
       mKpisVM: [], mClientsVM: [], mDuesVM: [], mCommitmentsVM: [], mExpensesVM: [], mInvoicesVM: [], cmKindOptsVM: [], cmFreqOptsVM: [],
       svJobOptsVM: [], svListVM: [], svKindOptsVM: [],
     };
@@ -9503,6 +10243,7 @@ class Component extends DCLogic {
     if (s.view === 'finInvoices') Object.assign(out, this.finInvoicesVM());
     if (s.view === 'finProforma') Object.assign(out, this.finInvoicesVM('proforma'));
     if (s.view === 'finMaster') Object.assign(out, this.masterVM());
+    if (s.view === 'finCustomers') Object.assign(out, this.customersVM());
     if (s.view === 'finInventory') Object.assign(out, this.inventoryVM());
     if (s.view === 'finPayroll') Object.assign(out, this.payrollVM());
     if (s.view === 'finPeople') Object.assign(out, this.finPeopleVM());
@@ -9555,7 +10296,7 @@ class Component extends DCLogic {
     const late = vms.filter(v => v._out > 1).length;
     const dueNow = recs.reduce((t, r) => t + r.dueNow, 0);
     const dueJobs = recs.filter(r => r.dueNow > 0).length;
-    const drafts = (s.finInvRaw || []).filter(i => i.status === 'draft');
+    const drafts = (s.finInvRaw || []).filter(i => i.status === 'draft' && i.type === 'tax');
     const priced = vms.filter(v => v._mp != null);
     const pSum = priced.reduce((t, v) => t + v._r.price, 0);
     const mSum = priced.reduce((t, v) => t + v._margin, 0);
@@ -10506,7 +11247,7 @@ class Component extends DCLogic {
     const cutoff = s.plCutoff || this.toIso(new Date());
     const due = (s.priceLines || []).filter(l => !l.invoice_id && l.bill_on && l.bill_on <= cutoff);
     if (!due.length) return this.plFlash('Nothing unbilled is due by ' + fmtDay(cutoff) + '.');
-    const name = s.editClientName || pr.client_name;
+    const name = this.billedName(pr, s.editClientName || pr.client_name);
     if (!name) return this.plFlash('Add and save a client name first.');
     this.setState({ plBusy: true, plStatus: 'Generating…' });
     try {
@@ -10756,7 +11497,7 @@ class Component extends DCLogic {
 
   async generatePeriodInvoice(period, silent) {
     const s = this.state, pr = s.current;
-    const name = s.editProjClient || pr.client_name;
+    const name = this.billedName(pr, s.editProjClient || pr.client_name);
     if (!name) { this.setState({ invStatus: 'Add and save a client name first.' }); return false; }
     const amount = Number(pr.retainer_amount || 0);
     if (!amount) { this.setState({ invStatus: 'Set the amount per cycle first.' }); return false; }
@@ -11594,8 +12335,11 @@ class Component extends DCLogic {
     const patch = { sent_at: new Date().toISOString() };
     if (pdfUrl) patch.pdf_url = pdfUrl;
     if (inv.status === 'draft') patch.status = 'sent';
-    const { error } = await this.sb.from('invoices').update(patch).eq('id', inv.id).neq('status', 'cancelled');
+    const { data: upd, error } = await this.sb.from('invoices').update(patch).eq('id', inv.id).neq('status', 'cancelled').select('number, bill_email');
     if (error) console.warn('[invoice] sent, but the record did not update:', error.message);
+    const row = (upd && upd[0]) || inv;
+    const label = { proforma: 'Proforma', credit: 'Credit note', tax: 'Tax invoice' }[inv.type] || 'Invoice';
+    this.logClient(inv.project_id ? { id: inv.project_id, _table: 'projects' } : { id: inv.event_id, _table: 'events' }, 'email', label + ' ' + (row.number || inv.number), row.bill_email || inv.bill_email);
   }
 
   // EmailJS takes a Variable Attachment as base64 OR a URL. The stored PDF's
@@ -11659,6 +12403,7 @@ class Component extends DCLogic {
         album_link: url,
       });
       this.setState({ clientStatus: 'Preview link sent.' });
+      this.logClient(s.current, 'email', subject, clientEmail);
     } catch (e) { this.setState({ clientStatus: 'Failed: ' + (e.text || e.message || 'error') }); }
     setTimeout(() => this.setState({ clientStatus: '' }), 3000);
   }
@@ -14098,7 +14843,7 @@ class Component extends DCLogic {
   async loadPayJobs() {
     const [ev, pr, sh] = await Promise.all([
       this.sb.from('events').select('id, couple_names, event_date').order('event_date', { ascending: false }).limit(400),
-      this.sb.from('projects').select('id, client_name, title, division, start_date').order('start_date', { ascending: false }).limit(400),
+      this.sb.from('projects').select('id, client_name, project_title, division, start_date').order('start_date', { ascending: false }).limit(400),
       this.sb.from('shoots').select('id, title, kind, shoot_date, event_id, project_id').order('shoot_date', { ascending: false }).limit(800),
     ]);
     this.setState({
@@ -14830,10 +15575,10 @@ class Component extends DCLogic {
   // browsing, and money is not.
   async loadSpend() {
     const [pr, ev, sh, ex] = await Promise.all([
-      this.sb.from('projects').select('id,project_title,client_name,division,divisions').limit(500),
-      this.sb.from('events').select('id,couple_names,event_date').limit(500),
-      this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).limit(1000),
-      this.sb.from('expenses').select('*').order('spend_date', { ascending: false }).limit(3000),
+      this.selectAll(() => this.sb.from('projects').select('id,project_title,client_name,division,divisions').order('id')),
+      this.selectAll(() => this.sb.from('events').select('id,couple_names,event_date').order('id')),
+      this.selectAll(() => this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).order('id')),
+      this.selectAll(() => this.sb.from('expenses').select('*').order('spend_date', { ascending: false }).order('id')),
     ]);
     const missing = e => e && (e.code === 'PGRST205' || /schema cache|does not exist/i.test(e.message || ''));
     if (missing(sh.error) || missing(ex.error)) {
@@ -14885,8 +15630,8 @@ class Component extends DCLogic {
     // Studio's shoots page has no read on expenses; it reloads its own lists.
     if (this.state.view === 'shoots') return this.loadShootsOnly();
     const [sh, ex] = await Promise.all([
-      this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).limit(1000),
-      this.sb.from('expenses').select('*').order('spend_date', { ascending: false }).limit(3000),
+      this.selectAll(() => this.sb.from('shoots').select('*').order('shoot_date', { ascending: false }).order('id')),
+      this.selectAll(() => this.sb.from('expenses').select('*').order('spend_date', { ascending: false }).order('id')),
     ]);
     const err = sh.error || ex.error;
     if (err) { this.setState({ spendStatus: err.message }); return; }
@@ -16248,11 +16993,11 @@ class Component extends DCLogic {
   async loadMoney() {
     const say = m => /payments_received|receivables/i.test(m || '')
       ? 'Run album-system/receipts-schema.sql in Supabase — the receipts ledger does not exist yet.' : m;
-    const inv = await this.sb.from('invoices')
+    const inv = await this.selectAll(() => this.sb.from('invoices')
       .select('*, events(couple_names, event_date), projects(client_name, start_date, division)')
-      .eq('type', 'tax').in('status', ['sent', 'paid']).order('issue_date', { ascending: false });
+      .eq('type', 'tax').in('status', ['sent', 'paid']).order('issue_date', { ascending: false }).order('id'));
     if (inv.error) { this.setState({ moneyStatus: say(inv.error.message) }); return; }
-    const rec = await this.sb.from('payments_received').select('*').order('received_on', { ascending: false }).limit(1000);
+    const rec = await this.selectAll(() => this.sb.from('payments_received').select('*').order('received_on', { ascending: false }).order('id'));
     this.setState({
       moneyInvoices: inv.data || [],
       receipts: rec.error ? [] : (rec.data || []),
@@ -16437,7 +17182,7 @@ class Component extends DCLogic {
       const sub = (key, label, ok) => ok === false ? null : { key, label };
       finGroups = [
         ['Overview', [sub('finance', 'Overview')]],
-        ['Projects', [sub('finProjects', 'Jobs & pricing'), sub('finMaster', 'Clients & dues')]],
+        ['Projects', [sub('finProjects', 'Jobs & pricing'), sub('finCustomers', 'Customers'), sub('finMaster', 'Clients & dues')]],
         ['Money in', [sub('finInvoices', 'Invoices'), sub('finProforma', 'Proforma'), sub('money', 'Payments received', this.can('money'))]],
         ['Money out', [sub('spend', 'Expenses & shoots', this.can('spend')), sub('payouts', 'Crew payouts', this.can('payouts')), sub('finPayroll', 'Payroll')]],
         ['People & assets', [sub('finPeople', 'People pay'), sub('finInventory', 'Inventory')]],
@@ -17186,7 +17931,7 @@ class Component extends DCLogic {
         }].concat(shootsFor('event_id', e.id))),
         ...(s.payProjects || []).map(p => [{
           value: 'p:' + p.id,
-          label: (p.client_name || p.title || 'Project') + (p.title && p.client_name ? ' · ' + p.title : ''),
+          label: (p.client_name || p.project_title || 'Project') + (p.project_title && p.client_name ? ' · ' + p.project_title : ''),
         }].concat(shootsFor('project_id', p.id))),
       ));
 
@@ -17467,8 +18212,9 @@ class Component extends DCLogic {
         color: s.division === d[0] ? 'var(--green-deep)' : '#16231F',
       })),
 
+      ...this.newCustVM(),
       newClientName: s.newClientName, newProjTitle: s.newProjTitle, newSector: s.newSector,
-      onNewClientNameChange: e => this.setState({ newClientName: e.target.value }),
+      onNewClientNameChange: e => { this.setState({ newClientName: e.target.value, newCustPick: null }); this.ensureCustRows(); },
       onNewProjTitleChange: e => this.setState({ newProjTitle: e.target.value }),
       onNewSectorChange: e => this.setState({ newSector: e.target.value }),
       createProject: () => this.doCreateProject(), creatingProject: s.creatingProject,
@@ -17959,7 +18705,8 @@ class Component extends DCLogic {
       cleanStorageLabel: s.cleaningStorage ? 'Checking…' : 'Clean storage',
 
       newCouple: s.newCouple, newDate: s.newDate, newVenue: s.newVenue, newSlug: s.newSlug,
-      onNewCoupleChange: e => this.setState({ newCouple: e.target.value }),
+      ...this.newCustVM(),
+      onNewCoupleChange: e => { this.setState({ newCouple: e.target.value, newCustPick: null }); this.ensureCustRows(); },
       onNewDateChange: e => this.setState({ newDate: e.target.value }),
       onNewVenueChange: e => this.setState({ newVenue: e.target.value }),
       onNewSlugChange: e => this.setState({ newSlug: e.target.value }),
@@ -17998,6 +18745,7 @@ class Component extends DCLogic {
       backLabel: s.editorFrom === 'finance' ? '← Overview'
         : s.editorFrom === 'finProjects' ? '← Projects & pricing'
         : s.editorFrom === 'finMaster' ? '← Master'
+        : s.editorFrom === 'finCustomers' ? '← Customer'
         : s.editorFrom === 'finInvoices' ? '← Invoices'
         : s.editorFrom === 'schedule' ? '← Schedule'
         : s.editorFrom === 'money' ? '← Money in'
