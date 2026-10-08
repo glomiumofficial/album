@@ -4279,7 +4279,7 @@
                 <div style="display:flex; flex-direction:column; gap:4px; padding-top:12px; border-top:1px solid var(--line)">
                   <span style="font-size:12px; color:{{ a.syncColor }}">{{ a.syncLine }}</span>
                   <sc-if value="{{ a.hasFix }}" hint-placeholder-val="{{ false }}">
-                    <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">{{ a.fix }}</span>
+                    <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty; overflow-wrap:anywhere">{{ a.fix }}</span>
                   </sc-if>
                 </div>
                 <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
@@ -6630,6 +6630,7 @@ const POST_KIND_LABEL = {
 const digPlainError = m => {
   const s = String(m || '');
   if (/ACCESS_TOKEN is not set/i.test(s)) return 'The Meta token is missing. Add META_ACCESS_TOKEN under Supabase → Edge Functions → Secrets.';
+  if (/pages_read_user_content|Page Public Content Access/i.test(s)) return 'Meta needs an extra permission to read comments on this Page. Redeploy the latest digital-sync — it now skips comment counts and syncs the rest.';
   if (/valid insights metric/i.test(s)) return 'Meta retired a metric this sync asks for. Redeploy the latest digital-sync function.';
   if (/does not exist|missing permissions|Unsupported get request/i.test(s)) return 'Meta cannot see this account with the current token. Check the account ID under Accounts, and that the Page or profile is assigned to the glomium-sync system user.';
   if (/#190|session has expired|invalid oauth|access token/i.test(s)) return 'Meta rejected the token. Generate a new system-user token and replace META_ACCESS_TOKEN.';
