@@ -4222,7 +4222,10 @@
             <span style="font-size:12px; color:#4A524F">{{ digScopeLabel }} · {{ digAccountCountLabel }}</span>
           </div>
           <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ syncAll }}" disabled="{{ digSyncing }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">{{ digSyncLabel }}</button>
+            <div style="display:flex; gap:8px; width:max-content; max-width:100%">
+              <button onClick="{{ syncBackfill }}" disabled="{{ digSyncing }}" title="Re-pull the last 30 days for every account" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Pull 30 days</button>
+              <button onClick="{{ syncAll }}" disabled="{{ digSyncing }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">{{ digSyncLabel }}</button>
+            </div>
           </sc-if>
         </div>
 
@@ -4243,17 +4246,67 @@
         </div>
 
         <sc-if value="{{ digIsOverview }}" hint-placeholder-val="{{ true }}">
-        <div style="display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; flex-direction:column; gap:30px">
 
-          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
-            <sc-for list="{{ digKpisVM }}" as="k" hint-placeholder-count="6">
-              <div style="display:flex; flex-direction:column; gap:6px; padding:16px 18px; border:1px solid var(--line); border-radius:0">
-                <span style="font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">{{ k.label }}</span>
-                <span style="font-size:30px; font-weight:200; letter-spacing:-0.02em; color:#1B1D1E">{{ k.value }}</span>
-                <span style="font-size:11px; color:#4A524F">{{ k.sub }}</span>
+          <sc-if value="{{ digNoAccounts }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:6px; padding:22px; border:1px dashed var(--line); border-radius:0">
+              <span style="font-size:13px; color:#1B1D1E">No accounts connected for this view yet.</span>
+              <span style="font-size:12px; color:#4A524F; line-height:1.6">Add an Instagram account, Facebook Page or ad account under Accounts, then press Sync now.</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasDigProfiles }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr)); gap:14px">
+            <sc-for list="{{ digProfilesVM }}" as="a" hint-placeholder-count="2">
+              <div style="display:flex; flex-direction:column; gap:16px; padding:20px 22px; border:1px solid var(--line); border-radius:0; background:#fff">
+                <div style="display:flex; align-items:flex-start; gap:12px">
+                  <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:0">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ a.platformLabel }} · {{ a.clientLabel }}</span>
+                    <span style="font-size:17px; font-weight:300; color:#1B1D1E">{{ a.label }}</span>
+                    <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ a.handle }}</span>
+                  </div>
+                  <span style="flex:none; padding:4px 9px; border-radius:0; background:{{ a.freshBg }}; color:{{ a.freshColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ a.freshLabel }}</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px">
+                  <sc-for list="{{ a.statsVM }}" as="x" hint-placeholder-count="3">
+                    <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                      <span style="font-size:24px; font-weight:200; letter-spacing:-0.02em; color:#1B1D1E">{{ x.value }}</span>
+                      <span style="font-size:12px; color:{{ x.subColor }}">{{ x.sub }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; padding-top:12px; border-top:1px solid var(--line)">
+                  <span style="font-size:12px; color:{{ a.syncColor }}">{{ a.syncLine }}</span>
+                  <sc-if value="{{ a.hasFix }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">{{ a.fix }}</span>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <button onClick="{{ a.syncOne }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Sync</button>
+                    <button onClick="{{ a.backfill }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Pull 30 days</button>
+                  </div>
+                </sc-if>
               </div>
             </sc-for>
           </div>
+          </sc-if>
+
+          <sc-for list="{{ digKpiGroupsVM }}" as="g" hint-placeholder-count="2">
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ g.title }}</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px">
+                <sc-for list="{{ g.kpis }}" as="k" hint-placeholder-count="4">
+                  <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:0; min-width:0">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                    <span style="font-size:30px; font-weight:200; letter-spacing:-0.02em; color:#1B1D1E">{{ k.value }}</span>
+                    <span style="font-size:12px; color:{{ k.subColor }}; line-height:1.5; text-wrap:pretty">{{ k.sub }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
 
           <sc-if value="{{ digHasPace }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; flex-direction:column; gap:10px; padding:18px 20px; border:1px solid var(--line); border-radius:0">
@@ -4266,30 +4319,38 @@
                 <div style="position:absolute; inset:0 auto 0 0; width:{{ digPaceWidth }}; background:{{ digPaceColor }}; border-radius:0"></div>
                 <div style="position:absolute; top:-3px; bottom:-3px; left:{{ digPaceDayLeft }}; width:2px; background:#1B1D1E; opacity:.45"></div>
               </div>
-              <span style="font-size:11px; color:#4A524F">{{ digPaceVerdict }} — the marker is where the month has reached.</span>
+              <span style="font-size:12px; color:#4A524F">{{ digPaceVerdict }} — the marker is where the month has reached.</span>
             </div>
           </sc-if>
 
-          <div style="display:flex; flex-direction:column; gap:14px; padding:20px; border:1px solid var(--line); border-radius:0">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:22px; border:1px solid var(--line); border-radius:0">
             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
-              <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); margin-right:auto">{{ digChartMetricLabel }} · daily</span>
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:auto">Trend · {{ digChartMetricLabel }}</span>
               <div style="display:flex; gap:5px; flex-wrap:wrap">
                 <sc-for list="{{ digRangeChipsVM }}" as="r" hint-placeholder-count="3">
-                  <button onClick="{{ r.go }}" style="padding:6px 11px; background:{{ r.bg }}; border:1px solid {{ r.border }}; border-radius:0; font-size:10px; letter-spacing:.08em; color:{{ r.color }}; cursor:pointer">{{ r.label }}</button>
+                  <button onClick="{{ r.go }}" style="padding:6px 11px; background:{{ r.bg }}; border:1px solid {{ r.border }}; border-radius:0; font-size:11px; letter-spacing:.08em; color:{{ r.color }}; cursor:pointer">{{ r.label }}</button>
                 </sc-for>
               </div>
             </div>
             <div style="display:flex; gap:5px; flex-wrap:wrap">
-              <sc-for list="{{ digMetricChipsVM }}" as="m" hint-placeholder-count="6">
-                <button onClick="{{ m.go }}" style="padding:6px 12px; background:{{ m.bg }}; border:1px solid {{ m.border }}; border-radius:0; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:{{ m.color }}; cursor:pointer">{{ m.label }}</button>
+              <sc-for list="{{ digMetricChipsVM }}" as="m" hint-placeholder-count="4">
+                <button onClick="{{ m.go }}" style="padding:7px 12px; background:{{ m.bg }}; border:1px solid {{ m.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ m.color }}; cursor:pointer">{{ m.label }}</button>
               </sc-for>
             </div>
             <sc-if value="{{ digChartEmpty }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size:12px; color:#6B7572; padding:40px 0; text-align:center">No numbers in this window yet. Connect an account and run a sync.</span>
+              <span style="font-size:12px; color:#6B7572; padding:40px 0; text-align:center; line-height:1.6">No numbers in this window yet. Press Pull 30 days to fetch history.</span>
             </sc-if>
             <sc-if value="{{ digChartHasData }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px">
+                <sc-for list="{{ digChartSummaryVM }}" as="x" hint-placeholder-count="3">
+                  <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                    <span style="font-size:20px; font-weight:300; color:#1B1D1E">{{ x.value }}</span>
+                  </div>
+                </sc-for>
+              </div>
               <div style="display:flex; gap:12px; align-items:stretch">
-                <div style="width:84px; height:240px; display:flex; flex-direction:column; justify-content:space-between; text-align:right; flex:none">
+                <div style="width:64px; height:240px; display:flex; flex-direction:column; justify-content:space-between; text-align:right; flex:none">
                   <sc-for list="{{ digChartGridVM }}" as="g" hint-placeholder-count="5">
                     <span style="font-size:10px; color:#6B7572; line-height:1">{{ g.label }}</span>
                   </sc-for>
@@ -4302,50 +4363,79 @@
                   <path d="{{ digChartPath }}" fill="none" stroke="#10AF8B" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
                 </svg>
               </div>
-              <div style="display:flex; margin-left:96px">
+              <div style="display:flex; margin-left:76px">
                 <sc-for list="{{ digChartAxisVM }}" as="a" hint-placeholder-count="3">
                   <span style="flex:1; display:flex; justify-content:{{ a.align }}; font-size:10px; color:#6B7572">{{ a.label }}</span>
                 </sc-for>
               </div>
-              <span style="font-size:10px; color:#6B7572">{{ digChartPeakLabel }}</span>
+              <sc-if value="{{ hasDigChartNote }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px; color:#6B7572">{{ digChartNote }}</span>
+              </sc-if>
             </sc-if>
           </div>
 
-          <div style="display:flex; flex-direction:column; gap:10px">
-            <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">Account health</span>
-            <sc-if value="{{ digNoAccounts }}" hint-placeholder-val="{{ false }}">
-              <span style="font-size:12px; color:#6B7572">No accounts in the register yet. Add them under Accounts.</span>
-            </sc-if>
-            <sc-for list="{{ digAccountRowsVM }}" as="a" hint-placeholder-count="3">
-              <div style="display:flex; align-items:center; gap:14px; padding:12px 0; border-top:1px solid var(--line); flex-wrap:wrap">
-                <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572; min-width:110px">{{ a.platformLabel }}</span>
-                <div style="display:flex; flex-direction:column; gap:2px; min-width:160px; flex:1 1 160px">
-                  <span style="font-size:13px; color:#1B1D1E">{{ a.label }}</span>
-                  <span style="font-size:11px; color:#6B7572">{{ a.clientLabel }} · {{ a.idLabel }}</span>
+          <sc-if value="{{ hasDigTop }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:4px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding-bottom:8px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:auto">Top content · last {{ digRangeLabel }}</span>
+              <button onClick="{{ goContent }}" style="padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="color:#1B1D1E">All content →</button>
+            </div>
+            <sc-for list="{{ digTopVM }}" as="p" hint-placeholder-count="5">
+              <div style="display:flex; align-items:center; gap:16px; padding:10px 0; border-top:1px solid var(--line); flex-wrap:wrap">
+                <div style="position:relative; width:52px; height:64px; flex:none; background:#F1F4F3; overflow:hidden">
+                  <sc-if value="{{ p.hasThumb }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ p.thumb }}" alt="" loading="lazy" referrerpolicy="no-referrer" onError="{{ p.hideImg }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block">
+                  </sc-if>
                 </div>
-                <span style="font-size:11px; padding:3px 9px; border-radius:0; background:{{ a.freshBg }}; color:{{ a.freshColor }}; letter-spacing:.06em">{{ a.freshLabel }}</span>
-                <span style="font-size:12px; color:#4A524F; min-width:120px; text-align:right">{{ a.moneyLabel }}</span>
-                <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
-                  <button onClick="{{ a.syncOne }}" style="padding:6px 12px; background:none; border:1px solid var(--line); border-radius:0; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Sync</button>
-                </sc-if>
+                <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 220px; min-width:0">
+                  <span style="font-size:13px; color:{{ p.captionColor }}; line-height:1.5; max-height:3em; overflow:hidden">{{ p.caption }}</span>
+                  <span style="font-size:12px; color:#6B7572">{{ p.kindLabel }} · {{ p.whenLabel }}</span>
+                </div>
+                <div style="display:flex; gap:22px; align-items:center">
+                  <div style="display:flex; flex-direction:column; gap:2px; min-width:56px; text-align:right">
+                    <span style="font-size:15px; color:#1B1D1E">{{ p.viewsLabel }}</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Views</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:2px; min-width:56px; text-align:right">
+                    <span style="font-size:15px; color:#1B1D1E">{{ p.reachLabel }}</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Reach</span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:2px; min-width:80px; text-align:right">
+                    <span style="font-size:15px; color:#1B1D1E">{{ p.thirdLabel }}</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.thirdName }}</span>
+                  </div>
+                  <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
+                    <a href="{{ p.permalink }}" target="_blank" rel="noopener noreferrer" style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); text-decoration:none">View ↗</a>
+                  </sc-if>
+                </div>
               </div>
             </sc-for>
           </div>
+          </sc-if>
 
           <sc-if value="{{ hasDigRuns }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex; flex-direction:column; gap:10px">
-              <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">Sync log</span>
+            <div style="display:flex; flex-direction:column; gap:4px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; padding-bottom:8px">Sync log</span>
               <sc-for list="{{ digRunsVM }}" as="r" hint-placeholder-count="4">
-                <div style="display:flex; align-items:center; gap:12px; padding:9px 0; border-top:1px solid var(--line); flex-wrap:wrap">
-                  <span style="font-size:11px; padding:3px 9px; border-radius:0; background:{{ r.statusBg }}; color:{{ r.statusColor }}; letter-spacing:.06em; min-width:66px; text-align:center">{{ r.statusLabel }}</span>
-                  <span style="font-size:12px; color:#1B1D1E; min-width:120px">{{ r.platformLabel }}</span>
-                  <span style="font-size:11px; color:#6B7572; flex:1 1 120px">{{ r.accountLabel }}</span>
-                  <span style="font-size:11px; color:#B4433A; flex:2 1 200px; text-wrap:pretty">{{ r.message }}</span>
-                  <span style="font-size:11px; color:#4A524F">{{ r.rowsLabel }}</span>
-                  <span style="font-size:11px; color:#6B7572; min-width:110px; text-align:right">{{ r.whenLabel }}</span>
+                <div style="display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-top:1px solid var(--line); flex-wrap:wrap">
+                  <span style="font-size:10px; padding:4px 9px; border-radius:0; background:{{ r.statusBg }}; color:{{ r.statusColor }}; letter-spacing:.14em; text-transform:uppercase; min-width:66px; text-align:center">{{ r.statusLabel }}</span>
+                  <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 260px; min-width:0">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:baseline">
+                      <span style="font-size:12px; color:#1B1D1E">{{ r.platformLabel }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ r.accountLabel }}</span>
+                      <span style="font-size:12px; color:#4A524F">{{ r.rowsLabel }}</span>
+                    </div>
+                    <sc-if value="{{ r.hasFix }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">{{ r.fix }}</span>
+                    </sc-if>
+                    <sc-if value="{{ r.hasMessage }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:12px; color:#B4433A; line-height:1.6; text-wrap:pretty; overflow-wrap:anywhere">{{ r.message }}</span>
+                    </sc-if>
+                  </div>
+                  <span style="font-size:12px; color:#6B7572; text-align:right">{{ r.whenLabel }}</span>
                 </div>
               </sc-for>
-              <span style="font-size:11px; color:#6B7572; line-height:1.6">The nightly run re-pulls a three-day window, because every one of these platforms restates recent days — Meta attributes conversions late and Search Console lags two to three days, then backfills.</span>
+              <span style="font-size:12px; color:#6B7572; line-height:1.6; padding-top:8px">Instagram syncs every hour, so stories are saved before Meta deletes their numbers after 24 hours. Every run re-pulls the last few days, because platforms keep revising recent numbers.</span>
             </div>
           </sc-if>
 
@@ -4539,43 +4629,81 @@
         </sc-if>
 
         <sc-if value="{{ digIsContent }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex; flex-direction:column; gap:12px">
-          <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">Recent posts</span>
-          <sc-if value="{{ digNoPosts }}" hint-placeholder-val="{{ false }}">
-            <span style="font-size:12px; color:#6B7572">No posts synced yet. Connect an Instagram or YouTube account and run a sync.</span>
-          </sc-if>
-          <sc-for list="{{ digPostsVM }}" as="p" hint-placeholder-count="5">
-            <div style="display:flex; align-items:center; gap:14px; padding:13px 0; border-top:1px solid var(--line); flex-wrap:wrap">
-              <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572; min-width:72px">{{ p.kindLabel }}</span>
-              <div style="display:flex; flex-direction:column; gap:3px; flex:2 1 220px; min-width:0">
-                <span style="font-size:13px; color:#1B1D1E; text-wrap:pretty">{{ p.caption }}</span>
-                <span style="font-size:11px; color:#6B7572">{{ p.accountLabel }} · {{ p.whenLabel }}</span>
-                <sc-if value="{{ p.isStory }}" hint-placeholder-val="{{ false }}">
-                  <span style="font-size:11px; color:#4A524F">{{ p.storyLabel }}</span>
-                </sc-if>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:2px; min-width:80px; text-align:right">
-                <span style="font-size:13px; color:#1B1D1E">{{ p.viewsLabel }}</span>
-                <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">Views</span>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:2px; min-width:90px; text-align:right">
-                <span style="font-size:13px; color:#1B1D1E">{{ p.erLabel }}</span>
-                <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">Engagement</span>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:2px; min-width:80px; text-align:right">
-                <span style="font-size:13px; color:#1B1D1E">{{ p.reachLabel }}</span>
-                <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">Reach</span>
-              </div>
-              <div style="display:flex; flex-direction:column; gap:2px; min-width:90px; text-align:right">
-                <span style="font-size:13px; color:#1B1D1E">{{ p.interactionsLabel }}</span>
-                <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">Interactions</span>
-              </div>
-              <span style="font-size:11px; color:{{ p.promoColor }}; min-width:120px; text-align:right">{{ p.promoLabel }}</span>
-              <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
-                <a href="{{ p.permalink }}" target="_blank" rel="noopener noreferrer" style="font-size:11px; letter-spacing:.06em; color:var(--green-deep)">View</a>
-              </sc-if>
+        <div style="display:flex; flex-direction:column; gap:18px">
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center">
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-right:auto">
+              <sc-for list="{{ digKindChipsVM }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.go }}" style="padding:8px 14px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+              </sc-for>
             </div>
-          </sc-for>
+            <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:4px">Sort</span>
+              <sc-for list="{{ digSortChipsVM }}" as="c" hint-placeholder-count="4">
+                <button onClick="{{ c.go }}" style="padding:7px 11px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.08em; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasDigPosts }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
+              <sc-for list="{{ digContentSummaryVM }}" as="k" hint-placeholder-count="4">
+                <div style="display:flex; flex-direction:column; gap:5px; padding:14px 16px; border:1px solid var(--line); border-radius:0; min-width:0">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                  <span style="font-size:24px; font-weight:200; letter-spacing:-0.02em; color:#1B1D1E">{{ k.value }}</span>
+                  <span style="font-size:12px; color:#4A524F">{{ k.sub }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ digNoPosts }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px; color:#6B7572; line-height:1.6">Nothing synced yet for this view. Connect an Instagram account or Facebook Page under Accounts and press Sync now.</span>
+          </sc-if>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr)); gap:14px">
+            <sc-for list="{{ digPostsVM }}" as="p" hint-placeholder-count="6">
+              <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:0; background:#fff; min-width:0">
+                <div style="position:relative; aspect-ratio:4/5; background:#F1F4F3; overflow:hidden">
+                  <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.kindLabel }}</span>
+                  <sc-if value="{{ p.hasThumb }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ p.thumb }}" alt="" loading="lazy" referrerpolicy="no-referrer" onError="{{ p.hideImg }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block">
+                  </sc-if>
+                  <span style="position:absolute; top:10px; left:10px; padding:4px 8px; background:#fff; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E">{{ p.kindLabel }}</span>
+                  <sc-if value="{{ p.isLive }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute; top:10px; right:10px; padding:4px 8px; background:#0E8E72; color:#fff; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ p.liveLabel }}</span>
+                  </sc-if>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:14px; padding:14px 16px 16px; flex:1">
+                  <div style="display:flex; flex-direction:column; gap:4px">
+                    <span style="font-size:12px; color:#6B7572">{{ p.whenLabel }} · {{ p.accountLabel }}</span>
+                    <span style="font-size:13px; color:{{ p.captionColor }}; line-height:1.5; max-height:3em; overflow:hidden">{{ p.caption }}</span>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px">
+                    <sc-for list="{{ p.statsVM }}" as="x" hint-placeholder-count="3">
+                      <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                        <span style="font-size:20px; font-weight:300; color:#1B1D1E">{{ x.value }}</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding-top:12px; border-top:1px solid var(--line)">
+                    <sc-for list="{{ p.detailVM }}" as="x" hint-placeholder-count="4">
+                      <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                        <span style="font-size:13px; color:#1B1D1E">{{ x.value }}</span>
+                        <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-top:auto; flex-wrap:wrap">
+                    <span style="font-size:12px; color:{{ p.promoColor }}">{{ p.promoLabel }}</span>
+                    <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ p.permalink }}" target="_blank" rel="noopener noreferrer" style="margin-left:auto; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); text-decoration:none">{{ p.linkLabel }} ↗</a>
+                    </sc-if>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
         </div>
         </sc-if>
 
@@ -6479,9 +6607,14 @@ const DIG_TABS = [
   ['overview', 'Overview'], ['accounts', 'Accounts'], ['content', 'Content'],
   ['seo', 'SEO'], ['deals', 'Brand deals'], ['recharge', 'Recharge'],
 ];
+// Only metrics with data in the window are offered, in this order, so a social
+// client opens on reach and an ads client on spend without either seeing a row
+// of empty charts.
 const DIG_CHART_METRICS = [
-  ['spend', 'Spend'], ['impressions', 'Impressions'], ['clicks', 'Clicks'],
-  ['conversions', 'Conversions'], ['revenue', 'Revenue'], ['followers', 'Followers'],
+  ['reach', 'Reach'], ['followers', 'Followers'], ['follower_delta', 'New followers'],
+  ['video_views', 'Views'], ['engagements', 'Engagements'], ['spend', 'Spend'],
+  ['impressions', 'Impressions'], ['clicks', 'Clicks'], ['conversions', 'Conversions'],
+  ['revenue', 'Revenue'],
 ];
 const DIG_RANGES = [['7', '7 days'], ['30', '30 days'], ['90', '90 days']];
 const DEAL_KINDS = [['paid', 'Paid'], ['barter', 'Barter'], ['hybrid', 'Paid + barter']];
@@ -6491,6 +6624,19 @@ const DEAL_STATUSES = [
 ];
 const POST_KIND_LABEL = {
   post: 'Post', carousel: 'Carousel', reel: 'Reel', story: 'Story', video: 'Video', short: 'Short',
+};
+// Sync failures arrive as raw Graph / Google API text. This turns the ones we
+// have actually hit into what to do about them; anything else shows verbatim.
+const digPlainError = m => {
+  const s = String(m || '');
+  if (/ACCESS_TOKEN is not set/i.test(s)) return 'The Meta token is missing. Add META_ACCESS_TOKEN under Supabase → Edge Functions → Secrets.';
+  if (/valid insights metric/i.test(s)) return 'Meta retired a metric this sync asks for. Redeploy the latest digital-sync function.';
+  if (/does not exist|missing permissions|Unsupported get request/i.test(s)) return 'Meta cannot see this account with the current token. Check the account ID under Accounts, and that the Page or profile is assigned to the glomium-sync system user.';
+  if (/#190|session has expired|invalid oauth|access token/i.test(s)) return 'Meta rejected the token. Generate a new system-user token and replace META_ACCESS_TOKEN.';
+  if (/#4\b|#17\b|#32\b|rate limit|too many calls/i.test(s)) return 'Meta is rate-limiting this token. The next hourly run will catch up.';
+  if (/No sync adapter/i.test(s)) return 'This platform has no automatic sync yet.';
+  if (/GOOGLE_/i.test(s)) return 'Google credentials are missing from the Supabase secrets.';
+  return '';
 };
 
 // Work is often booked long before a shoot date exists — planning is where a
@@ -6763,7 +6909,7 @@ class Component extends DCLogic {
     pfWorks: [], pfMedia: [], pfOpenId: null, pfStatus: '', pfStatusOk: true, pfBusy: '', pfProgress: null, pfLoaded: false, pfMissing: false, pfCopied: false,
 
     // Digital & social
-    digitalTab: 'overview', digProject: 'all', digRange: '30', digMetric: 'spend',
+    digitalTab: 'overview', digProject: 'all', digRange: '30', digMetric: 'reach', digKind: 'all', digSort: 'new',
     digAccounts: [], digTerms: [], digMetrics: [], digRuns: [], digSecrets: [],
     digPosts: [], digKeywords: [], digRanks: [], digDeals: [], digBills: [],
     digStatus: '', digSyncing: false,
@@ -15207,11 +15353,11 @@ class Component extends DCLogic {
 
     if (tab === 'accounts' && this.can('digitalSecret')) this.loadSecretStatus();
 
-    if (tab === 'content') {
+    if (tab === 'content' || tab === 'overview') {
       if (!ids.length) { this.setState({ digPosts: [], digLoading: false }); return; }
       this.setState({ digLoading: true });
       const r = await this.sb.from('content_posts').select('*').in('account_id', ids)
-        .order('published_at', { ascending: false }).limit(120);
+        .order('published_at', { ascending: false }).limit(200);
       this.setState({ digPosts: r.error ? [] : (r.data || []), digLoading: false });
       return;
     }
@@ -16459,6 +16605,8 @@ class Component extends DCLogic {
     const s = this.state;
     const blank = {
       isDigital: false, digTabsVM: [], digClientChipsVM: [], digKpisVM: [], digAccountRowsVM: [],
+      digKpiGroupsVM: [], digProfilesVM: [], digTopVM: [], digKindChipsVM: [], digSortChipsVM: [],
+      digContentSummaryVM: [], digChartSummaryVM: [],
       digRunsVM: [], digPostsVM: [], digKeywordRowsVM: [], digDealsVM: [], digBillRowsVM: [],
       digMetricChipsVM: [], digRangeChipsVM: [], digChartGridVM: [], digChartAxisVM: [],
       digPlatformOptsVM: [], digRouteOptsVM: [], digClientOptsVM: [], digHolderOptsVM: [],
@@ -16516,46 +16664,104 @@ class Component extends DCLogic {
     }, 0);
 
     const terms = (scope === 'all' || isHouse) ? null : s.digTerms.find(t => t.project_id === scope);
-    // Our own page and search property have no spend and no retainer, so the
-    // commercial KPI set reads as four zeroes. Growth is the honest question.
-    const isCelebrity = isHouse || (!!terms && terms.account_type === 'celebrity');
+    const SOCIAL = ['instagram', 'facebook', 'youtube'];
+    const PAID = ['meta_ads', 'google_ads'];
+    // The tile set follows what is connected. Keying it on digital_terms alone
+    // gave a client with one Instagram account and no terms row six zeroed ad
+    // tiles, and hid its 22k followers.
+    const hasSocial = isHouse || scoped.some(a => SOCIAL.indexOf(a.platform) !== -1)
+      || (!!terms && terms.account_type === 'celebrity');
+    const hasPaid = spend > 0 || scoped.some(a => PAID.indexOf(a.platform) !== -1);
+    const hasPublisher = revenue > 0 || scoped.some(a => a.platform === 'adsense');
     const ctr = impressions ? clicks * 100 / impressions : null;
     const cpc = clicks ? spend / clicks : null;
     const roas = spend ? convValue / spend : null;
-    const erate = reach ? engagements * 100 / reach : null;
     const rangeLabel = range + ' days';
+    const pct = v => (v == null ? '—' : v.toFixed(v >= 10 ? 1 : 2) + '%');
+    const signed = v => (v > 0 ? '+' : '') + this.compact(v);
 
-    const digKpisVM = isCelebrity ? [
-      { label: 'Followers', value: followersNow ? this.compact(followersNow) : '—',
-        sub: followerGain ? (followerGain > 0 ? '+' : '') + this.compact(followerGain) + ' in ' + rangeLabel : rangeLabel },
-      { label: 'Reach', value: this.compact(reach), sub: rangeLabel },
-      { label: 'Engagement rate', value: erate == null ? '—' : erate.toFixed(2) + '%', sub: 'of reach' },
-      { label: 'Engagements', value: this.compact(engagements), sub: 'likes, comments, saves' },
-      { label: 'Paid spend', value: this.inr(spend), sub: spend ? 'boosts in range' : 'no boosts' },
-    ] : [
-      { label: 'Ad spend', value: this.inr(spend), sub: rangeLabel },
-      { label: 'Impressions', value: this.compact(impressions), sub: rangeLabel },
-      { label: 'Clicks', value: this.compact(clicks), sub: ctr == null ? '' : ctr.toFixed(2) + '% CTR' },
-      { label: 'Cost per click', value: cpc == null ? '—' : this.inr(cpc), sub: clicks ? '' : 'no clicks yet' },
-      { label: 'Conversions', value: this.compact(conv), sub: roas == null ? '' : roas.toFixed(2) + '× ROAS' },
-      { label: 'Publisher revenue', value: this.inr(revenue), sub: revenue ? 'AdSense & YouTube' : 'none in range' },
-    ];
+    // Engagement lives per post, not per day (Instagram has no daily account
+    // engagement), so content tiles read what was published inside the window.
+    const scopedPosts = s.digPosts.filter(p => inScope(p.account_id));
+    const pNum = (p, k) => Number(p[k] || 0);
+    const feedInter = p => pNum(p, 'likes') + pNum(p, 'comments') + pNum(p, 'shares') + pNum(p, 'saves');
+    const storyInter = p => pNum(p, 'replies') + pNum(p, 'shares');
+    const inter = p => (p.kind === 'story' ? storyInter(p) : feedInter(p));
+    const tot = (list, f) => list.reduce((t, p) => t + f(p), 0);
+    const rangePosts = scopedPosts.filter(p => p.published_at && String(p.published_at).slice(0, 10) >= from);
+    const feed = rangePosts.filter(p => p.kind !== 'story');
+    const storyList = rangePosts.filter(p => p.kind === 'story');
+    const feedReach = tot(feed, p => pNum(p, 'reach'));
+    const feedEng = tot(feed, feedInter);
+    const contentViews = tot(rangePosts, p => pNum(p, 'video_views'));
+    const storyViews = tot(storyList, p => pNum(p, 'video_views'));
+    const kindKey = p => (p.kind === 'carousel' ? 'post' : p.kind);
+    const kindSummary = list => {
+      const c = {};
+      list.forEach(p => { c[kindKey(p)] = (c[kindKey(p)] || 0) + 1; });
+      return Object.keys(c).map(k => c[k] + ' ' + (c[k] === 1 ? (POST_KIND_LABEL[k] || k).toLowerCase() : k === 'story' ? 'stories' : (POST_KIND_LABEL[k] || k).toLowerCase() + 's')).join(' · ');
+    };
+    const kpi = (label, value, sub, good) => ({ label, value, sub: sub || '', subColor: good ? '#0E8E72' : '#4A524F' });
+
+    const digKpiGroupsVM = [];
+    if (hasSocial) {
+      digKpiGroupsVM.push({ title: 'Audience · last ' + rangeLabel, kpis: [
+        kpi('Followers', followersNow ? this.compact(followersNow) : '—', followersNow ? 'right now' : 'no reading yet — sync'),
+        kpi('New followers', followerGain ? signed(followerGain) : '0', 'in the last ' + rangeLabel, followerGain > 0),
+        kpi('Reach', this.compact(reach), reach ? 'avg ' + this.compact(Math.round(reach / range)) + ' accounts a day' : 'nothing yet'),
+        kpi('Content views', this.compact(contentViews), rangePosts.length ? 'across ' + rangePosts.length + ' items' : 'nothing published'),
+      ] });
+      digKpiGroupsVM.push({ title: 'Content · last ' + rangeLabel, kpis: [
+        kpi('Published', String(rangePosts.length), rangePosts.length ? kindSummary(rangePosts) : 'nothing in this window'),
+        kpi('Engagement rate', pct(feedReach ? feedEng * 100 / feedReach : null), 'posts and reels, of reach', feedReach && feedEng * 100 / feedReach >= 3),
+        kpi('Interactions', this.compact(feedEng + tot(storyList, storyInter)),
+          this.compact(tot(feed, p => pNum(p, 'likes'))) + ' likes · ' + this.compact(tot(feed, p => pNum(p, 'comments'))) + ' comments · '
+          + this.compact(tot(rangePosts, p => pNum(p, 'shares'))) + ' shares'),
+        kpi('Avg story views', storyList.length ? this.compact(Math.round(storyViews / storyList.length)) : '—',
+          storyList.length ? storyList.length + ' stories · ' + pct(storyViews ? tot(storyList, p => pNum(p, 'exits')) * 100 / storyViews : null) + ' exit rate'
+            : 'stories are captured from the first sync on'),
+      ] });
+    }
+    if (hasPaid || !hasSocial) {
+      digKpiGroupsVM.push({ title: 'Paid · last ' + rangeLabel, kpis: [
+        kpi('Ad spend', this.inr(spend), spend ? rangeLabel : 'no spend in range'),
+        kpi('Impressions', this.compact(impressions), rangeLabel),
+        kpi('Clicks', this.compact(clicks), ctr == null ? 'no clicks yet' : ctr.toFixed(2) + '% click-through'),
+        kpi('Cost per click', cpc == null ? '—' : this.inr(cpc), clicks ? '' : 'no clicks yet'),
+        kpi('Conversions', this.compact(conv), roas == null ? '' : roas.toFixed(2) + '× return on spend'),
+      ] });
+    }
+    if (hasPublisher) {
+      digKpiGroupsVM.push({ title: 'Publisher · last ' + rangeLabel, kpis: [
+        kpi('Publisher revenue', this.inr(revenue), revenue ? 'AdSense and YouTube' : 'none in range'),
+      ] });
+    }
 
     // ---- the chart ----
-    const metric = s.digMetric;
+    const hasSeries = k => (k === 'followers' ? rows.some(r => r.followers != null) : rows.some(r => Number(r[k] || 0) !== 0));
+    const chartOpts = DIG_CHART_METRICS.filter(([k]) => hasSeries(k));
+    const metric = chartOpts.some(x => x[0] === s.digMetric) ? s.digMetric : (chartOpts[0] ? chartOpts[0][0] : s.digMetric);
     const byDate = new Map();
     for (let i = range - 1; i >= 0; i--) byDate.set(this.daysAgo(i), 0);
+    const chartDays = Array.from(byDate.keys());
     if (metric === 'followers') {
-      // A level, not a sum: take the highest reading that day, then carry the
-      // last known value forward so gaps do not draw a cliff down to zero.
-      for (const r of rows) {
-        if (r.followers == null || !byDate.has(r.on_date)) continue;
-        byDate.set(r.on_date, Math.max(byDate.get(r.on_date), Number(r.followers)));
-      }
-      let last = 0;
-      for (const d of Array.from(byDate.keys())) {
-        const v = byDate.get(d);
-        if (v) last = v; else byDate.set(d, last);
+      // The sync records one follower total per day it runs, but Meta reports
+      // new followers for every day. Walking back from the latest total through
+      // those daily gains draws the real curve instead of a cliff up from zero.
+      for (const a of scoped) {
+        const ar = rows.filter(r => r.account_id === a.id);
+        const reads = ar.filter(r => r.followers != null && byDate.has(r.on_date))
+          .sort((x, y) => (x.on_date < y.on_date ? -1 : 1));
+        if (!reads.length) continue;
+        const anchor = reads[reads.length - 1];
+        const gain = new Map();
+        ar.forEach(r => gain.set(r.on_date, (gain.get(r.on_date) || 0) + Number(r.follower_delta || 0)));
+        const at = chartDays.indexOf(anchor.on_date);
+        const vals = [];
+        vals[at] = Number(anchor.followers);
+        for (let i = at + 1; i < chartDays.length; i++) vals[i] = vals[i - 1] + (gain.get(chartDays[i]) || 0);
+        for (let i = at - 1; i >= 0; i--) vals[i] = vals[i + 1] - (gain.get(chartDays[i + 1]) || 0);
+        chartDays.forEach((d, i) => byDate.set(d, byDate.get(d) + vals[i]));
       }
     } else {
       for (const r of rows) {
@@ -16564,18 +16770,29 @@ class Component extends DCLogic {
       }
     }
     const series = Array.from(byDate.entries()).map(([date, value]) => ({ date, value }));
-    const peak = series.reduce((m, p) => Math.max(m, p.value), 0);
-    const step = peak <= 0 ? 1 : Math.pow(10, Math.floor(Math.log10(peak)));
-    const top = peak <= 0 ? 1 : Math.ceil(peak / step) * step;
+    const seriesVals = series.map(p => p.value);
+    const peak = Math.max(0, ...seriesVals);
+    // Followers sit near 22k and move by tens; a zero-based axis draws that as a
+    // flat line along the ceiling, so that one metric scales to its own range.
+    let base = 0, top;
+    if (metric === 'followers' && peak > 0) {
+      const lo = Math.min(...seriesVals), spanV = Math.max(peak - lo, 10);
+      const st = Math.pow(10, Math.floor(Math.log10(spanV)));
+      base = Math.max(0, Math.floor((lo - spanV * 0.25) / st) * st);
+      top = Math.ceil((peak + spanV * 0.25) / st) * st;
+    } else {
+      const step = peak <= 0 ? 1 : Math.pow(10, Math.floor(Math.log10(peak)));
+      top = peak <= 0 ? 1 : Math.ceil(peak / step) * step;
+    }
     const W = 1000, H = 240, PAD = 6, TOPPAD = 10, BOT = 8;
     const px = i => PAD + (series.length < 2 ? 0 : i * (W - PAD * 2) / (series.length - 1));
-    const py = v => TOPPAD + (H - TOPPAD - BOT) * (1 - v / top);
+    const py = v => TOPPAD + (H - TOPPAD - BOT) * (1 - (v - base) / (top - base));
     const pts = series.map((p, i) => px(i).toFixed(1) + ',' + py(p.value).toFixed(1));
     const isMoneyMetric = metric === 'spend' || metric === 'revenue';
     const axisLabel = v => (isMoneyMetric ? this.inr(v) : this.compact(v));
 
     const digChartGridVM = [1, 0.75, 0.5, 0.25, 0].map(f => ({
-      y: py(top * f), label: axisLabel(top * f),
+      y: py(base + (top - base) * f), label: axisLabel(base + (top - base) * f),
     }));
     const markers = [0, Math.floor((series.length - 1) / 2), series.length - 1]
       .filter((v, i, arr) => arr.indexOf(v) === i && series[v]);
@@ -16583,6 +16800,15 @@ class Component extends DCLogic {
       label: fmtDay(series[i].date),
       align: i === 0 ? 'flex-start' : i === series.length - 1 ? 'flex-end' : 'center',
     }));
+    const chartTotal = seriesVals.reduce((t, v) => t + v, 0);
+    const bestDay = series.reduce((m, p) => (p.value > m.value ? p : m), { value: 0, date: '' });
+    const firstV = seriesVals[0] || 0, lastV = seriesVals[seriesVals.length - 1] || 0;
+    const digChartSummaryVM = metric === 'followers'
+      ? [{ label: 'Now', value: this.compact(lastV) }, { label: 'Change', value: signed(lastV - firstV) },
+         { label: rangeLabel + ' ago', value: this.compact(firstV) }]
+      : [{ label: 'Total', value: axisLabel(chartTotal) },
+         { label: 'Daily average', value: axisLabel(Math.round(chartTotal / range)) },
+         { label: 'Best day', value: bestDay.value ? axisLabel(bestDay.value) + ' · ' + fmtDay(bestDay.date) : '—' }];
 
     // ---- budget pacing ----
     const monthStart = new Date(); monthStart.setDate(1);
@@ -16649,30 +16875,149 @@ class Component extends DCLogic {
         whenLabel: fmtStampTime(r.started_at),
         rowsLabel: r.rows_written ? r.rows_written + ' rows' : '',
         message: r.status === 'error' ? (r.message || 'No message') : '',
+        hasMessage: r.status === 'error',
+        fix: r.status === 'error' ? digPlainError(r.message) : '',
+        hasFix: r.status === 'error' && !!digPlainError(r.message),
       };
     });
 
-    const digPostsVM = s.digPosts.filter(p => inScope(p.account_id)).slice(0, 60).map(p => {
-      const acc = accounts.find(a => a.id === p.account_id);
+    const accById = new Map(accounts.map(a => [a.id, a]));
+    const card = p => {
+      const acc = accById.get(p.account_id);
+      const story = p.kind === 'story';
+      const reachN = pNum(p, 'reach'), viewsN = pNum(p, 'video_views');
+      const er = reachN ? inter(p) * 100 / reachN : null;
+      const ageH = p.published_at ? (Date.now() - new Date(p.published_at).getTime()) / 3600000 : 999;
+      const thumb = /^https:\/\//i.test(p.thumb_url || '') ? p.thumb_url : '';
+      const link = /^https:\/\//i.test(p.permalink || '') ? p.permalink : '';
+      const d = (label, value) => ({ label, value });
       return {
         kindLabel: POST_KIND_LABEL[p.kind] || p.kind,
-        accountLabel: acc ? (acc.label || acc.handle || '') : '',
-        caption: (p.caption || '').slice(0, 90) || 'No caption',
-        whenLabel: p.published_at ? fmtDay(String(p.published_at).slice(0, 10)) : '—',
-        reachLabel: this.compact(p.reach),
-        erLabel: p.engagement_rate == null ? '—' : Number(p.engagement_rate).toFixed(2) + '%',
-        erStrong: p.engagement_rate != null && Number(p.engagement_rate) >= 3,
-        interactionsLabel: this.compact(Number(p.likes || 0) + Number(p.comments || 0) + Number(p.shares || 0) + Number(p.saves || 0)),
-        viewsLabel: this.compact(p.video_views || 0),
-        storyLabel: p.kind === 'story'
-          ? [this.compact(p.replies || 0) + ' replies', this.compact(p.taps_forward || 0) + ' forward',
-             this.compact(p.taps_back || 0) + ' back', this.compact(p.exits || 0) + ' exits'].join(' · ')
-          : '',
-        isStory: p.kind === 'story',
-        permalink: /^https:\/\//i.test(p.permalink || '') ? p.permalink : '',
-        hasLink: /^https:\/\//i.test(p.permalink || ''),
+        isStory: story,
+        thumb, hasThumb: !!thumb,
+        // Instagram CDN links expire after a few days; a dead one falls back to
+        // the grey tile underneath instead of a broken-image icon.
+        hideImg: e => { if (e && e.currentTarget) e.currentTarget.style.display = 'none'; },
+        accountLabel: acc ? String(acc.label || acc.handle || '').trim() : '',
+        whenLabel: p.published_at ? fmtStampTime(p.published_at) : '—',
+        caption: String(p.caption || '').replace(/\s+/g, ' ').trim().slice(0, 160) || 'No caption',
+        captionColor: p.caption ? '#1B1D1E' : '#8A9390',
+        isLive: story && ageH < 24,
+        liveLabel: 'Live · ' + Math.max(1, Math.round(24 - ageH)) + 'h left',
+        statsVM: [d('Views', this.compact(viewsN)), d('Reach', this.compact(reachN)),
+          story ? d('Replies', this.compact(pNum(p, 'replies'))) : d('Engagement', pct(er))],
+        detailVM: story
+          ? [d('Forward', this.compact(pNum(p, 'taps_forward'))), d('Back', this.compact(pNum(p, 'taps_back'))),
+             d('Exits', this.compact(pNum(p, 'exits'))), d('Exit rate', pct(viewsN ? pNum(p, 'exits') * 100 / viewsN : null))]
+          : [d('Likes', this.compact(pNum(p, 'likes'))), d('Comments', this.compact(pNum(p, 'comments'))),
+             d('Shares', this.compact(pNum(p, 'shares'))), d('Saves', this.compact(pNum(p, 'saves')))],
+        viewsLabel: this.compact(viewsN), reachLabel: this.compact(reachN),
+        thirdLabel: story ? this.compact(pNum(p, 'replies')) : pct(er),
+        thirdName: story ? 'Replies' : 'Engagement',
+        permalink: link, hasLink: !!link,
+        linkLabel: acc && acc.platform === 'facebook' ? 'Open on Facebook' : acc && acc.platform === 'youtube' ? 'Open on YouTube' : 'Open on Instagram',
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
-        promoColor: p.is_paid_promo && !p.disclosure_ok ? '#B4433A' : '#5C6864',
+        promoColor: p.is_paid_promo && !p.disclosure_ok ? '#B4433A' : '#6B7572',
+      };
+    };
+
+    const digTopVM = rangePosts.slice()
+      .sort((x, y) => (pNum(y, 'video_views') - pNum(x, 'video_views')) || (pNum(y, 'reach') - pNum(x, 'reach')))
+      .slice(0, 5).map(card);
+
+    const kc = {};
+    scopedPosts.forEach(p => { kc[kindKey(p)] = (kc[kindKey(p)] || 0) + 1; });
+    const kindSel = s.digKind === 'all' || kc[s.digKind] ? (s.digKind || 'all') : 'all';
+    const KIND_CHIPS = [['all', 'All'], ['reel', 'Reels'], ['post', 'Posts'], ['story', 'Stories'], ['video', 'Videos'], ['short', 'Shorts']];
+    const digKindChipsVM = chip(
+      KIND_CHIPS.filter(([k]) => k === 'all' || kc[k]).map(([k, l]) => [k, l + ' · ' + (k === 'all' ? scopedPosts.length : kc[k])]),
+      kindSel, k => this.setState({ digKind: k }));
+    const SORTS = [['new', 'Newest'], ['views', 'Most views'], ['reach', 'Most reach'], ['er', 'Engagement']];
+    const sortSel = SORTS.some(x => x[0] === s.digSort) ? s.digSort : 'new';
+    const digSortChipsVM = chip(SORTS, sortSel, k => this.setState({ digSort: k }));
+    const erOf = p => (pNum(p, 'reach') ? inter(p) * 100 / pNum(p, 'reach') : -1);
+    const sorters = {
+      new: (x, y) => String(y.published_at || '').localeCompare(String(x.published_at || '')),
+      views: (x, y) => pNum(y, 'video_views') - pNum(x, 'video_views'),
+      reach: (x, y) => pNum(y, 'reach') - pNum(x, 'reach'),
+      er: (x, y) => erOf(y) - erOf(x),
+    };
+    const filtered = scopedPosts.filter(p => kindSel === 'all' || kindKey(p) === kindSel);
+    const digPostsVM = filtered.slice().sort(sorters[sortSel]).slice(0, 60).map(card);
+    const fFeed = filtered.filter(p => p.kind !== 'story'), fStories = filtered.filter(p => p.kind === 'story');
+    const fViews = tot(filtered, p => pNum(p, 'video_views'));
+    const oldest = filtered.map(p => p.published_at).filter(Boolean).sort()[0] || '';
+    const digContentSummaryVM = [
+      { label: 'Items', value: String(filtered.length), sub: oldest ? 'since ' + fmtDay(String(oldest).slice(0, 10)) : '' },
+      { label: 'Views', value: this.compact(fViews), sub: filtered.length ? 'avg ' + this.compact(Math.round(fViews / filtered.length)) + ' each' : '' },
+      { label: 'Avg reach', value: filtered.length ? this.compact(Math.round(tot(filtered, p => pNum(p, 'reach')) / filtered.length)) : '—', sub: 'accounts per item' },
+    ];
+    if (fFeed.length) {
+      const r = tot(fFeed, p => pNum(p, 'reach'));
+      digContentSummaryVM.push({ label: 'Engagement rate', value: pct(r ? tot(fFeed, feedInter) * 100 / r : null),
+        sub: this.compact(tot(fFeed, feedInter)) + ' interactions' });
+    }
+    if (fStories.length) {
+      const v = tot(fStories, p => pNum(p, 'video_views'));
+      digContentSummaryVM.push({ label: 'Story exit rate', value: pct(v ? tot(fStories, p => pNum(p, 'exits')) * 100 / v : null),
+        sub: this.compact(tot(fStories, p => pNum(p, 'replies'))) + ' replies' });
+    }
+
+    // One card per account: the numbers that matter for its platform, and the
+    // last sync in plain words, so a failure says what to do instead of what
+    // the Graph API said.
+    const ago = t => {
+      if (!t) return '';
+      const m = Math.round((Date.now() - new Date(t).getTime()) / 60000);
+      return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : fmtStampTime(t);
+    };
+    const digProfilesVM = scoped.filter(a => a.active !== false).map(a => {
+      const row = digAccountRowsVM[scoped.indexOf(a)];
+      const am = rows.filter(m => m.account_id === a.id);
+      const asum = k => am.reduce((t, m) => t + Number(m[k] || 0), 0);
+      const reads = s.digMetrics.filter(m => m.account_id === a.id && m.followers != null);
+      const fNow = reads.length ? Number(reads[reads.length - 1].followers) : null;
+      const gain = asum('follower_delta');
+      const ap = rangePosts.filter(p => p.account_id === a.id);
+      const views = tot(ap, p => pNum(p, 'video_views')) || asum('video_views');
+      const st = (label, value, sub, good) => ({ label, value, sub: sub || '', subColor: good ? '#0E8E72' : '#6B7572' });
+      const statsVM = SOCIAL.indexOf(a.platform) !== -1 ? [
+        st('Followers', fNow == null ? '—' : this.compact(fNow), gain ? signed(gain) + ' in ' + range + 'd' : 'no change yet', gain > 0),
+        st('Reach', this.compact(asum('reach')), range + ' days'),
+        st('Views', this.compact(views), ap.length ? ap.length + ' items' : 'no posts in range'),
+      ] : a.platform === 'adsense' ? [
+        st('Revenue', this.inr(asum('revenue')), range + ' days'),
+        st('Impressions', this.compact(asum('impressions')), range + ' days'),
+        st('Clicks', this.compact(asum('clicks')), range + ' days'),
+      ] : a.platform === 'search_console' ? [
+        st('Clicks', this.compact(asum('clicks')), range + ' days'),
+        st('Impressions', this.compact(asum('impressions')), range + ' days'),
+        st('CTR', pct(asum('impressions') ? asum('clicks') * 100 / asum('impressions') : null), ''),
+      ] : [
+        st('Spend', this.inr(asum('spend')), range + ' days'),
+        st('Clicks', this.compact(asum('clicks')), range + ' days'),
+        st('Conversions', this.compact(asum('conversions')), range + ' days'),
+      ];
+      const run = s.digRuns.find(r => r.scope === a.id) || null;
+      const failed = !!run && run.status === 'error';
+      return {
+        platformLabel: DIG_PLATFORM_LABEL[a.platform] || a.platform,
+        clientLabel: clientName(a.project_id),
+        label: String(a.label || a.handle || DIG_PLATFORM_LABEL[a.platform] || '—').trim(),
+        handle: a.handle && !/^https?:/i.test(a.handle) ? a.handle : 'ID ' + (a.external_id || '—'),
+        freshLabel: failed ? 'Sync failed' : row.freshLabel,
+        freshBg: failed ? '#F7E4E1' : row.freshBg,
+        freshColor: failed ? '#B4433A' : row.freshColor,
+        statsVM,
+        syncLine: !run ? 'Never synced'
+          : failed ? 'Last sync failed ' + ago(run.started_at)
+          : run.status === 'running' ? 'Syncing now…'
+          : 'Synced ' + ago(run.started_at) + (run.rows_written ? ' · ' + run.rows_written + ' rows' : ''),
+        syncColor: failed ? '#B4433A' : '#4A524F',
+        fix: failed ? (digPlainError(run.message) || String(run.message || '')) : '',
+        hasFix: failed,
+        syncOne: row.syncOne,
+        backfill: () => this.syncDigital({ account_id: a.id, platform: a.platform, days: 30 }),
       };
     });
 
@@ -16799,7 +17144,7 @@ class Component extends DCLogic {
           // Content and SEO query by account id, so a client change is a refetch,
           // not just a filter.
           () => this.loadDigitalTab())),
-      digMetricChipsVM: chip(DIG_CHART_METRICS, s.digMetric, k => this.setState({ digMetric: k })),
+      digMetricChipsVM: chip(chartOpts.length ? chartOpts : DIG_CHART_METRICS, metric, k => this.setState({ digMetric: k })),
       digRangeChipsVM: chip(DIG_RANGES, s.digRange, k => this.setState({ digRange: k })),
 
       digIsOverview: s.digitalTab === 'overview',
@@ -16828,8 +17173,16 @@ class Component extends DCLogic {
       },
       digSyncing: s.digSyncing,
       syncAll: () => this.syncDigital({}),
+      syncBackfill: () => this.syncDigital({ days: 30 }),
+      goContent: () => this.setDigitalTab('content'),
 
-      digKpisVM, digChartGridVM, digChartAxisVM,
+      digKpiGroupsVM, digChartGridVM, digChartAxisVM, digChartSummaryVM,
+      digChartNote: metric === 'followers' ? 'Earlier days are worked back from Meta\'s daily new-follower counts.' : '',
+      hasDigChartNote: metric === 'followers',
+      digRangeLabel: rangeLabel,
+      digProfilesVM, hasDigProfiles: digProfilesVM.length > 0,
+      digTopVM, hasDigTop: digTopVM.length > 0,
+      digKindChipsVM, digSortChipsVM, digContentSummaryVM,
       digChartPath: pts.length ? 'M' + pts.join(' L') : '',
       digChartArea: pts.length
         ? 'M' + px(0).toFixed(1) + ',' + (H - BOT) + ' L' + pts.join(' L') + ' L'
