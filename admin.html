@@ -4550,6 +4550,13 @@
               <div style="display:flex; flex-direction:column; gap:3px; flex:2 1 220px; min-width:0">
                 <span style="font-size:13px; color:#1B1D1E; text-wrap:pretty">{{ p.caption }}</span>
                 <span style="font-size:11px; color:#6B7572">{{ p.accountLabel }} · {{ p.whenLabel }}</span>
+                <sc-if value="{{ p.isStory }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:11px; color:#4A524F">{{ p.storyLabel }}</span>
+                </sc-if>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:2px; min-width:80px; text-align:right">
+                <span style="font-size:13px; color:#1B1D1E">{{ p.viewsLabel }}</span>
+                <span style="font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#6B7572">Views</span>
               </div>
               <div style="display:flex; flex-direction:column; gap:2px; min-width:90px; text-align:right">
                 <span style="font-size:13px; color:#1B1D1E">{{ p.erLabel }}</span>
@@ -15204,7 +15211,7 @@ class Component extends DCLogic {
       if (!ids.length) { this.setState({ digPosts: [], digLoading: false }); return; }
       this.setState({ digLoading: true });
       const r = await this.sb.from('content_posts').select('*').in('account_id', ids)
-        .order('published_at', { ascending: false }).limit(60);
+        .order('published_at', { ascending: false }).limit(120);
       this.setState({ digPosts: r.error ? [] : (r.data || []), digLoading: false });
       return;
     }
@@ -16645,7 +16652,7 @@ class Component extends DCLogic {
       };
     });
 
-    const digPostsVM = s.digPosts.filter(p => inScope(p.account_id)).slice(0, 30).map(p => {
+    const digPostsVM = s.digPosts.filter(p => inScope(p.account_id)).slice(0, 60).map(p => {
       const acc = accounts.find(a => a.id === p.account_id);
       return {
         kindLabel: POST_KIND_LABEL[p.kind] || p.kind,
@@ -16656,7 +16663,12 @@ class Component extends DCLogic {
         erLabel: p.engagement_rate == null ? '—' : Number(p.engagement_rate).toFixed(2) + '%',
         erStrong: p.engagement_rate != null && Number(p.engagement_rate) >= 3,
         interactionsLabel: this.compact(Number(p.likes || 0) + Number(p.comments || 0) + Number(p.shares || 0) + Number(p.saves || 0)),
-        viewsLabel: p.video_views ? this.compact(p.video_views) + ' views' : '',
+        viewsLabel: this.compact(p.video_views || 0),
+        storyLabel: p.kind === 'story'
+          ? [this.compact(p.replies || 0) + ' replies', this.compact(p.taps_forward || 0) + ' forward',
+             this.compact(p.taps_back || 0) + ' back', this.compact(p.exits || 0) + ' exits'].join(' · ')
+          : '',
+        isStory: p.kind === 'story',
         permalink: /^https:\/\//i.test(p.permalink || '') ? p.permalink : '',
         hasLink: /^https:\/\//i.test(p.permalink || ''),
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
