@@ -70,14 +70,14 @@
               <div style="display:flex; justify-content:flex-start; min-width:0">
                 <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
                   <span style="display:block; padding:{{ platePad }}; background:{{ plateBg }}; max-width:100%">
-                    <span role="img" aria-label="{{ clientName }}" style="display:block; height:clamp(34px,5.4vw,64px); width:{{ logoW64 }}; max-width:100%; background-image:url({{ logo }}); background-size:contain; background-repeat:no-repeat; background-position:left center"></span>
+                    <img src="{{ logo }}" alt="{{ clientName }}" style="display:block; width:calc(clamp(26px,4.2vw,50px) * {{ logoK }}); max-width:100%; height:auto">
                   </span>
                 </sc-if>
                 <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ false }}">
                   <span style="font-size:clamp(30px,5vw,62px); font-weight:400; letter-spacing:-0.035em; line-height:1; color:#1B1D1E; overflow-wrap:anywhere">{{ cellName }}</span>
                 </sc-if>
               </div>
-              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">creative partner</span>
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right; margin-right:-2.6px">creative partner</span>
               <span></span>
               <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ clientRole }}</span>
             </div>
@@ -128,14 +128,14 @@
           <div style="display:flex; justify-content:flex-start; min-width:0">
             <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
               <span style="display:block; padding:{{ platePad }}; background:{{ plateBg }}; max-width:100%">
-                <span role="img" aria-label="{{ clientName }}" style="display:block; height:clamp(32px,4.8vw,56px); width:{{ logoW56 }}; max-width:100%; background-image:url({{ logo }}); background-size:contain; background-repeat:no-repeat; background-position:left center"></span>
+                <img src="{{ logo }}" alt="{{ clientName }}" style="display:block; width:calc(clamp(24px,3.6vw,44px) * {{ logoK }}); max-width:100%; height:auto">
               </span>
             </sc-if>
             <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ false }}">
               <span style="font-size:clamp(28px,4.4vw,54px); font-weight:400; letter-spacing:-0.035em; line-height:1; color:#1B1D1E; overflow-wrap:anywhere">{{ cellName }}</span>
             </sc-if>
           </div>
-          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">creative partner</span>
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right; margin-right:-2.6px">creative partner</span>
           <span></span>
           <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ clientRole }}</span>
         </div>
@@ -682,6 +682,7 @@ class Component extends DCLogic {
     const q = new URLSearchParams(window.location.search);
     if (q.get('demo') === '1' || (!this.token() && !/glomium\.co$/i.test(window.location.hostname))) {
       const dd = demoData(q.get('m'));
+      if (q.get('logo')) { dd.brand.logo = new URL(q.get('logo'), window.location.href).href; this.checkLogo(dd.brand.logo); }
       this.setState({ loading: false, data: dd, brand: dd.brand });
       this.play(['t', 'tc']);
       return;
@@ -698,6 +699,7 @@ class Component extends DCLogic {
   }
 
   componentWillUnmount() {
+    if (this._logoBlob) URL.revokeObjectURL(this._logoBlob);
     clearTimeout(this._poll); clearTimeout(this._safety);
     cancelAnimationFrame(this._raf); cancelAnimationFrame(this._spy);
     window.removeEventListener('scroll', this.onScroll);
@@ -826,12 +828,18 @@ class Component extends DCLogic {
               if (bw < W - 2 || bh < H - 2) {
                 const o = document.createElement('canvas'); o.width = bw; o.height = bh;
                 o.getContext('2d').drawImage(c, x0, y0, bw, bh, 0, 0, bw, bh);
-                src = o.toDataURL('image/png');
+                src = 'pending';
+                o.toBlob(bl => {
+                  if (!bl) return;
+                  if (this._logoBlob) URL.revokeObjectURL(this._logoBlob);
+                  this._logoBlob = URL.createObjectURL(bl);
+                  this.setState({ logoSrc: this._logoBlob });
+                }, 'image/png');
               }
             }
           } catch (e) { onInk = false; src = ''; ratio = nw / nh; }
         }
-        this.setState({ logoRatio: ratio, logoOnInk: onInk, logoSrc: src, logoFailed: false });
+        this.setState({ logoRatio: ratio, logoOnInk: onInk, logoSrc: src === 'pending' ? this.state.logoSrc || '' : src, logoWait: src === 'pending', logoFailed: false });
       };
       i.onerror = () => (cors ? probe(false) : this.setState({ logoFailed: true }));
       i.src = url;
@@ -1270,11 +1278,12 @@ class Component extends DCLogic {
     const s = this.state, d = s.data;
     const b = s.brand || (d && (d.brand || { client: d.client, logo: d.logo })) || {};
     const client = String(b.client || '');
-    const logo = b.logo && /^https:\/\//i.test(b.logo) && !s.logoFailed && s.logoRatio
-      ? String(s.logoSrc || b.logo).replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')) : '';
+    // Shown once read: the trimmed copy when the host allows it, else the file as uploaded.
+    const logo = b.logo && /^https:\/\//i.test(b.logo) && !s.logoFailed && s.logoRatio && (!s.logoWait || s.logoSrc)
+      ? String(s.logoSrc || b.logo) : '';
     const sinceD = b.since ? new Date(String(b.since).slice(0, 10) + 'T12:00:00') : null;
     const since = sinceD && !isNaN(sinceD) ? MON[sinceD.getMonth()] + ' ' + sinceD.getFullYear() : '';
-    const lr = Math.min(Math.max(s.logoRatio || 3, 0.6), 8);
+    const lr = Math.min(Math.max(s.logoRatio || 3, 0.25), 12);
     const reasons = {
       invalid: ['this link is not valid', 'it may have been mistyped, or replaced with a newer one. ask your glomium contact for the current link.'],
       locked: ['too many tries', 'the page is locked for 15 minutes after five wrong pins. try again after that, or ask us to reset it.'],
@@ -1298,7 +1307,7 @@ class Component extends DCLogic {
       loading: s.loading,
       clientName: client, clientLower: client.toLowerCase(),
       logo, hasLogo: !!logo, noLogo: !logo && !!client,
-      logoW56: Math.round(56 * lr) + 'px', logoW64: Math.round(64 * lr) + 'px',
+      logoK: (Math.min(2.2, Math.max(0.9, Math.sqrt(3.489 / lr))) * lr).toFixed(3),
       // A white mark sits on a small ink plate instead of vanishing.
       plateBg: logo && s.logoOnInk ? '#1B1D1E' : 'transparent',
       platePad: logo && s.logoOnInk ? '14px 20px' : '0',
