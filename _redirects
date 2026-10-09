@@ -1,6 +1,7 @@
 /a/*   /album.html?event=:splat      200
 /p/*   /commercial.html?project=:splat  200
 /f/*   /feedback.html?t=:splat       200
+/i/*   /insights.html?k=:splat       200
 /admin /admin.html                 200
 /work  /portfolio.html              200
 /crew  /crew.html                  200

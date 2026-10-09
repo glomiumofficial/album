@@ -14,6 +14,10 @@
       "destination": "/feedback.html?t=:token"
     },
     {
+      "source": "/i/:token",
+      "destination": "/insights.html?k=:token"
+    },
+    {
       "source": "/admin",
       "destination": "/admin.html"
     },
@@ -107,6 +111,15 @@
     },
     {
       "source": "/feedback.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/insights.html",
       "headers": [
         {
           "key": "Cache-Control",

@@ -4216,45 +4216,197 @@
       <div style="padding:clamp(20px,5vw,60px); max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:22px">
 
         <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap">
-          <div style="display:flex; flex-direction:column; gap:4px; margin-right:auto">
-            <button onClick="{{ digBack }}" style="align-self:flex-start; margin-bottom:2px; padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer" style-hover="color:var(--green-deep)">{{ digBackLabel }}</button>
-            <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Digital &amp; social</span>
-            <span style="font-size:12px; color:#4A524F">{{ digScopeLabel }} · {{ digAccountCountLabel }}</span>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-right:auto; min-width:0">
+            <button onClick="{{ digBack }}" style="align-self:flex-start; margin-bottom:4px; padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer" style-hover="color:var(--green-deep)">{{ digBackLabel }}</button>
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:var(--green-deep)">Digital &amp; social</span>
+            <span style="font-size:31px; font-weight:300; line-height:1.2; letter-spacing:-0.01em; color:#1B1D1E; overflow-wrap:anywhere">{{ digTitle }}</span>
+            <span style="font-size:12px; color:#4A524F; line-height:1.6">{{ digSubLine }}</span>
           </div>
           <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; gap:8px; width:max-content; max-width:100%">
-              <button onClick="{{ syncBackfill }}" disabled="{{ digSyncing }}" title="Re-pull the last 30 days for every account" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Pull 30 days</button>
-              <button onClick="{{ syncAll }}" disabled="{{ digSyncing }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">{{ digSyncLabel }}</button>
+              <button onClick="{{ syncBackfill }}" disabled="{{ digSyncing }}" title="Re-pull the last 30 days for the accounts in this view" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="border-color:var(--green)">Pull 30 days</button>
+              <button onClick="{{ syncAll }}" disabled="{{ digSyncing }}" title="{{ digSyncTitle }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="background:#1B1D1E">{{ digSyncLabel }}</button>
             </div>
           </sc-if>
+        </div>
+
+        <div style="display:flex; align-items:flex-end; gap:12px 24px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
+          <div style="display:flex; gap:22px; flex-wrap:wrap; margin-right:auto">
+            <sc-for list="{{ digTabLinksVM }}" as="t" hint-placeholder-count="6">
+              <button onClick="{{ t.go }}" style="padding:12px 0 11px; margin-bottom:-1px; background:none; border:none; border-bottom:2px solid {{ t.bar }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ t.color }}; cursor:pointer" style-hover="color:#1B1D1E">{{ t.label }}</button>
+            </sc-for>
+          </div>
+          <label style="display:flex; align-items:center; gap:10px; padding-bottom:9px; max-width:100%">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Viewing</span>
+            <select value="{{ digScopeValue }}" onChange="{{ onDigScope }}" style="font-family:inherit; min-width:230px; max-width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; color:#1B1D1E; outline:none; background:#fff; cursor:pointer">
+              <sc-for list="{{ digScopeGroupsVM }}" as="g" hint-placeholder-count="3">
+                <optgroup label="{{ g.label }}">
+                  <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="3">
+                    <option value="{{ o.value }}">{{ o.label }}</option>
+                  </sc-for>
+                </optgroup>
+              </sc-for>
+            </select>
+          </label>
         </div>
 
         <sc-if value="{{ hasDigStatus }}" hint-placeholder-val="{{ false }}">
           <span style="font-size:12px; color:var(--green-deep); line-height:1.6; padding:10px 14px; background:#F3FAF8; border:1px solid var(--line); border-radius:0">{{ digStatus }}</span>
         </sc-if>
 
-        <div style="display:flex; gap:6px; flex-wrap:wrap">
-          <sc-for list="{{ digClientChipsVM }}" as="c" hint-placeholder-count="3">
-            <button onClick="{{ c.go }}" style="padding:8px 14px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.06em; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
-          </sc-for>
-        </div>
+        <sc-if value="{{ hasNumForm }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px; padding:22px; border:1px solid var(--green); border-radius:0; background:#FCFEFD">
+            <span style="font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">{{ numFormTitle }}</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px">
+              <label style="display:flex; flex-direction:column; gap:5px">
+                <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Period ending</span>
+                <input type="date" value="{{ numDate }}" onChange="{{ onNumDate }}" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+              </label>
+              <sc-for list="{{ numFieldsVM }}" as="n" hint-placeholder-count="5">
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">{{ n.label }}</span>
+                  <input type="number" min="0" value="{{ n.value }}" onChange="{{ n.onChange }}" placeholder="—" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                </label>
+              </sc-for>
+            </div>
+            <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">Totals for the period that ends on this date — a month copied from the platform's own insights is fine. Followers is the count on that day. Leave blank anything you don't have.</span>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <button onClick="{{ saveNumbers }}" style="padding:11px 20px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Save numbers</button>
+              <button onClick="{{ closeNumbers }}" style="padding:11px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer">Cancel</button>
+            </div>
+          </div>
+        </sc-if>
 
-        <div style="display:flex; gap:6px; flex-wrap:wrap; border-bottom:1px solid var(--line); padding-bottom:16px">
-          <sc-for list="{{ digTabsVM }}" as="t" hint-placeholder-count="6">
-            <button onClick="{{ t.go }}" style="padding:9px 15px; background:{{ t.bg }}; border:1px solid {{ t.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ t.color }}; cursor:pointer">{{ t.label }}</button>
-          </sc-for>
-        </div>
 
         <sc-if value="{{ digIsOverview }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; flex-direction:column; gap:30px">
 
           <sc-if value="{{ digNoAccounts }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; flex-direction:column; gap:6px; padding:22px; border:1px dashed var(--line); border-radius:0">
-              <span style="font-size:13px; color:#1B1D1E">No accounts connected for this view yet.</span>
-              <span style="font-size:12px; color:#4A524F; line-height:1.6">Add an Instagram account, Facebook Page or ad account under Accounts, then press Sync now.</span>
+              <span style="font-size:13px; color:#1B1D1E">No accounts in this view yet.</span>
+              <span style="font-size:12px; color:#4A524F; line-height:1.6">Open Accounts and press Find accounts to pull in every Page, profile and property our Meta and Google access already reaches — or add one by hand.</span>
             </div>
           </sc-if>
 
+          <sc-if value="{{ hasDigAttn }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column">
+              <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; padding-bottom:10px">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Needs attention</span>
+                <span style="font-size:12px; color:#B4433A">{{ digAttnCount }}</span>
+                <sc-if value="{{ digAttnMore }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ toggleAttn }}" style="margin-left:auto; padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="color:#1B1D1E">{{ digAttnMoreLabel }}</button>
+                </sc-if>
+              </div>
+              <sc-for list="{{ digAttnVM }}" as="x" hint-placeholder-count="3">
+                <div style="display:flex; align-items:center; gap:14px; padding:12px 0; border-top:1px solid var(--line); flex-wrap:wrap">
+                  <span style="flex:none; min-width:108px; padding:4px 9px; background:{{ x.tagBg }}; color:{{ x.tagColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; text-align:center">{{ x.tag }}</span>
+                  <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 280px; min-width:0">
+                    <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ x.who }}</span>
+                    <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty; overflow-wrap:anywhere">{{ x.detail }}</span>
+                  </div>
+                  <sc-if value="{{ x.hasAction }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ x.go }}" style="flex:none; padding:8px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ x.actionLabel }}</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ digIsMaster }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:30px">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px">
+              <sc-for list="{{ digMasterKpisVM }}" as="k" hint-placeholder-count="6">
+                <div style="display:flex; flex-direction:column; gap:6px; padding:18px 20px; border:1px solid var(--line); border-radius:0; min-width:0">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                  <span style="font-size:30px; font-weight:200; letter-spacing:-0.02em; color:#1B1D1E">{{ k.value }}</span>
+                  <span style="font-size:12px; color:{{ k.subColor }}; line-height:1.5; text-wrap:pretty">{{ k.sub }}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:auto">Clients · last {{ digRangeLabel }}</span>
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:4px">Sort</span>
+                <sc-for list="{{ digMasterSortVM }}" as="c" hint-placeholder-count="6">
+                  <button onClick="{{ c.go }}" style="padding:6px 11px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.08em; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+                </sc-for>
+              </div>
+              <div style="overflow-x:auto; border:1px solid var(--line); background:#fff">
+                <div style="min-width:960px; display:flex; flex-direction:column">
+                  <div style="display:grid; grid-template-columns:minmax(230px,2.2fr) repeat(5,minmax(100px,1fr)) minmax(120px,1fr); gap:14px; padding:12px 18px; background:#F8FBFA">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Client</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Audience</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Reach</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Engagement</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Content</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Ad spend</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Health</span>
+                  </div>
+                  <sc-for list="{{ digMasterRowsVM }}" as="r" hint-placeholder-count="4">
+                    <div onClick="{{ r.open }}" role="button" title="Open this client" style="display:grid; grid-template-columns:minmax(230px,2.2fr) repeat(5,minmax(100px,1fr)) minmax(120px,1fr); gap:14px; align-items:center; padding:14px 18px; border-top:1px solid var(--line); cursor:pointer" style-hover="background:#F8FBFA">
+                      <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
+                        <span style="font-size:14px; color:#1B1D1E">{{ r.name }}</span>
+                        <div style="display:flex; gap:4px; flex-wrap:wrap">
+                          <sc-for list="{{ r.tagsVM }}" as="t" hint-placeholder-count="3">
+                            <span style="padding:2px 6px; border:1px solid var(--line); font-size:10px; letter-spacing:.1em; color:#4A524F">{{ t.label }}</span>
+                          </sc-for>
+                        </div>
+                        <span style="font-size:12px; color:#6B7572">{{ r.sub }}</span>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:3px; text-align:right">
+                        <span style="font-size:15px; color:#1B1D1E">{{ r.audienceLabel }}</span>
+                        <span style="font-size:12px; color:{{ r.growthColor }}">{{ r.growthLabel }}</span>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:3px; text-align:right">
+                        <span style="font-size:15px; color:#1B1D1E">{{ r.reachLabel }}</span>
+                        <span style="font-size:12px; color:{{ r.reachDeltaColor }}">{{ r.reachDelta }}</span>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:3px; text-align:right">
+                        <span style="font-size:15px; color:#1B1D1E">{{ r.erLabel }}</span>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:3px; text-align:right">
+                        <span style="font-size:13px; color:#1B1D1E">{{ r.contentLabel }}</span>
+                        <span style="font-size:12px; color:{{ r.lastPostColor }}">{{ r.lastPostLabel }}</span>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:3px; text-align:right">
+                        <span style="font-size:15px; color:#1B1D1E">{{ r.spendLabel }}</span>
+                        <span style="font-size:12px; color:#6B7572">{{ r.paceLabel }}</span>
+                      </div>
+                      <div style="display:flex; justify-content:flex-end">
+                        <span style="padding:4px 9px; background:{{ r.healthBg }}; color:{{ r.healthColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ r.healthLabel }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+
+            <sc-if value="{{ hasDigMix }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">By platform · last {{ digRangeLabel }}</span>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr)); gap:12px">
+                  <sc-for list="{{ digMixVM }}" as="m" hint-placeholder-count="4">
+                    <div style="display:flex; flex-direction:column; gap:6px; padding:16px 18px; border:1px solid var(--line); border-radius:0; min-width:0">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ m.name }}</span>
+                      <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap">
+                        <span style="font-size:24px; font-weight:200; letter-spacing:-0.02em; color:#1B1D1E">{{ m.value }}</span>
+                        <span style="font-size:12px; color:#4A524F">{{ m.label }}</span>
+                      </div>
+                      <sc-if value="{{ m.hasSub }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:12px; color:#4A524F">{{ m.sub }}</span>
+                      </sc-if>
+                      <span style="font-size:12px; color:#6B7572">{{ m.countLabel }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ digIsClientView }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:30px">
           <sc-if value="{{ hasDigProfiles }}" hint-placeholder-val="{{ false }}">
           <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr)); gap:14px">
             <sc-for list="{{ digProfilesVM }}" as="a" hint-placeholder-count="2">
@@ -4284,8 +4436,14 @@
                 </div>
                 <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex; gap:8px; flex-wrap:wrap">
-                    <button onClick="{{ a.syncOne }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Sync</button>
-                    <button onClick="{{ a.backfill }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Pull 30 days</button>
+                    <sc-if value="{{ a.canSync }}" hint-placeholder-val="{{ true }}">
+                      <button onClick="{{ a.syncOne }}" disabled="{{ digSyncing }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="border-color:var(--green)">{{ a.syncLabel }}</button>
+                      <button onClick="{{ a.backfill }}" disabled="{{ digSyncing }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="border-color:var(--green)">Pull 30 days</button>
+                    </sc-if>
+                    <sc-if value="{{ a.canLog }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ a.logNumbers }}" style="padding:9px 14px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F3FAF8">Log numbers</button>
+                    </sc-if>
+                    <button onClick="{{ a.edit }}" style="margin-left:auto; padding:9px 0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer" style-hover="color:var(--green-deep)">Settings</button>
                   </div>
                 </sc-if>
               </div>
@@ -4321,6 +4479,8 @@
               </div>
               <span style="font-size:12px; color:#4A524F">{{ digPaceVerdict }} — the marker is where the month has reached.</span>
             </div>
+          </sc-if>
+          </div>
           </sc-if>
 
           <div style="display:flex; flex-direction:column; gap:16px; padding:22px; border:1px solid var(--line); border-radius:0">
@@ -4429,13 +4589,13 @@
                       <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">{{ r.fix }}</span>
                     </sc-if>
                     <sc-if value="{{ r.hasMessage }}" hint-placeholder-val="{{ false }}">
-                      <span style="font-size:12px; color:#B4433A; line-height:1.6; text-wrap:pretty; overflow-wrap:anywhere">{{ r.message }}</span>
+                      <span style="font-size:12px; color:{{ r.messageColor }}; line-height:1.6; text-wrap:pretty; overflow-wrap:anywhere">{{ r.message }}</span>
                     </sc-if>
                   </div>
                   <span style="font-size:12px; color:#6B7572; text-align:right">{{ r.whenLabel }}</span>
                 </div>
               </sc-for>
-              <span style="font-size:12px; color:#6B7572; line-height:1.6; padding-top:8px">Instagram syncs every hour, so stories are saved before Meta deletes their numbers after 24 hours. Every run re-pulls the last few days, because platforms keep revising recent numbers.</span>
+              <span style="font-size:12px; color:#6B7572; line-height:1.6; padding-top:8px">Instagram stories are read every hour, before Meta deletes their numbers at 24 hours. Full pulls run every 6 hours — search and analytics every 12, X once a day — and each re-pulls the last 3 days, because platforms keep revising them.</span>
             </div>
           </sc-if>
 
@@ -4451,9 +4611,43 @@
               <button onClick="{{ editTerms }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Client terms</button>
             </sc-if>
             <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ findAccounts }}" disabled="{{ digFinding }}" title="List every Page, profile and property our Meta and Google access already reaches" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ digFindLabel }}</button>
               <button onClick="{{ newAccount }}" style="padding:9px 16px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F3FAF8">Add account</button>
             </sc-if>
           </div>
+
+          <sc-if value="{{ hasFound }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:12px; padding:22px; border:1px solid var(--green); border-radius:0; background:#FCFEFD">
+              <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                <span style="font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); margin-right:auto">Found through our access</span>
+                <button onClick="{{ closeFound }}" style="padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer">Close</button>
+              </div>
+              <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">{{ digFoundSummary }}</span>
+              <sc-for list="{{ digFoundVM }}" as="x" hint-placeholder-count="3">
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line); flex-wrap:wrap">
+                  <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572; min-width:120px">{{ x.platformLabel }}</span>
+                  <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 220px; min-width:0">
+                    <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ x.label }}</span>
+                    <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ x.idLabel }}</span>
+                  </div>
+                  <select value="{{ x.client }}" onChange="{{ x.onClient }}" style="font-family:inherit; flex:0 1 220px; padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:12px; outline:none; background:#fff">
+                    <sc-for list="{{ digClientOptsVM }}" as="o" hint-placeholder-count="3">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                  <button onClick="{{ x.add }}" disabled="{{ digSyncing }}" style="padding:9px 16px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="background:#1B1D1E">Add</button>
+                </div>
+              </sc-for>
+              <sc-if value="{{ hasFoundErrors }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:4px; padding-top:10px; border-top:1px solid var(--line)">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Could not check</span>
+                  <sc-for list="{{ digFoundErrorsVM }}" as="e" hint-placeholder-count="2">
+                    <span style="font-size:12px; color:#9A6A12; line-height:1.6; overflow-wrap:anywhere">{{ e.text }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
 
           <sc-if value="{{ hasTermsForm }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; flex-direction:column; gap:14px; padding:22px; border:1px solid var(--green); border-radius:0; background:#FCFEFD">
@@ -4461,7 +4655,7 @@
               <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px">
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Account type</span>
-                  <select value="{{ termsAccountType }}" onChange="{{ onTermsAccountType }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ termsAccountType }}" onChange="{{ onTermsAccountType }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digAccTypeOptsVM }}" as="o" hint-placeholder-count="4">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -4469,7 +4663,7 @@
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Fee basis</span>
-                  <select value="{{ termsFeeType }}" onChange="{{ onTermsFeeType }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ termsFeeType }}" onChange="{{ onTermsFeeType }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digFeeTypeOptsVM }}" as="o" hint-placeholder-count="4">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -4506,15 +4700,19 @@
               <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px">
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Platform</span>
-                  <select value="{{ acctPlatform }}" onChange="{{ onAcctPlatform }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
-                    <sc-for list="{{ digPlatformOptsVM }}" as="o" hint-placeholder-count="8">
-                      <option value="{{ o.value }}">{{ o.label }}</option>
+                  <select value="{{ acctPlatform }}" onChange="{{ onAcctPlatform }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                    <sc-for list="{{ digPlatformGroupsVM }}" as="g" hint-placeholder-count="4">
+                      <optgroup label="{{ g.label }}">
+                        <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="4">
+                          <option value="{{ o.value }}">{{ o.label }}</option>
+                        </sc-for>
+                      </optgroup>
                     </sc-for>
                   </select>
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Client</span>
-                  <select value="{{ acctProject }}" onChange="{{ onAcctProject }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ acctProject }}" onChange="{{ onAcctProject }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digClientOptsVM }}" as="o" hint-placeholder-count="3">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -4534,7 +4732,7 @@
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">How we have access</span>
-                  <select value="{{ acctRoute }}" onChange="{{ onAcctRoute }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ acctRoute }}" onChange="{{ onAcctRoute }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digRouteOptsVM }}" as="o" hint-placeholder-count="7">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -4554,7 +4752,7 @@
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Held by</span>
-                  <select value="{{ acctHolder }}" onChange="{{ onAcctHolder }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ acctHolder }}" onChange="{{ onAcctHolder }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digHolderOptsVM }}" as="o" hint-placeholder-count="2">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -4572,7 +4770,10 @@
               <sc-if value="{{ acctRetired }}" hint-placeholder-val="{{ false }}">
                 <span style="font-size:11px; color:#4A524F; line-height:1.6">Retired. It stays in the register and keeps its history, but it is out of the sync, the dashboard and every picker. Tick Active and save to bring it back.</span>
               </sc-if>
-              <span style="font-size:11px; color:#6B7572">Only connected accounts with an ID go into the nightly run.</span>
+              <span style="font-size:11px; color:#6B7572">Only connected accounts with an ID go into the sync.</span>
+              <sc-if value="{{ acctIsManual }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px; color:#4A524F; line-height:1.6; padding:10px 14px; background:#F8FBFA; border:1px solid var(--line); border-radius:0">{{ acctManualNote }}</span>
+              </sc-if>
               <sc-if value="{{ acctRouteRisky }}" hint-placeholder-val="{{ false }}">
                 <span style="font-size:11px; color:#8A6D3B; line-height:1.6; padding:10px 14px; background:#FDF8EE; border:1px solid rgba(138,109,59,.25); border-radius:0">Shared passwords break Meta's and Google's terms and are the usual reason a managed account gets flagged. Use partner access, an MCC link or a delegated user wherever one exists.</span>
               </sc-if>
@@ -4622,7 +4823,12 @@
               </div>
               <span style="font-size:11px; color:#4A524F; flex:1 1 150px">{{ a.routeLabel }}</span>
               <span style="font-size:11px; padding:3px 9px; border-radius:0; background:{{ a.freshBg }}; color:{{ a.freshColor }}; letter-spacing:.06em">{{ a.freshLabel }}</span>
-              <button onClick="{{ a.edit }}" style="padding:7px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Open</button>
+              <sc-if value="{{ a.canLog }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ a.logNumbers }}" style="padding:7px 14px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F3FAF8">Log numbers</button>
+                </sc-if>
+              </sc-if>
+              <button onClick="{{ a.edit }}" style="padding:7px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Open</button>
             </div>
           </sc-for>
         </div>
@@ -4657,7 +4863,7 @@
           </sc-if>
 
           <sc-if value="{{ digNoPosts }}" hint-placeholder-val="{{ false }}">
-            <span style="font-size:12px; color:#6B7572; line-height:1.6">Nothing synced yet for this view. Connect an Instagram account or Facebook Page under Accounts and press Sync now.</span>
+            <span style="font-size:12px; color:#6B7572; line-height:1.6">Nothing synced yet for this view. Connect Instagram, a Facebook Page, YouTube or X under Accounts and sync.</span>
           </sc-if>
 
           <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr)); gap:14px">
@@ -4704,6 +4910,151 @@
               </div>
             </sc-for>
           </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ digIsPortal }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:22px">
+          <sc-if value="{{ portalMissing }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px; color:#9A6A12; line-height:1.6; padding:10px 14px; background:#F6EEDC; border:1px solid rgba(154,106,18,.25)">Run album-system/client-insights.sql in Supabase — the client page tables do not exist yet.</span>
+          </sc-if>
+          <sc-if value="{{ hasPortalStatus }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px; color:var(--green-deep); line-height:1.6; padding:10px 14px; background:#F3FAF8; border:1px solid var(--line)">{{ portalStatus }}</span>
+          </sc-if>
+
+          <sc-if value="{{ portalReady }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px; padding:22px; border:1px solid var(--line); background:#fff">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+              <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); margin-right:auto">The client's insights page</span>
+              <span style="padding:4px 9px; background:{{ portalBadgeBg }}; color:{{ portalBadgeColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ portalBadge }}</span>
+            </div>
+
+            <sc-if value="{{ noPortal }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">One private link for this client, opened with a 4-digit PIN. It shows their followers, reach, best posts, stories and ad results (spend, never our fee), the monthly reports you publish below, and highlights written from the numbers.</span>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+                <input value="{{ portalPin }}" onChange="{{ onPortalPin }}" inputmode="numeric" maxlength="4" placeholder="PIN" style="width:120px; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:15px; letter-spacing:.3em; outline:none">
+                <button onClick="{{ suggestPin }}" style="padding:11px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Suggest</button>
+                <button onClick="{{ createPortal }}" disabled="{{ portalBusy }}" style="padding:11px 20px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Create link</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ hasPortal }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+                <span style="flex:1 1 320px; min-width:0; padding:11px 12px; border:1px solid var(--line); background:#F8FBFA; font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ portalUrl }}</span>
+                <button onClick="{{ copyPortalLink }}" style="padding:11px 16px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Copy link</button>
+                <a href="{{ portalUrl }}" target="_blank" rel="noopener noreferrer" style="padding:11px 16px; border:1px solid var(--line); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Open ↗</a>
+              </div>
+              <span style="font-size:12px; color:#6B7572">{{ portalSeen }}</span>
+              <div style="display:flex; flex-direction:column; gap:10px; padding:16px; border:1px solid var(--line); background:#F8FBFA">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Email the link</span>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px">
+                  <input type="email" value="{{ portalEmailTo }}" onChange="{{ onPortalEmailTo }}" placeholder="client@company.com" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <input value="{{ portalEmailName }}" onChange="{{ onPortalEmailName }}" placeholder="Name for the greeting" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ portalEmailKind }}" onChange="{{ onPortalEmailKind }}" style="font-family:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                    <sc-for list="{{ portalEmailKindsVM }}" as="o" hint-placeholder-count="2">
+                      <option value="{{ o.value }}">{{ o.label }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center">
+                  <sc-if value="{{ canEmailPin }}" hint-placeholder-val="{{ false }}">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer">
+                      <input type="checkbox" checked="{{ portalEmailPin }}" onChange="{{ onPortalEmailPin }}" style="width:16px; height:16px; accent-color:var(--green)">
+                      <span style="font-size:12px; color:#1B1D1E">Include the new PIN</span>
+                    </label>
+                  </sc-if>
+                  <button onClick="{{ sendInsightsEmail }}" disabled="{{ portalSending }}" style="margin-left:auto; padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">{{ portalSendLabel }}</button>
+                </div>
+                <span style="font-size:12px; color:#6B7572; line-height:1.6">Sent as the house email. Safer to send the PIN by WhatsApp or a call than in the same email.</span>
+                <sc-if value="{{ hasPortalEmailed }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:#4A524F">{{ portalEmailed }}</span>
+                </sc-if>
+              </div>
+              <sc-if value="{{ hasShownPin }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding:12px 14px; border:1px solid var(--green); background:#F3FAF8">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">PIN</span>
+                  <span style="font-size:22px; letter-spacing:.3em; color:#1B1D1E">{{ portalShownPin }}</span>
+                  <span style="font-size:12px; color:#4A524F">Shown once — note it for the client now.</span>
+                </div>
+              </sc-if>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; padding-top:14px; border-top:1px solid var(--line)">
+                <div style="display:flex; flex-direction:column; gap:8px">
+                  <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">PIN</span>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <input value="{{ portalPin }}" onChange="{{ onPortalPin }}" inputmode="numeric" maxlength="4" placeholder="New PIN" style="width:120px; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:15px; letter-spacing:.3em; outline:none">
+                    <button onClick="{{ suggestPin }}" style="padding:10px 12px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Suggest</button>
+                    <button onClick="{{ setPortalPin }}" disabled="{{ portalBusy }}" style="padding:10px 14px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F3FAF8">Set PIN</button>
+                  </div>
+                  <span style="font-size:12px; color:#6B7572; line-height:1.6">{{ portalPinNote }}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px">
+                  <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Client logo</span>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <input value="{{ portalLogo }}" onChange="{{ onPortalLogo }}" placeholder="https://… (blank uses their Logo suite)" style="flex:1 1 200px; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                    <button onClick="{{ savePortalLogo }}" disabled="{{ portalBusy }}" style="padding:10px 14px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F3FAF8">Save</button>
+                  </div>
+                  <sc-if value="{{ hasPortalLogos }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; padding-top:4px">From the Logo suite</span>
+                  </sc-if>
+                  <div style="display:flex; gap:8px; flex-wrap:wrap">
+                    <sc-for list="{{ portalLogosVM }}" as="l" hint-placeholder-count="3">
+                      <button onClick="{{ l.pick }}" aria-pressed="{{ l.on }}" style="display:flex; flex-direction:column; gap:6px; width:104px; padding:6px; background:#fff; border:1px solid {{ l.border }}; border-radius:0; cursor:pointer; text-align:left" style-hover="border-color:var(--green)">
+                        <span style="display:block; width:100%; height:56px; background-color:#F1F4F3; background-image:linear-gradient(45deg,#E2E7E5 25%,transparent 25%,transparent 75%,#E2E7E5 75%),linear-gradient(45deg,#E2E7E5 25%,transparent 25%,transparent 75%,#E2E7E5 75%); background-size:12px 12px; background-position:0 0,6px 6px; position:relative">
+                          <sc-if value="{{ l.hasImg }}" hint-placeholder-val="{{ false }}">
+                            <span style="position:absolute; inset:6px; background-image:url({{ l.img }}); background-size:contain; background-repeat:no-repeat; background-position:center"></span>
+                          </sc-if>
+                        </span>
+                        <span style="font-size:11px; color:#1B1D1E">{{ l.label }}</span>
+                        <span style="font-size:10px; color:#6B7572">{{ l.sub }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                  <span style="font-size:12px; color:#6B7572; line-height:1.6">Shown as glomium × logo. A white logo gets a dark panel by itself. Without any logo, the client's name is set in type.</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; padding-top:14px; border-top:1px solid var(--line)">
+                <button onClick="{{ togglePortal }}" disabled="{{ portalBusy }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer">{{ portalToggleLabel }}</button>
+                <button onClick="{{ newPortalLink }}" disabled="{{ portalBusy }}" style="padding:9px 14px; background:none; border:1px solid rgba(180,67,58,.35); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4433A; cursor:pointer">Make a new link</button>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div style="display:flex; flex-direction:column; gap:4px">
+              <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">Monthly reports</span>
+              <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">Write the month's notes and next month's plan, then publish. Publishing freezes that month's numbers, so the report never moves after the client has read it. Republish to refresh them. Client-facing text: keep it lowercase.</span>
+            </div>
+            <sc-for list="{{ portalMonthsVM }}" as="m" hint-placeholder-count="3">
+              <div style="display:flex; flex-direction:column; gap:12px; padding:18px 20px; border:1px solid var(--line); background:#fff">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+                  <span style="font-size:15px; color:#1B1D1E; margin-right:auto">{{ m.label }}</span>
+                  <span style="font-size:12px; color:#9A6A12">{{ m.dirtyNote }}</span>
+                  <span style="padding:4px 9px; background:{{ m.statusBg }}; color:{{ m.statusColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ m.status }}</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px">
+                  <label style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Notes from the team</span>
+                    <textarea value="{{ m.notes }}" onChange="{{ m.onNotes }}" rows="4" placeholder="what worked, what we learned" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; line-height:1.6; outline:none; resize:vertical"></textarea>
+                  </label>
+                  <label style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Next month's plan</span>
+                    <textarea value="{{ m.plan }}" onChange="{{ m.onPlan }}" rows="4" placeholder="what we will do next" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; line-height:1.6; outline:none; resize:vertical"></textarea>
+                  </label>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+                  <button onClick="{{ m.save }}" style="padding:9px 14px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Save draft</button>
+                  <button onClick="{{ m.publish }}" style="padding:9px 16px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">{{ m.publishLabel }}</button>
+                  <sc-if value="{{ m.isPublished }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ m.unpublish }}" style="padding:9px 14px; background:none; border:1px solid rgba(180,67,58,.35); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4433A; cursor:pointer">Take down</button>
+                  </sc-if>
+                  <sc-if value="{{ m.hasPreview }}" hint-placeholder-val="{{ false }}">
+                    <a href="{{ m.preview }}" target="_blank" rel="noopener noreferrer" style="margin-left:auto; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">View as client ↗</a>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
         </div>
         </sc-if>
 
@@ -4766,7 +5117,7 @@
               <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px">
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Client</span>
-                  <select value="{{ dealProject }}" onChange="{{ onDealProject }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ dealProject }}" onChange="{{ onDealProject }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digClientOptsVM }}" as="o" hint-placeholder-count="3">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -4778,7 +5129,7 @@
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Kind</span>
-                  <select value="{{ dealKind }}" onChange="{{ onDealKind }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ dealKind }}" onChange="{{ onDealKind }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digDealKindOptsVM }}" as="o" hint-placeholder-count="3">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -4806,7 +5157,7 @@
                 </label>
                 <label style="display:flex; flex-direction:column; gap:5px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Status</span>
-                  <select value="{{ dealStatus }}" onChange="{{ onDealStatus }}" style="padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
+                  <select value="{{ dealStatus }}" onChange="{{ onDealStatus }}" style="font-family:inherit; padding:11px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; background:#fff">
                     <sc-for list="{{ digDealStatusOptsVM }}" as="o" hint-placeholder-count="6">
                       <option value="{{ o.value }}">{{ o.label }}</option>
                     </sc-for>
@@ -5012,10 +5363,10 @@
                     <span style="font-size:14px; color:#1B1D1E">{{ ag.name }}</span>
                     <span style="font-size:11px; color:#6B7572">{{ ag.crewId }}</span>
                   </div>
-                  <select value="{{ ag.crew_role }}" onChange="{{ ag.onRoleChange }}" style="padding:8px 10px; border:1px solid var(--line); border-radius:0; font-size:12px; outline:none; background:#fff">
+                  <select value="{{ ag.crew_role }}" onChange="{{ ag.onRoleChange }}" style="font-family:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:0; font-size:12px; outline:none; background:#fff">
                     <sc-for list="{{ crewRoleOptions }}" as="ro" hint-placeholder-count="9"><option value="{{ ro.value }}">{{ ro.label }}</option></sc-for>
                   </select>
-                  <select value="{{ ag.pay_basis }}" onChange="{{ ag.onBasisChange }}" style="padding:8px 10px; border:1px solid var(--line); border-radius:0; font-size:12px; outline:none; background:#fff">
+                  <select value="{{ ag.pay_basis }}" onChange="{{ ag.onBasisChange }}" style="font-family:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:0; font-size:12px; outline:none; background:#fff">
                     <option value="hourly">Hourly</option>
                     <option value="fixed">Fixed fee</option>
                     <option value="deliverable">Per deliverable</option>
@@ -6571,16 +6922,46 @@ const RECEIPT_MODE_LABEL = RECEIPT_MODES.reduce((m, x) => { m[x[0]] = x[1]; retu
 // Platform keys match the check constraint in digital-schema.sql. `external_id`
 // differs per platform and the placeholder text in the form says which is which,
 // because getting it wrong is the single most common reason a sync returns zero.
-const DIG_PLATFORMS = [
-  ['meta_ads', 'Meta ads'], ['instagram', 'Instagram'], ['facebook', 'Facebook page'],
-  ['google_ads', 'Google Ads'], ['adsense', 'AdSense'], ['youtube', 'YouTube'],
-  ['search_console', 'Search Console'], ['gbp', 'Business Profile'],
+// key, label, group, synced automatically, ID hint, short tag.
+// The ones marked false have partner-gated reporting APIs: they sit in the
+// register like any other account and take their numbers by hand.
+const DIG_PLATFORM_DEFS = [
+  ['instagram', 'Instagram', 'social', true, 'IG user ID (17841…)', 'IG'],
+  ['facebook', 'Facebook page', 'social', true, 'Page ID', 'FB'],
+  ['youtube', 'YouTube', 'social', true, 'Channel ID (UC…)', 'YT'],
+  ['x', 'X (Twitter)', 'social', true, '@handle or numeric user ID', 'X'],
+  ['linkedin', 'LinkedIn page', 'social', false, 'Company page URL', 'LI'],
+  ['snapchat', 'Snapchat profile', 'social', false, '@username', 'SNAP'],
+  ['threads', 'Threads', 'social', false, '@handle', 'THREADS'],
+  ['pinterest', 'Pinterest', 'social', false, '@handle', 'PIN'],
+  ['meta_ads', 'Meta ads', 'ads', true, 'act_1234567890', 'META ADS'],
+  ['google_ads', 'Google Ads', 'ads', true, '123-456-7890', 'G ADS'],
+  ['snapchat_ads', 'Snapchat ads', 'ads', true, 'Ad account ID (uuid)', 'SNAP ADS'],
+  ['linkedin_ads', 'LinkedIn ads', 'ads', false, 'Ad account ID', 'LI ADS'],
+  ['x_ads', 'X ads', 'ads', false, 'Ads account ID', 'X ADS'],
+  ['search_console', 'Search Console', 'web', true, 'sc-domain:example.com', 'GSC'],
+  ['ga4', 'Google Analytics', 'web', true, 'GA4 property ID (123456789)', 'GA4'],
+  ['gbp', 'Business Profile', 'web', true, 'Location ID (locations/…)', 'GBP'],
+  ['adsense', 'AdSense', 'publisher', true, 'pub-1234567890123456', 'ADSENSE'],
 ];
-const DIG_PLATFORM_LABEL = DIG_PLATFORMS.reduce((m, x) => { m[x[0]] = x[1]; return m; }, {});
-const DIG_ID_HINT = {
-  meta_ads: 'act_1234567890', instagram: 'IG user ID (17841…)', facebook: 'Page ID',
-  google_ads: '123-456-7890', adsense: 'pub-1234567890123456', youtube: 'UC…',
-  search_console: 'sc-domain:example.com', gbp: 'Location ID',
+const DIG_GROUPS = [['social', 'Social'], ['ads', 'Paid media'], ['web', 'Search & web'], ['publisher', 'Publisher']];
+const DIG_GROUP_LABEL = DIG_GROUPS.reduce((m, x) => { m[x[0]] = x[1]; return m; }, {});
+const DIG_PLATFORMS = DIG_PLATFORM_DEFS.map(d => [d[0], d[1]]);
+const DIG_PLATFORM_LABEL = DIG_PLATFORM_DEFS.reduce((m, d) => { m[d[0]] = d[1]; return m; }, {});
+const DIG_PLATFORM_GROUP = DIG_PLATFORM_DEFS.reduce((m, d) => { m[d[0]] = d[2]; return m; }, {});
+const DIG_PLATFORM_AUTO = DIG_PLATFORM_DEFS.reduce((m, d) => { m[d[0]] = d[3]; return m; }, {});
+const DIG_ID_HINT = DIG_PLATFORM_DEFS.reduce((m, d) => { m[d[0]] = d[4]; return m; }, {});
+const DIG_PLATFORM_SHORT = DIG_PLATFORM_DEFS.reduce((m, d) => { m[d[0]] = d[5]; return m; }, {});
+// Days a platform's own reporting normally trails today. Search Console and
+// YouTube Analytics settle two to three days late, so a "2d behind" rule read
+// them as broken every single day.
+const DIG_LAG_DAYS = { search_console: 4, youtube: 3, gbp: 6, ga4: 2, adsense: 2 };
+// Which numbers a hand-logged entry asks for, by group.
+const DIG_NUM_FIELDS = {
+  social: [['followers', 'Followers'], ['reach', 'Reach'], ['impressions', 'Impressions'], ['video_views', 'Views'], ['engagements', 'Engagements']],
+  ads: [['spend', 'Spend (₹)'], ['impressions', 'Impressions'], ['reach', 'Reach'], ['clicks', 'Clicks'], ['conversions', 'Conversions']],
+  web: [['impressions', 'Impressions'], ['clicks', 'Clicks'], ['conversions', 'Conversions']],
+  publisher: [['revenue', 'Revenue (₹)'], ['impressions', 'Impressions'], ['clicks', 'Clicks']],
 };
 // How you reach the account. 'password' is last and reads badly on purpose: it
 // means no proper route exists, and it is the only value that implies a secret.
@@ -6605,16 +6986,21 @@ const HOUSE = 'house';
 const HOUSE_LABEL = 'Glomium (house)';
 const DIG_TABS = [
   ['overview', 'Overview'], ['accounts', 'Accounts'], ['content', 'Content'],
-  ['seo', 'SEO'], ['deals', 'Brand deals'], ['recharge', 'Recharge'],
+  ['portal', 'Client page'], ['seo', 'SEO'], ['deals', 'Brand deals'], ['recharge', 'Recharge'],
 ];
 // Only metrics with data in the window are offered, in this order, so a social
 // client opens on reach and an ads client on spend without either seeing a row
 // of empty charts.
+// key, label, which accounts it reads (a group or one platform), column.
+// Scoped so ad clicks never pick up Search Console clicks, and so on.
 const DIG_CHART_METRICS = [
-  ['reach', 'Reach'], ['followers', 'Followers'], ['follower_delta', 'New followers'],
-  ['video_views', 'Views'], ['engagements', 'Engagements'], ['spend', 'Spend'],
-  ['impressions', 'Impressions'], ['clicks', 'Clicks'], ['conversions', 'Conversions'],
-  ['revenue', 'Revenue'],
+  ['reach', 'Reach', 'social', 'reach'], ['followers', 'Followers', 'social', 'followers'],
+  ['follower_delta', 'New followers', 'social', 'follower_delta'], ['video_views', 'Views', 'social', 'video_views'],
+  ['engagements', 'Engagements', 'social', 'engagements'], ['spend', 'Ad spend', 'ads', 'spend'],
+  ['impressions', 'Ad impressions', 'ads', 'impressions'], ['clicks', 'Ad clicks', 'ads', 'clicks'],
+  ['conversions', 'Conversions', 'ads', 'conversions'], ['search_clicks', 'Search clicks', 'search_console', 'clicks'],
+  ['web_sessions', 'Website sessions', 'ga4', 'clicks'], ['gbp_views', 'Profile views', 'gbp', 'impressions'],
+  ['revenue', 'Revenue', 'any', 'revenue'],
 ];
 const DIG_RANGES = [['7', '7 days'], ['30', '30 days'], ['90', '90 days']];
 const DEAL_KINDS = [['paid', 'Paid'], ['barter', 'Barter'], ['hybrid', 'Paid + barter']];
@@ -6635,7 +7021,15 @@ const digPlainError = m => {
   if (/does not exist|missing permissions|Unsupported get request/i.test(s)) return 'Meta cannot see this account with the current token. Check the account ID under Accounts, and that the Page or profile is assigned to the glomium-sync system user.';
   if (/#190|session has expired|invalid oauth|access token/i.test(s)) return 'Meta rejected the token. Generate a new system-user token and replace META_ACCESS_TOKEN.';
   if (/#4\b|#17\b|#32\b|rate limit|too many calls/i.test(s)) return 'Meta is rate-limiting this token. The next hourly run will catch up.';
-  if (/No sync adapter/i.test(s)) return 'This platform has no automatic sync yet.';
+  if (/No sync adapter/i.test(s)) return 'This platform has no automatic sync yet — log its numbers by hand.';
+  if (/Timed out/i.test(s)) return 'The run hit the time limit. Sync this account on its own; if it keeps happening, tell us which account.';
+  if (/X_BEARER_TOKEN/i.test(s)) return 'The X token is missing. Add X_BEARER_TOKEN under Supabase → Edge Functions → Secrets.';
+  if (/^X:.*(credit|payment|402|CreditsDepleted)/i.test(s)) return 'The X developer account is out of credits. Top up in the X developer console.';
+  if (/^X:.*(not found|Could not find)/i.test(s)) return 'X cannot find that profile. Check the handle or user ID under Accounts.';
+  if (/SNAP_|Snapchat token/i.test(s)) return 'Snapchat credentials are missing or expired. Set SNAP_CLIENT_ID, SNAP_CLIENT_SECRET and SNAP_REFRESH_TOKEN in the Supabase secrets.';
+  if (/has not been used in project|is disabled|SERVICE_DISABLED/i.test(s)) return 'This Google API is switched off in the Cloud project. Enable it under Google Cloud → APIs & Services, then sync again.';
+  if (/insufficient authentication scopes|ACCESS_TOKEN_SCOPE_INSUFFICIENT|insufficientPermissions/i.test(s)) return 'The Google refresh token was not granted this product. Re-consent with the extra scope (DIGITAL-SETUP.md lists them) and replace GOOGLE_REFRESH_TOKEN.';
+  if (/UNSUPPORTED_VERSION|version.*(sunset|deprecated)/i.test(s)) return 'Google retired the API version this sync calls. Redeploy the latest digital-sync.';
   if (/GOOGLE_/i.test(s)) return 'Google credentials are missing from the Supabase secrets.';
   return '';
 };
@@ -6913,7 +7307,8 @@ class Component extends DCLogic {
     digitalTab: 'overview', digProject: 'all', digRange: '30', digMetric: 'reach', digKind: 'all', digSort: 'new',
     digAccounts: [], digTerms: [], digMetrics: [], digRuns: [], digSecrets: [],
     digPosts: [], digKeywords: [], digRanks: [], digDeals: [], digBills: [],
-    digStatus: '', digSyncing: false,
+    digStatus: '', digSyncing: false, digSyncingAcc: null, digMasterSort: 'reach',
+    numForm: null, digFound: null, digFinding: false, digFoundClient: {},
     digClients: [], digHolders: [], digLoading: false,
     acctForm: null, secretValue: '', secretReason: '', secretShown: null,
     termsForm: null, dealForm: null, kwPhrase: '', kwUrl: '',
@@ -7318,6 +7713,7 @@ class Component extends DCLogic {
       digAccounts: [], digTerms: [], digMetrics: [], digRuns: [], digSecrets: [],
       digPosts: [], digKeywords: [], digRanks: [], digDeals: [], digBills: [],
       acctForm: null, secretShown: null, secretValue: '', termsForm: null, dealForm: null,
+      numForm: null, digFound: null, digFoundClient: {},
       digClients: [], digHolders: [], digLoading: false,
       custRows: [], custInv: [], custRcv: [], custLog: [], custBank: {}, custOpen: null, custForm: null, newCustPick: null,
     });
@@ -15293,7 +15689,7 @@ class Component extends DCLogic {
     const [acc, terms, runs, ppl] = await Promise.all([
       this.sb.from('social_accounts').select('*').order('platform'),
       this.sb.from('digital_terms').select('*'),
-      this.sb.from('sync_runs').select('*').order('started_at', { ascending: false }).limit(24),
+      this.digRunsQuery(),
       this.sb.from('people').select('id, full_name, active').order('full_name'),
     ]);
     if (acc.error) { this.setState({ digStatus: say(acc.error.message), digLoading: false }); return; }
@@ -15312,12 +15708,15 @@ class Component extends DCLogic {
     const ids = (acc.data || []).map(a => a.id);
     let metrics = [];
     if (ids.length) {
-      // 120 days covers the 90-day chart and last month's recharge in one read.
-      const m = await this.sb.from('metrics_daily')
-        .select('account_id, on_date, spend, impressions, reach, clicks, conversions, conv_value, revenue, followers, follower_delta, engagements, video_views')
+      // 185 days covers a 90-day window, the 90 before it for the comparison,
+      // and last month's recharge. Paged: Supabase stops at 1,000 rows, which
+      // a single read hit at about eight accounts — every total past that was
+      // quietly short.
+      const m = await this.selectAll(() => this.sb.from('metrics_daily')
+        .select('id, account_id, on_date, spend, impressions, reach, clicks, conversions, conv_value, revenue, followers, follower_delta, engagements, video_views, extra')
         .is('campaign_id', null).in('account_id', ids)
-        .gte('on_date', this.daysAgo(120)).order('on_date');
-      metrics = m.error ? [] : (m.data || []);
+        .gte('on_date', this.daysAgo(185)).order('on_date').order('id'));
+      metrics = m.data || [];
     }
     // A confirmation set by whatever triggered this reload outlives it; only a
     // load error gets cleared, because this read is the thing that answers it.
@@ -15346,10 +15745,12 @@ class Component extends DCLogic {
     // Scoped to the selected client, not every account. The posts query is
     // capped at 60 rows, so fetching across all clients and filtering after
     // made a quiet client look empty whenever a busier one filled the window.
+    // The master view reads every account, house included, because it shows
+    // our own row beside the clients; the totals filter by scope afterwards.
     const scope = s.digProject;
     const ids = s.digAccounts
       .filter(a => scope === HOUSE ? a.project_id == null
-        : scope === 'all' ? a.project_id != null : a.project_id === scope)
+        : scope === 'all' ? true : a.project_id === scope)
       .map(a => a.id);
 
     if (tab === 'accounts' && this.can('digitalSecret')) this.loadSecretStatus();
@@ -15357,9 +15758,12 @@ class Component extends DCLogic {
     if (tab === 'content' || tab === 'overview') {
       if (!ids.length) { this.setState({ digPosts: [], digLoading: false }); return; }
       this.setState({ digLoading: true });
-      const r = await this.sb.from('content_posts').select('*').in('account_id', ids)
-        .order('published_at', { ascending: false }).limit(200);
-      this.setState({ digPosts: r.error ? [] : (r.data || []), digLoading: false });
+      // Six months, paged. The old 200-row cap meant a busy client's last week
+      // pushed a quieter client's whole month out of the master view.
+      const r = await this.selectAll(() => this.sb.from('content_posts').select('*').in('account_id', ids)
+        .gte('published_at', this.daysAgo(185))
+        .order('published_at', { ascending: false }).order('id'));
+      this.setState({ digPosts: r.data || [], digLoading: false });
       return;
     }
     if (tab === 'seo') {
@@ -15376,6 +15780,7 @@ class Component extends DCLogic {
       this.setState({ digKeywords: kws, digRanks: ranks, digLoading: false });
       return;
     }
+    if (tab === 'portal') { this.loadPortal(); return; }
     if (tab === 'deals' && this.can('digitalMoney')) {
       this.setState({ digLoading: true });
       const r = await this.sb.from('brand_deals').select('*').order('agreed_on', { ascending: false }).limit(300);
@@ -15393,7 +15798,10 @@ class Component extends DCLogic {
     // The money tabs render nothing without the permission; don't strand
     // someone on a blank page if a stale state value points at one.
     if ((tab === 'deals' || tab === 'recharge') && !this.can('digitalMoney')) tab = 'overview';
-    this.setState({ digitalTab: tab, digStatus: '', acctForm: null, dealForm: null, termsForm: null },
+    // The client page belongs to one client; there is no "all clients" link.
+    const sc = this.state.digProject;
+    if (tab === 'portal' && (sc === 'all' || sc === HOUSE || !this.can('digitalEdit'))) tab = 'overview';
+    this.setState({ digitalTab: tab, digStatus: '', acctForm: null, dealForm: null, termsForm: null, numForm: null },
       () => this.loadDigitalTab());
   }
 
@@ -15409,22 +15817,34 @@ class Component extends DCLogic {
       .subscribe();
   }
 
+  // Three days of runs, not the newest 24. With the hourly job and a dozen
+  // accounts, 24 rows was one hour — every account whose last run fell
+  // outside it read "Never synced".
+  digRunsQuery() {
+    return this.sb.from('sync_runs').select('*')
+      .gte('started_at', new Date(Date.now() - 3 * 86400000).toISOString())
+      .order('started_at', { ascending: false }).limit(1000);
+  }
+
   async loadDigitalRuns() {
-    const r = await this.sb.from('sync_runs').select('*')
-      .order('started_at', { ascending: false }).limit(24);
+    const r = await this.digRunsQuery();
     if (!r.error) this.setState({ digRuns: r.data || [] });
   }
 
+  // Held while a sync from this page is running: syncDigital reloads once
+  // when it returns, and a reload per landed batch was a storm of reads.
   queueDigitalRefresh() {
     clearTimeout(this._digTimer);
     this._digTimer = setTimeout(() => {
-      if (this.state.view === 'digital') this.loadDigital();
-    }, 1800);
+      if (this.state.view === 'digital' && !this.state.digSyncing) this.loadDigital();
+    }, 4000);
   }
 
   async syncDigital(opts) {
+    if (this.state.digSyncing) return;
     const body = { days: 3, ...(opts || {}) };
-    this.setState({ digSyncing: true, digStatus: 'Asking the platforms…' });
+    const one = body.account_ids && body.account_ids.length === 1 ? body.account_ids[0] : null;
+    this.setState({ digSyncing: true, digSyncingAcc: one, digStatus: 'Asking the platforms…' });
     const { data, error } = await this.sb.functions.invoke('digital-sync', { body });
     if (error) {
       // supabase-js reports a function that does not exist and a function that
@@ -15433,7 +15853,7 @@ class Component extends DCLogic {
       // someone in a circle re-deploying a function that was already live and
       // was only rejecting the page's address, so say both and name the origin.
       this.setState({
-        digSyncing: false,
+        digSyncing: false, digSyncingAcc: null,
         digStatus: 'The sync function did not answer (' + error.message + '). Either it is not '
           + 'deployed, or it is deployed and refusing this page — check that Edge Functions '
           + 'lists digital-sync, then that its ALLOWED_ORIGIN secret matches '
@@ -15441,16 +15861,279 @@ class Component extends DCLogic {
       });
       return;
     }
-    if (data && data.error) { this.setState({ digSyncing: false, digStatus: data.error }); return; }
+    if (data && data.error) { this.setState({ digSyncing: false, digSyncingAcc: null, digStatus: data.error }); return; }
     const failed = (data && data.failed) || 0;
     const synced = (data && data.synced) || 0;
+    const partial = ((data && data.results) || []).filter(r => r.ok && r.warnings && r.warnings.length).length;
     this.setState({
-      digSyncing: false,
+      digSyncing: false, digSyncingAcc: null,
       digStatus: !synced ? (data && data.note) || 'Nothing connected to sync yet.'
-        : failed ? failed + ' of ' + synced + ' accounts failed — the run log below says why.'
-        : 'Synced ' + synced + (synced === 1 ? ' account.' : ' accounts.'),
+        : failed ? failed + ' of ' + synced + ' accounts failed — Needs attention says why.'
+        : 'Synced ' + synced + (synced === 1 ? ' account' : ' accounts')
+          + (partial ? ', ' + partial + ' with gaps — see Needs attention.' : '.'),
     });
     this.loadDigital();
+  }
+
+  setDigScope(k) {
+    const s = this.state;
+    this.setState({
+      digProject: k, acctForm: null, dealForm: null, termsForm: null, numForm: null, digStatus: '',
+      // Brand deals and recharge are client-money screens; our own scope has no rows there.
+      digitalTab: (k === HOUSE && (s.digitalTab === 'deals' || s.digitalTab === 'recharge'))
+        || ((k === HOUSE || k === 'all') && s.digitalTab === 'portal') ? 'overview' : s.digitalTab,
+      portalShownPin: '', portalStatus: '', portalDrafts: {},
+    }, () => this.loadDigitalTab());
+  }
+
+  // ---- The client's own insights page (insights.html, /i/<token>) ------------
+  async loadPortal() {
+    const id = this.state.digProject;
+    if (!id || id === 'all' || id === HOUSE) return;
+    const [p, r, lg, pj] = await Promise.all([
+      this.sb.from('client_portals').select('*').eq('project_id', id).maybeSingle(),
+      this.sb.from('client_reports').select('id, month, status, notes, plan, published_at, updated_at').eq('project_id', id).order('month', { ascending: false }),
+      this.sb.from('project_media').select('id, url, url_view, url_grid, thumb_url, kind, sort_order').eq('project_id', id).eq('section', 'logo').order('sort_order', { ascending: true }),
+      this.sb.from('projects').select('*').eq('id', id).maybeSingle(),
+    ]);
+    const missing = e => e && /client_portals|client_reports|schema cache|does not exist/i.test(e.message || '');
+    if (missing(p.error) || missing(r.error)) { this.setState({ portalLoaded: true, portalMissing: true }); return; }
+    // The hash never leaves this method: the screen only needs to know one is set.
+    const row = p.data ? { ...p.data, has_pin: !!p.data.pin_hash } : null;
+    if (row) delete row.pin_hash;
+    this.setState({
+      portal: row, portalReports: r.data || [], portalLogo: row ? (row.logo_url || '') : '',
+      portalLogos: lg.error ? [] : (lg.data || []).filter(m => m.kind !== 'video' && m.url),
+      // Whatever contact the client record carries; editable before sending.
+      portalEmailTo: this.state.portalEmailFor === id ? this.state.portalEmailTo
+        : ((pj.data && (pj.data.client_email || pj.data.email || pj.data.contact_email)) || ''),
+      portalEmailName: this.state.portalEmailFor === id ? this.state.portalEmailName
+        : String((pj.data && (pj.data.contact_name || pj.data.client_contact || pj.data.client_name)) || '').trim(),
+      portalEmailFor: id,
+      portalLoaded: true, portalMissing: false,
+      portalStatus: p.error ? p.error.message : r.error ? r.error.message : this.state.portalStatus,
+    });
+  }
+
+  portalUrl(token) {
+    const host = /glomium\.co$/i.test(window.location.hostname) ? window.location.origin : 'https://album.glomium.co';
+    return host + '/i/' + token;
+  }
+
+  async savePortal(opts) {
+    const s = this.state, o = opts || {};
+    if (o.pin != null && !/^\d{4}$/.test(o.pin)) { this.setState({ portalStatus: 'The PIN is four digits.' }); return; }
+    if (o.newLink && !window.confirm('Make a new link? The current one stops working straight away, so the client needs the new one.')) return;
+    this.setState({ portalBusy: true, portalStatus: 'Saving…' });
+    const { error } = await this.sb.rpc('client_portal_set', {
+      p_project: s.digProject, p_pin: o.pin != null ? o.pin : null,
+      p_logo: o.logo != null ? o.logo : null, p_new_link: !!o.newLink,
+      p_active: o.active != null ? o.active : (s.portal ? s.portal.active !== false : true),
+    });
+    if (error) {
+      this.setState({ portalBusy: false, portalStatus: /client_portal_set/i.test(error.message) ? 'Run album-system/client-insights.sql in Supabase first.' : error.message });
+      return;
+    }
+    this.setState({
+      portalBusy: false, portalPin: '',
+      portalShownPin: o.pin != null ? o.pin : s.portalShownPin,
+      portalStatus: o.newLink ? 'New link made — the old one has stopped working.'
+        : o.pin != null ? (s.portal ? 'New PIN set.' : 'Client page created.') + ' Send the PIN separately from the link.'
+        : o.active === false ? 'Client page switched off — the link shows "not valid" until you turn it back on.'
+        : o.active === true ? 'Client page is live again.' : 'Saved.',
+    });
+    this.loadPortal();
+  }
+
+  // The house email, composed by mailShell like every other one we send.
+  insightsEmailHtml({ name, client, link, pin, month }) {
+    const E = v => this.escHtml(v);
+    const c = String(client || '').toLowerCase();
+    const greeting = 'dear ' + E(String(name || 'there').toLowerCase()) + ',';
+    if (month) {
+      const m = new Date(month + 'T12:00:00');
+      const mon = m.toLocaleDateString('en-IN', { month: 'long' }).toLowerCase();
+      const nx = new Date(m); nx.setMonth(nx.getMonth() + 1);
+      return this.mailShell({
+        preheader: 'your ' + mon + ' report is up.',
+        headline: E(mon) + ',<br>in review.',
+        greeting,
+        body: [
+          'your ' + E(mon) + ' report is up — what stood out, the numbers against the month before, and our plan for ' + E(nx.toLocaleDateString('en-IN', { month: 'long' }).toLowerCase()) + '.',
+          pin ? 'open it with your pin, ' + E(pin) + '.' : 'open it with the pin you already have.',
+        ],
+        rows: [['for', c], ['report', mon + ' ' + m.getFullYear()]],
+        button: { href: link, label: 'read the report' },
+        closing: 'with love,',
+      });
+    }
+    return this.mailShell({
+      preheader: 'your numbers, in one place.',
+      headline: 'your insights,<br>live.',
+      greeting,
+      body: [
+        'your page with glomium is ready — followers, reach, your best and latest posts, stories, ads, and every monthly report we publish, in one place.',
+        'it refreshes through the day and is made for your phone.',
+        pin ? 'your pin is ' + E(pin) + '. keep it to your team.' : 'your pin comes separately, from your glomium contact.',
+      ],
+      rows: [['for', c], ['pin', pin ? 'in this email' : 'sent separately']],
+      button: { href: link, label: 'open your insights' },
+      closing: 'with love,',
+    });
+  }
+
+  async sendInsightsEmail() {
+    const s = this.state, p = s.portal;
+    if (!p) return;
+    const to = String(s.portalEmailTo || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) { this.setState({ portalStatus: 'Enter the client\u2019s email address.' }); return; }
+    const month = s.portalEmailKind && s.portalEmailKind !== 'link' ? s.portalEmailKind : '';
+    const pin = s.portalEmailPin && s.portalShownPin ? s.portalShownPin : '';
+    const client = (s.digClients.find(c => c.id === s.digProject) || {}).client_name || '';
+    const link = this.portalUrl(p.token) + (month ? '?m=' + month.slice(0, 7) : '');
+    this.setState({ portalSending: true, portalStatus: 'Sending…' });
+    try {
+      const mailer = await this.waitForGlobal('emailjs', 8000);
+      if (!mailer) throw new Error('Email service did not load — check your connection and try again.');
+      const html = this.insightsEmailHtml({ name: s.portalEmailName || client, client, link, pin, month });
+      const subject = month
+        ? new Date(month + 'T12:00:00').toLocaleDateString('en-IN', { month: 'long' }).toLowerCase() + ' — your report from glomium'
+        : 'your insights, from glomium';
+      await mailer.send(EMAILJS_SERVICE_ID, this.bookingTemplate(), {
+        to_email: to, email: to, user_email: to, reply_to: to,
+        to_name: s.portalEmailName || client, subject, body_html: html, message: this.htmlToText(html),
+      }, { publicKey: EMAILJS_PUBLIC_KEY });
+      // Recorded on the portal row where the columns exist; the send already happened either way.
+      await this.sb.from('client_portals').update({ emailed_at: new Date().toISOString(), emailed_to: to }).eq('project_id', s.digProject);
+      this.setState({ portalSending: false, portalEmailPin: false, portalStatus: 'Sent to ' + to + (pin ? ', PIN included.' : '. Send the PIN separately.') });
+      this.loadPortal();
+    } catch (e) {
+      this.setState({ portalSending: false, portalStatus: 'Could not send: ' + (e && e.text || e && e.message || 'unknown error') + ' — copy the link instead.' });
+    }
+  }
+
+  async copyPortalLink() {
+    const p = this.state.portal;
+    if (!p) return;
+    try { await navigator.clipboard.writeText(this.portalUrl(p.token)); this.setState({ portalStatus: 'Link copied.' }); }
+    catch (e) { this.setState({ portalStatus: 'Copy blocked by the browser — select the link and copy it.' }); }
+  }
+
+  portalDraft(month, field, value) {
+    const d = { ...(this.state.portalDrafts || {}) };
+    d[month] = { ...(d[month] || {}), [field]: value };
+    this.setState({ portalDrafts: d });
+  }
+
+  reportText(month) {
+    const row = (this.state.portalReports || []).find(r => String(r.month).slice(0, 10) === month) || {};
+    const d = (this.state.portalDrafts || {})[month] || {};
+    return { notes: d.notes != null ? d.notes : (row.notes || ''), plan: d.plan != null ? d.plan : (row.plan || ''), row };
+  }
+
+  async saveReportDraft(month) {
+    const t = this.reportText(month);
+    this.setState({ portalStatus: 'Saving…' });
+    const { error } = await this.sb.from('client_reports').upsert({
+      project_id: this.state.digProject, month, notes: t.notes.trim() || null, plan: t.plan.trim() || null,
+      status: t.row.status || 'draft', updated_at: new Date().toISOString(),
+    }, { onConflict: 'project_id,month' });
+    if (error) { this.setState({ portalStatus: error.message }); return; }
+    const d = { ...(this.state.portalDrafts || {}) }; delete d[month];
+    this.setState({ portalDrafts: d, portalStatus: t.row.status === 'published' ? 'Saved — the published report shows the new text.' : 'Draft saved.' });
+    this.loadPortal();
+  }
+
+  async publishReport(month) {
+    const t = this.reportText(month);
+    const label = new Date(month + 'T12:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    if (!window.confirm((t.row.status === 'published' ? 'Republish ' : 'Publish ') + label + '?\n\nThe numbers are frozen as they stand now, and the client sees this report on their page.')) return;
+    this.setState({ portalStatus: 'Publishing…' });
+    const { error } = await this.sb.rpc('client_report_publish', {
+      p_project: this.state.digProject, p_month: month, p_notes: t.notes.trim() || null, p_plan: t.plan.trim() || null,
+    });
+    if (error) { this.setState({ portalStatus: error.message }); return; }
+    const d = { ...(this.state.portalDrafts || {}) }; delete d[month];
+    this.setState({ portalDrafts: d, portalStatus: label + ' published.' });
+    this.loadPortal();
+  }
+
+  async unpublishReport(month) {
+    if (!window.confirm('Take this report off the client\u2019s page? The text stays here as a draft.')) return;
+    const { error } = await this.sb.from('client_reports').update({ status: 'draft', updated_at: new Date().toISOString() })
+      .eq('project_id', this.state.digProject).eq('month', month);
+    if (error) { this.setState({ portalStatus: error.message }); return; }
+    this.setState({ portalStatus: 'Report taken down.' });
+    this.loadPortal();
+  }
+
+  openDigClient(id) {
+    this.setState({ digProject: id, digitalTab: 'overview', acctForm: null, dealForm: null, termsForm: null, numForm: null, digStatus: '' },
+      () => this.loadDigitalTab());
+  }
+
+  goAccountEdit(a) {
+    this.setState({ digProject: a.project_id || HOUSE, digitalTab: 'accounts', dealForm: null, termsForm: null, numForm: null },
+      () => { this.loadDigitalTab(); this.editAccount(a); });
+  }
+
+  // ---- Numbers by hand ---------------------------------------------------
+  // For platforms with no reporting API we can reach (LinkedIn, Snapchat
+  // profiles, Threads…) and for any account whose token is not in place yet.
+  // One row per date: totals for the period ending that day, and followers
+  // as counted on it.
+  openNumbers(a) {
+    const group = DIG_PLATFORM_GROUP[a.platform] || 'social';
+    const f = { account_id: a.id, platform: a.platform, on_date: new Date().toISOString().slice(0, 10) };
+    (DIG_NUM_FIELDS[group] || DIG_NUM_FIELDS.social).forEach(([k]) => { f[k] = ''; });
+    this.setState({ numForm: f, acctForm: null, digStatus: '' });
+  }
+
+  async saveNumbers() {
+    const f = this.state.numForm;
+    if (!f) return;
+    if (!f.on_date) { this.setState({ digStatus: 'Pick the date these numbers are for.' }); return; }
+    const group = DIG_PLATFORM_GROUP[f.platform] || 'social';
+    const row = { account_id: f.account_id, campaign_id: null, on_date: f.on_date, synced_at: new Date().toISOString() };
+    let any = false;
+    for (const [k] of (DIG_NUM_FIELDS[group] || DIG_NUM_FIELDS.social)) {
+      const v = String(f[k] == null ? '' : f[k]).replace(/,/g, '').trim();
+      if (v === '') continue;
+      if (!Number.isFinite(Number(v)) || Number(v) < 0) { this.setState({ digStatus: 'That is not a number: ' + v }); return; }
+      row[k] = Number(v); any = true;
+    }
+    if (!any) { this.setState({ digStatus: 'Enter at least one number.' }); return; }
+    this.setState({ digStatus: 'Saving…' });
+    const { error } = await this.sb.from('metrics_daily').upsert(row, { onConflict: 'account_id,on_date,campaign_key' });
+    if (error) { this.setState({ digStatus: error.message }); return; }
+    this.setState({ numForm: null, digStatus: 'Numbers saved for ' + fmtDay(f.on_date) + '.' });
+    setTimeout(() => this.setState({ digStatus: '' }), 3000);
+    this.loadDigital();
+  }
+
+  // ---- Find accounts the tokens can already reach ------------------------
+  async findAccounts() {
+    this.setState({ digFinding: true, digStatus: 'Looking for every Page, profile and property the tokens can reach…' });
+    const { data, error } = await this.sb.functions.invoke('digital-sync', { body: { action: 'discover' } });
+    if (error || (data && data.error)) {
+      this.setState({ digFinding: false, digStatus: (data && data.error) || ('The sync function did not answer (' + error.message + '). Redeploy the latest digital-sync.') });
+      return;
+    }
+    this.setState({ digFinding: false, digFound: data || { found: [], errors: [] }, digStatus: '' });
+  }
+
+  async addFound(item, projectId) {
+    if (!projectId) { this.setState({ digStatus: 'Pick the client this account belongs to.' }); return; }
+    this.setState({ digStatus: 'Adding ' + (item.label || DIG_PLATFORM_LABEL[item.platform]) + '…' });
+    const isMeta = ['facebook', 'instagram', 'meta_ads'].indexOf(item.platform) !== -1;
+    const { data, error } = await this.sb.from('social_accounts').insert({
+      project_id: projectId === HOUSE ? null : projectId, platform: item.platform,
+      label: item.label || null, handle: item.handle || null, external_id: item.external_id,
+      access_route: isMeta ? 'partner' : 'delegated_user', connected: true, active: true,
+    }).select('id').maybeSingle();
+    if (error) { this.setState({ digStatus: error.message }); return; }
+    await this.loadDigital();
+    if (data && data.id) this.syncDigital({ account_ids: [data.id], days: 30 });
   }
 
   // ---- The account register ----------------------------------------------
@@ -16652,48 +17335,100 @@ class Component extends DCLogic {
 
     const range = Number(s.digRange) || 30;
     const from = this.daysAgo(range - 1);
-    const rows = s.digMetrics.filter(m => inScope(m.account_id) && m.on_date >= from);
+    const prevFrom = this.daysAgo(range * 2 - 1);
+    const accById = new Map(s.digAccounts.map(a => [a.id, a]));
+    const platOf = id => (accById.get(id) || {}).platform;
+    const groupOf = id => DIG_PLATFORM_GROUP[platOf(id)] || 'other';
+    const isSocial = a => DIG_PLATFORM_GROUP[a.platform] === 'social';
+    const SOCIAL = DIG_PLATFORM_DEFS.filter(d => d[2] === 'social').map(d => d[0]);
 
-    const sum = k => rows.reduce((t, r) => t + Number(r[k] || 0), 0);
-    const spend = sum('spend'), impressions = sum('impressions'), clicks = sum('clicks');
-    const conv = sum('conversions'), convValue = sum('conv_value'), revenue = sum('revenue');
-    const engagements = sum('engagements'), reach = sum('reach');
-    const followerGain = sum('follower_delta');
-    const followersNow = scoped.reduce((t, a) => {
-      const seen = s.digMetrics.filter(m => m.account_id === a.id && m.followers != null);
-      return t + (seen.length ? Number(seen[seen.length - 1].followers) : 0);
-    }, 0);
+    // One pass over the metrics per load, not one per account per render.
+    if (this._digIdxFor !== s.digMetrics) {
+      const byAcc = new Map(), fNow = new Map(), seen = new Map();
+      for (const m of s.digMetrics) {
+        if (!byAcc.has(m.account_id)) byAcc.set(m.account_id, []);
+        byAcc.get(m.account_id).push(m);
+        if (m.followers != null) {
+          const p = fNow.get(m.account_id);
+          if (!p || m.on_date >= p.on_date) fNow.set(m.account_id, m);
+        }
+        const l = seen.get(m.account_id);
+        if (!l || m.on_date > l) seen.set(m.account_id, m.on_date);
+      }
+      this._digIdx = { byAcc, fNow, seen };
+      this._digIdxFor = s.digMetrics;
+    }
+    const { byAcc, fNow, seen: lastSeen } = this._digIdx;
+    const followersOf = id => (fNow.has(id) ? Number(fNow.get(id).followers) : null);
+    const accRows = (id, lo, hi) => (byAcc.get(id) || []).filter(m => m.on_date >= lo && (!hi || m.on_date < hi));
+
+    const rows = s.digMetrics.filter(m => inScope(m.account_id) && m.on_date >= from);
+    const prevRows = s.digMetrics.filter(m => inScope(m.account_id) && m.on_date >= prevFrom && m.on_date < from);
+    const ofGroup = (list, g) => list.filter(r => groupOf(r.account_id) === g);
+    const ofPlat = (list, p) => list.filter(r => platOf(r.account_id) === p);
+    const sumOf = (list, k) => list.reduce((t, r) => t + Number(r[k] || 0), 0);
+    const extraOf = (list, k) => list.reduce((t, r) => t + Number((r.extra && r.extra[k]) || 0), 0);
+    // Each family is totalled on its own. Search Console and AdSense clicks
+    // used to land in the ad click-through and cost per click.
+    const socialRows = ofGroup(rows, 'social'), adsRows = ofGroup(rows, 'ads');
+    const spend = sumOf(adsRows, 'spend'), impressions = sumOf(adsRows, 'impressions'), clicks = sumOf(adsRows, 'clicks');
+    const conv = sumOf(adsRows, 'conversions'), convValue = sumOf(adsRows, 'conv_value'), revenue = sumOf(rows, 'revenue');
+    const reach = sumOf(socialRows, 'reach');
+    const prevReach = sumOf(ofGroup(prevRows, 'social'), 'reach'), prevSpend = sumOf(ofGroup(prevRows, 'ads'), 'spend');
+    const followerGain = sumOf(socialRows, 'follower_delta');
+    const followersNow = scoped.filter(isSocial).reduce((t, a) => t + (followersOf(a.id) || 0), 0);
 
     const terms = (scope === 'all' || isHouse) ? null : s.digTerms.find(t => t.project_id === scope);
-    const SOCIAL = ['instagram', 'facebook', 'youtube'];
-    const PAID = ['meta_ads', 'google_ads'];
-    // The tile set follows what is connected. Keying it on digital_terms alone
-    // gave a client with one Instagram account and no terms row six zeroed ad
-    // tiles, and hid its 22k followers.
-    const hasSocial = isHouse || scoped.some(a => SOCIAL.indexOf(a.platform) !== -1)
-      || (!!terms && terms.account_type === 'celebrity');
-    const hasPaid = spend > 0 || scoped.some(a => PAID.indexOf(a.platform) !== -1);
+    // The tile set follows what is connected, not digital_terms alone.
+    const hasSocial = isHouse || scoped.some(isSocial) || (!!terms && terms.account_type === 'celebrity');
+    const hasPaid = spend > 0 || scoped.some(a => DIG_PLATFORM_GROUP[a.platform] === 'ads');
     const hasPublisher = revenue > 0 || scoped.some(a => a.platform === 'adsense');
+    const hasWeb = scoped.some(a => DIG_PLATFORM_GROUP[a.platform] === 'web');
     const ctr = impressions ? clicks * 100 / impressions : null;
     const cpc = clicks ? spend / clicks : null;
     const roas = spend ? convValue / spend : null;
     const rangeLabel = range + ' days';
     const pct = v => (v == null ? '—' : v.toFixed(v >= 10 ? 1 : 2) + '%');
     const signed = v => (v > 0 ? '+' : '') + this.compact(v);
+    // A comparison only counts when the previous window is mostly on record.
+    // History starts at the first sync, so "vs previous 30 days" against a
+    // window holding three days of data printed +1711% on a client screen.
+    const prevCovered = list => {
+      const days = new Set();
+      list.forEach(a => accRows(a.id, prevFrom, from).forEach(m => days.add(m.on_date)));
+      return days.size >= Math.ceil(range * 0.8);
+    };
+    const change = (cur, prev, ok) => (ok && prev > 0 ? (cur - prev) * 100 / prev : null);
+    const changeLabel = (cur, prev, ok) => {
+      const d = change(cur, prev, ok);
+      return d == null ? '' : Math.abs(d) < 0.5 ? 'level' : (d >= 0 ? '↑ ' : '↓ ') + Math.abs(d).toFixed(Math.abs(d) >= 10 ? 0 : 1) + '%';
+    };
+    const changeSub = (cur, prev, fallback, ok) => {
+      const l = changeLabel(cur, prev, ok);
+      return l ? l + ' vs previous ' + range + ' days' : (fallback || '');
+    };
 
-    // Engagement lives per post, not per day (Instagram has no daily account
-    // engagement), so content tiles read what was published inside the window.
+    // Engagement lives per post, not per day, so content tiles read what was
+    // published inside the window. Rate is over posts that report a reach
+    // (or, on X, impressions): a Facebook post whose insights were refused
+    // carried its reactions into the numerator with nothing below it.
     const scopedPosts = s.digPosts.filter(p => inScope(p.account_id));
     const pNum = (p, k) => Number(p[k] || 0);
     const feedInter = p => pNum(p, 'likes') + pNum(p, 'comments') + pNum(p, 'shares') + pNum(p, 'saves');
     const storyInter = p => pNum(p, 'replies') + pNum(p, 'shares');
     const inter = p => (p.kind === 'story' ? storyInter(p) : feedInter(p));
+    const erBase = p => pNum(p, 'reach') || pNum(p, 'impressions');
     const tot = (list, f) => list.reduce((t, p) => t + f(p), 0);
+    const erOfList = list => {
+      const m = list.filter(p => p.kind !== 'story' && erBase(p) > 0);
+      const b = tot(m, erBase);
+      return b ? tot(m, feedInter) * 100 / b : null;
+    };
     const rangePosts = scopedPosts.filter(p => p.published_at && String(p.published_at).slice(0, 10) >= from);
     const feed = rangePosts.filter(p => p.kind !== 'story');
     const storyList = rangePosts.filter(p => p.kind === 'story');
-    const feedReach = tot(feed, p => pNum(p, 'reach'));
     const feedEng = tot(feed, feedInter);
+    const feedEr = erOfList(feed);
     const contentViews = tot(rangePosts, p => pNum(p, 'video_views'));
     const storyViews = tot(storyList, p => pNum(p, 'video_views'));
     const kindKey = p => (p.kind === 'carousel' ? 'post' : p.kind);
@@ -16702,19 +17437,23 @@ class Component extends DCLogic {
       list.forEach(p => { c[kindKey(p)] = (c[kindKey(p)] || 0) + 1; });
       return Object.keys(c).map(k => c[k] + ' ' + (c[k] === 1 ? (POST_KIND_LABEL[k] || k).toLowerCase() : k === 'story' ? 'stories' : (POST_KIND_LABEL[k] || k).toLowerCase() + 's')).join(' · ');
     };
-    const kpi = (label, value, sub, good) => ({ label, value, sub: sub || '', subColor: good ? '#0E8E72' : '#4A524F' });
+    const kpi = (label, value, sub, good, bad) => ({ label, value, sub: sub || '', subColor: good ? '#0E8E72' : bad ? '#B4433A' : '#4A524F' });
+    const dir = (cur, prev, ok) => { const d = change(cur, prev, ok); return { good: d != null && d > 0, bad: d != null && d < -10 }; };
 
     const digKpiGroupsVM = [];
     if (hasSocial) {
+      const covSoc = prevCovered(scoped.filter(isSocial));
+      const rd = dir(reach, prevReach, covSoc);
       digKpiGroupsVM.push({ title: 'Audience · last ' + rangeLabel, kpis: [
-        kpi('Followers', followersNow ? this.compact(followersNow) : '—', followersNow ? 'right now' : 'no reading yet — sync'),
-        kpi('New followers', followerGain ? signed(followerGain) : '0', 'in the last ' + rangeLabel, followerGain > 0),
-        kpi('Reach', this.compact(reach), reach ? 'avg ' + this.compact(Math.round(reach / range)) + ' accounts a day' : 'nothing yet'),
+        kpi('Followers', followersNow ? this.compact(followersNow) : '—', followersNow ? 'across ' + scoped.filter(isSocial).length + ' profiles, right now' : 'no reading yet'),
+        kpi('New followers', followerGain ? signed(followerGain) : '0',
+          followersNow && followersNow - followerGain > 0 ? pct(followerGain * 100 / (followersNow - followerGain)) + ' growth in ' + rangeLabel : 'in the last ' + rangeLabel, followerGain > 0, followerGain < 0),
+        kpi('Reach', this.compact(reach), changeSub(reach, prevReach, reach ? 'avg ' + this.compact(Math.round(reach / range)) + ' a day' : 'nothing yet', covSoc), rd.good, rd.bad),
         kpi('Content views', this.compact(contentViews), rangePosts.length ? 'across ' + rangePosts.length + ' items' : 'nothing published'),
       ] });
       digKpiGroupsVM.push({ title: 'Content · last ' + rangeLabel, kpis: [
         kpi('Published', String(rangePosts.length), rangePosts.length ? kindSummary(rangePosts) : 'nothing in this window'),
-        kpi('Engagement rate', pct(feedReach ? feedEng * 100 / feedReach : null), 'posts and reels, of reach', feedReach && feedEng * 100 / feedReach >= 3),
+        kpi('Engagement rate', pct(feedEr), 'posts and reels, of reach', feedEr != null && feedEr >= 3),
         kpi('Interactions', this.compact(feedEng + tot(storyList, storyInter)),
           this.compact(tot(feed, p => pNum(p, 'likes'))) + ' likes · ' + this.compact(tot(feed, p => pNum(p, 'comments'))) + ' comments · '
           + this.compact(tot(rangePosts, p => pNum(p, 'shares'))) + ' shares'),
@@ -16723,14 +17462,37 @@ class Component extends DCLogic {
             : 'stories are captured from the first sync on'),
       ] });
     }
-    if (hasPaid || !hasSocial) {
+    if (hasPaid || (!hasSocial && !hasWeb && !hasPublisher)) {
       digKpiGroupsVM.push({ title: 'Paid · last ' + rangeLabel, kpis: [
-        kpi('Ad spend', this.inr(spend), spend ? rangeLabel : 'no spend in range'),
+        kpi('Ad spend', this.inr(spend), changeSub(spend, prevSpend, spend ? rangeLabel : 'no spend in range', prevCovered(scoped.filter(a => DIG_PLATFORM_GROUP[a.platform] === 'ads')))),
         kpi('Impressions', this.compact(impressions), rangeLabel),
         kpi('Clicks', this.compact(clicks), ctr == null ? 'no clicks yet' : ctr.toFixed(2) + '% click-through'),
         kpi('Cost per click', cpc == null ? '—' : this.inr(cpc), clicks ? '' : 'no clicks yet'),
-        kpi('Conversions', this.compact(conv), roas == null ? '' : roas.toFixed(2) + '× return on spend'),
+        kpi('Conversions', this.compact(conv), roas == null || !convValue ? (conv && spend ? this.inr(spend / conv) + ' per conversion' : '') : roas.toFixed(2) + '× return on spend'),
       ] });
+    }
+    if (hasWeb) {
+      const web = [];
+      if (scoped.some(a => a.platform === 'search_console')) {
+        const g = ofPlat(rows, 'search_console'), gc = sumOf(g, 'clicks'), gi = sumOf(g, 'impressions');
+        const ok = prevCovered(scoped.filter(a => a.platform === 'search_console'));
+        const pc = sumOf(ofPlat(prevRows, 'search_console'), 'clicks'), d = dir(gc, pc, ok);
+        web.push(kpi('Search clicks', this.compact(gc), changeSub(gc, pc, 'from Google search', ok), d.good, d.bad));
+        web.push(kpi('Search impressions', this.compact(gi), gi ? pct(gc * 100 / gi) + ' click-through' : 'nothing yet'));
+      }
+      if (scoped.some(a => a.platform === 'ga4')) {
+        const ok = prevCovered(scoped.filter(a => a.platform === 'ga4'));
+        const g = ofPlat(rows, 'ga4'), ss = sumOf(g, 'clicks'), ps = sumOf(ofPlat(prevRows, 'ga4'), 'clicks'), d = dir(ss, ps, ok);
+        web.push(kpi('Website sessions', this.compact(ss), changeSub(ss, ps, this.compact(sumOf(g, 'impressions')) + ' page views', ok), d.good, d.bad));
+        web.push(kpi('Key events', this.compact(sumOf(g, 'conversions')), ss ? pct(sumOf(g, 'conversions') * 100 / ss) + ' of sessions' : ''));
+      }
+      if (scoped.some(a => a.platform === 'gbp')) {
+        const g = ofPlat(rows, 'gbp');
+        web.push(kpi('Profile views', this.compact(sumOf(g, 'impressions')), 'Google Search and Maps'));
+        web.push(kpi('Calls & directions', this.compact(extraOf(g, 'calls') + extraOf(g, 'directions')),
+          this.compact(extraOf(g, 'calls')) + ' calls · ' + this.compact(extraOf(g, 'directions')) + ' directions · ' + this.compact(extraOf(g, 'website')) + ' site visits'));
+      }
+      if (web.length) digKpiGroupsVM.push({ title: 'Search & web · last ' + rangeLabel, kpis: web });
     }
     if (hasPublisher) {
       digKpiGroupsVM.push({ title: 'Publisher · last ' + rangeLabel, kpis: [
@@ -16738,10 +17500,18 @@ class Component extends DCLogic {
       ] });
     }
 
+
     // ---- the chart ----
-    const hasSeries = k => (k === 'followers' ? rows.some(r => r.followers != null) : rows.some(r => Number(r[k] || 0) !== 0));
-    const chartOpts = DIG_CHART_METRICS.filter(([k]) => hasSeries(k));
-    const metric = chartOpts.some(x => x[0] === s.digMetric) ? s.digMetric : (chartOpts[0] ? chartOpts[0][0] : s.digMetric);
+    const chartMatch = (key, r) => key === 'any' || (DIG_GROUP_LABEL[key] ? groupOf(r.account_id) === key : platOf(r.account_id) === key);
+    const hasSeries = d => {
+      const rs = rows.filter(r => chartMatch(d[2], r));
+      return d[0] === 'followers' ? rs.some(r => r.followers != null) : rs.some(r => Number(r[d[3]] || 0) !== 0);
+    };
+    const chartOpts = DIG_CHART_METRICS.filter(hasSeries);
+    const metric = chartOpts.some(x => x[0] === s.digMetric) ? s.digMetric : (chartOpts[0] ? chartOpts[0][0] : 'reach');
+    const mDef = DIG_CHART_METRICS.find(x => x[0] === metric) || DIG_CHART_METRICS[0];
+    const field = mDef[3];
+    const mRows = rows.filter(r => chartMatch(mDef[2], r));
     const byDate = new Map();
     for (let i = range - 1; i >= 0; i--) byDate.set(this.daysAgo(i), 0);
     const chartDays = Array.from(byDate.keys());
@@ -16749,8 +17519,8 @@ class Component extends DCLogic {
       // The sync records one follower total per day it runs, but Meta reports
       // new followers for every day. Walking back from the latest total through
       // those daily gains draws the real curve instead of a cliff up from zero.
-      for (const a of scoped) {
-        const ar = rows.filter(r => r.account_id === a.id);
+      for (const a of scoped.filter(isSocial)) {
+        const ar = mRows.filter(r => r.account_id === a.id);
         const reads = ar.filter(r => r.followers != null && byDate.has(r.on_date))
           .sort((x, y) => (x.on_date < y.on_date ? -1 : 1));
         if (!reads.length) continue;
@@ -16765,9 +17535,9 @@ class Component extends DCLogic {
         chartDays.forEach((d, i) => byDate.set(d, byDate.get(d) + vals[i]));
       }
     } else {
-      for (const r of rows) {
+      for (const r of mRows) {
         if (!byDate.has(r.on_date)) continue;
-        byDate.set(r.on_date, byDate.get(r.on_date) + Number(r[metric] || 0));
+        byDate.set(r.on_date, byDate.get(r.on_date) + Number(r[field] || 0));
       }
     }
     const series = Array.from(byDate.entries()).map(([date, value]) => ({ date, value }));
@@ -16825,69 +17595,113 @@ class Component extends DCLogic {
     const paceGap = spendPct - dayPct;
 
     // ---- per-account health ----
-    const lastSeen = new Map();
-    for (const m of s.digMetrics) {
-      const prev = lastSeen.get(m.account_id);
-      if (!prev || m.on_date > prev) lastSeen.set(m.account_id, m.on_date);
+    // Runs arrive newest first, so the first row per account is its latest.
+    // Story captures are kept apart: an hourly story read must not paper over
+    // a failed full pull.
+    const runsFull = new Map(), runsStory = new Map();
+    for (const r of s.digRuns) {
+      if (!r.scope) continue;
+      const m = r.mode === 'stories' ? runsStory : runsFull;
+      if (!m.has(r.scope)) m.set(r.scope, r);
     }
+    // A run the function never closed is dead after 15 minutes, whatever its row says.
+    const runState = r => !r ? 'none'
+      : r.status === 'running' ? (Date.now() - new Date(r.started_at).getTime() > 15 * 60000 ? 'error' : 'running')
+      : r.status;
+    const runMsg = r => (r && r.status === 'running' ? 'Timed out — the run never finished.' : String((r && r.message) || ''));
+    const partialMsg = r => String((r && r.message) || '').split(' · ').slice(1).join(' · ');
+    const TONE = {
+      ok: ['#DDEFE8', '#0A6E58'], running: ['#EAF1EE', '#0A6E58'], manual: ['#DDEFE8', '#0A6E58'],
+      failed: ['#F7E4E1', '#B4433A'], stale: ['#F7E4E1', '#B4433A'],
+      partial: ['#F6EEDC', '#9A6A12'], due: ['#F6EEDC', '#9A6A12'], nodata: ['#F6EEDC', '#9A6A12'],
+      off: ['#F1F4F3', '#5C6864'], retired: ['#F1F4F3', '#5C6864'],
+    };
+    const RANK = { failed: 4, stale: 3, nodata: 3, due: 2, off: 2, partial: 2, running: 1, ok: 0, manual: 0, retired: -1 };
+    const healthMemo = new Map();
+    const accHealth = a => {
+      if (healthMemo.has(a.id)) return healthMemo.get(a.id);
+      const auto = !!DIG_PLATFORM_AUTO[a.platform];
+      const last = lastSeen.get(a.id) || null;
+      const stale = last ? Math.round((Date.now() - new Date(last + 'T00:00:00').getTime()) / 86400000) : null;
+      const run = runsFull.get(a.id) || null;
+      const st = runState(run);
+      let key, label;
+      if (a.active === false) { key = 'retired'; label = 'Retired'; }
+      else if (!auto) {
+        if (last && stale <= 35) { key = 'manual'; label = 'By hand · ' + (stale <= 0 ? 'today' : stale + 'd ago'); }
+        else { key = 'due'; label = last ? 'Numbers due' : 'Needs numbers'; }
+      }
+      else if (!a.connected || !a.external_id) { key = 'off'; label = !a.external_id ? 'No account ID' : 'Not connected'; }
+      else if (st === 'running') { key = 'running'; label = 'Syncing…'; }
+      else if (st === 'error') { key = 'failed'; label = 'Sync failed'; }
+      else if (stale == null) { key = 'nodata'; label = st === 'none' ? 'Never synced' : 'No data yet'; }
+      else if (stale > (DIG_LAG_DAYS[a.platform] || 2)) { key = 'stale'; label = stale + 'd behind'; }
+      else if (st === 'partial') { key = 'partial'; label = 'Partly synced'; }
+      else { key = 'ok'; label = 'Fresh'; }
+      const h = { key, label, bg: TONE[key][0], color: TONE[key][1], rank: RANK[key], auto, last, stale, run, st };
+      healthMemo.set(a.id, h);
+      return h;
+    };
+    const canSyncAcc = a => !!DIG_PLATFORM_AUTO[a.platform] && !!a.connected && !!a.external_id && a.active !== false;
+    const ago = t => {
+      if (!t) return '';
+      const m = Math.round((Date.now() - new Date(t).getTime()) / 60000);
+      return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : fmtStampTime(t);
+    };
     const secretFor = new Map(s.digSecrets.map(x => [x.account_id, x]));
     const thirty = this.daysAgo(30);
     const digAccountRowsVM = scoped.map(a => {
-      const last = lastSeen.get(a.id) || null;
-      const stale = last ? Math.round((Date.now() - new Date(last + 'T00:00:00').getTime()) / 86400000) : null;
-      const spend30 = s.digMetrics
-        .filter(m => m.account_id === a.id && m.on_date >= thirty)
-        .reduce((t, m) => t + Number(m.spend || 0), 0);
-      const rev30 = s.digMetrics
-        .filter(m => m.account_id === a.id && m.on_date >= thirty)
-        .reduce((t, m) => t + Number(m.revenue || 0), 0);
-      const healthy = a.connected && stale != null && stale <= 2;
+      const h = accHealth(a);
+      const r30 = accRows(a.id, thirty);
+      const spend30 = sumOf(r30, 'spend'), rev30 = sumOf(r30, 'revenue');
       const sec = secretFor.get(a.id);
       return {
         platformLabel: DIG_PLATFORM_LABEL[a.platform] || a.platform,
         label: a.label || a.handle || DIG_PLATFORM_LABEL[a.platform] || '—',
         idLabel: a.external_id || 'no account id',
         clientLabel: clientName(a.project_id),
-        routeLabel: DIG_ROUTE_LABEL[a.access_route] || a.access_route,
+        routeLabel: (DIG_ROUTE_LABEL[a.access_route] || a.access_route) + (h.auto ? '' : ' · numbers by hand'),
         routeRisky: a.access_route === 'password',
-        freshLabel: a.active === false ? 'Retired'
-          : !a.connected ? 'Not connected'
-          : stale == null ? 'No data yet' : stale <= 1 ? 'Fresh' : stale + 'd behind',
-        freshBg: a.active === false ? '#F1F4F3' : healthy ? '#DDEFE8' : !a.connected ? '#F1F4F3' : '#F7E4E1',
-        freshColor: a.active === false ? '#67746F' : healthy ? '#0A6E58' : !a.connected ? '#5C6864' : '#B4433A',
+        freshLabel: h.label, freshBg: h.bg, freshColor: h.color,
         moneyLabel: spend30 ? this.inr(spend30) + ' spent' : rev30 ? this.inr(rev30) + ' earned' : '—',
         vaultLabel: a.vault_ref ? 'Vault: ' + a.vault_ref : '',
         secretLabel: sec ? 'Credential stored' + (sec.hint ? ' · ' + sec.hint : '') : '',
+        canLog: !canSyncAcc(a) && a.active !== false,
+        logNumbers: () => this.openNumbers(a),
         edit: () => this.editAccount(a),
-        syncOne: () => this.syncDigital({ account_id: a.id, platform: a.platform }),
+        syncOne: () => this.syncDigital({ account_ids: [a.id] }),
       };
     });
 
+    // Routine story captures would bury everything else on the hourly job;
+    // failures and full pulls stay in the log.
+    const runInView = r => !r.scope || scope === 'all' || inScope(r.scope) || !accById.has(r.scope);
     const digRunsVM = s.digRuns
-      .filter(r => !r.scope || inScope(r.scope) || !accounts.some(a => a.id === r.scope))
+      .filter(r => runInView(r) && !(r.mode === 'stories' && r.status === 'ok'))
       .slice(0, 10).map(r => {
-      const acc = accounts.find(a => a.id === r.scope);
-      return {
-        platformLabel: DIG_PLATFORM_LABEL[r.platform] || r.platform,
-        accountLabel: acc ? (acc.label || acc.handle || '') : '',
-        statusLabel: r.status === 'ok' ? 'OK' : r.status === 'running' ? 'Running' : r.status === 'partial' ? 'Partial' : 'Failed',
-        statusBg: r.status === 'ok' ? '#DDEFE8' : r.status === 'running' ? '#EAF1EE' : r.status === 'partial' ? '#EFE9DA' : '#F7E4E1',
-        statusColor: r.status === 'ok' ? '#0A6E58' : r.status === 'error' ? '#B4433A' : '#8A6D3B',
-        whenLabel: fmtStampTime(r.started_at),
-        rowsLabel: r.rows_written ? r.rows_written + ' rows' : '',
-        message: r.status === 'error' ? (r.message || 'No message') : '',
-        hasMessage: r.status === 'error',
-        fix: r.status === 'error' ? digPlainError(r.message) : '',
-        hasFix: r.status === 'error' && !!digPlainError(r.message),
-      };
-    });
+        const acc = accById.get(r.scope);
+        const st = runState(r);
+        const msg = st === 'error' ? runMsg(r) : st === 'partial' ? partialMsg(r) : '';
+        return {
+          platformLabel: (DIG_PLATFORM_LABEL[r.platform] || r.platform) + (r.mode === 'stories' ? ' stories' : ''),
+          accountLabel: acc ? String(acc.label || acc.handle || '').trim() + (scope === 'all' ? ' · ' + clientName(acc.project_id) : '') : '',
+          statusLabel: st === 'ok' ? 'OK' : st === 'running' ? 'Running' : st === 'partial' ? 'Partial' : 'Failed',
+          statusBg: st === 'ok' ? '#DDEFE8' : st === 'running' ? '#EAF1EE' : st === 'partial' ? '#F6EEDC' : '#F7E4E1',
+          statusColor: st === 'ok' || st === 'running' ? '#0A6E58' : st === 'partial' ? '#9A6A12' : '#B4433A',
+          whenLabel: fmtStampTime(r.started_at),
+          rowsLabel: r.rows_written ? r.rows_written + ' rows' : '',
+          message: msg, hasMessage: !!msg,
+          messageColor: st === 'partial' ? '#9A6A12' : '#B4433A',
+          fix: msg ? digPlainError(msg) : '',
+          hasFix: !!msg && !!digPlainError(msg),
+        };
+      });
 
-    const accById = new Map(accounts.map(a => [a.id, a]));
     const card = p => {
       const acc = accById.get(p.account_id);
       const story = p.kind === 'story';
       const reachN = pNum(p, 'reach'), viewsN = pNum(p, 'video_views');
-      const er = reachN ? inter(p) * 100 / reachN : null;
+      const er = erBase(p) ? inter(p) * 100 / erBase(p) : null;
       const ageH = p.published_at ? (Date.now() - new Date(p.published_at).getTime()) / 3600000 : 999;
       const thumb = /^https:\/\//i.test(p.thumb_url || '') ? p.thumb_url : '';
       const link = /^https:\/\//i.test(p.permalink || '') ? p.permalink : '';
@@ -16899,7 +17713,7 @@ class Component extends DCLogic {
         // Instagram CDN links expire after a few days; a dead one falls back to
         // the grey tile underneath instead of a broken-image icon.
         hideImg: e => { if (e && e.currentTarget) e.currentTarget.style.display = 'none'; },
-        accountLabel: acc ? String(acc.label || acc.handle || '').trim() : '',
+        accountLabel: acc ? String(acc.label || acc.handle || '').trim() + (scope === 'all' ? ' · ' + clientName(acc.project_id) : '') : '',
         whenLabel: p.published_at ? fmtStampTime(p.published_at) : '—',
         caption: String(p.caption || '').replace(/\s+/g, ' ').trim().slice(0, 160) || 'No caption',
         captionColor: p.caption ? '#1B1D1E' : '#8A9390',
@@ -16916,7 +17730,7 @@ class Component extends DCLogic {
         thirdLabel: story ? this.compact(pNum(p, 'replies')) : pct(er),
         thirdName: story ? 'Replies' : 'Engagement',
         permalink: link, hasLink: !!link,
-        linkLabel: acc && acc.platform === 'facebook' ? 'Open on Facebook' : acc && acc.platform === 'youtube' ? 'Open on YouTube' : 'Open on Instagram',
+        linkLabel: 'Open on ' + ({ facebook: 'Facebook', youtube: 'YouTube', x: 'X' }[acc && acc.platform] || 'Instagram'),
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
         promoColor: p.is_paid_promo && !p.disclosure_ok ? '#B4433A' : '#6B7572',
       };
@@ -16936,7 +17750,7 @@ class Component extends DCLogic {
     const SORTS = [['new', 'Newest'], ['views', 'Most views'], ['reach', 'Most reach'], ['er', 'Engagement']];
     const sortSel = SORTS.some(x => x[0] === s.digSort) ? s.digSort : 'new';
     const digSortChipsVM = chip(SORTS, sortSel, k => this.setState({ digSort: k }));
-    const erOf = p => (pNum(p, 'reach') ? inter(p) * 100 / pNum(p, 'reach') : -1);
+    const erOf = p => (erBase(p) ? inter(p) * 100 / erBase(p) : -1);
     const sorters = {
       new: (x, y) => String(y.published_at || '').localeCompare(String(x.published_at || '')),
       views: (x, y) => pNum(y, 'video_views') - pNum(x, 'video_views'),
@@ -16954,8 +17768,7 @@ class Component extends DCLogic {
       { label: 'Avg reach', value: filtered.length ? this.compact(Math.round(tot(filtered, p => pNum(p, 'reach')) / filtered.length)) : '—', sub: 'accounts per item' },
     ];
     if (fFeed.length) {
-      const r = tot(fFeed, p => pNum(p, 'reach'));
-      digContentSummaryVM.push({ label: 'Engagement rate', value: pct(r ? tot(fFeed, feedInter) * 100 / r : null),
+      digContentSummaryVM.push({ label: 'Engagement rate', value: pct(erOfList(fFeed)),
         sub: this.compact(tot(fFeed, feedInter)) + ' interactions' });
     }
     if (fStories.length) {
@@ -16965,62 +17778,240 @@ class Component extends DCLogic {
     }
 
     // One card per account: the numbers that matter for its platform, and the
-    // last sync in plain words, so a failure says what to do instead of what
-    // the Graph API said.
-    const ago = t => {
-      if (!t) return '';
-      const m = Math.round((Date.now() - new Date(t).getTime()) / 60000);
-      return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : fmtStampTime(t);
-    };
+    // last sync in plain words, so a failure says what to do.
     const digProfilesVM = scoped.filter(a => a.active !== false).map(a => {
-      const row = digAccountRowsVM[scoped.indexOf(a)];
+      const h = accHealth(a);
       const am = rows.filter(m => m.account_id === a.id);
-      const asum = k => am.reduce((t, m) => t + Number(m[k] || 0), 0);
-      const reads = s.digMetrics.filter(m => m.account_id === a.id && m.followers != null);
-      const fNow = reads.length ? Number(reads[reads.length - 1].followers) : null;
+      const asum = k => sumOf(am, k);
+      const fN = followersOf(a.id);
       const gain = asum('follower_delta');
       const ap = rangePosts.filter(p => p.account_id === a.id);
       const views = tot(ap, p => pNum(p, 'video_views')) || asum('video_views');
       const st = (label, value, sub, good) => ({ label, value, sub: sub || '', subColor: good ? '#0E8E72' : '#6B7572' });
-      const statsVM = SOCIAL.indexOf(a.platform) !== -1 ? [
-        st('Followers', fNow == null ? '—' : this.compact(fNow), gain ? signed(gain) + ' in ' + range + 'd' : 'no change yet', gain > 0),
-        st('Reach', this.compact(asum('reach')), range + ' days'),
-        st('Views', this.compact(views), ap.length ? ap.length + ' items' : 'no posts in range'),
-      ] : a.platform === 'adsense' ? [
-        st('Revenue', this.inr(asum('revenue')), range + ' days'),
-        st('Impressions', this.compact(asum('impressions')), range + ' days'),
-        st('Clicks', this.compact(asum('clicks')), range + ' days'),
-      ] : a.platform === 'search_console' ? [
-        st('Clicks', this.compact(asum('clicks')), range + ' days'),
-        st('Impressions', this.compact(asum('impressions')), range + ' days'),
-        st('CTR', pct(asum('impressions') ? asum('clicks') * 100 / asum('impressions') : null), ''),
-      ] : [
-        st('Spend', this.inr(asum('spend')), range + ' days'),
-        st('Clicks', this.compact(asum('clicks')), range + ' days'),
-        st('Conversions', this.compact(asum('conversions')), range + ' days'),
-      ];
-      const run = s.digRuns.find(r => r.scope === a.id) || null;
-      const failed = !!run && run.status === 'error';
+      const rd = range + ' days';
+      const fol = label => st(label, fN == null ? '—' : this.compact(fN), gain ? signed(gain) + ' in ' + range + 'd' : 'no change yet', gain > 0);
+      let statsVM;
+      if (a.platform === 'youtube') statsVM = [fol('Subscribers'), st('Views', this.compact(asum('video_views')), rd),
+        st('Watch time', this.compact(Math.round(extraOf(am, 'minutes_watched') / 60)) + 'h', rd)];
+      else if (a.platform === 'x') statsVM = [fol('Followers'),
+        st('Impressions', this.compact(tot(ap, p => pNum(p, 'impressions'))), ap.length ? ap.length + ' posts' : 'no posts in range'),
+        st('Engagement', pct(erOfList(ap)), 'of impressions')];
+      else if (isSocial(a)) statsVM = [fol('Followers'), st('Reach', this.compact(asum('reach')), rd),
+        st('Views', this.compact(views), ap.length ? ap.length + ' items' : rd)];
+      else if (a.platform === 'adsense') statsVM = [st('Revenue', this.inr(asum('revenue')), rd),
+        st('Impressions', this.compact(asum('impressions')), rd), st('Clicks', this.compact(asum('clicks')), rd)];
+      else if (a.platform === 'search_console') statsVM = [st('Clicks', this.compact(asum('clicks')), rd),
+        st('Impressions', this.compact(asum('impressions')), rd),
+        st('CTR', pct(asum('impressions') ? asum('clicks') * 100 / asum('impressions') : null), '')];
+      else if (a.platform === 'ga4') statsVM = [st('Sessions', this.compact(asum('clicks')), rd),
+        st('Page views', this.compact(asum('impressions')), rd), st('Key events', this.compact(asum('conversions')), rd)];
+      else if (a.platform === 'gbp') statsVM = [st('Profile views', this.compact(asum('impressions')), rd),
+        st('Calls', this.compact(extraOf(am, 'calls')), rd), st('Directions', this.compact(extraOf(am, 'directions')), rd)];
+      else statsVM = [st('Spend', this.inr(asum('spend')), rd), st('Clicks', this.compact(asum('clicks')), rd),
+        st('Conversions', this.compact(asum('conversions')), rd)];
+      const run = h.run;
+      const sr = runsStory.get(a.id);
+      const syncLine = !h.auto
+        ? (h.last ? 'Numbers logged by hand · latest for ' + fmtDay(h.last) : 'No automatic sync for this platform — log its numbers by hand')
+        : (!a.connected || !a.external_id) ? 'Not in the sync — ' + (!a.external_id ? 'add the account ID' : 'tick Connected') + ' under Accounts'
+        : !run ? (h.last ? 'No full sync in the last 3 days' : 'Never synced')
+        : h.st === 'running' ? 'Syncing now…'
+        : h.st === 'error' ? 'Last sync failed ' + ago(run.started_at)
+        : 'Synced ' + ago(run.finished_at || run.started_at) + (run.rows_written ? ' · ' + run.rows_written + ' rows' : '')
+          + (a.platform === 'instagram' ? ' · stories hourly' + (sr && sr.status === 'ok' ? ', last ' + ago(sr.started_at) : '') : '');
+      const failMsg = h.st === 'error' ? runMsg(run) : h.st === 'partial' ? partialMsg(run) : '';
       return {
         platformLabel: DIG_PLATFORM_LABEL[a.platform] || a.platform,
         clientLabel: clientName(a.project_id),
         label: String(a.label || a.handle || DIG_PLATFORM_LABEL[a.platform] || '—').trim(),
         handle: a.handle && !/^https?:/i.test(a.handle) ? a.handle : 'ID ' + (a.external_id || '—'),
-        freshLabel: failed ? 'Sync failed' : row.freshLabel,
-        freshBg: failed ? '#F7E4E1' : row.freshBg,
-        freshColor: failed ? '#B4433A' : row.freshColor,
-        statsVM,
-        syncLine: !run ? 'Never synced'
-          : failed ? 'Last sync failed ' + ago(run.started_at)
-          : run.status === 'running' ? 'Syncing now…'
-          : 'Synced ' + ago(run.started_at) + (run.rows_written ? ' · ' + run.rows_written + ' rows' : ''),
-        syncColor: failed ? '#B4433A' : '#4A524F',
-        fix: failed ? (digPlainError(run.message) || String(run.message || '')) : '',
-        hasFix: failed,
-        syncOne: row.syncOne,
-        backfill: () => this.syncDigital({ account_id: a.id, platform: a.platform, days: 30 }),
+        freshLabel: h.label, freshBg: h.bg, freshColor: h.color,
+        statsVM, syncLine,
+        syncColor: h.st === 'error' ? '#B4433A' : '#4A524F',
+        fix: failMsg ? (digPlainError(failMsg) || failMsg) : '', hasFix: !!failMsg,
+        canSync: canSyncAcc(a), canLog: !canSyncAcc(a),
+        syncLabel: s.digSyncing && s.digSyncingAcc === a.id ? 'Syncing…' : 'Sync',
+        syncOne: () => this.syncDigital({ account_ids: [a.id] }),
+        backfill: () => this.syncDigital({ account_ids: [a.id], days: 30 }),
+        logNumbers: () => this.openNumbers(a),
+        edit: () => this.goAccountEdit(a),
       };
     });
+
+    // ---- needs attention: one ranked list of what to do next ----
+    const isMaster = scope === 'all';
+    const canEdit = this.can('digitalEdit');
+    const attn = [];
+    const ATTN_TONE = { 4: ['#F7E4E1', '#B4433A'], 3: ['#F7E4E1', '#B4433A'], 2: ['#F6EEDC', '#9A6A12'], 1: ['#F1F4F3', '#5C6864'] };
+    const pushA = (rank, tag, who, detail, actionLabel, action) => attn.push({
+      rank, tag, who, detail: String(detail || '').trim(),
+      actionLabel: action ? actionLabel : '', go: action || (() => {}), hasAction: !!action,
+      tagBg: ATTN_TONE[rank][0], tagColor: ATTN_TONE[rank][1],
+    });
+    const accName = a => (isMaster ? clientName(a.project_id) + ' · ' : '') + (DIG_PLATFORM_LABEL[a.platform] || a.platform)
+      + (a.label || a.handle ? ' · ' + String(a.label || a.handle).trim() : '');
+    for (const a of (isMaster ? s.digAccounts : scoped).filter(x => x.active !== false)) {
+      const h = accHealth(a);
+      const sync = canEdit ? () => this.syncDigital({ account_ids: [a.id] }) : null;
+      const pname = DIG_PLATFORM_LABEL[a.platform] || 'This platform';
+      if (h.key === 'failed') { const m = runMsg(h.run); pushA(4, 'Sync failed', accName(a), digPlainError(m) || m, 'Retry', sync); }
+      else if (h.key === 'stale') pushA(3, 'Behind', accName(a), 'Newest numbers are for ' + fmtDay(h.last) + '. A sync usually catches it up.', 'Sync', sync);
+      else if (h.key === 'nodata') pushA(3, 'No data', accName(a), 'Connected, but nothing has landed yet. Pull 30 days to fetch its history.', 'Pull 30 days',
+        canEdit ? () => this.syncDigital({ account_ids: [a.id], days: 30 }) : null);
+      else if (h.key === 'off') pushA(2, 'Not in the sync', accName(a), !a.external_id ? 'No account ID yet — add it, then tick Connected.' : 'Tick Connected once our token can reach it.',
+        'Open', canEdit ? () => this.goAccountEdit(a) : null);
+      else if (h.key === 'due') pushA(2, 'Numbers due', accName(a), (h.last ? 'Last logged for ' + fmtDay(h.last) + '. ' : '')
+        + pname + ' has no automatic sync — copy the numbers from its own dashboard.', 'Log numbers', canEdit ? () => this.openNumbers(a) : null);
+      else if (h.key === 'partial') { const m = partialMsg(h.run); pushA(1, 'Partly synced', accName(a), digPlainError(m) || m, '', null); }
+      const sr = runsStory.get(a.id);
+      if (a.platform === 'instagram' && sr && sr.status === 'error' && h.key !== 'failed') {
+        pushA(2, 'Stories', accName(a), 'Story capture failed ' + ago(sr.started_at) + ' — a story loses its numbers 24 hours after posting. '
+          + (digPlainError(sr.message) || sr.message || ''), 'Retry', sync);
+      }
+    }
+    for (const c of (isMaster ? clients : clients.filter(x => x.id === scope))) {
+      const accs = s.digAccounts.filter(a => a.active !== false && a.project_id === c.id);
+      if (!accs.length) continue;
+      const t = s.digTerms.find(x => x.project_id === c.id);
+      const nm = c.client_name || c.project_title || 'Client';
+      const open = isMaster ? () => this.openDigClient(c.id) : null;
+      if (t && Number(t.monthly_budget) > 0) {
+        const mtd = accs.reduce((tt, a) => tt + sumOf(accRows(a.id, mStart), 'spend'), 0);
+        const p = Math.round(mtd * 100 / Number(t.monthly_budget));
+        if (p - dayPct > 12) pushA(3, 'Over pace', nm, this.inr(mtd) + ' of ' + this.inr(t.monthly_budget) + ' spent with ' + dayPct + '% of the month gone.', 'Open', open);
+        else if (now.getDate() >= 10 && p - dayPct < -20) pushA(1, 'Under pace', nm, 'Only ' + p + '% of the approved budget spent by day ' + now.getDate() + '.', 'Open', open);
+      }
+      const synced = new Set(accs.filter(a => ['instagram', 'facebook', 'youtube', 'x'].indexOf(a.platform) !== -1 && canSyncAcc(a)).map(a => a.id));
+      if (synced.size && !s.digLoading) {
+        const last = s.digPosts.filter(p => synced.has(p.account_id) && p.published_at).map(p => String(p.published_at)).sort().pop();
+        const quiet = last ? Math.floor((Date.now() - new Date(last).getTime()) / 86400000) : null;
+        if (quiet != null && quiet >= 7) pushA(2, 'Quiet', nm, 'Nothing published in ' + quiet + ' days on the synced profiles.', 'Open', open);
+      }
+    }
+    attn.sort((x, y) => y.rank - x.rank);
+
+    // ---- master dashboard: every client on one page ----
+    let digMasterKpisVM = [], digMasterRowsVM = [], digMixVM = [], digMasterSortVM = [];
+    if (isMaster && s.digitalTab === 'overview') {
+      const active = s.digAccounts.filter(a => a.active !== false);
+      const clientAccs = active.filter(a => a.project_id != null);
+      const autoOn = clientAccs.filter(canSyncAcc);
+      const hs = autoOn.map(accHealth);
+      const failing = hs.filter(h => h.key === 'failed').length;
+      const behind = hs.filter(h => h.key === 'stale' || h.key === 'nodata').length;
+      const healthy = hs.filter(h => h.key === 'ok' || h.key === 'running' || h.key === 'partial').length;
+      const withAccs = clients.filter(c => clientAccs.some(a => a.project_id === c.id)).length;
+      const mtdAll = clientAccs.reduce((t, a) => t + sumOf(accRows(a.id, mStart), 'spend'), 0);
+      const budgetAll = clients.reduce((t, c) => {
+        const tt = s.digTerms.find(x => x.project_id === c.id);
+        return t + Number((tt && tt.monthly_budget) || 0);
+      }, 0);
+      const mCov = prevCovered(clientAccs.filter(isSocial));
+      const rdir = dir(reach, prevReach, mCov);
+      const hasAds = clientAccs.some(a => DIG_PLATFORM_GROUP[a.platform] === 'ads');
+      digMasterKpisVM = [
+        kpi('Clients', String(withAccs), clients.length > withAccs ? (clients.length - withAccs) + ' more on the roster with no accounts yet' : 'on the digital roster'),
+        kpi('Accounts', String(clientAccs.length), autoOn.length + ' syncing · ' + clientAccs.filter(a => !DIG_PLATFORM_AUTO[a.platform]).length + ' by hand'),
+        kpi('Audience', followersNow ? this.compact(followersNow) : '—', followerGain ? signed(followerGain) + ' in ' + rangeLabel : 'followers across client profiles', followerGain > 0, followerGain < 0),
+        kpi('Social reach', this.compact(reach), changeSub(reach, prevReach, rangeLabel, mCov), rdir.good, rdir.bad),
+        hasAds ? kpi('Ad spend', this.inr(spend), budgetAll ? this.inr(mtdAll) + ' this month of ' + this.inr(budgetAll) + ' approved'
+          : changeSub(spend, prevSpend, rangeLabel, prevCovered(clientAccs.filter(a => DIG_PLATFORM_GROUP[a.platform] === 'ads')))) : null,
+        kpi('Sync health', autoOn.length ? healthy + ' / ' + autoOn.length : '—',
+          failing ? failing + ' failing' + (behind ? ' · ' + behind + ' behind' : '') : behind ? behind + ' behind'
+            : autoOn.length ? 'every synced account is current' : 'nothing syncing yet',
+          !failing && !behind && autoOn.length > 0, failing > 0),
+      ].filter(Boolean);
+
+      const rowFor = (id, name, accs) => {
+        const ids = new Set(accs.map(a => a.id));
+        const soc = accs.filter(isSocial);
+        const cur = [], prev = [];
+        accs.forEach(a => { cur.push(...accRows(a.id, from)); prev.push(...accRows(a.id, prevFrom, from)); });
+        const sc = cur.filter(m => groupOf(m.account_id) === 'social');
+        const aud = soc.reduce((t, a) => t + (followersOf(a.id) || 0), 0);
+        const gain = sumOf(sc, 'follower_delta');
+        const r = sumOf(sc, 'reach'), pr = sumOf(prev.filter(m => groupOf(m.account_id) === 'social'), 'reach');
+        const spd = sumOf(cur.filter(m => groupOf(m.account_id) === 'ads'), 'spend');
+        const posts = s.digPosts.filter(p => ids.has(p.account_id));
+        const rp = posts.filter(p => p.published_at && String(p.published_at).slice(0, 10) >= from);
+        const er = erOfList(rp);
+        const lastPost = posts.map(p => String(p.published_at || '')).filter(Boolean).sort().pop();
+        const quiet = lastPost ? Math.floor((Date.now() - new Date(lastPost).getTime()) / 86400000) : null;
+        const hl = accs.map(accHealth);
+        const nFail = hl.filter(h => h.key === 'failed').length;
+        const nBehind = hl.filter(h => h.key === 'stale' || h.key === 'nodata').length;
+        const nWarn = hl.filter(h => h.key === 'due' || h.key === 'off' || h.key === 'partial').length;
+        const worst = hl.reduce((m, h) => Math.max(m, h.rank), -1);
+        const t = id === HOUSE ? null : s.digTerms.find(x => x.project_id === id);
+        const budget = t ? Number(t.monthly_budget || 0) : 0;
+        const mtd = accs.reduce((tt, a) => tt + sumOf(accRows(a.id, mStart), 'spend'), 0);
+        const ok = prevCovered(soc);
+        const d = change(r, pr, ok);
+        return {
+          name, tagsVM: [...new Set(accs.map(a => a.platform))].map(p => ({ label: DIG_PLATFORM_SHORT[p] || p })),
+          sub: accs.length ? accs.length + (accs.length === 1 ? ' account' : ' accounts') : 'No accounts yet',
+          audienceLabel: aud ? this.compact(aud) : '—',
+          growthLabel: gain ? signed(gain) + (aud - gain > 0 ? ' · ' + pct(gain * 100 / (aud - gain)) : '') : soc.length ? 'no change' : '',
+          growthColor: gain > 0 ? '#0E8E72' : gain < 0 ? '#B4433A' : '#6B7572',
+          reachLabel: soc.length ? this.compact(r) : '—',
+          reachDelta: changeLabel(r, pr, ok),
+          reachDeltaColor: d == null ? '#6B7572' : d >= 0 ? '#0E8E72' : d < -10 ? '#B4433A' : '#6B7572',
+          erLabel: er == null ? '—' : pct(er),
+          contentLabel: rp.length ? rp.length + ' published' : soc.length ? 'none in range' : '—',
+          lastPostLabel: quiet == null ? '' : quiet === 0 ? 'last today' : 'last ' + quiet + 'd ago',
+          lastPostColor: quiet != null && quiet >= 7 ? '#9A6A12' : '#6B7572',
+          spendLabel: spd ? this.inr(spd) : '—',
+          paceLabel: budget ? Math.round(mtd * 100 / budget) + '% of month budget' : '',
+          healthLabel: !accs.length ? 'No accounts' : nFail ? nFail + ' failing' : nBehind ? nBehind + ' behind' : nWarn ? nWarn + ' to check' : 'Healthy',
+          healthBg: !accs.length ? '#F1F4F3' : nFail || nBehind ? '#F7E4E1' : nWarn ? '#F6EEDC' : '#DDEFE8',
+          healthColor: !accs.length ? '#5C6864' : nFail || nBehind ? '#B4433A' : nWarn ? '#9A6A12' : '#0A6E58',
+          open: () => this.openDigClient(id),
+          k: {
+            name: String(name).toLowerCase(), reach: r, audience: aud, spend: spd, has: accs.length ? 1 : 0,
+            growth: aud - gain > 0 ? gain / (aud - gain) : 0, attention: worst * 1000 + nFail * 10 + nBehind,
+          },
+        };
+      };
+      const MSORT = [['reach', 'Reach'], ['audience', 'Audience'], ['growth', 'Growth'], ['spend', 'Spend'], ['attention', 'Attention'], ['name', 'A–Z']];
+      const ms = MSORT.some(x => x[0] === s.digMasterSort) ? s.digMasterSort : 'reach';
+      digMasterSortVM = chip(MSORT, ms, k => this.setState({ digMasterSort: k }));
+      digMasterRowsVM = clients
+        .map(c => rowFor(c.id, c.client_name || c.project_title || 'Client', active.filter(a => a.project_id === c.id)))
+        .sort((x, y) => (y.k.has - x.k.has)
+          || (ms === 'name' ? x.k.name.localeCompare(y.k.name) : (y.k[ms] - x.k[ms]) || x.k.name.localeCompare(y.k.name)));
+      const houseAccs = active.filter(a => a.project_id == null);
+      if (houseAccs.length) {
+        const hr = rowFor(HOUSE, HOUSE_LABEL, houseAccs);
+        hr.sub += ' · not in the totals';
+        digMasterRowsVM.push(hr);
+      }
+
+      digMixVM = DIG_PLATFORM_DEFS.map(d => d[0]).filter(p => clientAccs.some(a => a.platform === p)).map(p => {
+        const accs = clientAccs.filter(a => a.platform === p);
+        const pr = rows.filter(m => platOf(m.account_id) === p);
+        const g = DIG_PLATFORM_GROUP[p];
+        let value, label, sub = '';
+        if (g === 'social') {
+          value = this.compact(accs.reduce((t, a) => t + (followersOf(a.id) || 0), 0));
+          label = p === 'youtube' ? 'subscribers' : 'followers';
+          sub = p === 'youtube' ? this.compact(sumOf(pr, 'video_views')) + ' views' : p === 'x' ? '' : this.compact(sumOf(pr, 'reach')) + ' reach';
+        } else if (g === 'ads') {
+          value = this.inr(sumOf(pr, 'spend')); label = 'spend';
+          sub = this.compact(sumOf(pr, 'clicks')) + ' clicks · ' + this.compact(sumOf(pr, 'conversions')) + ' conversions';
+        } else if (p === 'search_console') {
+          value = this.compact(sumOf(pr, 'clicks')); label = 'search clicks'; sub = this.compact(sumOf(pr, 'impressions')) + ' impressions';
+        } else if (p === 'ga4') {
+          value = this.compact(sumOf(pr, 'clicks')); label = 'sessions'; sub = this.compact(sumOf(pr, 'conversions')) + ' key events';
+        } else if (p === 'gbp') {
+          value = this.compact(sumOf(pr, 'impressions')); label = 'profile views'; sub = this.compact(extraOf(pr, 'calls')) + ' calls';
+        } else { value = this.inr(sumOf(pr, 'revenue')); label = 'revenue'; }
+        return {
+          name: DIG_PLATFORM_LABEL[p] || p,
+          countLabel: accs.length + (accs.length === 1 ? ' account' : ' accounts') + (DIG_PLATFORM_AUTO[p] ? '' : ' · by hand'),
+          value, label, sub, hasSub: !!sub,
+        };
+      });
+    }
 
     // Which property a watched phrase belongs to. With several in the register
     // and no client selected, picking the first one silently files the phrase
@@ -17126,6 +18117,186 @@ class Component extends DCLogic {
     const df = s.dealForm;
     const secretMeta = f && f.id ? secretFor.get(f.id) : null;
 
+    // ---- numbers by hand, and accounts found through the tokens ----
+    const nf = s.numForm;
+    const nfAcc = nf ? accById.get(nf.account_id) : null;
+    const nfGroup = nf ? (DIG_PLATFORM_GROUP[nf.platform] || 'social') : 'social';
+    const normId = (p, v) => {
+      let x = String(v || '').trim().toLowerCase();
+      if (p === 'meta_ads') x = x.replace(/^act_/, '');
+      if (p === 'ga4') x = x.replace(/^properties\//, '');
+      return x;
+    };
+    const known = new Set(s.digAccounts.map(a => a.platform + ':' + normId(a.platform, a.external_id)));
+    const foundAll = (s.digFound && s.digFound.found) || [];
+    const foundNew = foundAll.filter(x => !known.has(x.platform + ':' + normId(x.platform, x.external_id)));
+    const foundDefault = scope !== 'all' ? scope : '';
+    const digFoundVM = foundNew.map(x => {
+      const key = x.platform + ':' + x.external_id;
+      const pick = s.digFoundClient[key] != null ? s.digFoundClient[key] : foundDefault;
+      return {
+        platformLabel: DIG_PLATFORM_LABEL[x.platform] || x.platform,
+        label: x.label || x.handle || x.external_id,
+        idLabel: (x.handle && x.handle !== x.label ? x.handle + ' · ' : '') + x.external_id,
+        client: pick,
+        onClient: e => this.setState({ digFoundClient: { ...this.state.digFoundClient, [key]: e.target.value } }),
+        add: () => this.addFound(x, pick),
+      };
+    });
+    const tabList = DIG_TABS.filter(t => (t[0] === 'portal' ? (!isMaster && !isHouse && this.can('digitalEdit'))
+      : (t[0] !== 'deals' && t[0] !== 'recharge') || (this.can('digitalMoney') && !isHouse)));
+    const pt = s.portal;
+    const monthsBack = [];
+    for (let i = 0; i < 6; i++) { const x = new Date(); x.setDate(1); x.setMonth(x.getMonth() - i); monthsBack.push(x.toISOString().slice(0, 7) + '-01'); }
+    (s.portalReports || []).forEach(r => { const m = String(r.month).slice(0, 10); if (monthsBack.indexOf(m) === -1) monthsBack.push(m); });
+    const portalVM = {
+      digIsPortal: s.digitalTab === 'portal' && !isMaster && !isHouse && this.can('digitalEdit'),
+      portalMissing: !!s.portalMissing,
+      portalReady: !!s.portalLoaded && !s.portalMissing,
+      hasPortal: !!pt, noPortal: !!s.portalLoaded && !s.portalMissing && !pt,
+      portalUrl: pt ? this.portalUrl(pt.token) : '',
+      portalBadge: !pt ? 'Not set up' : pt.active === false ? 'Off' : !pt.has_pin ? 'Needs a PIN' : 'Live',
+      portalBadgeBg: !pt || pt.active === false ? '#F1F4F3' : !pt.has_pin ? '#F6EEDC' : '#DDEFE8',
+      portalBadgeColor: !pt || pt.active === false ? '#5C6864' : !pt.has_pin ? '#9A6A12' : '#0A6E58',
+      portalSeen: pt ? (pt.views ? 'Opened ' + pt.views + (pt.views === 1 ? ' time' : ' times') + ' · last ' + fmtStampTime(pt.last_viewed_at) : 'Not opened yet') : '',
+      portalPinNote: pt && !pt.has_pin ? 'No PIN yet — the page stays locked until you set one.' : 'The PIN is stored scrambled. If the client loses it, set a new one.',
+      hasShownPin: !!s.portalShownPin, portalShownPin: s.portalShownPin || '',
+      portalPin: s.portalPin || '',
+      onPortalPin: e => this.setState({ portalPin: String(e.target.value || '').replace(/\D/g, '').slice(0, 4) }),
+      suggestPin: () => this.setState({ portalPin: String(Math.floor(1000 + Math.random() * 9000)) }),
+      createPortal: () => this.savePortal({ pin: s.portalPin || '' }),
+      setPortalPin: () => this.savePortal({ pin: s.portalPin || '' }),
+      portalLogo: s.portalLogo || '',
+      onPortalLogo: e => this.setState({ portalLogo: e.target.value }),
+      savePortalLogo: () => this.savePortal({ logo: s.portalLogo || '' }),
+      // The Logo suite, original files: the resized copies are flattened, and a
+      // transparent mark would sit in a white box on the client's page.
+      portalLogosVM: (() => {
+        const list = s.portalLogos || [];
+        const chosen = pt ? (pt.logo_url || '') : '';
+        const auto = !chosen;
+        return [{ key: 'auto', label: 'Automatic', sub: list.length ? 'first in the Logo suite' : 'client name in type', hasImg: !!list[0], img: list[0] ? (list[0].thumb_url || list[0].url_grid || list[0].url) : '',
+          border: auto ? 'var(--green)' : 'var(--line)', on: auto, pick: () => pt && this.savePortal({ logo: '' }) }]
+          .concat(list.map((m, i) => ({
+            key: m.id, label: 'Logo ' + (i + 1), sub: /\.svg(\?|$)/i.test(m.url) ? 'SVG' : /\.png(\?|$)/i.test(m.url) ? 'PNG' : 'image',
+            hasImg: true, img: m.thumb_url || m.url_grid || m.url,
+            border: chosen === m.url ? 'var(--green)' : 'var(--line)', on: chosen === m.url,
+            pick: () => pt && this.savePortal({ logo: m.url }),
+          })));
+      })(),
+      hasPortalLogos: (s.portalLogos || []).length > 0,
+      newPortalLink: () => this.savePortal({ newLink: true }),
+      togglePortal: () => this.savePortal({ active: !(pt && pt.active !== false) }),
+      portalToggleLabel: pt && pt.active !== false ? 'Switch off' : 'Switch on',
+      copyPortalLink: () => this.copyPortalLink(),
+      portalEmailTo: s.portalEmailTo || '',
+      onPortalEmailTo: e => this.setState({ portalEmailTo: e.target.value }),
+      portalEmailName: s.portalEmailName || '',
+      onPortalEmailName: e => this.setState({ portalEmailName: e.target.value }),
+      portalEmailKind: s.portalEmailKind || 'link',
+      onPortalEmailKind: e => this.setState({ portalEmailKind: e.target.value }),
+      portalEmailKindsVM: [{ value: 'link', label: 'The insights page' }].concat((s.portalReports || [])
+        .filter(r => r.status === 'published')
+        .map(r => ({ value: String(r.month).slice(0, 10), label: new Date(String(r.month).slice(0, 10) + 'T12:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) + ' report' }))),
+      canEmailPin: !!s.portalShownPin,
+      portalEmailPin: !!s.portalEmailPin,
+      onPortalEmailPin: e => this.setState({ portalEmailPin: e.target.checked }),
+      sendInsightsEmail: () => this.sendInsightsEmail(),
+      portalSending: !!s.portalSending,
+      portalSendLabel: s.portalSending ? 'Sending…' : 'Email the client',
+      portalEmailed: pt && pt.emailed_at ? 'Last emailed to ' + (pt.emailed_to || '') + ' · ' + fmtStampTime(pt.emailed_at) : '',
+      hasPortalEmailed: !!(pt && pt.emailed_at),
+      portalBusy: !!s.portalBusy,
+      portalStatus: s.portalStatus || '', hasPortalStatus: !!s.portalStatus,
+      portalMonthsVM: monthsBack.map(m => {
+        const t = this.reportText(m), row = t.row;
+        const cur = m.slice(0, 7) === new Date().toISOString().slice(0, 7);
+        const pub = row.status === 'published';
+        const dirty = !!(s.portalDrafts || {})[m];
+        return {
+          label: new Date(m + 'T12:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) + (cur ? ' · in progress' : ''),
+          status: pub ? 'Published ' + fmtDay(String(row.published_at).slice(0, 10)) : row.id ? 'Draft' : 'Not started',
+          statusBg: pub ? '#DDEFE8' : row.id ? '#F6EEDC' : '#F1F4F3',
+          statusColor: pub ? '#0A6E58' : row.id ? '#9A6A12' : '#5C6864',
+          notes: t.notes, plan: t.plan,
+          onNotes: e => this.portalDraft(m, 'notes', e.target.value),
+          onPlan: e => this.portalDraft(m, 'plan', e.target.value),
+          save: () => this.saveReportDraft(m),
+          publish: () => this.publishReport(m),
+          publishLabel: pub ? 'Republish' : 'Publish',
+          isPublished: pub, unpublish: () => this.unpublishReport(m),
+          dirtyNote: dirty ? 'Unsaved changes' : '',
+          preview: pt ? this.portalUrl(pt.token) + '?m=' + m.slice(0, 7) : '',
+          hasPreview: !!pt && pub,
+        };
+      }),
+    };
+    const accCount = id => s.digAccounts.filter(a => a.active !== false && (id === HOUSE ? a.project_id == null : a.project_id === id)).length;
+    const lastOk = s.digRuns.find(r => (r.status === 'ok' || r.status === 'partial') && (scope === 'all' || inScope(r.scope)));
+    const scopedOn = scoped.filter(a => a.active !== false);
+    const digExtraVM = {
+      ...portalVM,
+      digTitle: scope === 'all' ? 'All clients' : isHouse ? 'Glomium — our own' : clientName(scope),
+      digSubLine: [
+        scope === 'all' ? (n => n + (n === 1 ? ' client' : ' clients'))(clients.filter(c => accCount(c.id) > 0).length) : '',
+        scopedOn.length + (scopedOn.length === 1 ? ' account' : ' accounts'),
+        scopedOn.filter(canSyncAcc).length + ' syncing',
+        scopedOn.filter(a => !DIG_PLATFORM_AUTO[a.platform]).length ? scopedOn.filter(a => !DIG_PLATFORM_AUTO[a.platform]).length + ' by hand' : '',
+        lastOk ? 'last sync ' + ago(lastOk.finished_at || lastOk.started_at) : '',
+      ].filter(Boolean).join(' · '),
+      digTabLinksVM: tabList.map(([k, label]) => ({
+        label, go: () => this.setDigitalTab(k),
+        color: s.digitalTab === k ? '#1B1D1E' : '#4A524F',
+        bar: s.digitalTab === k ? 'var(--green)' : 'transparent',
+      })),
+      digScopeValue: s.digProject,
+      onDigScope: e => this.setDigScope(e.target.value),
+      digScopeGroupsVM: [
+        { label: 'Overview', opts: [{ value: 'all', label: 'All clients' }] },
+        { label: 'Clients', opts: clients.map(c => {
+          const n = accCount(c.id);
+          return { value: c.id, label: (c.client_name || c.project_title || 'Client') + (n ? ' · ' + n + (n === 1 ? ' account' : ' accounts') : ' · no accounts') };
+        }) },
+        { label: 'Glomium', opts: [{ value: HOUSE, label: HOUSE_LABEL }] },
+      ].filter(g => g.opts.length),
+
+      digIsMaster: isMaster && s.digitalTab === 'overview',
+      digIsClientView: !isMaster,
+      digMasterKpisVM, digMasterRowsVM, hasDigMasterRows: digMasterRowsVM.length > 0, digMasterSortVM,
+      digMixVM, hasDigMix: digMixVM.length > 0,
+      digAttnVM: s.digAttnAll ? attn : attn.slice(0, 8),
+      hasDigAttn: attn.length > 0,
+      digAttnCount: String(attn.length),
+      digAttnMore: attn.length > 8,
+      digAttnMoreLabel: s.digAttnAll ? 'Show fewer' : 'Show all ' + attn.length,
+      toggleAttn: () => this.setState({ digAttnAll: !s.digAttnAll }),
+
+      hasNumForm: !!nf,
+      numFormTitle: nf ? 'Log numbers — ' + (nfAcc ? String(nfAcc.label || nfAcc.handle || '').trim() || DIG_PLATFORM_LABEL[nf.platform] : DIG_PLATFORM_LABEL[nf.platform])
+        + (nfAcc ? ' · ' + clientName(nfAcc.project_id) : '') : '',
+      numDate: nf ? nf.on_date : '',
+      onNumDate: e => this.setState({ numForm: { ...this.state.numForm, on_date: e.target.value } }),
+      numFieldsVM: nf ? (DIG_NUM_FIELDS[nfGroup] || DIG_NUM_FIELDS.social).map(([k, label]) => ({
+        label, value: nf[k] == null ? '' : nf[k],
+        onChange: e => this.setState({ numForm: { ...this.state.numForm, [k]: e.target.value } }),
+      })) : [],
+      saveNumbers: () => this.saveNumbers(),
+      closeNumbers: () => this.setState({ numForm: null, digStatus: '' }),
+
+      findAccounts: () => this.findAccounts(),
+      digFindLabel: s.digFinding ? 'Searching…' : 'Find accounts',
+      digFinding: s.digFinding,
+      hasFound: !!s.digFound,
+      digFoundVM, hasFoundRows: digFoundVM.length > 0,
+      digFoundSummary: !s.digFound ? ''
+        : foundNew.length ? foundNew.length + ' not in the register yet' + (foundAll.length > foundNew.length ? ' · ' + (foundAll.length - foundNew.length) + ' already here' : '') + '. Pick the client and add — each one pulls 30 days straight away.'
+        : foundAll.length ? 'Everything the tokens can reach is already in the register.'
+        : 'The tokens reach nothing yet. Assign the client’s Page, profile or property to the glomium-sync system user (Meta) or the Google login first.',
+      digFoundErrorsVM: ((s.digFound && s.digFound.errors) || []).map(t => ({ text: t })),
+      hasFoundErrors: !!(s.digFound && s.digFound.errors && s.digFound.errors.length),
+      closeFound: () => this.setState({ digFound: null }),
+    };
+
     return {
       isDigital: true,
       digTabsVM: chip(
@@ -17139,7 +18310,7 @@ class Component extends DCLogic {
           // Brand deals and recharge are client-money screens. Landing on one
           // with the house scope selected would strand the user on a tab that
           // can never have a row.
-          { digProject: k, acctForm: null, dealForm: null, termsForm: null,
+          { digProject: k, acctForm: null, dealForm: null, termsForm: null, numForm: null,
             digitalTab: k === HOUSE && (s.digitalTab === 'deals' || s.digitalTab === 'recharge')
               ? 'overview' : s.digitalTab },
           // Content and SEO query by account id, so a client change is a refetch,
@@ -17162,7 +18333,9 @@ class Component extends DCLogic {
         : (s.digitalTab && s.digitalTab !== 'overview') ? '← Overview'
         : (s.digProject && s.digProject !== 'all') ? '← All clients' : '← Back',
       digStatus: s.digStatus, hasDigStatus: !!s.digStatus,
-      digSyncLabel: s.digSyncing ? 'Syncing…' : 'Sync now',
+      digSyncLabel: s.digSyncing ? 'Syncing…' : scope === 'all' ? 'Sync all' : 'Sync now',
+      digSyncTitle: scope === 'all' ? 'Sync every connected account — clients and ours' : 'Sync the connected accounts in this view',
+      digSyncOpacity: s.digSyncing ? 0.45 : 1,
       digBack: () => {
         if (s.acctForm || s.dealForm || s.termsForm) {
           this.setState({ acctForm: null, dealForm: null, termsForm: null, digStatus: '', secretValue: '', secretShown: null, secretReason: '' });
@@ -17173,8 +18346,9 @@ class Component extends DCLogic {
         this.goWorkspace('dashboard');
       },
       digSyncing: s.digSyncing,
-      syncAll: () => this.syncDigital({}),
-      syncBackfill: () => this.syncDigital({ days: 30 }),
+      syncAll: () => this.syncDigital(scope === 'all' ? {} : { project_id: isHouse ? 'house' : scope }),
+      syncBackfill: () => this.syncDigital(scope === 'all' ? { days: 30 } : { project_id: isHouse ? 'house' : scope, days: 30 }),
+      ...digExtraVM,
       goContent: () => this.setDigitalTab('content'),
 
       digKpiGroupsVM, digChartGridVM, digChartAxisVM, digChartSummaryVM,
@@ -17220,6 +18394,9 @@ class Component extends DCLogic {
       digNoBills: !s.digLoading && digBillRowsVM.length === 0,
 
       digPlatformOptsVM: opts(DIG_PLATFORMS),
+      digPlatformGroupsVM: DIG_GROUPS.map(([g, label]) => ({ label, opts: DIG_PLATFORM_DEFS.filter(d => d[2] === g).map(d => ({ value: d[0], label: d[1] + (d[3] ? '' : ' — numbers by hand') })) })),
+      acctIsManual: !!f && !DIG_PLATFORM_AUTO[f.platform],
+      acctManualNote: f ? (DIG_PLATFORM_LABEL[f.platform] || 'This platform') + ' has no automatic sync we can reach — its reporting API is partner-only. Save the account, then use Log numbers each month; Connected does nothing for it.' : '',
       digRouteOptsVM: opts(DIG_ROUTES),
       digAccTypeOptsVM: opts(DIG_ACCOUNT_TYPES),
       digFeeTypeOptsVM: opts(DIG_FEE_TYPES),

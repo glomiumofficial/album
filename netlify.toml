@@ -17,6 +17,11 @@
   status = 200
 
 [[redirects]]
+  from = "/i/*"
+  to = "/insights.html?k=:splat"
+  status = 200
+
+[[redirects]]
   from = "/admin"
   to = "/admin.html"
   status = 200
