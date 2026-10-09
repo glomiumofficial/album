@@ -15915,9 +15915,11 @@ class Component extends DCLogic {
     });
   }
 
-  portalUrl(token) {
+  // A real file path, like the album and feedback links: the site is on GitHub
+  // Pages, which serves files and ignores the /i/* rewrite in _redirects.
+  portalUrl(token, month) {
     const host = /glomium\.co$/i.test(window.location.hostname) ? window.location.origin : 'https://album.glomium.co';
-    return host + '/i/' + token;
+    return host + '/insights.html?k=' + encodeURIComponent(token) + (month ? '&m=' + String(month).slice(0, 7) : '');
   }
 
   async savePortal(opts) {
@@ -15990,7 +15992,7 @@ class Component extends DCLogic {
     const month = s.portalEmailKind && s.portalEmailKind !== 'link' ? s.portalEmailKind : '';
     const pin = s.portalEmailPin && s.portalShownPin ? s.portalShownPin : '';
     const client = (s.digClients.find(c => c.id === s.digProject) || {}).client_name || '';
-    const link = this.portalUrl(p.token) + (month ? '?m=' + month.slice(0, 7) : '');
+    const link = this.portalUrl(p.token, month);
     this.setState({ portalSending: true, portalStatus: 'Sending…' });
     try {
       const mailer = await this.waitForGlobal('emailjs', 8000);
@@ -18226,7 +18228,7 @@ class Component extends DCLogic {
           publishLabel: pub ? 'Republish' : 'Publish',
           isPublished: pub, unpublish: () => this.unpublishReport(m),
           dirtyNote: dirty ? 'Unsaved changes' : '',
-          preview: pt ? this.portalUrl(pt.token) + '?m=' + m.slice(0, 7) : '',
+          preview: pt ? this.portalUrl(pt.token, m) : '',
           hasPreview: !!pt && pub,
         };
       }),
