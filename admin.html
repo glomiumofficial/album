@@ -4989,6 +4989,32 @@
                 </div>
                 <div style="display:flex; flex-direction:column; gap:8px">
                   <span style="font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:#6B7572">Client logo</span>
+                  <div style="display:flex; flex-direction:column; gap:10px; padding:14px; border:1px solid var(--line); background:#fff">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">How it shows on their page</span>
+                    <div style="display:flex; align-items:center; justify-content:center; gap:18px; padding:18px 10px; border-top:1px solid #E2E7E5; border-bottom:1px solid #E2E7E5">
+                      <img src="assets/wordmark-green.png" alt="glomium" style="height:26px; width:auto; display:block">
+                      <span aria-hidden="true" style="position:relative; display:block; width:20px; height:20px; flex:none">
+                        <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(45deg)"></span>
+                        <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(-45deg)"></span>
+                      </span>
+                      <sc-if value="{{ hasLogoPreview }}" hint-placeholder-val="{{ false }}">
+                        <span style="display:block; height:36px; width:{{ portalPreviewW }}; max-width:45%; background-image:url({{ portalPreviewLogo }}); background-size:contain; background-repeat:no-repeat; background-position:left center"></span>
+                      </sc-if>
+                    </div>
+                    <span style="font-size:12px; color:#1B1D1E">{{ portalLogoInfo }}</span>
+                    <sc-if value="{{ hasPortalLogoWarn }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:12px; color:#9A6A12">{{ portalLogoWarn }}</span>
+                    </sc-if>
+                  </div>
+                  <label style="display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 14px; border:1px dashed var(--green); background:#F3FAF8; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#E9F5F1">
+                    Upload logo
+                    <input type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" onChange="{{ onPortalLogoFile }}" disabled="{{ portalBusy }}" style="display:none">
+                  </label>
+                  <div style="display:flex; flex-direction:column; gap:4px; padding:12px 14px; background:#F8FBFA; border:1px solid var(--line)">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Best results</span>
+                    <span style="font-size:12px; color:#4A524F; line-height:1.7">SVG, or a transparent PNG · wide logo at least 600 × 200 px (about 3 : 1) · square mark at least 400 × 400 px · trim the empty space around it · under 2 MB. It shows about 64 px tall on desktop, 34 px on a phone.</span>
+                  </div>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; padding-top:4px">Or paste a link</span>
                   <div style="display:flex; gap:8px; flex-wrap:wrap">
                     <input value="{{ portalLogo }}" onChange="{{ onPortalLogo }}" placeholder="https://… (blank uses their Logo suite)" style="flex:1 1 200px; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
                     <button onClick="{{ savePortalLogo }}" disabled="{{ portalBusy }}" style="padding:10px 14px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F3FAF8">Save</button>
@@ -15912,6 +15938,9 @@ class Component extends DCLogic {
       portalEmailFor: id,
       portalLoaded: true, portalMissing: false,
       portalStatus: p.error ? p.error.message : r.error ? r.error.message : this.state.portalStatus,
+    }, () => {
+      const first = (this.state.portalLogos || [])[0];
+      this.measurePortalLogo((row && row.logo_url) || (first && first.url) || '');
     });
   }
 
@@ -15945,6 +15974,62 @@ class Component extends DCLogic {
         : o.active === true ? 'Client page is live again.' : 'Saved.',
     });
     this.loadPortal();
+  }
+
+  // Uploaded as-is: the media pipeline's resize flattens to JPEG, which would
+  // put a transparent logo in a white box on the client's page.
+  async uploadPortalLogo(e) {
+    const file = e && e.target && e.target.files && e.target.files[0];
+    if (e && e.target) e.target.value = '';
+    if (!file) return;
+    if (!/^image\/(png|svg\+xml|webp|jpeg)$/i.test(file.type)) { this.setState({ portalStatus: 'Use a PNG, SVG, WebP or JPG file.' }); return; }
+    if (file.size > 2 * 1024 * 1024) { this.setState({ portalStatus: 'That file is ' + (file.size / 1048576).toFixed(1) + ' MB — keep the logo under 2 MB.' }); return; }
+    const dims = await new Promise(res => {
+      const u = URL.createObjectURL(file), i = new Image();
+      i.onload = () => { res({ w: i.naturalWidth, h: i.naturalHeight }); URL.revokeObjectURL(u); };
+      i.onerror = () => { res(null); URL.revokeObjectURL(u); };
+      i.src = u;
+    });
+    if (!dims) { this.setState({ portalStatus: 'That file would not open as an image.' }); return; }
+    const svg = /svg/i.test(file.type);
+    if (!svg && Math.max(dims.w, dims.h) < 300) {
+      this.setState({ portalStatus: 'That logo is only ' + dims.w + ' × ' + dims.h + ' px and will look soft. Upload one at least 600 px wide (or 400 × 400 for a square mark).' });
+      return;
+    }
+    this.setState({ portalBusy: true, portalStatus: 'Uploading logo…' });
+    try {
+      const ext = svg ? 'svg' : (file.name.split('.').pop() || 'png').toLowerCase();
+      const path = 'digital/' + this.state.digProject + '/client-logo-' + Date.now() + '.' + ext;
+      const { error } = await this.sb.storage.from(BUCKET).upload(path, file, { cacheControl: '31536000', upsert: false, contentType: file.type });
+      if (error) throw error;
+      const url = this.sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+      this.setState({ portalBusy: false, portalLogo: url });
+      await this.savePortal({ logo: url });
+      this.setState({ portalStatus: 'Logo uploaded — ' + (svg ? 'SVG, sharp at any size.' : dims.w + ' × ' + dims.h + ' px.') });
+    } catch (err) {
+      this.setState({ portalBusy: false, portalStatus: 'Upload failed: ' + (err && err.message || err) });
+    }
+  }
+
+  // Size, format and transparency of whichever logo the client page will use.
+  measurePortalLogo(url) {
+    if (!url) { if (this.state.portalLogoMeta) this.setState({ portalLogoMeta: null }); return; }
+    if (this.state.portalLogoMeta && this.state.portalLogoMeta.url === url) return;
+    const i = new Image();
+    i.crossOrigin = 'anonymous';
+    i.onload = () => {
+      let alpha = null;
+      try {
+        const c = document.createElement('canvas'); c.width = 40; c.height = 40;
+        const x = c.getContext('2d'); x.drawImage(i, 0, 0, 40, 40);
+        const px = x.getImageData(0, 0, 40, 40).data;
+        alpha = false;
+        for (let k = 3; k < px.length; k += 4) if (px[k] < 250) { alpha = true; break; }
+      } catch (err) { alpha = null; }
+      this.setState({ portalLogoMeta: { url, w: i.naturalWidth, h: i.naturalHeight, alpha } });
+    };
+    i.onerror = () => this.setState({ portalLogoMeta: { url, w: 0, h: 0, alpha: null, failed: true } });
+    i.src = url;
   }
 
   // The house email, composed by mailShell like every other one we send.
@@ -18187,6 +18272,31 @@ class Component extends DCLogic {
           })));
       })(),
       hasPortalLogos: (s.portalLogos || []).length > 0,
+      onPortalLogoFile: e => this.uploadPortalLogo(e),
+      ...(() => {
+        const first = (s.portalLogos || [])[0];
+        const url = (pt && pt.logo_url) || (first && first.url) || '';
+        const meta = s.portalLogoMeta && s.portalLogoMeta.url === url ? s.portalLogoMeta : null;
+        const fmt = /\.svg(\?|$)/i.test(url) ? 'SVG' : /\.png(\?|$)/i.test(url) ? 'PNG' : /\.webp(\?|$)/i.test(url) ? 'WebP' : /\.jpe?g(\?|$)/i.test(url) ? 'JPG' : 'Image';
+        const ratio = meta && meta.w && meta.h ? meta.w / meta.h : null;
+        const notes = [];
+        if (meta && !meta.failed && fmt !== 'SVG') {
+          if (Math.max(meta.w, meta.h) < 600) notes.push('small — may look soft on large screens');
+          if (meta.alpha === false) notes.push('no transparency — it sits on its own background');
+          if (ratio && ratio > 6) notes.push('very wide — consider a stacked version');
+        }
+        return {
+          hasLogoPreview: !!url,
+          portalPreviewLogo: String(url).replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')),
+          portalPreviewW: Math.round(44 * Math.min(Math.max(ratio || 3, 0.6), 6)) + 'px',
+          portalLogoInfo: !url ? 'No logo yet — the client page sets their name in type.'
+            : !meta ? fmt + ' · measuring…'
+            : meta.failed ? 'This logo did not load — upload it again or pick another.'
+            : fmt + (meta.w ? ' · ' + meta.w + ' × ' + meta.h + ' px' : '') + (ratio ? ' · ' + (ratio >= 1 ? ratio.toFixed(1) + ' : 1' : '1 : ' + (1 / ratio).toFixed(1)) : '')
+              + (meta.alpha === true ? ' · transparent' : '') + ((pt && pt.logo_url) ? ' · uploaded or set here' : ' · from the Logo suite'),
+          portalLogoWarn: notes.join(' · '), hasPortalLogoWarn: notes.length > 0,
+        };
+      })(),
       newPortalLink: () => this.savePortal({ newLink: true }),
       togglePortal: () => this.savePortal({ active: !(pt && pt.active !== false) }),
       portalToggleLabel: pt && pt.active !== false ? 'Switch off' : 'Switch on',
