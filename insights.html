@@ -23,424 +23,594 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <style>
-  :root { --green:#10AF8B; --green-deep:#0A6E58; }
   * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
   body { margin:0; background:#FFFFFF; color:#1B1D1E; font-family:'Jost',Helvetica,sans-serif; font-weight:300; -webkit-font-smoothing:antialiased; }
   a { color:#0A6E58; text-decoration:none; }
   a:hover { color:#10AF8B; }
   textarea, input, button, select { font-family:inherit; }
   ::selection { background:#10AF8B; color:#fff; }
+  [data-strip]::-webkit-scrollbar { display:none; }
+  @media print {
+    [data-noprint] { display:none !important; }
+    body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
 </style>
 </helmet>
 
-<div style="min-height:100vh; display:flex; flex-direction:column">
-  <header style="display:flex; justify-content:space-between; align-items:center; gap:24px; padding:22px clamp(20px,4vw,56px); flex-wrap:wrap">
-    <div style="display:flex; align-items:center; gap:14px; min-width:0">
+<div style="min-height:100vh; display:flex; flex-direction:column; background:#FFFFFF">
+
+  <sc-if value="{{ notPage }}" hint-placeholder-val="{{ true }}">
+    <header style="display:flex; justify-content:space-between; align-items:center; gap:24px; padding:22px clamp(20px,4vw,56px); flex-wrap:wrap">
       <img src="assets/wordmark-green.png" alt="glomium" style="height:18px; width:auto; display:block">
-    </div>
-    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">insights · confidential</span>
-  </header>
-
-  <main style="flex:1; width:100%; max-width:1120px; margin:0 auto; padding:clamp(48px,8vw,104px) clamp(20px,4vw,56px) clamp(80px,10vw,140px); display:flex; flex-direction:column; gap:clamp(64px,9vw,120px)">
-
-    <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
-      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">loading</span>
-    </sc-if>
-
-    <sc-if value="{{ dead }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex; flex-direction:column; gap:24px; max-width:720px">
-        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">insights</span>
-        <h1 style="margin:0; font-size:clamp(40px,7vw,96px); font-weight:200; line-height:.98; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ deadTitle }}</h1>
-        <p style="margin:0; max-width:32em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">{{ deadNote }}</p>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{ showGate }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex; flex-direction:column; gap:clamp(40px,6vw,64px); max-width:820px">
-<div style="display:flex; flex-direction:column; align-items:center; gap:clamp(22px,3vw,34px); width:100%; padding:clamp(40px,6.4vw,84px) 0 clamp(26px,3.4vw,40px); border-top:1px solid #E2E7E5; border-bottom:1px solid #E2E7E5">
-          <div style="display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; column-gap:clamp(22px,5.4vw,80px); row-gap:clamp(14px,2vw,20px); width:100%">
-            <div style="display:flex; justify-content:flex-end; min-width:0">
-              <img src="assets/wordmark-green.png" alt="glomium" style="height:clamp(26px,4.2vw,50px); width:auto; max-width:100%; display:block">
+      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">insights · confidential</span>
+    </header>
+    <main style="flex:1; width:100%; max-width:1120px; margin:0 auto; padding:clamp(48px,8vw,104px) clamp(20px,4vw,56px) clamp(80px,10vw,140px); display:flex; flex-direction:column; gap:clamp(64px,9vw,120px)">
+      <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">loading</span>
+      </sc-if>
+      <sc-if value="{{ dead }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:24px; max-width:720px">
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">insights</span>
+          <h1 style="margin:0; font-size:clamp(40px,7vw,96px); font-weight:200; line-height:.98; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ deadTitle }}</h1>
+          <p style="margin:0; max-width:32em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">{{ deadNote }}</p>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showGate }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:clamp(40px,6vw,64px); max-width:820px">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:clamp(22px,3vw,34px); width:100%; padding:clamp(40px,6.4vw,84px) 0 clamp(26px,3.4vw,40px); border-top:1px solid #E2E7E5; border-bottom:1px solid #E2E7E5">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; column-gap:clamp(22px,5.4vw,80px); row-gap:clamp(14px,2vw,20px); width:100%">
+              <div style="display:flex; justify-content:flex-end; min-width:0">
+                <img src="assets/wordmark-green.png" alt="glomium" style="height:clamp(26px,4.2vw,50px); width:auto; max-width:100%; display:block">
+              </div>
+              <span aria-hidden="true" style="position:relative; display:block; width:clamp(24px,3.2vw,40px); height:clamp(24px,3.2vw,40px)">
+                <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(45deg)"></span>
+                <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(-45deg)"></span>
+              </span>
+              <div style="display:flex; justify-content:flex-start; min-width:0">
+                <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:block; padding:{{ platePad }}; background:{{ plateBg }}; max-width:100%">
+                    <span role="img" aria-label="{{ clientName }}" style="display:block; height:clamp(34px,5.4vw,64px); width:{{ logoW64 }}; max-width:100%; background-image:url({{ logo }}); background-size:contain; background-repeat:no-repeat; background-position:left center"></span>
+                  </span>
+                </sc-if>
+                <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:clamp(30px,5vw,62px); font-weight:400; letter-spacing:-0.035em; line-height:1; color:#1B1D1E; overflow-wrap:anywhere">{{ cellName }}</span>
+                </sc-if>
+              </div>
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">creative partner</span>
+              <span></span>
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ clientRole }}</span>
             </div>
-            <span aria-hidden="true" style="position:relative; display:block; width:clamp(24px,3.2vw,40px); height:clamp(24px,3.2vw,40px)">
-              <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(45deg)"></span>
-              <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(-45deg)"></span>
-            </span>
-            <div style="display:flex; justify-content:flex-start; min-width:0">
-              <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
-                <span style="display:block; padding:{{ platePad }}; background:{{ plateBg }}; max-width:100%">
-                  <span role="img" aria-label="{{ clientName }}" style="display:block; height:clamp(34px,5.4vw,64px); width:{{ logoW64 }}; max-width:100%; background-image:url({{ logo }}); background-size:contain; background-repeat:no-repeat; background-position:left center"></span>
-                </span>
-              </sc-if>
-              <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ false }}">
-                <span style="font-size:clamp(30px,5vw,62px); font-weight:400; letter-spacing:-0.035em; line-height:1; color:#1B1D1E; overflow-wrap:anywhere">{{ cellName }}</span>
-              </sc-if>
-            </div>
-            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">creative partner</span>
-            <span></span>
-            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ clientRole }}</span>
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#10AF8B">digital partnership</span>
           </div>
-          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#10AF8B">digital partnership</span>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:22px">
-          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">your insights</span>
-          <h1 style="margin:0; font-size:clamp(44px,8vw,104px); font-weight:200; line-height:.96; letter-spacing:-0.04em; color:#1B1D1E">enter your <span style="font-style:italic; color:#10AF8B">pin</span>.</h1>
-          <p style="margin:0; max-width:30em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">four digits, sent with this link. it keeps your numbers between you and us.</p>
-        </div>
-        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:stretch">
-          <input value="{{ pin }}" onChange="{{ onPin }}" onKeyDown="{{ onPinKey }}" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="4" placeholder="····" aria-label="4-digit pin" style="flex:1 1 180px; width:220px; max-width:100%; min-height:64px; padding:0 20px; border:1px solid #DDE3E1; border-radius:0; font-size:30px; font-weight:300; letter-spacing:.5em; color:#1B1D1E; background:#FFFFFF; outline:none; font-variant-numeric:tabular-nums" style-focus="border-color:#10AF8B">
-          <button onClick="{{ openPin }}" disabled="{{ checking }}" style="min-height:64px; padding:0 34px; background:#0A6E58; color:#FFFFFF; border:0; border-radius:0; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; cursor:pointer; transition:background .3s" style-hover="background:#1B1D1E">{{ openLabel }}</button>
-        </div>
-        <sc-if value="{{ hasGateStatus }}" hint-placeholder-val="{{ false }}">
-          <span style="font-size:14px; line-height:1.6; color:#B4433A; text-wrap:pretty">{{ gateStatus }}</span>
-        </sc-if>
-      </div>
-    </sc-if>
-
-    <sc-if value="{{ showPage }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex; flex-direction:column; gap:clamp(64px,9vw,120px)">
-
-        <div style="display:flex; flex-direction:column; gap:26px">
-          <div style="margin-bottom:clamp(20px,3vw,40px)">
-        <div style="display:flex; flex-direction:column; align-items:center; gap:clamp(22px,3vw,34px); width:100%; padding:clamp(40px,6.4vw,84px) 0 clamp(26px,3.4vw,40px); border-top:1px solid #E2E7E5; border-bottom:1px solid #E2E7E5">
-          <div style="display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; column-gap:clamp(22px,5.4vw,80px); row-gap:clamp(14px,2vw,20px); width:100%">
-            <div style="display:flex; justify-content:flex-end; min-width:0">
-              <img src="assets/wordmark-green.png" alt="glomium" style="height:clamp(26px,4.2vw,50px); width:auto; max-width:100%; display:block">
-            </div>
-            <span aria-hidden="true" style="position:relative; display:block; width:clamp(24px,3.2vw,40px); height:clamp(24px,3.2vw,40px)">
-              <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(45deg)"></span>
-              <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(-45deg)"></span>
-            </span>
-            <div style="display:flex; justify-content:flex-start; min-width:0">
-              <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
-                <span style="display:block; padding:{{ platePad }}; background:{{ plateBg }}; max-width:100%">
-                  <span role="img" aria-label="{{ clientName }}" style="display:block; height:clamp(34px,5.4vw,64px); width:{{ logoW64 }}; max-width:100%; background-image:url({{ logo }}); background-size:contain; background-repeat:no-repeat; background-position:left center"></span>
-                </span>
-              </sc-if>
-              <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ false }}">
-                <span style="font-size:clamp(30px,5vw,62px); font-weight:400; letter-spacing:-0.035em; line-height:1; color:#1B1D1E; overflow-wrap:anywhere">{{ cellName }}</span>
-              </sc-if>
-            </div>
-            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">creative partner</span>
-            <span></span>
-            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ clientRole }}</span>
+          <div style="display:flex; flex-direction:column; gap:22px">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">your insights</span>
+            <h1 style="margin:0; font-size:clamp(44px,8vw,104px); font-weight:200; line-height:.96; letter-spacing:-0.04em; color:#1B1D1E">enter your <span style="font-style:italic; color:#10AF8B">pin</span>.</h1>
+            <p style="margin:0; max-width:30em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">four digits, sent with this link. it keeps your numbers between you and us.</p>
           </div>
-          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#10AF8B">digital partnership</span>
-        </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:stretch">
+            <input value="{{ pin }}" onChange="{{ onPin }}" onKeyDown="{{ onPinKey }}" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="4" placeholder="····" aria-label="4-digit pin" style="flex:1 1 180px; width:220px; max-width:100%; min-height:64px; padding:0 20px; border:1px solid #DDE3E1; border-radius:0; font-size:30px; font-weight:300; letter-spacing:.5em; color:#1B1D1E; background:#FFFFFF; outline:none; font-variant-numeric:tabular-nums" style-focus="border-color:#10AF8B">
+            <button onClick="{{ openPin }}" disabled="{{ checking }}" style="min-height:64px; padding:0 34px; background:#0A6E58; color:#FFFFFF; border:0; border-radius:0; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; cursor:pointer; transition:background .3s" style-hover="background:#1B1D1E">{{ openLabel }}</button>
           </div>
-          <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ goLive }}" style="align-self:flex-start; padding:0; background:none; border:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58; cursor:pointer" style-hover="color:#10AF8B">← live insights</button>
+          <sc-if value="{{ hasGateStatus }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:14px; line-height:1.6; color:#B4433A; text-wrap:pretty">{{ gateStatus }}</span>
           </sc-if>
-          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ kicker }}</span>
-          <h1 style="margin:0; font-size:clamp(44px,8.4vw,120px); font-weight:200; line-height:.96; letter-spacing:-0.04em; color:#1B1D1E; text-wrap:balance">{{ heroA }}<span style="font-style:italic; color:#10AF8B">{{ heroB }}</span>{{ heroC }}</h1>
-          <div style="display:flex; align-items:center; gap:20px 32px; flex-wrap:wrap; padding-top:22px; border-top:1px solid #E2E7E5">
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ showPage }}" hint-placeholder-val="{{ false }}">
+
+    <div id="bar" data-noprint="1" style="position:sticky; top:0; z-index:30; background:rgba(255,255,255,.94); backdrop-filter:saturate(1.4) blur(12px); -webkit-backdrop-filter:saturate(1.4) blur(12px); border-bottom:1px solid #E2E7E5">
+      <div style="max-width:1232px; margin:0 auto; padding:0 clamp(20px,4vw,56px); display:flex; align-items:center; gap:0 32px; flex-wrap:wrap">
+        <button onClick="{{ goTop }}" style="display:flex; align-items:center; gap:12px; min-height:52px; padding:0; background:none; border:0; border-radius:0; cursor:pointer; flex:none">
+          <img src="assets/wordmark-green.png" alt="glomium" style="height:14px; width:auto; display:block">
+        </button>
+        <nav id="chnav" data-strip="1" style="flex:1 1 300px; min-width:0; display:flex; gap:24px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch">
+          <sc-for list="{{ navVM }}" as="c" hint-placeholder-count="5">
+            <button data-ch="{{ c.id }}" onClick="{{ c.go }}" style="flex:none; min-height:44px; padding:14px 0 12px; background:none; border:0; border-bottom:1px solid {{ c.bar }}; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ c.color }}; cursor:pointer; white-space:nowrap" style-hover="color:#1B1D1E">{{ c.label }}</button>
+          </sc-for>
+        </nav>
+      </div>
+    </div>
+
+    <div style="width:100%; max-width:1232px; margin:0 auto; padding:clamp(28px,4vw,48px) clamp(20px,4vw,56px) clamp(28px,4vw,48px)">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:clamp(18px,2.6vw,28px); width:100%; padding:clamp(28px,4.4vw,56px) 0 clamp(22px,3vw,32px); border-top:1px solid #E2E7E5; border-bottom:1px solid #E2E7E5">
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; column-gap:clamp(22px,5.4vw,80px); row-gap:clamp(12px,1.8vw,18px); width:100%">
+          <div style="display:flex; justify-content:flex-end; min-width:0">
+            <img src="assets/wordmark-green.png" alt="glomium" style="height:clamp(24px,3.6vw,44px); width:auto; max-width:100%; display:block">
+          </div>
+          <span aria-hidden="true" style="position:relative; display:block; width:clamp(22px,2.8vw,34px); height:clamp(22px,2.8vw,34px)">
+            <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(45deg)"></span>
+            <span style="position:absolute; left:-21%; top:50%; width:142%; height:1.5px; margin-top:-0.75px; background:#10AF8B; transform:rotate(-45deg)"></span>
+          </span>
+          <div style="display:flex; justify-content:flex-start; min-width:0">
+            <sc-if value="{{ hasLogo }}" hint-placeholder-val="{{ false }}">
+              <span style="display:block; padding:{{ platePad }}; background:{{ plateBg }}; max-width:100%">
+                <span role="img" aria-label="{{ clientName }}" style="display:block; height:clamp(32px,4.8vw,56px); width:{{ logoW56 }}; max-width:100%; background-image:url({{ logo }}); background-size:contain; background-repeat:no-repeat; background-position:left center"></span>
+              </span>
+            </sc-if>
+            <sc-if value="{{ noLogo }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:clamp(28px,4.4vw,54px); font-weight:400; letter-spacing:-0.035em; line-height:1; color:#1B1D1E; overflow-wrap:anywhere">{{ cellName }}</span>
+            </sc-if>
+          </div>
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">creative partner</span>
+          <span></span>
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ clientRole }}</span>
+        </div>
+      </div>
+    </div>
+
+    <section id="ch-top" style="background:#1B1D1E; color:#FFFFFF">
+      <div style="max-width:1232px; margin:0 auto; padding:clamp(48px,8vw,104px) clamp(20px,4vw,56px) clamp(48px,7vw,88px); display:flex; flex-direction:column; gap:clamp(40px,6vw,72px)">
+        <div style="display:flex; flex-direction:column; gap:clamp(18px,2.4vw,26px)">
+          <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+            <button data-noprint="1" onClick="{{ goLive }}" style="align-self:flex-start; min-height:44px; padding:0; background:none; border:0; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#10AF8B; cursor:pointer" style-hover="color:#FFFFFF">← live insights</button>
+          </sc-if>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
             <sc-if value="{{ isLive }}" hint-placeholder-val="{{ true }}">
-              <div style="display:flex; gap:24px; flex-wrap:wrap">
+              <span style="display:block; width:7px; height:7px; background:#10AF8B"></span>
+            </sc-if>
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#10AF8B">{{ kicker }}</span>
+          </div>
+          <h1 style="margin:0; max-width:11.5em; font-size:clamp(46px,9.4vw,132px); font-weight:200; line-height:.94; letter-spacing:-0.045em; color:#FFFFFF; text-wrap:balance">{{ heroA }}<span style="font-style:italic; color:#10AF8B">{{ heroB }}</span>{{ heroC }}</h1>
+          <sc-if value="{{ hasCoverLine }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:0; max-width:36em; font-size:clamp(16px,1.6vw,19px); line-height:1.7; color:#C9D0CE; text-wrap:pretty">{{ coverLine }}</p>
+          </sc-if>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <div style="display:flex; align-items:center; gap:4px 28px; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,.14)">
+            <sc-if value="{{ isLive }}" hint-placeholder-val="{{ true }}">
+              <div data-noprint="1" style="display:flex; gap:24px; flex-wrap:wrap">
                 <sc-for list="{{ rangesVM }}" as="r" hint-placeholder-count="3">
-                  <button onClick="{{ r.go }}" style="min-height:44px; padding:12px 0 10px; background:none; border:0; border-bottom:1px solid {{ r.bar }}; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ r.color }}; cursor:pointer">{{ r.label }}</button>
+                  <button onClick="{{ r.go }}" style="min-height:44px; padding:14px 0 10px; background:none; border:0; border-top:1px solid {{ r.bar }}; margin-top:-1px; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ r.color }}; cursor:pointer" style-hover="color:#FFFFFF">{{ r.label }}</button>
                 </sc-for>
               </div>
             </sc-if>
-            <span style="font-size:14px; color:#4A524F">{{ windowLabel }}</span>
-            <sc-if value="{{ isLive }}" hint-placeholder-val="{{ true }}">
-              <button onClick="{{ refresh }}" disabled="{{ refreshing }}" title="{{ refreshTitle }}" style="display:flex; align-items:center; gap:8px; min-height:44px; padding:12px 0; background:none; border:0; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ refreshColor }}; cursor:pointer" style-hover="color:#10AF8B">{{ refreshLabel }}</button>
-            </sc-if>
-            <sc-if value="{{ hasReports }}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{ goReports }}" style="margin-left:auto; min-height:44px; padding:12px 0; background:none; border:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58; cursor:pointer" style-hover="color:#10AF8B">monthly reports →</button>
-            </sc-if>
+            <span style="padding:14px 0 10px; font-size:14px; color:#C9D0CE">{{ windowLabel }}</span>
+            <div data-noprint="1" style="display:flex; gap:24px; margin-left:auto">
+              <sc-if value="{{ isLive }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ refresh }}" disabled="{{ refreshing }}" title="{{ refreshTitle }}" style="min-height:44px; padding:14px 0 10px; background:none; border:0; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ refreshColor }}; cursor:pointer" style-hover="color:#FFFFFF">{{ refreshLabel }}</button>
+              </sc-if>
+              <button onClick="{{ print }}" style="min-height:44px; padding:14px 0 10px; background:none; border:0; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#10AF8B; cursor:pointer" style-hover="color:#FFFFFF">save as pdf ↓</button>
+            </div>
+          </div>
+          <sc-if value="{{ hasRefreshNote }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0; max-width:36em; font-size:14px; line-height:1.7; color:#C9D0CE; text-wrap:pretty">{{ refreshNote }}</p>
+          </sc-if>
+          <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0; max-width:34em; font-size:16px; line-height:1.8; color:#C9D0CE; text-wrap:pretty">nothing has synced for this window yet. numbers start the day your accounts are connected, so check back tomorrow.</p>
+          </sc-if>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:28px clamp(32px,5vw,80px)">
+          <div style="flex:1 1 260px; min-width:0; display:flex; flex-direction:column; gap:12px">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ heroKpi.label }}</span>
+            <span style="font-size:clamp(68px,12vw,168px); font-weight:200; line-height:1; letter-spacing:-0.05em; color:#FFFFFF; font-variant-numeric:tabular-nums; white-space:nowrap">{{ heroKpi.value }}</span>
+            <span style="font-size:14px; line-height:1.5; color:{{ heroKpi.subColor }}">{{ heroKpi.sub }}</span>
+          </div>
+          <div style="flex:2 1 320px; min-width:0; display:flex; flex-direction:column; gap:10px">
+            <div style="height:clamp(80px,10vw,128px); clip-path:inset(-4px {{ heroKpi.clip }}% -4px 0)">
+              <svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible">
+                <path d="{{ heroKpi.area }}" fill="rgba(16,175,139,.16)"></path>
+                <path d="{{ heroKpi.spark }}" fill="none" stroke="#10AF8B" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+              </svg>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:12px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ fromLabel }}</span>
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ toLabel }}</span>
+            </div>
           </div>
         </div>
 
-        <sc-if value="{{ hasRefreshNote }}" hint-placeholder-val="{{ false }}">
-          <p style="margin:clamp(-48px,-6vw,-32px) 0 0; max-width:36em; font-size:14px; line-height:1.7; color:#4A524F; text-wrap:pretty">{{ refreshNote }}</p>
-        </sc-if>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(44%,170px),1fr)); gap:clamp(28px,4vw,40px) clamp(16px,3vw,32px)">
+          <sc-for list="{{ kpisVM }}" as="k" hint-placeholder-count="4">
+            <div style="display:flex; flex-direction:column; gap:10px; padding-top:16px; border-top:1px solid rgba(255,255,255,.16); min-width:0">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+              <span style="font-size:clamp(34px,4.6vw,54px); font-weight:200; line-height:1; letter-spacing:-0.03em; color:#FFFFFF; font-variant-numeric:tabular-nums; white-space:nowrap">{{ k.value }}</span>
+              <div style="height:30px; clip-path:inset(-4px {{ k.clip }}% -4px 0)">
+                <svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible">
+                  <path d="{{ k.area }}" fill="rgba(16,175,139,.14)"></path>
+                  <path d="{{ k.spark }}" fill="none" stroke="#10AF8B" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+                </svg>
+              </div>
+              <span style="font-size:13px; line-height:1.5; color:{{ k.subColor }}">{{ k.sub }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
 
-        <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
-          <p style="margin:0; max-width:34em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">nothing has synced for this window yet. numbers start the day your accounts are connected, so check back tomorrow.</p>
-        </sc-if>
-
-        <section style="display:flex; flex-direction:column; gap:28px">
-          <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-            <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">01</span>
-            <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">the numbers</h2>
+    <sc-if value="{{ hasNotes }}" hint-placeholder-val="{{ false }}">
+      <section id="ch-note" style="width:100%; max-width:1232px; margin:0 auto; padding:clamp(64px,9vw,120px) clamp(20px,4vw,56px) 0">
+        <div style="display:flex; flex-wrap:wrap; gap:20px clamp(32px,6vw,96px); padding-top:20px; border-top:1px solid #1B1D1E">
+          <div style="flex:1 1 200px; display:flex; flex-direction:column; gap:10px">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ notesLabel }}</span>
+            <span style="font-size:14px; line-height:1.6; color:#6B7572">from your glomium team</span>
           </div>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(46%,190px),1fr)); gap:clamp(28px,3vw,40px) clamp(16px,3vw,28px)">
-            <sc-for list="{{ headlineVM }}" as="k" hint-placeholder-count="5">
-              <div style="display:flex; flex-direction:column; gap:8px; min-width:0">
-                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
-                <span style="font-size:clamp(36px,5vw,60px); font-weight:200; line-height:1; letter-spacing:-0.03em; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ k.value }}</span>
-                <span style="font-size:14px; line-height:1.5; color:{{ k.subColor }}">{{ k.sub }}</span>
+          <div style="flex:3 1 420px; min-width:0; display:flex; flex-direction:column; gap:22px">
+            <p style="margin:0; font-size:clamp(24px,3.2vw,38px); font-weight:300; line-height:1.36; letter-spacing:-0.015em; color:#1B1D1E; text-wrap:pretty">{{ noteLead }}</p>
+            <sc-for list="{{ noteRestVM }}" as="p" hint-placeholder-count="1">
+              <p style="margin:0; max-width:40em; font-size:17px; line-height:1.8; color:#4A524F; text-wrap:pretty">{{ p.text }}</p>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <section id="ch-audience" style="width:100%; max-width:1232px; margin:0 auto; padding:clamp(72px,10vw,128px) clamp(20px,4vw,56px) 0; display:flex; flex-direction:column; gap:clamp(32px,4.4vw,52px)">
+      <div style="display:flex; flex-direction:column; gap:16px; padding-top:20px; border-top:1px solid #1B1D1E">
+        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ ch.audience }} · audience</span>
+        <h2 style="margin:0; max-width:16em; font-size:clamp(32px,5vw,60px); font-weight:200; line-height:1.02; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ audienceTitle }}</h2>
+        <sc-if value="{{ hasAudienceLine }}" hint-placeholder-val="{{ false }}">
+          <p style="margin:0; max-width:38em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">{{ audienceLine }}</p>
+        </sc-if>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:22px">
+        <div style="display:flex; align-items:flex-end; gap:20px 32px; flex-wrap:wrap">
+          <div style="display:flex; gap:16px clamp(24px,4vw,56px); flex-wrap:wrap; margin-right:auto">
+            <sc-for list="{{ chartSummaryVM }}" as="x" hint-placeholder-count="3">
+              <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                <span style="font-size:clamp(22px,2.8vw,32px); font-weight:200; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ x.value }}</span>
               </div>
             </sc-for>
           </div>
-        </section>
+          <div data-noprint="1" style="display:flex; gap:22px; flex-wrap:wrap">
+            <sc-for list="{{ chartTabsVM }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.go }}" style="min-height:44px; padding:12px 0 10px; background:none; border:0; border-bottom:1px solid {{ c.bar }}; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ c.color }}; cursor:pointer" style-hover="color:#1B1D1E">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </div>
 
-        <sc-if value="{{ hasHighlights }}" hint-placeholder-val="{{ false }}">
-          <section style="display:flex; flex-direction:column; gap:10px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">02</span>
-              <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">what stood out</h2>
-            </div>
-            <ol style="list-style:none; margin:0; padding:0 0 0 clamp(0px,4vw,42px)">
-              <sc-for list="{{ highlightsVM }}" as="h" hint-placeholder-count="4">
-                <li style="padding:20px 0; border-bottom:1px solid #E2E7E5; font-size:clamp(18px,2vw,22px); line-height:1.55; color:#1B1D1E; text-wrap:pretty">{{ h.text }}</li>
-              </sc-for>
-            </ol>
-          </section>
+        <sc-if value="{{ chartEmpty }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:14px; color:#6B7572; padding:48px 0">not enough days on record to draw this yet.</span>
         </sc-if>
-
-        <section style="display:flex; flex-direction:column; gap:28px">
-          <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5; flex-wrap:wrap">
-            <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">03</span>
-            <h2 style="margin:0; margin-right:auto; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">{{ chartTitle }}</h2>
-            <div style="display:flex; gap:24px; flex-wrap:wrap">
-              <sc-for list="{{ chartTabsVM }}" as="c" hint-placeholder-count="2">
-                <button onClick="{{ c.go }}" style="min-height:44px; padding:12px 0 10px; background:none; border:0; border-bottom:1px solid {{ c.bar }}; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+        <sc-if value="{{ chartHas }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; gap:12px; align-items:stretch">
+            <div style="width:44px; height:clamp(200px,26vw,300px); display:flex; flex-direction:column; justify-content:space-between; text-align:right; flex:none">
+              <sc-for list="{{ chartGridVM }}" as="g" hint-placeholder-count="5">
+                <span style="font-size:10px; letter-spacing:.06em; color:#8A9390; line-height:1; font-variant-numeric:tabular-nums">{{ g.label }}</span>
               </sc-for>
+            </div>
+            <div onPointerMove="{{ onChartMove }}" onPointerDown="{{ onChartMove }}" onPointerLeave="{{ onChartLeave }}" style="position:relative; flex:1; min-width:0; height:clamp(200px,26vw,300px); touch-action:pan-y; cursor:crosshair">
+              <div style="position:absolute; inset:0; clip-path:inset(-2px {{ chartClip }}% -2px 0)">
+                <svg viewBox="0 0 1000 260" preserveAspectRatio="none" style="width:100%; height:100%; display:block">
+                  <sc-for list="{{ chartGridVM }}" as="g" hint-placeholder-count="5">
+                    <line x1="0" y1="{{ g.y }}" x2="1000" y2="{{ g.y }}" stroke="#E2E7E5" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+                  </sc-for>
+                  <path d="{{ chartArea }}" fill="rgba(16,175,139,.09)" stroke="none"></path>
+                  <path d="{{ chartPath }}" fill="none" stroke="#10AF8B" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+                  <sc-for list="{{ chartBarsVM }}" as="b" hint-placeholder-count="0">
+                    <rect x="{{ b.x }}" y="{{ b.y }}" width="{{ b.w }}" height="{{ b.h }}" fill="{{ b.fill }}"></rect>
+                  </sc-for>
+                </svg>
+              </div>
+              <sc-if value="{{ hasHover }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute; top:0; bottom:0; left:{{ hoverX }}%; width:1px; background:#1B1D1E; pointer-events:none"></span>
+                <span style="position:absolute; left:{{ hoverX }}%; top:{{ hoverY }}%; width:11px; height:11px; margin:-5.5px 0 0 -5.5px; background:#10AF8B; border:2px solid #FFFFFF; pointer-events:none"></span>
+                <div style="position:absolute; top:-12px; left:{{ hoverX }}%; transform:translate({{ hoverShift }},-100%); display:flex; flex-direction:column; gap:3px; padding:9px 13px; background:#1B1D1E; pointer-events:none; white-space:nowrap; z-index:2">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ hoverDate }}</span>
+                  <span style="font-size:17px; font-weight:300; color:#FFFFFF; font-variant-numeric:tabular-nums">{{ hoverValue }}</span>
+                </div>
+              </sc-if>
             </div>
           </div>
-          <sc-if value="{{ chartEmpty }}" hint-placeholder-val="{{ false }}">
-            <span style="font-size:14px; color:#6B7572; padding:48px 0">not enough days on record to draw this yet.</span>
-          </sc-if>
-          <sc-if value="{{ chartHas }}" hint-placeholder-val="{{ false }}">
-            <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px">
-              <sc-for list="{{ chartSummaryVM }}" as="x" hint-placeholder-count="3">
-                <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
-                  <span style="font-size:clamp(22px,2.8vw,32px); font-weight:200; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ x.value }}</span>
+          <div style="display:flex; margin-left:56px">
+            <sc-for list="{{ chartAxisVM }}" as="a" hint-placeholder-count="3">
+              <span style="flex:1; display:flex; justify-content:{{ a.align }}; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ a.label }}</span>
+            </sc-for>
+          </div>
+          <span data-noprint="1" style="font-size:12px; color:#6B7572">drag along the chart to read any day.</span>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ hasPlatforms }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:18px; padding-top:clamp(12px,2vw,24px)">
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ shareLabel }}</span>
+          <div style="display:flex; gap:2px; height:12px; width:100%; background:#F2F4F3">
+            <sc-for list="{{ platformsVM }}" as="p" hint-placeholder-count="2">
+              <span style="display:block; height:100%; width:{{ p.w }}; background:{{ p.color }}"></span>
+            </sc-for>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr)); gap:0 clamp(24px,4vw,48px)">
+            <sc-for list="{{ platformsVM }}" as="p" hint-placeholder-count="2">
+              <div style="display:grid; grid-template-columns:12px minmax(0,1fr) auto; gap:6px 14px; align-items:baseline; padding:18px 0; border-bottom:1px solid #E2E7E5">
+                <span style="display:block; width:12px; height:12px; background:{{ p.color }}"></span>
+                <div style="display:flex; flex-direction:column; gap:4px; min-width:0">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ p.platform }}</span>
+                  <span style="font-size:17px; color:#1B1D1E; overflow-wrap:anywhere">{{ p.name }}</span>
                 </div>
-              </sc-for>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px">
+                  <span style="font-size:28px; font-weight:200; line-height:1; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ p.big }}</span>
+                  <span style="font-size:12px; color:{{ p.gainColor }}; font-variant-numeric:tabular-nums">{{ p.gain }}</span>
+                </div>
+                <span></span>
+                <span style="grid-column:2 / 4; font-size:13px; line-height:1.6; color:#4A524F">{{ p.line }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </section>
+
+    <sc-if value="{{ hasContent }}" hint-placeholder-val="{{ false }}">
+      <section id="ch-content" style="width:100%; max-width:1232px; margin:0 auto; padding:clamp(72px,10vw,128px) clamp(20px,4vw,56px) 0; display:flex; flex-direction:column; gap:clamp(36px,5vw,64px)">
+        <div style="display:flex; flex-direction:column; gap:16px; padding-top:20px; border-top:1px solid #1B1D1E">
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ ch.content }} · content</span>
+          <h2 style="margin:0; max-width:16em; font-size:clamp(32px,5vw,60px); font-weight:200; line-height:1.02; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ contentTitle }}</h2>
+          <sc-if value="{{ hasContentLine }}" hint-placeholder-val="{{ false }}">
+            <p style="margin:0; max-width:38em; font-size:16px; line-height:1.8; color:#4A524F; text-wrap:pretty">{{ contentLine }}</p>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ hasFeature }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:clamp(24px,4vw,64px); align-items:center">
+            <div style="position:relative; width:100%; max-width:460px; aspect-ratio:4/5; background:#F2F4F3; overflow:hidden">
+              <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ feature.kind }}</span>
+              <sc-if value="{{ feature.hasThumb }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute; inset:0; background-image:url({{ feature.thumb }}); background-size:cover; background-position:center"></span>
+              </sc-if>
+              <span style="position:absolute; top:0; left:0; padding:10px 14px; background:#1B1D1E; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#FFFFFF">no. 1 · best performer</span>
+              <sc-if value="{{ feature.hasLink }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ feature.link }}" target="_blank" rel="noopener noreferrer" aria-label="open the post" style="position:absolute; inset:0"></a>
+              </sc-if>
             </div>
-            <div style="display:flex; gap:14px; align-items:stretch">
-              <div style="width:56px; height:260px; display:flex; flex-direction:column; justify-content:space-between; text-align:right; flex:none">
-                <sc-for list="{{ chartGridVM }}" as="g" hint-placeholder-count="5">
-                  <span style="font-size:10px; letter-spacing:.06em; color:#8A9390; line-height:1; font-variant-numeric:tabular-nums">{{ g.label }}</span>
+            <div style="display:flex; flex-direction:column; gap:clamp(20px,2.6vw,28px); min-width:0">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ feature.kind }} · {{ feature.when }} · {{ feature.platform }}</span>
+              <p style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; line-height:1.38; color:{{ feature.captionColor }}; text-wrap:pretty">{{ feature.captionLong }}</p>
+              <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; padding-top:18px; border-top:1px solid #E2E7E5">
+                <sc-for list="{{ feature.statsVM }}" as="x" hint-placeholder-count="3">
+                  <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
+                    <span style="font-size:clamp(28px,3.6vw,44px); font-weight:200; line-height:1; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ x.value }}</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                  </div>
                 </sc-for>
               </div>
-              <svg viewBox="0 0 1000 260" preserveAspectRatio="none" style="flex:1; min-width:0; height:260px; display:block">
-                <sc-for list="{{ chartGridVM }}" as="g" hint-placeholder-count="5">
-                  <line x1="0" y1="{{ g.y }}" x2="1000" y2="{{ g.y }}" stroke="#E2E7E5" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+              <div style="display:flex; gap:10px 24px; flex-wrap:wrap">
+                <sc-for list="{{ feature.smallVM }}" as="x" hint-placeholder-count="4">
+                  <span style="font-size:14px; color:#4A524F; font-variant-numeric:tabular-nums">{{ x.value }} {{ x.label }}</span>
                 </sc-for>
-                <path d="{{ chartArea }}" fill="rgba(16,175,139,.08)" stroke="none"></path>
-                <path d="{{ chartPath }}" fill="none" stroke="#10AF8B" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
-              </svg>
+              </div>
+              <sc-if value="{{ feature.hasLink }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ feature.link }}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start; padding:12px 18px; border:1px solid #0E8E72; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#0E8E72">view post ↗</a>
+              </sc-if>
             </div>
-            <div style="display:flex; margin-left:70px">
-              <sc-for list="{{ chartAxisVM }}" as="a" hint-placeholder-count="3">
-                <span style="flex:1; display:flex; justify-content:{{ a.align }}; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ a.label }}</span>
-              </sc-for>
-            </div>
-          </sc-if>
-        </section>
-
-        <sc-if value="{{ hasPlatforms }}" hint-placeholder-val="{{ false }}">
-          <section style="display:flex; flex-direction:column; gap:28px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">04</span>
-              <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">by platform</h2>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr)); gap:16px">
-              <sc-for list="{{ platformsVM }}" as="p" hint-placeholder-count="2">
-                <div style="display:flex; flex-direction:column; gap:22px; padding:clamp(20px,3vw,26px) clamp(18px,3vw,26px) clamp(22px,3vw,28px); background:#FFFFFF; border:1px solid #E2E7E5; min-width:0">
-                  <div style="display:flex; flex-direction:column; gap:6px">
-                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#10AF8B">{{ p.platform }}</span>
-                    <span style="font-size:20px; font-weight:300; color:#1B1D1E; overflow-wrap:anywhere">{{ p.name }}</span>
-                  </div>
-                  <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px">
-                    <sc-for list="{{ p.statsVM }}" as="x" hint-placeholder-count="3">
-                      <div style="display:flex; flex-direction:column; gap:4px; min-width:0">
-                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
-                        <span style="font-size:26px; font-weight:200; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ x.value }}</span>
-                        <span style="font-size:12px; color:{{ x.subColor }}">{{ x.sub }}</span>
-                      </div>
-                    </sc-for>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
-          </section>
+          </div>
         </sc-if>
 
-        <sc-if value="{{ hasTop }}" hint-placeholder-val="{{ false }}">
-          <section style="display:flex; flex-direction:column; gap:28px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">05</span>
-              <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">best content</h2>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(max(148px,calc((100% - 64px) / 3)),1fr)); gap:clamp(24px,2.6vw,32px) clamp(14px,2.6vw,32px)">
-              <sc-for list="{{ topVM }}" as="p" hint-placeholder-count="6">
-                <div style="display:flex; flex-direction:column; gap:14px; min-width:0">
-                  <div style="position:relative; aspect-ratio:4/5; background:#F3F6F5; overflow:hidden">
+        <sc-if value="{{ hasRest }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:20px">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">the rest of the top {{ topCount }}</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(44%,168px),1fr)); gap:clamp(24px,2.6vw,32px) clamp(14px,2vw,24px)">
+              <sc-for list="{{ restVM }}" as="p" hint-placeholder-count="5">
+                <div style="position:relative; display:flex; flex-direction:column; gap:12px; min-width:0">
+                  <div style="position:relative; aspect-ratio:4/5; background:#F2F4F3; overflow:hidden">
                     <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.kind }}</span>
                     <sc-if value="{{ p.hasThumb }}" hint-placeholder-val="{{ false }}">
                       <span style="position:absolute; inset:0; background-image:url({{ p.thumb }}); background-size:cover; background-position:center"></span>
                     </sc-if>
-                    <span style="position:absolute; top:12px; left:12px; padding:5px 9px; background:#FFFFFF; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E">{{ p.rank }} · {{ p.kind }}</span>
+                    <span style="position:absolute; top:0; left:0; padding:6px 10px; background:#FFFFFF; font-size:10px; letter-spacing:2.6px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ p.rank }}</span>
                   </div>
-                  <div style="display:flex; flex-direction:column; gap:6px">
-                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.when }} · {{ p.platform }}</span>
-                    <span style="font-size:15px; line-height:1.55; color:{{ p.captionColor }}; max-height:3.1em; overflow:hidden">{{ p.caption }}</span>
-                  </div>
-                  <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding-top:12px; border-top:1px solid #E2E7E5">
-                    <sc-for list="{{ p.statsVM }}" as="x" hint-placeholder-count="3">
-                      <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
-                        <span style="font-size:20px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ x.value }}</span>
-                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
-                      </div>
-                    </sc-for>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.kind }} · {{ p.when }}</span>
+                  <div style="display:flex; gap:14px; align-items:baseline; flex-wrap:wrap">
+                    <span style="font-size:22px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ p.headline }}</span>
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.headlineLabel }}</span>
+                    <span style="margin-left:auto; font-size:13px; color:#4A524F; font-variant-numeric:tabular-nums">{{ p.er }}</span>
                   </div>
                   <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
-                    <a href="{{ p.link }}" target="_blank" rel="noopener noreferrer" style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase">view post ↗</a>
+                    <a href="{{ p.link }}" target="_blank" rel="noopener noreferrer" aria-label="open the post" style="position:absolute; inset:0"></a>
                   </sc-if>
                 </div>
               </sc-for>
             </div>
-          </section>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasWorks }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr)); gap:clamp(48px,6vw,96px); padding-top:clamp(8px,2vw,24px)">
+            <sc-if value="{{ hasMix }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:20px; padding-top:18px; border-top:1px solid #E2E7E5">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">by format · average reach</span>
+                <p style="margin:0; font-size:clamp(19px,2vw,22px); font-weight:300; line-height:1.5; color:#1B1D1E; text-wrap:pretty">{{ mixLine }}</p>
+                <div style="display:flex; flex-direction:column; gap:16px">
+                  <sc-for list="{{ mixVM }}" as="m" hint-placeholder-count="3">
+                    <div style="display:flex; flex-direction:column; gap:8px">
+                      <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px">
+                        <span style="font-size:15px; color:#1B1D1E">{{ m.label }} <span style="font-size:13px; color:#6B7572">· {{ m.count }}</span></span>
+                        <span style="font-size:15px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ m.value }}</span>
+                      </div>
+                      <div style="height:8px; background:#F2F4F3"><span style="display:block; height:100%; width:{{ m.w }}; background:{{ m.color }}"></span></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasDays }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:20px; padding-top:18px; border-top:1px solid #E2E7E5">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">by weekday · average reach</span>
+                <p style="margin:0; font-size:clamp(19px,2vw,22px); font-weight:300; line-height:1.5; color:#1B1D1E; text-wrap:pretty">{{ dayLine }}</p>
+                <div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:clamp(4px,1vw,10px); align-items:end">
+                  <sc-for list="{{ daysVM }}" as="x" hint-placeholder-count="7">
+                    <div style="display:flex; flex-direction:column; justify-content:flex-end; align-items:stretch; gap:8px; min-width:0">
+                      <span style="font-size:12px; color:{{ x.valueColor }}; text-align:center; font-variant-numeric:tabular-nums">{{ x.value }}</span>
+                      <span style="display:block; height:{{ x.h }}; background:{{ x.color }}"></span>
+                      <span style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:{{ x.labelColor }}; text-align:center">{{ x.label }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
         </sc-if>
 
         <sc-if value="{{ hasLatest }}" hint-placeholder-val="{{ false }}">
-          <section style="display:flex; flex-direction:column; gap:24px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5; flex-wrap:wrap">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">06</span>
-              <h2 style="margin:0; margin-right:auto; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">latest posts</h2>
-              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ latestHint }}</span>
+          <div style="display:flex; flex-direction:column; gap:20px">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding-top:18px; border-top:1px solid #E2E7E5">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ latestLabel }}</span>
+              <span data-noprint="1" style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ latestHint }}</span>
             </div>
-            <div style="display:flex; gap:clamp(12px,2vw,20px); overflow-x:auto; scroll-snap-type:x mandatory; scroll-padding-inline:clamp(20px,4vw,56px); -webkit-overflow-scrolling:touch; margin:0 calc(-1 * clamp(20px,4vw,56px)); padding:0 clamp(20px,4vw,56px) 10px; scrollbar-width:thin">
+            <div data-strip="1" style="display:flex; gap:clamp(12px,2vw,20px); overflow-x:auto; scroll-snap-type:x mandatory; scroll-padding-inline:clamp(20px,4vw,56px); -webkit-overflow-scrolling:touch; margin:0 calc(-1 * clamp(20px,4vw,56px)); padding:0 clamp(20px,4vw,56px) 6px; scrollbar-width:none">
               <sc-for list="{{ latestVM }}" as="p" hint-placeholder-count="5">
-                <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
-                <a href="{{ p.href }}" target="_blank" rel="noopener noreferrer" style="flex:0 0 clamp(150px,42vw,220px); display:flex; flex-direction:column; gap:10px; scroll-snap-align:start; color:#1B1D1E; text-decoration:none; min-width:0">
-                  <div style="position:relative; aspect-ratio:4/5; background:#F3F6F5; overflow:hidden">
+                <div style="position:relative; flex:0 0 clamp(150px,40vw,210px); display:flex; flex-direction:column; gap:10px; scroll-snap-align:start; min-width:0">
+                  <div style="position:relative; aspect-ratio:4/5; background:#F2F4F3; overflow:hidden">
                     <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.kind }}</span>
                     <sc-if value="{{ p.hasThumb }}" hint-placeholder-val="{{ false }}">
                       <span style="position:absolute; inset:0; background-image:url({{ p.thumb }}); background-size:cover; background-position:center"></span>
                     </sc-if>
-                    <span style="position:absolute; left:10px; bottom:10px; padding:4px 8px; background:#FFFFFF; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E">{{ p.kind }}</span>
+                    <span style="position:absolute; left:0; bottom:0; padding:5px 9px; background:#FFFFFF; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E">{{ p.kind }}</span>
                   </div>
                   <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.when }} · {{ p.platform }}</span>
-                  <div style="display:flex; gap:14px; align-items:baseline">
-                    <span style="font-size:17px; font-weight:300; font-variant-numeric:tabular-nums">{{ p.views }}</span>
+                  <div style="display:flex; gap:12px; align-items:baseline">
+                    <span style="font-size:17px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ p.views }}</span>
                     <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.viewsLabel }}</span>
                     <span style="margin-left:auto; font-size:13px; color:#4A524F; font-variant-numeric:tabular-nums">♡ {{ p.likes }}</span>
                   </div>
-                </a>
-                </sc-if>
-                <sc-if value="{{ p.noLink }}" hint-placeholder-val="{{ true }}">
-                <div style="flex:0 0 clamp(150px,42vw,220px); display:flex; flex-direction:column; gap:10px; scroll-snap-align:start; color:#1B1D1E; text-decoration:none; min-width:0">
-                  <div style="position:relative; aspect-ratio:4/5; background:#F3F6F5; overflow:hidden">
-                    <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.kind }}</span>
-                    <sc-if value="{{ p.hasThumb }}" hint-placeholder-val="{{ false }}">
-                      <span style="position:absolute; inset:0; background-image:url({{ p.thumb }}); background-size:cover; background-position:center"></span>
-                    </sc-if>
-                    <span style="position:absolute; left:10px; bottom:10px; padding:4px 8px; background:#FFFFFF; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E">{{ p.kind }}</span>
-                  </div>
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.when }} · {{ p.platform }}</span>
-                  <div style="display:flex; gap:14px; align-items:baseline">
-                    <span style="font-size:17px; font-weight:300; font-variant-numeric:tabular-nums">{{ p.views }}</span>
-                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.viewsLabel }}</span>
-                    <span style="margin-left:auto; font-size:13px; color:#4A524F; font-variant-numeric:tabular-nums">♡ {{ p.likes }}</span>
-                  </div>
-                </div>
-                </sc-if>
-              </sc-for>
-            </div>
-          </section>
-        </sc-if>
-
-        <sc-if value="{{ hasStories }}" hint-placeholder-val="{{ false }}">
-          <section style="display:flex; flex-direction:column; gap:28px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">07</span>
-              <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">stories</h2>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr)); gap:24px 28px">
-              <sc-for list="{{ storyStatsVM }}" as="k" hint-placeholder-count="4">
-                <div style="display:flex; flex-direction:column; gap:8px; min-width:0">
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
-                  <span style="font-size:clamp(32px,3.6vw,44px); font-weight:200; line-height:1; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ k.value }}</span>
-                  <span style="font-size:14px; color:#4A524F">{{ k.sub }}</span>
+                  <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
+                    <a href="{{ p.href }}" target="_blank" rel="noopener noreferrer" aria-label="open the post" style="position:absolute; inset:0"></a>
+                  </sc-if>
                 </div>
               </sc-for>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:12px">
-              <sc-for list="{{ storyTilesVM }}" as="t" hint-placeholder-count="6">
-                <div style="display:flex; flex-direction:column; gap:8px; min-width:0">
-                  <div style="position:relative; aspect-ratio:9/16; background:#F3F6F5; overflow:hidden">
-                    <sc-if value="{{ t.hasThumb }}" hint-placeholder-val="{{ false }}">
-                      <span style="position:absolute; inset:0; background-image:url({{ t.thumb }}); background-size:cover; background-position:center"></span>
-                    </sc-if>
-                  </div>
-                  <span style="font-size:13px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ t.views }} views</span>
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ t.when }}</span>
-                </div>
-              </sc-for>
-            </div>
-          </section>
+          </div>
         </sc-if>
-
-        <sc-if value="{{ hasAds }}" hint-placeholder-val="{{ false }}">
-          <section style="display:flex; flex-direction:column; gap:28px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">08</span>
-              <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">ads</h2>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr)); gap:24px 28px">
-              <sc-for list="{{ adsVM }}" as="k" hint-placeholder-count="6">
-                <div style="display:flex; flex-direction:column; gap:8px; min-width:0">
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
-                  <span style="font-size:clamp(32px,3.6vw,44px); font-weight:200; line-height:1; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ k.value }}</span>
-                  <span style="font-size:14px; color:#4A524F">{{ k.sub }}</span>
-                </div>
-              </sc-for>
-            </div>
-          </section>
-        </sc-if>
-
-        <sc-if value="{{ hasTeam }}" hint-placeholder-val="{{ false }}">
-          <section style="display:flex; flex-direction:column; gap:28px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">09</span>
-              <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">from the team</h2>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:clamp(32px,5vw,72px); padding-left:clamp(0px,4vw,42px)">
-              <sc-if value="{{ hasNotes }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; flex-direction:column; gap:14px">
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ notesLabel }}</span>
-                  <p style="margin:0; font-size:17px; line-height:1.8; color:#1B1D1E; white-space:pre-line; text-wrap:pretty">{{ notes }}</p>
-                </div>
-              </sc-if>
-              <sc-if value="{{ hasPlan }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex; flex-direction:column; gap:14px">
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ planLabel }}</span>
-                  <p style="margin:0; font-size:17px; line-height:1.8; color:#1B1D1E; white-space:pre-line; text-wrap:pretty">{{ plan }}</p>
-                </div>
-              </sc-if>
-            </div>
-          </section>
-        </sc-if>
-
-        <sc-if value="{{ hasReports }}" hint-placeholder-val="{{ false }}">
-          <section id="reports" style="display:flex; flex-direction:column; gap:10px">
-            <div style="display:flex; gap:20px; align-items:baseline; padding-top:22px; border-top:1px solid #E2E7E5">
-              <span style="flex:0 0 22px; font-size:10px; letter-spacing:2.6px; color:#10AF8B; font-variant-numeric:tabular-nums">10</span>
-              <h2 style="margin:0; font-size:clamp(22px,2.6vw,30px); font-weight:300; color:#1B1D1E">monthly reports</h2>
-            </div>
-            <div style="display:flex; flex-direction:column; padding-left:clamp(0px,4vw,42px)">
-              <sc-for list="{{ reportsVM }}" as="r" hint-placeholder-count="3">
-                <button onClick="{{ r.go }}" style="display:flex; align-items:baseline; gap:16px; padding:20px 0; background:none; border:0; border-bottom:1px solid #E2E7E5; border-radius:0; text-align:left; cursor:pointer; color:#1B1D1E; flex-wrap:wrap" style-hover="color:#0A6E58">
-                  <span style="font-size:clamp(20px,2.4vw,26px); font-weight:300; margin-right:auto">{{ r.label }}</span>
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ r.sub }}</span>
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ r.cta }}</span>
-                </button>
-              </sc-for>
-            </div>
-          </section>
-        </sc-if>
-
-      </div>
+      </section>
     </sc-if>
-  </main>
 
-  <footer style="display:flex; flex-direction:column; align-items:center; gap:22px; padding:0 24px 80px; text-align:center">
+    <sc-if value="{{ hasStories }}" hint-placeholder-val="{{ false }}">
+      <section id="ch-stories" style="width:100%; max-width:1232px; margin:0 auto; padding:clamp(72px,10vw,128px) clamp(20px,4vw,56px) 0; display:flex; flex-direction:column; gap:clamp(32px,4.4vw,52px)">
+        <div style="display:flex; flex-direction:column; gap:16px; padding-top:20px; border-top:1px solid #1B1D1E">
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ ch.stories }} · stories</span>
+          <h2 style="margin:0; max-width:16em; font-size:clamp(32px,5vw,60px); font-weight:200; line-height:1.02; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ storiesTitle }}</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(44%,180px),1fr)); gap:28px clamp(16px,3vw,32px)">
+          <sc-for list="{{ storyStatsVM }}" as="k" hint-placeholder-count="4">
+            <div style="display:flex; flex-direction:column; gap:8px; min-width:0">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+              <span style="font-size:clamp(34px,4vw,48px); font-weight:200; line-height:1; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+              <span style="font-size:14px; color:#4A524F">{{ k.sub }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ hasKeep }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div style="display:flex; height:14px; gap:2px; background:#F2F4F3">
+              <span style="display:block; height:100%; width:{{ keepW }}; background:#10AF8B"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap">
+              <span style="font-size:14px; color:#1B1D1E">{{ keepLabel }}</span>
+              <span style="font-size:14px; color:#6B7572">{{ leaveLabel }}</span>
+            </div>
+          </div>
+        </sc-if>
+        <div data-strip="1" style="display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; margin:0 calc(-1 * clamp(20px,4vw,56px)); padding:0 clamp(20px,4vw,56px) 6px; scroll-padding-inline:clamp(20px,4vw,56px); scrollbar-width:none">
+          <sc-for list="{{ storyTilesVM }}" as="t" hint-placeholder-count="6">
+            <div style="flex:0 0 clamp(104px,26vw,140px); display:flex; flex-direction:column; gap:8px; scroll-snap-align:start; min-width:0">
+              <div style="position:relative; aspect-ratio:9/16; background:#F2F4F3; overflow:hidden">
+                <sc-if value="{{ t.hasThumb }}" hint-placeholder-val="{{ false }}">
+                  <span style="position:absolute; inset:0; background-image:url({{ t.thumb }}); background-size:cover; background-position:center"></span>
+                </sc-if>
+                <span style="position:absolute; left:0; right:0; top:0; height:3px; background:rgba(27,29,30,.12)"></span>
+                <span style="position:absolute; left:0; top:0; height:3px; width:{{ t.keep }}; background:#10AF8B"></span>
+              </div>
+              <span style="font-size:13px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ t.views }} views</span>
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ t.when }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ hasAds }}" hint-placeholder-val="{{ false }}">
+      <section id="ch-ads" style="width:100%; max-width:1232px; margin:0 auto; padding:clamp(72px,10vw,128px) clamp(20px,4vw,56px) 0; display:flex; flex-direction:column; gap:clamp(32px,4.4vw,52px)">
+        <div style="display:flex; flex-direction:column; gap:16px; padding-top:20px; border-top:1px solid #1B1D1E">
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ ch.ads }} · ads</span>
+          <h2 style="margin:0; max-width:16em; font-size:clamp(32px,5vw,60px); font-weight:200; line-height:1.02; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ adsTitle }}</h2>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:40px clamp(40px,6vw,96px); align-items:flex-start">
+          <div style="flex:3 1 380px; min-width:0; display:flex; flex-direction:column; border-top:1px solid #E2E7E5">
+            <sc-for list="{{ funnelVM }}" as="f" hint-placeholder-count="4">
+              <div style="display:flex; flex-direction:column; gap:10px; padding:18px 0; border-bottom:1px solid #E2E7E5">
+                <div style="display:flex; align-items:baseline; gap:8px 16px; flex-wrap:wrap">
+                  <span style="font-size:clamp(30px,4vw,44px); font-weight:200; line-height:1; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ f.value }}</span>
+                  <span style="font-size:15px; color:#1B1D1E">{{ f.label }}</span>
+                  <span style="margin-left:auto; font-size:13px; color:#0A6E58">{{ f.rate }}</span>
+                </div>
+                <div style="height:8px; background:#F2F4F3"><span style="display:block; height:100%; width:{{ f.w }}; background:#10AF8B"></span></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:2 1 260px; min-width:0; display:flex; flex-direction:column; gap:0; background:#1B1D1E; padding:clamp(22px,3vw,32px)">
+            <sc-for list="{{ costVM }}" as="k" hint-placeholder-count="3">
+              <div style="display:flex; flex-direction:column; gap:6px; padding:16px 0; border-bottom:1px solid rgba(255,255,255,.14)">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                <span style="font-size:clamp(30px,3.6vw,42px); font-weight:200; line-height:1; color:#FFFFFF; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+                <span style="font-size:13px; line-height:1.5; color:#C9D0CE">{{ k.sub }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ hasAdAccs }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column">
+            <sc-for list="{{ adAccVM }}" as="a" hint-placeholder-count="2">
+              <div style="display:flex; align-items:baseline; gap:8px 24px; flex-wrap:wrap; padding:16px 0; border-bottom:1px solid #E2E7E5">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58; min-width:96px">{{ a.platform }}</span>
+                <span style="font-size:16px; color:#1B1D1E; margin-right:auto; overflow-wrap:anywhere">{{ a.name }}</span>
+                <span style="font-size:14px; color:#4A524F; font-variant-numeric:tabular-nums">{{ a.line }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ hasPlan }}" hint-placeholder-val="{{ false }}">
+      <section id="ch-next" style="background:#F2F4F3; margin-top:clamp(72px,10vw,128px)">
+        <div style="max-width:1232px; margin:0 auto; padding:clamp(56px,8vw,104px) clamp(20px,4vw,56px); display:flex; flex-direction:column; gap:clamp(28px,4vw,44px)">
+          <div style="display:flex; flex-direction:column; gap:16px; padding-top:20px; border-top:1px solid #1B1D1E">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ ch.next }} · what's next</span>
+            <h2 style="margin:0; max-width:16em; font-size:clamp(32px,5vw,60px); font-weight:200; line-height:1.02; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ planTitle }}</h2>
+          </div>
+          <ol style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; border-top:1px solid #DDE3E1">
+            <sc-for list="{{ planVM }}" as="p" hint-placeholder-count="2">
+              <li style="display:grid; grid-template-columns:44px minmax(0,1fr); gap:12px; padding:clamp(18px,2.4vw,26px) 0; border-bottom:1px solid #DDE3E1">
+                <span style="padding-top:10px; font-size:10px; letter-spacing:2.6px; color:#0A6E58; font-variant-numeric:tabular-nums">{{ p.num }}</span>
+                <span style="font-size:clamp(19px,2.2vw,26px); font-weight:300; line-height:1.45; color:#1B1D1E; text-wrap:pretty">{{ p.text }}</span>
+              </li>
+            </sc-for>
+          </ol>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ hasReports }}" hint-placeholder-val="{{ false }}">
+      <section id="ch-reports" data-noprint="1" style="width:100%; max-width:1232px; margin:0 auto; padding:clamp(72px,10vw,128px) clamp(20px,4vw,56px) 0; display:flex; flex-direction:column; gap:clamp(28px,4vw,44px)">
+        <div style="display:flex; flex-direction:column; gap:16px; padding-top:20px; border-top:1px solid #1B1D1E">
+          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ ch.reports }} · monthly reports</span>
+          <h2 style="margin:0; max-width:16em; font-size:clamp(32px,5vw,60px); font-weight:200; line-height:1.02; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">every month, on record.</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr)); gap:16px">
+          <sc-for list="{{ reportsVM }}" as="r" hint-placeholder-count="3">
+            <button onClick="{{ r.go }}" style="display:flex; flex-direction:column; gap:32px; min-height:200px; padding:22px 22px 20px; text-align:left; background:{{ r.bg }}; color:{{ r.ink }}; border:1px solid {{ r.border }}; border-radius:0; cursor:pointer; transition:border-color .2s" style-hover="border-color:#10AF8B">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ r.labelColor }}">no. {{ r.no }}</span>
+              <div style="margin-top:auto; display:flex; flex-direction:column; gap:14px">
+                <span style="font-size:clamp(32px,3.4vw,42px); font-weight:200; line-height:1; letter-spacing:-0.03em">{{ r.month }}</span>
+                <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:8px 12px">
+                  <span style="min-width:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; white-space:nowrap; color:{{ r.labelColor }}">{{ r.year }} · {{ r.sub }}</span>
+                  <span style="flex:none; margin-left:auto; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; white-space:nowrap; color:{{ r.ctaColor }}">{{ r.cta }}</span>
+                </div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+  </sc-if>
+
+  <footer style="display:flex; flex-direction:column; align-items:center; gap:22px; padding:clamp(88px,11vw,140px) 24px 80px; text-align:center">
     <img src="assets/infinity.svg" alt="" style="width:64px; height:auto">
     <div style="font-size:16px; line-height:1.8; color:#4A524F">with love,<br>team glomium.</div>
     <div style="width:48px; height:1px; background:#E2E7E5"></div>
@@ -462,9 +632,12 @@ const PLATFORM = {
 const SOCIAL = ['instagram', 'facebook', 'youtube', 'x', 'linkedin', 'snapchat', 'threads', 'pinterest'];
 const ADS = ['meta_ads', 'google_ads', 'snapchat_ads', 'linkedin_ads', 'x_ads'];
 const KIND = { post: 'post', carousel: 'carousel', reel: 'reel', story: 'story', video: 'video', short: 'short' };
+const KINDS = { post: 'posts', carousel: 'carousels', reel: 'reels', story: 'stories', video: 'videos', short: 'shorts' };
 const RANGES = [[7, '7 days'], [30, '30 days'], [90, '90 days']];
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const WEEK = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const PCOL = ['#0A6E58', '#10AF8B', '#8ED9C5', '#1B1D1E', '#8A9390', '#C9D0CE', '#4A524F', '#DDE3E1'];
 
 const n = v => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
 const iso = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -479,22 +652,38 @@ const compact = v => {
   if (a >= 1e3) return (x / 1e3).toFixed(1) + 'k';
   return String(Math.round(x));
 };
+const full = v => Math.round(n(v)).toLocaleString('en-IN');
 const inr = v => '₹' + Math.round(n(v)).toLocaleString('en-IN');
 const pct = v => (v == null ? '—' : v.toFixed(v >= 10 ? 1 : 2) + '%');
 const signed = v => (v > 0 ? '+' : v < 0 ? '−' : '') + compact(Math.abs(v));
 const plural = (k, one, many) => k + ' ' + (k === 1 ? one : many);
+const ease = t => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
+const FMT = { compact, signed, pct, inr, int: v => String(Math.round(v)) };
+const NOPATH = 'M0 0';
+
+// A sparkline in a 100×h box; flat series sit on the middle line.
+function spark(vals, h) {
+  const v = (vals || []).filter(x => x != null);
+  if (!vals || vals.length < 2 || !v.length) return { spark: NOPATH, area: NOPATH };
+  const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn;
+  const pts = vals.map((x, i) => (i * 100 / (vals.length - 1)).toFixed(2) + ',' + (sp ? h - 3 - (h - 6) * ((x == null ? mn : x) - mn) / sp : h / 2).toFixed(2));
+  return { spark: 'M' + pts.join(' L'), area: 'M0,' + h + ' L' + pts.join(' L') + ' L100,' + h + ' Z' };
+}
 
 class Component extends DCLogic {
   state = {
     loading: true, reason: '', pin: '', checking: false, gateStatus: '',
     data: null, range: 30, chart: 'followers', logoFailed: false,
+    t: 1, tc: 1, hover: null, active: '',
   };
 
   async componentDidMount() {
+    window.addEventListener('scroll', this.onScroll, { passive: true });
     const q = new URLSearchParams(window.location.search);
     if (q.get('demo') === '1' || (!this.token() && !/glomium\.co$/i.test(window.location.hostname))) {
       const dd = demoData(q.get('m'));
       this.setState({ loading: false, data: dd, brand: dd.brand });
+      this.play(['t', 'tc']);
       return;
     }
     for (let t = 0; !window.supabase && t < 100; t++) await new Promise(r => setTimeout(r, 100));
@@ -506,6 +695,63 @@ class Component extends DCLogic {
     // No PIN yet: ask anyway — the answer carries the client's name and logo
     // for the lockup, and is not counted as a wrong try.
     this.fetch(saved || null, q.get('m'));
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._poll); clearTimeout(this._safety);
+    cancelAnimationFrame(this._raf); cancelAnimationFrame(this._spy);
+    window.removeEventListener('scroll', this.onScroll);
+  }
+
+  componentDidUpdate() {
+    if (this.state.active && this.state.active !== this._lastActive) {
+      this._lastActive = this.state.active;
+      const nav = document.getElementById('chnav');
+      const b = nav && nav.querySelector('[data-ch="' + this.state.active + '"]');
+      if (nav && b && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: Math.max(0, b.offsetLeft - nav.offsetLeft - 24), behavior: 'smooth' });
+    }
+  }
+
+  // Count-ups and chart reveals run off one clock per key; reduced motion
+  // and background tabs land straight on the final numbers.
+  play(keys) {
+    cancelAnimationFrame(this._raf); clearTimeout(this._safety);
+    const done = {}; keys.forEach(k => { done[k] = 1; });
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { this.setState(done); return; }
+    const zero = {}; keys.forEach(k => { zero[k] = 0; });
+    this.setState(zero);
+    const dur = 1300; let t0 = 0;
+    const step = now => {
+      if (!t0) t0 = now;
+      const t = Math.min(1, (now - t0) / dur), u = {};
+      keys.forEach(k => { u[k] = t; });
+      this.setState(u);
+      if (t < 1) this._raf = requestAnimationFrame(step);
+    };
+    this._raf = requestAnimationFrame(step);
+    this._safety = setTimeout(() => this.setState(done), dur + 600);
+  }
+
+  onScroll = () => {
+    if (this._spy) return;
+    this._spy = requestAnimationFrame(() => {
+      this._spy = 0;
+      const bar = document.getElementById('bar');
+      const line = (bar ? bar.offsetHeight : 56) + 48;
+      let act = '';
+      for (const id of this._navIds || []) {
+        const el = document.getElementById('ch-' + id);
+        if (el && el.getBoundingClientRect().top < line) act = id;
+      }
+      if (act !== this.state.active) this.setState({ active: act });
+    });
+  };
+
+  goTo(id) {
+    const el = document.getElementById('ch-' + id);
+    if (!el) return;
+    const bar = document.getElementById('bar');
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - (bar ? bar.offsetHeight : 56) + 1, behavior: 'smooth' });
   }
 
   token() {
@@ -533,9 +779,10 @@ class Component extends DCLogic {
     try { sessionStorage.setItem('gi:' + this.token(), pin); } catch (e) {}
     this.pinUsed = pin;
     const brand = d.brand || { client: d.client, logo: d.logo };
-    this.setState({ loading: false, checking: false, reason: '', data: d, brand });
+    this.setState({ loading: false, checking: false, reason: '', data: d, brand, hover: null });
     this.checkLogo(brand.logo);
     window.scrollTo(0, 0);
+    this.play(['t', 'tc']);
   }
 
   // Reads the logo once: its shape sizes the lockup, and a white mark on a
@@ -607,14 +854,25 @@ class Component extends DCLogic {
     }, 30000);
   }
 
-  componentWillUnmount() { clearTimeout(this._poll); }
-
   openMonth(month) {
     const q = new URLSearchParams(window.location.search);
     if (month) q.set('m', String(month).slice(0, 7)); else q.delete('m');
     history.replaceState(null, '', window.location.pathname + (q.toString() ? '?' + q.toString() : ''));
-    if (q.get('demo') === '1' || this.state.data && !this.sb) { this.setState({ data: demoData(month) }); window.scrollTo(0, 0); return; }
+    if (q.get('demo') === '1' || this.state.data && !this.sb) {
+      this.setState({ data: demoData(month), hover: null, active: '' });
+      window.scrollTo(0, 0);
+      this.play(['t', 'tc']);
+      return;
+    }
     this.fetch(this.pinUsed, month);
+  }
+
+  vmFor(d) {
+    const s = this.state, m = this._memo;
+    if (m && m.d === d && m.range === s.range && m.chart === s.chart) return m.vm;
+    const vm = this.build(d);
+    this._memo = { d, range: s.range, chart: s.chart, vm };
+    return vm;
   }
 
   // ---- everything the page shows, from one bundle and one window ----------
@@ -635,8 +893,9 @@ class Component extends DCLogic {
     else { to = iso(new Date()); from = addDays(to, -(s.range - 1)); prevFrom = addDays(from, -s.range); }
     const prevTo = addDays(from, -1);
     const days = dayCount(from, to), prevDays = dayCount(prevFrom, prevTo);
-    const periodWord = report ? monthName(from).split(' ')[0] : 'the last ' + days + ' days';
-    const prevWord = report ? monthName(prevFrom).split(' ')[0] : 'the ' + days + ' days before';
+    const monthOnly = x => monthName(x).split(' ')[0];
+    const periodWord = report ? monthOnly(from) : 'the last ' + days + ' days';
+    const prevWord = report ? monthOnly(prevFrom) : 'the ' + days + ' days before';
 
     const inW = m => m.on_date >= from && m.on_date <= to;
     const inP = m => m.on_date >= prevFrom && m.on_date <= prevTo;
@@ -651,9 +910,9 @@ class Component extends DCLogic {
     const pctChange = c => Math.abs(c).toFixed(Math.abs(c) >= 10 ? 0 : 1) + '%';
     const deltaSub = (a, b, ok, fallback) => {
       const c = change(a, b, ok);
-      if (c == null) return { sub: fallback || '', color: '#4A524F' };
-      if (Math.abs(c) < 0.5) return { sub: 'level with ' + prevWord, color: '#4A524F' };
-      return { sub: (c > 0 ? '↑ ' : '↓ ') + pctChange(c) + ' on ' + prevWord, color: c > 0 ? '#0A6E58' : '#B4433A' };
+      if (c == null) return { sub: fallback || '', dir: 0 };
+      if (Math.abs(c) < 0.5) return { sub: 'level with ' + prevWord, dir: 0 };
+      return { sub: (c > 0 ? '↑ ' : '↓ ') + pctChange(c) + ' on ' + prevWord, dir: c > 0 ? 1 : -1 };
     };
 
     const socAccs = accounts.filter(a => SOCIAL.indexOf(a.platform) !== -1);
@@ -667,210 +926,318 @@ class Component extends DCLogic {
     const socCur = cur.filter(m => isSoc(m.account_id)), socPrev = prev.filter(m => isSoc(m.account_id));
     const gain = sum(socCur, 'follower_delta');
     const reach = sum(socCur, 'reach'), reachPrev = sum(socPrev, 'reach');
+    const growth = fNow && fNow - gain > 0 && gain ? gain * 100 / (fNow - gain) : null;
 
     const pN = (p, k) => n(p[k]);
     const inter = p => pN(p, 'likes') + pN(p, 'comments') + pN(p, 'shares') + pN(p, 'saves');
     const base = p => pN(p, 'reach') || pN(p, 'impressions');
     const day = p => String(p.published_at || '').slice(0, 10);
+    const byDate = (x, y) => String(x.published_at || '').localeCompare(String(y.published_at || ''));
     const wPosts = posts.filter(p => day(p) >= from && day(p) <= to);
     const pPosts = posts.filter(p => day(p) >= prevFrom && day(p) <= prevTo);
     const feed = wPosts.filter(p => p.kind !== 'story');
-    const stories = wPosts.filter(p => p.kind === 'story');
+    const stories = wPosts.filter(p => p.kind === 'story').sort(byDate).reverse();
     const erOf = list => { const m = list.filter(p => p.kind !== 'story' && base(p) > 0); const b = m.reduce((t, p) => t + base(p), 0); return b ? m.reduce((t, p) => t + inter(p), 0) * 100 / b : null; };
     const er = erOf(feed);
     const views = wPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
     const viewsPrev = pPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
     const postsCovered = !report ? posts.some(p => day(p) <= addDays(prevFrom, 3)) : pPosts.length > 0 || socCov;
-
     const rv = deltaSub(reach, reachPrev, socCov, reach ? 'across ' + plural(socAccs.length, 'profile', 'profiles') : 'nothing yet');
     const vv = deltaSub(views, viewsPrev, postsCovered && socCov, wPosts.length ? 'from ' + plural(wPosts.length, 'piece', 'pieces') + ' of content' : 'nothing published');
-    const headlineVM = [
-      { label: 'followers', value: fNow ? compact(fNow) : '—', sub: fNow ? 'across ' + plural(socAccs.length, 'profile', 'profiles') : report ? 'no count recorded in ' + periodWord : 'first reading after the next sync', subColor: '#4A524F' },
-      { label: 'new followers', value: gain ? signed(gain) : '0', sub: fNow && fNow - gain > 0 && gain ? pct(gain * 100 / (fNow - gain)) + ' growth in ' + periodWord : 'in ' + periodWord, subColor: gain > 0 ? '#0A6E58' : gain < 0 ? '#B4433A' : '#4A524F' },
-      { label: 'reach', value: compact(reach), sub: rv.sub, subColor: rv.color },
-      { label: 'views', value: compact(views), sub: vv.sub, subColor: vv.color },
-      { label: 'engagement', value: pct(er), sub: feed.length ? 'likes, comments, shares and saves, of reach' : 'no posts in ' + periodWord, subColor: '#4A524F' },
-    ];
+    const rc = change(reach, reachPrev, socCov);
 
-    // ---- chart -----------------------------------------------------------
+    // ---- daily series ------------------------------------------------------
     const dates = []; for (let i = 0; i < days; i++) dates.push(addDays(from, i));
-    const series = new Map(dates.map(x => [x, 0]));
-    const chart = s.chart === 'reach' ? 'reach' : 'followers';
-    if (chart === 'followers') {
-      // One follower total per synced day, and a gain for every day: walk
-      // back from the latest total so the line is the real curve.
-      for (const a of socAccs) {
-        const ar = metrics.filter(m => m.account_id === a.id);
-        const reads = ar.filter(m => m.followers != null && series.has(m.on_date)).sort((x, y) => (x.on_date < y.on_date ? -1 : 1));
-        if (!reads.length) continue;
-        const anchor = reads[reads.length - 1];
-        const g = new Map(); ar.forEach(m => g.set(m.on_date, (g.get(m.on_date) || 0) + n(m.follower_delta)));
-        const at = dates.indexOf(anchor.on_date);
-        const v = []; v[at] = n(anchor.followers);
-        for (let i = at + 1; i < dates.length; i++) v[i] = v[i - 1] + (g.get(dates[i]) || 0);
-        for (let i = at - 1; i >= 0; i--) v[i] = v[i + 1] - (g.get(dates[i + 1]) || 0);
-        dates.forEach((x, i) => series.set(x, series.get(x) + v[i]));
-      }
-    } else {
-      for (const m of socCur) if (series.has(m.on_date)) series.set(m.on_date, series.get(m.on_date) + n(m.reach));
+    const blank = () => new Map(dates.map(x => [x, 0]));
+    const reachDay = blank(), gainDay = blank(), viewsDay = blank(), folDay = blank();
+    for (const m of socCur) if (reachDay.has(m.on_date)) {
+      reachDay.set(m.on_date, reachDay.get(m.on_date) + n(m.reach));
+      gainDay.set(m.on_date, gainDay.get(m.on_date) + n(m.follower_delta));
     }
-    const vals = dates.map(x => series.get(x));
-    const peak = Math.max(0, ...vals);
-    let lo = 0, hi;
+    for (const p of wPosts) { const k = day(p); if (viewsDay.has(k)) viewsDay.set(k, viewsDay.get(k) + pN(p, 'video_views')); }
+    // One follower total per synced day, and a gain for every day: walk back
+    // from the latest total so the line is the real curve.
+    let folHas = false;
+    for (const a of socAccs) {
+      const ar = metrics.filter(m => m.account_id === a.id);
+      const reads = ar.filter(m => m.followers != null && folDay.has(m.on_date)).sort((x, y) => (x.on_date < y.on_date ? -1 : 1));
+      if (!reads.length) continue;
+      folHas = true;
+      const anchor = reads[reads.length - 1];
+      const g = new Map(); ar.forEach(m => g.set(m.on_date, (g.get(m.on_date) || 0) + n(m.follower_delta)));
+      const at = dates.indexOf(anchor.on_date);
+      const v = []; v[at] = n(anchor.followers);
+      for (let i = at + 1; i < dates.length; i++) v[i] = v[i - 1] + (g.get(dates[i]) || 0);
+      for (let i = at - 1; i >= 0; i--) v[i] = v[i + 1] - (g.get(dates[i + 1]) || 0);
+      dates.forEach((x, i) => folDay.set(x, folDay.get(x) + v[i]));
+    }
+    const col = mp => dates.map(x => mp.get(x));
+
+    // ---- cover numbers -----------------------------------------------------
+    const erSeq = feed.filter(p => base(p) > 0).sort(byDate).map(p => inter(p) * 100 / base(p));
+    const kFol = { label: 'followers', raw: fNow || null, fmt: 'compact', dir: 0, sub: fNow ? 'across ' + plural(socAccs.length, 'profile', 'profiles') : report ? 'no count recorded in ' + periodWord : 'first reading after the next sync', ...spark(folHas ? col(folDay) : [], 40) };
+    const kGain = { label: 'new followers', raw: gain, fmt: 'signed', dir: gain > 0 ? 1 : gain < 0 ? -1 : 0, sub: growth != null ? pct(growth) + ' growth in ' + periodWord : 'in ' + periodWord, ...spark(col(gainDay), 40) };
+    const kReach = { label: 'reach', raw: reach, fmt: 'compact', dir: rv.dir, sub: rv.sub, ...spark(col(reachDay), 40) };
+    const kViews = { label: 'views', raw: views, fmt: 'compact', dir: vv.dir, sub: vv.sub, ...spark(col(viewsDay), 40) };
+    const kEr = { label: 'engagement', raw: er, fmt: 'pct', dir: 0, sub: feed.length ? 'of reach, across ' + plural(feed.length, 'post', 'posts') : 'no posts in ' + periodWord, ...spark(erSeq.length > 1 ? erSeq : [], 40) };
+    const heroKpi = fNow ? kFol : kReach;
+    const kpis = fNow ? [kGain, kReach, kViews, kEr] : [kFol, kGain, kViews, kEr];
+
+    // ---- audience chart ----------------------------------------------------
+    const chart = s.chart === 'followers' && !folHas ? 'reach' : s.chart;
+    const isBar = chart === 'gained';
+    const vals = col(chart === 'followers' ? folDay : isBar ? gainDay : reachDay);
+    const N = vals.length;
+    const peak = Math.max(0, ...vals), low = Math.min(0, ...vals);
+    let lo = 0, hi = 1;
     if (chart === 'followers' && peak > 0) {
       const mn = Math.min(...vals), span = Math.max(peak - mn, 10), st = Math.pow(10, Math.floor(Math.log10(span)));
       lo = Math.max(0, Math.floor((mn - span * 0.25) / st) * st); hi = Math.ceil((peak + span * 0.25) / st) * st;
-    } else { const st = peak <= 0 ? 1 : Math.pow(10, Math.floor(Math.log10(peak))); hi = peak <= 0 ? 1 : Math.ceil(peak / st) * st; }
+    } else {
+      const span = Math.max(peak - low, 1), st = Math.pow(10, Math.floor(Math.log10(span)));
+      hi = Math.max(st, Math.ceil(peak * 1.08 / st) * st); lo = low < 0 ? Math.floor(low / st) * st : 0;
+    }
     const W = 1000, H = 260, T = 10, B = 8;
-    const px = i => (dates.length < 2 ? 0 : i * W / (dates.length - 1));
+    const px = i => (isBar ? (i + 0.5) * W / N : N < 2 ? 0 : i * W / (N - 1));
     const py = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
     const pts = vals.map((v, i) => px(i).toFixed(1) + ',' + py(v).toFixed(1));
-    const first = vals[0] || 0, last = vals[vals.length - 1] || 0;
-    const best = dates.reduce((m, x) => (series.get(x) > m.v ? { v: series.get(x), d: x } : m), { v: 0, d: '' });
+    const chartHas = isBar ? vals.some(v => v !== 0) : peak > 0;
+    const bw = W / Math.max(N, 1);
+    const tot = vals.reduce((t, v) => t + v, 0);
+    const bestI = vals.reduce((b, v, i) => (v > vals[b] ? i : b), 0);
+    const first = vals[0] || 0, last = vals[N - 1] || 0;
+    const unit = isBar ? ' new followers' : chart === 'reach' ? ' reached' : ' followers';
 
     // ---- platforms ---------------------------------------------------------
-    const platformsVM = accounts.map(a => {
-      const ar = cur.filter(m => m.account_id === a.id);
-      const ap = wPosts.filter(p => p.account_id === a.id);
-      const st = (label, value, sub, color) => ({ label, value, sub: sub || '', subColor: color || '#6B7572' });
-      const name = String(a.label || a.handle || PLATFORM[a.platform] || '').trim().toLowerCase();
-      if (ADS.indexOf(a.platform) !== -1) {
-        const c = sum(ar, 'clicks'), i = sum(ar, 'impressions');
-        return { platform: PLATFORM[a.platform], name, statsVM: [
-          st(a.platform === 'meta_ads' ? 'reach' : 'impressions', compact(a.platform === 'meta_ads' ? sum(ar, 'reach') : i), periodWord),
-          st('clicks', compact(c), i ? pct(c * 100 / i) + ' click-through' : ''),
-          st('results', compact(sum(ar, 'conversions')), inr(sum(ar, 'spend')) + ' spent'),
-        ] };
-      }
-      const f = followersAt(a), g = sum(ar, 'follower_delta');
-      return { platform: PLATFORM[a.platform] || a.platform, name: a.handle && !/^https?:/i.test(a.handle) ? String(a.handle).toLowerCase() : name, statsVM: [
-        st(a.platform === 'youtube' ? 'subscribers' : 'followers', f == null ? '—' : compact(f), g ? signed(g) + ' in ' + periodWord : '', g > 0 ? '#0A6E58' : g < 0 ? '#B4433A' : ''),
-        a.platform === 'x' || a.platform === 'youtube'
-          ? st('views', compact(ap.reduce((t, p) => t + pN(p, 'video_views'), 0) || sum(ar, 'video_views')), periodWord)
-          : st('reach', compact(sum(ar, 'reach')), periodWord),
-        st('content', String(ap.length), ap.length ? 'published' : 'nothing new'),
-      ] };
+    const nameOf = a => {
+      const lab = String(a.label || a.handle || PLATFORM[a.platform] || '').trim().toLowerCase();
+      return a.handle && !/^https?:/i.test(a.handle) ? String(a.handle).toLowerCase() : lab;
+    };
+    const socRows = socAccs.map(a => {
+      const ar = cur.filter(m => m.account_id === a.id), ap = wPosts.filter(p => p.account_id === a.id);
+      return { a, f: followersAt(a), g: sum(ar, 'follower_delta'), r: sum(ar, 'reach'), v: ap.reduce((t, p) => t + pN(p, 'video_views'), 0) || sum(ar, 'video_views'), k: ap.length };
     });
+    const shareKey = fNow ? 'f' : 'r';
+    const shareTot = socRows.reduce((t, x) => t + n(x[shareKey]), 0);
+    socRows.sort((x, y) => n(y[shareKey]) - n(x[shareKey]));
+    const platformsVM = socRows.map((x, i) => {
+      const sh = shareTot ? n(x[shareKey]) / shareTot : 0;
+      const vx = x.a.platform === 'x' || x.a.platform === 'youtube';
+      const bits = [];
+      if (shareTot) bits.push(Math.round(sh * 100) + '% of your ' + (fNow ? 'audience' : 'reach'));
+      bits.push(vx ? compact(x.v) + ' views' : compact(x.r) + ' reached');
+      bits.push(x.k ? x.k + ' published' : 'nothing new');
+      return {
+        platform: PLATFORM[x.a.platform] || x.a.platform, name: nameOf(x.a), color: PCOL[i % PCOL.length], f: sh,
+        big: x.f == null ? '—' : compact(x.f),
+        gain: x.g ? signed(x.g) : '', gainColor: x.g > 0 ? '#0A6E58' : x.g < 0 ? '#B4433A' : '#6B7572',
+        line: bits.join(' · '),
+      };
+    });
+    const leadP = gain > 0 && socRows.length > 1 ? socRows.slice().sort((x, y) => y.g - x.g)[0] : null;
+    const audienceBits = [];
+    if (growth != null && gain > 0) audienceBits.push(pct(growth) + ' growth in ' + periodWord + (leadP && leadP.g > gain * 0.5 ? ', most of it on ' + PLATFORM[leadP.a.platform] : '') + '.');
+    if (rc != null && Math.abs(rc) >= 5) audienceBits.push('reach was ' + (rc > 0 ? 'up ' : 'down ') + pctChange(rc) + ' on ' + prevWord + ', at ' + compact(reach) + ' accounts.');
+    else if (reach) audienceBits.push('your content reached ' + compact(reach) + ' accounts.');
 
-    // ---- best content ------------------------------------------------------
+    // ---- content -----------------------------------------------------------
     const safe = u => (/^https:\/\//i.test(u || '') ? u : '');
     // Thumbs sit in an unquoted CSS url(); escape the few characters that end one.
     const cssUrl = u => String(u || '').replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'));
-    // Newest first. Live: whatever went out most recently; a report: that month.
-    const newest = (report ? feed : posts.filter(p => p.kind !== 'story'))
-      .slice().sort((x, y) => String(y.published_at || '').localeCompare(String(x.published_at || ''))).slice(0, 12);
+    const newest = (report ? feed : posts.filter(p => p.kind !== 'story')).slice().sort(byDate).reverse().slice(0, 12);
     const latestVM = newest.map(p => {
       const t = cssUrl(safe(p.thumb_url)), l = safe(p.permalink);
       return {
-        thumb: t, hasThumb: !!t, href: l, hasLink: !!l, noLink: !l, kind: KIND[p.kind] || p.kind,
+        thumb: t, hasThumb: !!t, href: l, hasLink: !!l, kind: KIND[p.kind] || p.kind,
         when: fmtDay(p.published_at), platform: PLATFORM[plat(p.account_id)] || '',
         views: compact(pN(p, 'video_views') || base(p)), viewsLabel: pN(p, 'video_views') ? 'views' : 'reach',
         likes: compact(pN(p, 'likes')),
       };
     });
     const ranked = feed.slice().sort((x, y) => (pN(y, 'video_views') - pN(x, 'video_views')) || (base(y) - base(x)));
-    const topVM = ranked.slice(0, 6).map((p, i) => {
+    const topVM = ranked.slice(0, 7).map((p, i) => {
       const e = base(p) ? inter(p) * 100 / base(p) : null;
       const thumb = cssUrl(safe(p.thumb_url)), link = safe(p.permalink);
       const cap = String(p.caption || '').replace(/\s+/g, ' ').trim();
+      const vw = pN(p, 'video_views');
       return {
         rank: String(i + 1).padStart(2, '0'), kind: KIND[p.kind] || p.kind, platform: PLATFORM[plat(p.account_id)] || '',
-        when: fmtDay(p.published_at), caption: cap ? cap.slice(0, 140).toLowerCase() : 'no caption', captionColor: cap ? '#1B1D1E' : '#8A9390',
+        when: fmtDay(p.published_at), captionLong: cap ? cap.slice(0, 220).toLowerCase() + (cap.length > 220 ? '…' : '') : 'no caption', captionColor: cap ? '#1B1D1E' : '#8A9390',
         thumb, hasThumb: !!thumb, link, hasLink: !!link,
-        statsVM: [{ label: 'views', value: compact(pN(p, 'video_views')) }, { label: pN(p, 'reach') ? 'reach' : 'impressions', value: compact(base(p)) }, { label: 'eng. rate', value: pct(e) }],
+        headline: compact(vw || base(p)), headlineLabel: vw ? 'views' : 'reach', er: e == null ? '' : pct(e),
+        statsVM: [
+          { label: vw ? 'views' : 'likes', value: compact(vw || pN(p, 'likes')) },
+          { label: pN(p, 'reach') ? 'reached' : 'impressions', value: compact(base(p)) },
+          { label: 'engagement', value: pct(e) },
+        ],
+        smallVM: [['likes', 'likes'], ['comments', 'comments'], ['shares', 'shares'], ['saves', 'saves']]
+          .filter(([k]) => pN(p, k) > 0).map(([k, l]) => ({ label: l, value: compact(pN(p, k)) })),
       };
     });
+
+    const mix = {};
+    feed.forEach(p => { const k = p.kind || 'post'; const m = mix[k] || (mix[k] = { n: 0, b: 0 }); m.n++; m.b += base(p); });
+    const mixRows = Object.keys(mix).map(k => ({ k, n: mix[k].n, avg: mix[k].b / mix[k].n })).filter(x => x.avg > 0).sort((x, y) => y.avg - x.avg);
+    const mixMax = mixRows.length ? mixRows[0].avg : 1;
+    const kp = k => KINDS[k] || k + 's';
+    let mixLine = '', mixLeads = false;
+    if (mixRows.length >= 2) {
+      const a = mixRows[0], b = mixRows[1], ratio = a.avg / b.avg;
+      mixLeads = ratio >= 1.15;
+      mixLine = ratio >= 1.95 ? kp(a.k) + ' reached ' + ratio.toFixed(1) + '× as many people as ' + kp(b.k) + '.'
+        : ratio >= 1.1 ? kp(a.k) + ' reached ' + Math.round((ratio - 1) * 100) + '% more people than ' + kp(b.k) + '.'
+        : kp(a.k) + ' and ' + kp(b.k) + ' reached about the same number of people.';
+    }
+    const mixVM = mixRows.map((x, i) => ({ label: kp(x.k), count: plural(x.n, 'piece', 'pieces'), value: compact(x.avg), f: x.avg / mixMax, color: i === 0 ? '#10AF8B' : '#C9D0CE' }));
+
+    const wd = Array.from({ length: 7 }, () => ({ n: 0, b: 0 }));
+    feed.forEach(p => { const t = new Date(p.published_at); if (isNaN(t)) return; const w = wd[t.getDay()]; w.n++; w.b += base(p); });
+    const order = [1, 2, 3, 4, 5, 6, 0];
+    const avgs = order.map(i => (wd[i].n ? wd[i].b / wd[i].n : 0));
+    const wMax = Math.max(0, ...avgs);
+    const solid = order.map((i, j) => (wd[i].n >= 2 ? j : -1)).filter(j => j >= 0);
+    const pool = solid.length ? solid : order.map((_, j) => j);
+    const bestJ = pool.reduce((b, j) => (avgs[j] > avgs[b] ? j : b), pool[0]);
+    const hasDays = feed.length >= 6 && wd.filter(x => x.n).length >= 3 && wMax > 0;
+    const daysVM = order.map((i, j) => ({
+      label: WEEK[i].slice(0, 3), value: wd[i].n ? compact(avgs[j]) : '—', f: wMax ? avgs[j] / wMax : 0,
+      color: j === bestJ ? '#10AF8B' : '#C9D0CE', valueColor: j === bestJ ? '#0A6E58' : '#6B7572', labelColor: j === bestJ ? '#1B1D1E' : '#8A9390',
+    }));
+    const dayLine = hasDays ? WEEK[order[bestJ]] + ' posts reached the most people — ' + compact(avgs[bestJ]) + ' on average.' : '';
+
+    const counts = {}; feed.forEach(p => { counts[p.kind] = (counts[p.kind] || 0) + 1; });
+    const parts = Object.keys(counts).sort((x, y) => counts[y] - counts[x]).map(k => counts[k] + ' ' + (counts[k] === 1 ? KIND[k] || k : kp(k)));
+    const contentTitle = mixLeads ? kp(mixRows[0].k) + ' did the heavy lifting.' : feed.length ? plural(feed.length, 'piece', 'pieces') + ' went live.' : 'your latest content.';
+    const contentLine = feed.length ? (mixLeads ? plural(feed.length, 'piece', 'pieces') + ' went live in ' + periodWord : 'in ' + periodWord) + ': ' + parts.join(', ') + (stories.length ? ', plus ' + plural(stories.length, 'story', 'stories') : '') + '.' : '';
 
     // ---- stories -----------------------------------------------------------
     const sViews = stories.reduce((t, p) => t + pN(p, 'video_views'), 0);
     const sReach = stories.reduce((t, p) => t + pN(p, 'reach'), 0);
     const sExits = stories.reduce((t, p) => t + pN(p, 'exits'), 0);
     const sReplies = stories.reduce((t, p) => t + pN(p, 'replies'), 0);
+    const stayed = sViews ? Math.max(0, 100 - sExits * 100 / sViews) : null;
     const storyStatsVM = [
       { label: 'stories', value: String(stories.length), sub: 'posted in ' + periodWord },
       { label: 'avg views', value: stories.length ? compact(Math.round(sViews / stories.length)) : '—', sub: 'per story' },
       { label: 'avg reach', value: stories.length ? compact(Math.round(sReach / stories.length)) : '—', sub: 'people per story' },
-      { label: 'stayed', value: sViews ? pct(100 - sExits * 100 / sViews) : '—', sub: 'watched without leaving' },
-      { label: 'replies', value: compact(sReplies), sub: 'direct messages from stories' },
+      { label: 'replies', value: compact(sReplies), sub: 'messages from stories' },
     ];
-    const storyTilesVM = stories.slice(0, 12).map(p => { const t = cssUrl(safe(p.thumb_url)); return { thumb: t, hasThumb: !!t, views: compact(pN(p, 'video_views')), when: fmtDay(p.published_at) }; });
+    const storyTilesVM = stories.slice(0, 16).map(p => {
+      const t = cssUrl(safe(p.thumb_url)), v = pN(p, 'video_views');
+      return { thumb: t, hasThumb: !!t, views: compact(v), when: fmtDay(p.published_at), keep: v ? Math.max(0, 100 - pN(p, 'exits') * 100 / v).toFixed(1) + '%' : '0%' };
+    });
 
     // ---- ads ---------------------------------------------------------------
     const adCur = cur.filter(m => isAd(m.account_id)), adPrev = prev.filter(m => isAd(m.account_id));
     const aImp = sum(adCur, 'impressions'), aClk = sum(adCur, 'clicks'), aConv = sum(adCur, 'conversions'), aSpend = sum(adCur, 'spend'), aReach = sum(adCur, 'reach');
     const cv = deltaSub(aClk, sum(adPrev, 'clicks'), adCov, aImp ? pct(aClk * 100 / aImp) + ' click-through' : '');
-    const adsVM = [
-      { label: 'people reached', value: compact(aReach), sub: aReach ? 'saw an ad at least once' : 'reach comes from meta ads' },
-      { label: 'impressions', value: compact(aImp), sub: 'times an ad was shown' },
-      { label: 'clicks', value: compact(aClk), sub: cv.sub },
-      { label: 'results', value: compact(aConv), sub: aConv && aSpend ? inr(aSpend / aConv) + ' each' : 'purchases and leads' },
-      { label: 'spent', value: inr(aSpend), sub: aClk ? inr(aSpend / aClk) + ' per click' : 'in ' + periodWord },
-    ];
+    const fun = [];
+    if (aReach) fun.push({ label: 'people reached', v: aReach, rate: 'saw an ad at least once' });
+    if (aImp) fun.push({ label: 'impressions', v: aImp, rate: aReach ? (aImp / aReach).toFixed(1) + ' per person' : 'times an ad was shown' });
+    if (aClk) fun.push({ label: 'clicks', v: aClk, rate: aImp ? pct(aClk * 100 / aImp) + ' click-through' : '' });
+    if (aConv) fun.push({ label: 'results', v: aConv, rate: aClk ? pct(aConv * 100 / aClk) + ' of clicks' : 'purchases and leads' });
+    const fMax = Math.max(1, ...fun.map(x => x.v));
+    const funnelVM = fun.map(x => ({ label: x.label, raw: x.v, fmt: 'compact', rate: x.rate, f: Math.max(x.v / fMax, 0.012) }));
+    const costVM = [
+      { label: 'spent', raw: aSpend, fmt: 'inr', sub: 'paid to the platforms in ' + periodWord },
+      aConv ? { label: 'per result', raw: aSpend / aConv, fmt: 'inr', sub: 'each purchase or lead' } : null,
+      aClk ? { label: 'per click', raw: aSpend / aClk, fmt: 'inr', sub: cv.sub } : null,
+    ].filter(Boolean);
+    const adAccVM = adAccs.map(a => {
+      const ar = cur.filter(m => m.account_id === a.id);
+      const sp = sum(ar, 'spend'), cl = sum(ar, 'clicks'), co = sum(ar, 'conversions');
+      return { platform: PLATFORM[a.platform] || a.platform, name: nameOf(a), line: [inr(sp) + ' spent', compact(cl) + ' clicks', co ? compact(co) + ' results' : ''].filter(Boolean).join(' · ') };
+    });
+    const hasAds = adAccs.length > 0 && (aImp > 0 || aSpend > 0);
+    const adsTitle = aConv && aSpend ? inr(aSpend) + ' in ads brought ' + compact(aConv) + ' results.' : 'ads were seen ' + compact(aImp) + ' times.';
 
-    // ---- what stood out: plain sentences from the same numbers ---------------
-    const hl = [];
-    if (gain > 0) {
-      const byP = socAccs.map(a => ({ p: PLATFORM[a.platform], g: sum(cur.filter(m => m.account_id === a.id), 'follower_delta') })).sort((x, y) => y.g - x.g);
-      const lead = socAccs.length > 1 && byP[0].g > gain * 0.5 ? ', most of it on ' + byP[0].p : '';
-      hl.push('you gained ' + compact(gain) + ' followers in ' + periodWord + (fNow - gain > 0 ? ' — ' + pct(gain * 100 / (fNow - gain)) + ' growth' : '') + lead + '.');
-    }
-    const rc = change(reach, reachPrev, socCov);
-    if (rc != null && Math.abs(rc) >= 5) hl.push('reach was ' + (rc > 0 ? 'up ' : 'down ') + pctChange(rc) + ' on ' + prevWord + ', at ' + compact(reach) + ' accounts.');
-    else if (reach) hl.push('your content reached ' + compact(reach) + ' accounts in ' + periodWord + '.');
-    if (ranked[0] && (pN(ranked[0], 'video_views') || base(ranked[0]))) {
-      const p = ranked[0], e = base(p) ? inter(p) * 100 / base(p) : null;
-      hl.push('the strongest piece was a ' + (KIND[p.kind] || 'post') + ' from ' + fmtDay(p.published_at) + ' — ' + compact(pN(p, 'video_views') || base(p)) + (pN(p, 'video_views') ? ' views' : ' reach') + (e != null ? ' and ' + pct(e) + ' engagement' : '') + '.');
-    }
-    if (aImp) hl.push('ads were shown ' + compact(aImp) + ' times and brought ' + compact(aClk) + ' clicks' + (aConv ? ' and ' + compact(aConv) + ' results' : '') + '.');
-    if (feed.length) {
-      const c = {}; feed.forEach(p => { const k = p.kind === 'carousel' ? 'carousel' : p.kind; c[k] = (c[k] || 0) + 1; });
-      const parts = Object.keys(c).sort((x, y) => c[y] - c[x]).map(k => c[k] + ' ' + (c[k] === 1 ? KIND[k] : KIND[k] + 's'));
-      hl.push(plural(feed.length, 'piece', 'pieces') + ' went live' + (parts.length ? ': ' + parts.join(', ') : '') + (stories.length ? ', plus ' + plural(stories.length, 'story', 'stories') : '') + '.');
-    }
-    if (er != null && feed.length >= 3) hl.push('engagement ran at ' + pct(er) + ' of reach across the posts.');
-
+    // ---- notes and plan ----------------------------------------------------
     const latest = report ? { month: report.month, notes: report.notes, plan: report.plan } : (d.latest || null);
-    const lm = latest && latest.month ? monthName(latest.month).split(' ')[0] : '';
+    const lm = latest && latest.month ? monthOnly(latest.month) : '';
     const nextOf = m => { const x = new Date(String(m).slice(0, 10) + 'T12:00:00'); x.setMonth(x.getMonth() + 1); return MONTHS[x.getMonth()]; };
+    const lines = t => String(t || '').split(/\n+/).map(x => x.trim()).filter(Boolean);
+    const noteLines = lines(latest && latest.notes), planLines = lines(latest && latest.plan);
 
+    // ---- reports archive ---------------------------------------------------
+    const reports = (d.reports || []).slice().sort((x, y) => String(x.month).localeCompare(String(y.month)));
+    const openKey = report ? String(report.month).slice(0, 7) : '';
+    const issueNo = r => String(reports.indexOf(r) + 1).padStart(2, '0');
+    const reportsVM = reports.slice().reverse().map(r => {
+      const on = openKey && String(r.month).slice(0, 7) === openKey;
+      return {
+        no: issueNo(r), month: monthOnly(r.month), year: String(r.month).slice(0, 4), sub: 'published ' + fmtDay(r.published_at),
+        cta: on ? 'reading' : 'read →', go: () => this.openMonth(String(r.month).slice(0, 10)),
+        bg: on ? '#1B1D1E' : '#FFFFFF', ink: on ? '#FFFFFF' : '#1B1D1E', border: on ? '#1B1D1E' : '#E2E7E5',
+        labelColor: '#8A9390', ctaColor: on ? '#10AF8B' : '#0A6E58',
+      };
+    });
+    const openR = report ? reports.find(r => String(r.month).slice(0, 7) === openKey) : null;
+
+    // ---- cover -------------------------------------------------------------
     const heroFor = () => {
-      if (report) return [monthName(from).split(' ')[0] + ', ', 'in review', '.'];
+      if (report) return [monthOnly(from) + ', ', 'in review', '.'];
       if (rc != null && rc >= 5) return ['reach is up ', pctChange(rc), '.'];
-      if (gain > 0 && fNow - gain > 0 && gain * 100 / (fNow - gain) >= 0.5) return ['your audience grew ', pct(gain * 100 / (fNow - gain)), '.'];
+      if (growth != null && growth >= 0.5) return ['your audience grew ', pct(growth), '.'];
       return ['your digital, ', 'in numbers', '.'];
     };
     const [heroA, heroB, heroC] = heroFor();
+    const bits = [];
+    if (reach) bits.push(compact(reach) + ' accounts reached');
+    if (feed.length) bits.push(plural(feed.length, 'piece', 'pieces') + ' published');
+    if (stories.length) bits.push(plural(stories.length, 'story', 'stories'));
+    if (aConv) bits.push(compact(aConv) + ' ad results');
+    const coverLine = bits.length ? (report ? monthOnly(from) : periodWord) + ', at a glance: ' + (bits.length > 1 ? bits.slice(0, -1).join(', ') + ' and ' + bits[bits.length - 1] : bits[0]) + '.' : '';
+
+    // ---- chapters ----------------------------------------------------------
+    const hasContent = latestVM.length > 0 || topVM.length > 0;
+    const chs = [['audience', 'audience', true], ['content', 'content', hasContent], ['stories', 'stories', stories.length > 0], ['ads', 'ads', hasAds], ['next', 'the plan', planLines.length > 0], ['reports', 'reports', reports.length > 0]]
+      .filter(c => c[2]).map((c, i) => ({ id: c[0], label: c[1], num: String(i + 1).padStart(2, '0') }));
+    const ch = {}; chs.forEach(c => { ch[c.id] = c.num; });
 
     return {
       isReport: !!report, isLive: !report,
-      kicker: report ? 'monthly report · published ' + fmtDay(report.published_at) : 'live insights' + (d.updated_at ? ' · updated ' + this.ago(d.updated_at) : ''),
-      heroA, heroB, heroC,
+      kicker: report ? 'monthly report' + (openR ? ' · no. ' + issueNo(openR) : '') + ' · published ' + fmtDay(report.published_at) : 'live' + (d.updated_at ? ' · updated ' + this.ago(d.updated_at) : ''),
+      heroA, heroB, heroC, coverLine, hasCoverLine: !!coverLine,
       windowLabel: report ? fmtDay(from) + ' – ' + fmtDay(to) + ' ' + String(to).slice(0, 4) : fmtDay(from) + ' – ' + fmtDay(to),
-      rangesVM: RANGES.map(([k, l]) => ({ label: l, go: () => this.setState({ range: k }), color: s.range === k ? '#1B1D1E' : '#8A9390', bar: s.range === k ? '#10AF8B' : 'transparent' })),
+      fromLabel: fmtDay(from), toLabel: fmtDay(to),
       empty: !cur.length && !wPosts.length,
-      headlineVM,
-      highlightsVM: hl.slice(0, 5).map(text => ({ text })), hasHighlights: hl.length > 0,
-      chartTitle: chart === 'followers' ? 'audience growth' : 'daily reach',
-      chartTabsVM: [['followers', 'followers'], ['reach', 'reach']].map(([k, l]) => ({ label: l, go: () => this.setState({ chart: k }), color: chart === k ? '#1B1D1E' : '#8A9390', bar: chart === k ? '#10AF8B' : 'transparent' })),
-      chartHas: peak > 0, chartEmpty: peak <= 0,
-      chartPath: pts.length ? 'M' + pts.join(' L') : '',
-      chartArea: pts.length ? 'M0,' + (H - B) + ' L' + pts.join(' L') + ' L' + px(vals.length - 1).toFixed(1) + ',' + (H - B) + ' Z' : '',
+      heroKpi, kpis,
+      chartKind: chart, chartIsBar: isBar, chartN: N,
+      audienceTitle: gain > 0 ? 'you gained ' + full(gain) + ' followers.' : fNow ? full(fNow) + ' people follow you.' : 'your audience, day by day.',
+      audienceLine: audienceBits.join(' '), hasAudienceLine: audienceBits.length > 0,
+      chartTabsVM: [['followers', 'followers', folHas], ['gained', 'new followers', true], ['reach', 'reach', true]].filter(c => c[2])
+        .map(([k, l]) => ({ label: l, go: () => { this.setState({ chart: k, hover: null }); this.play(['tc']); }, color: chart === k ? '#1B1D1E' : '#8A9390', bar: chart === k ? '#10AF8B' : 'transparent' })),
+      chartHas, chartEmpty: !chartHas,
+      chartPath: !isBar && pts.length ? 'M' + pts.join(' L') : NOPATH,
+      chartArea: !isBar && pts.length ? 'M0,' + (H - B) + ' L' + pts.join(' L') + ' L' + px(N - 1).toFixed(1) + ',' + (H - B) + ' Z' : NOPATH,
+      chartBarsVM: isBar ? vals.map((v, i) => { const y0 = py(0), y1 = py(v); return { x: (i * bw + bw * 0.18).toFixed(1), w: (bw * 0.64).toFixed(1), y: Math.min(y0, y1).toFixed(1), h: (v ? Math.max(Math.abs(y1 - y0), 2) : 0).toFixed(1), fill: v < 0 ? '#B4433A' : '#10AF8B' }; }) : [],
+      chartPts: vals.map((v, i) => ({ x: px(i) / W * 100, y: py(v) / H * 100, date: fmtDay(dates[i]), value: (isBar ? (v > 0 ? '+' : v < 0 ? '−' : '') + full(Math.abs(v)) : full(v)) + unit })),
       chartGridVM: [1, 0.75, 0.5, 0.25, 0].map(f => ({ y: py(lo + (hi - lo) * f), label: compact(lo + (hi - lo) * f) })),
-      chartAxisVM: [0, Math.floor((dates.length - 1) / 2), dates.length - 1].filter((v, i, a) => a.indexOf(v) === i)
-        .map(i => ({ label: fmtDay(dates[i]), align: i === 0 ? 'flex-start' : i === dates.length - 1 ? 'flex-end' : 'center' })),
+      chartAxisVM: [0, Math.floor((N - 1) / 2), N - 1].filter((v, i, a) => a.indexOf(v) === i)
+        .map(i => ({ label: fmtDay(dates[i]), align: i === 0 ? 'flex-start' : i === N - 1 ? 'flex-end' : 'center' })),
       chartSummaryVM: chart === 'followers'
-        ? [{ label: 'now', value: compact(last) }, { label: 'change', value: signed(last - first) }, { label: 'start', value: compact(first) }]
-        : [{ label: 'total', value: compact(vals.reduce((t, v) => t + v, 0)) }, { label: 'a day', value: compact(Math.round(vals.reduce((t, v) => t + v, 0) / days)) }, { label: 'best day', value: best.v ? compact(best.v) + ' · ' + fmtDay(best.d) : '—' }],
-      platformsVM, hasPlatforms: platformsVM.length > 0,
-      topVM, hasTop: topVM.length > 0,
+        ? [{ label: 'now', value: compact(last) }, { label: 'change', value: signed(last - first) }, { label: 'at the start', value: compact(first) }]
+        : [{ label: isBar ? 'gained' : 'total reach', value: isBar ? signed(tot) : compact(tot) }, { label: 'a day', value: isBar ? signed(Math.round(tot / days)) : compact(Math.round(tot / days)) }, { label: 'best day', value: vals[bestI] > 0 ? compact(vals[bestI]) + ' · ' + fmtDay(dates[bestI]) : '—' }],
+      platformsVM, hasPlatforms: platformsVM.length > 1 || (platformsVM.length === 1 && shareTot > 0),
+      shareLabel: fNow ? 'where your audience is' : 'where your reach came from',
+      hasContent, contentTitle, contentLine, hasContentLine: !!contentLine,
+      feature: topVM[0] || {}, hasFeature: topVM.length > 0,
+      restVM: topVM.slice(1), hasRest: topVM.length > 1, topCount: String(topVM.length),
+      mixVM, hasMix: mixRows.length >= 2, mixLine,
+      daysVM, hasDays, dayLine, hasWorks: mixRows.length >= 2 || hasDays,
       latestVM, hasLatest: latestVM.length > 0, latestHint: latestVM.length > 2 ? 'swipe →' : '',
-      storyStatsVM, storyTilesVM, hasStories: stories.length > 0,
-      adsVM, hasAds: adAccs.length > 0 && (aImp > 0 || aSpend > 0),
-      notes: (latest && latest.notes) || '', hasNotes: !!(latest && latest.notes),
-      plan: (latest && latest.plan) || '', hasPlan: !!(latest && latest.plan),
-      notesLabel: report ? 'notes on ' + lm : 'notes from glomium · ' + lm,
-      planLabel: latest && latest.month ? 'the plan for ' + nextOf(latest.month) : 'the plan',
-      hasTeam: !!(latest && (latest.notes || latest.plan)),
+      latestLabel: report ? 'everything from ' + monthOnly(from) : 'latest posts',
+      hasStories: stories.length > 0, storyStatsVM, storyTilesVM,
+      storiesTitle: stayed != null && sExits > 0 ? 'stories held ' + Math.round(stayed) + '% of viewers.' : plural(stories.length, 'story', 'stories') + ' in ' + periodWord + '.',
+      hasKeep: stayed != null && sExits > 0, keepF: (stayed || 0) / 100,
+      keepLabel: stayed != null ? pct(stayed) + ' kept watching' : '', leaveLabel: stayed != null ? pct(100 - stayed) + ' tapped away' : '',
+      hasAds, adsTitle, funnelVM, costVM, adAccVM, hasAdAccs: adAccVM.length > 1,
+      notesLabel: report ? 'a note on ' + lm : 'a note from us · ' + lm,
+      noteLead: noteLines[0] || '', noteRestVM: noteLines.slice(1).map(text => ({ text })), hasNotes: noteLines.length > 0,
+      planTitle: latest && latest.month ? 'the plan for ' + nextOf(latest.month) + '.' : 'the plan.',
+      planVM: planLines.map((text, i) => ({ num: String(i + 1).padStart(2, '0'), text })), hasPlan: planLines.length > 0,
+      reportsVM, hasReports: reports.length > 0,
+      chs, ch,
     };
   }
 
@@ -897,46 +1264,78 @@ class Component extends DCLogic {
     };
     const dead = !s.loading && !!reasons[s.reason];
     const page = !s.loading && !s.reason && d && (d.mode === 'live' || d.mode === 'report');
-    const vm = page ? this.build(d) : {};
-    const reports = (d && d.reports) || [];
+    const vm = page ? this.vmFor(d) : {};
+    this._navIds = page ? vm.chs.map(c => c.id) : [];
+
+    // Animated layer over the built numbers.
+    const e = ease(s.t), ec = ease(s.tc);
+    const clip = ((1 - e) * 100).toFixed(2);
+    const onInk = k => ({ ...k, value: k.raw == null ? '—' : FMT[k.fmt](k.raw * e), subColor: k.dir > 0 ? '#10AF8B' : '#C9D0CE', clip });
+    const bar = x => ({ ...x, w: (x.f * e * 100).toFixed(2) + '%' });
+    const hp = page && s.hover != null && vm.chartPts ? vm.chartPts[s.hover] : null;
+
     return {
       loading: s.loading,
-      hasClient: !!client, clientName: client, clientLower: client.toLowerCase(), gateClient: client ? client.toLowerCase() : 'you',
+      clientName: client, clientLower: client.toLowerCase(),
       logo, hasLogo: !!logo, noLogo: !logo && !!client,
-      logoW22: Math.round(22 * lr) + 'px', logoW44: Math.round(44 * lr) + 'px', logoW56: Math.round(56 * lr) + 'px',
-      logoW64: Math.round(64 * lr) + 'px',
+      logoW56: Math.round(56 * lr) + 'px', logoW64: Math.round(64 * lr) + 'px',
       // A white mark sits on a small ink plate instead of vanishing.
       plateBg: logo && s.logoOnInk ? '#1B1D1E' : 'transparent',
       platePad: logo && s.logoOnInk ? '14px 20px' : '0',
       clientRole: since ? 'since ' + since : 'client',
       cellName: client.toLowerCase(),
-      partnerLine: 'digital partnership' + (since ? ' · since ' + since : ''),
       dead, deadTitle: dead ? reasons[s.reason][0] : '', deadNote: dead ? reasons[s.reason][1] : '',
       showGate: !s.loading && s.reason === 'gate',
       pin: s.pin,
-      onPin: e => {
-        const v = String(e.target.value || '').replace(/\D/g, '').slice(0, 4);
+      onPin: ev => {
+        const v = String(ev.target.value || '').replace(/\D/g, '').slice(0, 4);
         this.setState({ pin: v, gateStatus: '' });
         if (v.length === 4 && !s.checking) this.fetch(v);
       },
-      onPinKey: e => { if (e.key === 'Enter' && s.pin.length === 4) this.fetch(s.pin); },
+      onPinKey: ev => { if (ev.key === 'Enter' && s.pin.length === 4) this.fetch(s.pin); },
       openPin: () => (s.pin.length === 4 ? this.fetch(s.pin) : this.setState({ gateStatus: 'the pin is four digits.' })),
       checking: s.checking, openLabel: s.checking ? 'opening…' : 'open',
       gateStatus: s.gateStatus, hasGateStatus: !!s.gateStatus,
-      showPage: !!page,
+      showPage: !!page, notPage: !page,
       ...vm,
-      hasReports: reports.length > 0,
-      reportsVM: reports.map(r => ({
-        label: monthName(r.month), sub: 'published ' + fmtDay(r.published_at),
-        cta: vm.isReport && d.report && String(d.report.month).slice(0, 7) === String(r.month).slice(0, 7) ? 'open now' : 'read →',
-        go: () => this.openMonth(String(r.month).slice(0, 10)),
+      ch: vm.ch || {},
+      heroKpi: page ? onInk(vm.heroKpi) : {},
+      kpisVM: page ? vm.kpis.map(onInk) : [],
+      platformsVM: page ? vm.platformsVM.map(bar) : [],
+      mixVM: page ? vm.mixVM.map(bar) : [],
+      daysVM: page ? vm.daysVM.map(x => ({ ...x, h: Math.max(3, Math.round(x.f * e * 112)) + 'px' })) : [],
+      funnelVM: page ? vm.funnelVM.map(x => ({ ...bar(x), value: FMT[x.fmt](x.raw * e) })) : [],
+      costVM: page ? vm.costVM.map(x => ({ ...x, value: FMT[x.fmt](x.raw * e) })) : [],
+      keepW: page ? (vm.keepF * e * 100).toFixed(2) + '%' : '0%',
+      chartClip: ((1 - ec) * 100).toFixed(2),
+      hasHover: !!hp,
+      hoverX: hp ? hp.x.toFixed(2) : '0', hoverY: hp ? hp.y.toFixed(2) : '0',
+      hoverShift: hp ? (hp.x < 16 ? '-12px' : hp.x > 84 ? 'calc(-100% + 12px)' : '-50%') : '-50%',
+      hoverDate: hp ? hp.date : '', hoverValue: hp ? hp.value : '',
+      onChartMove: ev => {
+        const r = ev.currentTarget.getBoundingClientRect();
+        const N = vm.chartN || 0;
+        if (!r.width || !N) return;
+        const f = (ev.clientX - r.left) / r.width;
+        const i = Math.max(0, Math.min(N - 1, vm.chartIsBar ? Math.floor(f * N) : Math.round(f * (N - 1))));
+        if (i !== this.state.hover) this.setState({ hover: i });
+      },
+      onChartLeave: ev => { if (ev.pointerType === 'mouse') this.setState({ hover: null }); },
+      navVM: page ? vm.chs.map(c => ({
+        id: c.id, label: c.label, go: () => this.goTo(c.id),
+        color: s.active === c.id ? '#1B1D1E' : '#8A9390', bar: s.active === c.id ? '#10AF8B' : 'transparent',
+      })) : [],
+      rangesVM: RANGES.map(([k, l]) => ({
+        label: l, go: () => { if (s.range !== k) { this.setState({ range: k, hover: null }); this.play(['t', 'tc']); } },
+        color: s.range === k ? '#FFFFFF' : '#8A9390', bar: s.range === k ? '#10AF8B' : 'transparent',
       })),
-      goReports: () => { const el = document.getElementById('reports'); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 24, behavior: 'smooth' }); },
+      goTop: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
       goLive: () => this.openMonth(null),
+      print: () => { this.setState({ t: 1, tc: 1 }); setTimeout(() => window.print(), 80); },
       refresh: () => this.refresh(),
       refreshing: !!s.refreshing,
       refreshLabel: s.refreshing ? 'refreshing…' : '↻ refresh',
-      refreshColor: s.refreshing ? '#8A9390' : '#0A6E58',
+      refreshColor: s.refreshing ? '#8A9390' : '#10AF8B',
       refreshTitle: 'pull the latest numbers from every platform',
       refreshNote: s.refreshNote || '', hasRefreshNote: !!s.refreshNote && !!page && !(vm && vm.isReport),
     };
@@ -948,7 +1347,7 @@ function demoData(month) {
   const to = iso(new Date()), A = 'ig', F = 'fb', M = 'ads';
   const metrics = [], posts = [];
   // A count every day, walked back from today through each day's gain — the
-  // way the hourly sync records it, so past months have readings too.
+  // way the sync records it, so past months have readings too.
   let igF = 22184, fbF = 8410;
   for (let i = 0; i < 120; i++) {
     const d = addDays(to, -i), w = 1 + 0.25 * Math.sin(i / 5);
@@ -961,9 +1360,10 @@ function demoData(month) {
   const kinds = ['reel', 'post', 'carousel', 'reel', 'reel', 'post'];
   for (let i = 0; i < 26; i++) {
     const at = new Date(Date.now() - (i * 2.6 + 0.5) * 86400000).toISOString();
-    posts.push({ account_id: i % 5 === 4 ? F : A, kind: kinds[i % kinds.length], caption: ['the new flagship, in hand', 'exchange day at the store — bring your old phone', 'three colours, one choice', 'unboxing, slowly', 'weekend offer ends sunday', 'behind the counter'][i % 6], published_at: at, reach: 4200 + ((i * 937) % 6100), likes: 180 + ((i * 53) % 400), comments: 6 + (i % 9), shares: 4 + (i % 13), saves: 9 + (i % 17), video_views: kinds[i % kinds.length] === 'reel' ? 9000 + ((i * 1777) % 21000) : 2600 + ((i * 311) % 3000) });
+    const k = kinds[i % kinds.length];
+    posts.push({ account_id: i % 5 === 4 ? F : A, kind: k, caption: ['the new flagship, in hand', 'exchange day at the store — bring your old phone', 'three colours, one choice', 'unboxing, slowly', 'weekend offer ends sunday', 'behind the counter'][i % 6], published_at: at, reach: (k === 'reel' ? 6800 : 3600) + ((i * 937) % 4100), likes: 180 + ((i * 53) % 400), comments: 6 + (i % 9), shares: 4 + (i % 13), saves: 9 + (i % 17), video_views: k === 'reel' ? 9000 + ((i * 1777) % 21000) : 0 });
   }
-  for (let i = 0; i < 9; i++) posts.push({ account_id: A, kind: 'story', published_at: new Date(Date.now() - (i * 3 + 0.2) * 86400000).toISOString(), reach: 760 + i * 31, video_views: 880 + i * 40, exits: 30 + i * 3, replies: i % 3 });
+  for (let i = 0; i < 9; i++) posts.push({ account_id: A, kind: 'story', published_at: new Date(Date.now() - (i * 3 + 0.2) * 86400000).toISOString(), reach: 760 + i * 31, video_views: 880 + i * 40, exits: 30 + i * 9, replies: i % 3 });
   const accounts = [{ id: A, platform: 'instagram', label: 'mr.fone', handle: '@mrfone' }, { id: F, platform: 'facebook', label: 'mr.fone', handle: 'mr.fone kerala' }, { id: M, platform: 'meta_ads', label: 'store campaigns' }];
   const d0 = new Date(); d0.setDate(1); d0.setMonth(d0.getMonth() - 1);
   const m0 = iso(d0), m1 = (() => { const x = new Date(d0); x.setMonth(x.getMonth() - 1); return iso(x); })();
