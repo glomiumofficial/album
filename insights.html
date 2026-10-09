@@ -785,9 +785,10 @@ class Component extends DCLogic {
     this.play(['t', 'tc']);
   }
 
-  // Reads the logo once: its shape sizes the lockup, and a white mark on a
-  // transparent ground — common in a logo suite — gets the ink cell instead
-  // of vanishing into the white one.
+  // Reads the logo once. Most logo files carry an empty margin, which shrinks
+  // the mark and pushes it off the lockup's edge — so it is trimmed to its
+  // ink. Its shape then sizes the lockup, and a white mark on a transparent
+  // ground gets the ink cell instead of vanishing into the white one.
   checkLogo(url) {
     if (!url || !/^https:\/\//i.test(url) || this._logoFor === url) return;
     this._logoFor = url;
@@ -795,23 +796,42 @@ class Component extends DCLogic {
       const i = new Image();
       if (cors) i.crossOrigin = 'anonymous';
       i.onload = () => {
-        const ratio = i.naturalWidth && i.naturalHeight ? i.naturalWidth / i.naturalHeight : 3;
-        let onInk = false;
+        const nw = i.naturalWidth || 600, nh = i.naturalHeight || 200;
+        let ratio = nw / nh, onInk = false, src = '';
         if (cors) {
           try {
-            const w = 64, hh = Math.max(1, Math.round(64 / ratio));
-            const c = document.createElement('canvas'); c.width = w; c.height = hh;
-            const x = c.getContext('2d'); x.drawImage(i, 0, 0, w, hh);
-            const px = x.getImageData(0, 0, w, hh).data;
-            let lum = 0, solid = 0;
-            for (let k = 0; k < px.length; k += 4) {
-              if (px[k + 3] < 40) continue;
-              solid++; lum += 0.2126 * px[k] + 0.7152 * px[k + 1] + 0.0722 * px[k + 2];
+            const sc = Math.min(1, 1400 / Math.max(nw, nh));
+            const W = Math.max(1, Math.round(nw * sc)), H = Math.max(1, Math.round(nh * sc));
+            const c = document.createElement('canvas'); c.width = W; c.height = H;
+            const x = c.getContext('2d'); x.drawImage(i, 0, 0, W, H);
+            const px = x.getImageData(0, 0, W, H).data;
+            let clear = 0;
+            for (let k = 3; k < px.length; k += 4) if (px[k] < 24) clear++;
+            // Transparent files trim on alpha; flat ones on their white ground.
+            const seeThrough = clear > W * H * 0.02;
+            const ink = k => (seeThrough ? px[k + 3] >= 24 : !(px[k] > 244 && px[k + 1] > 244 && px[k + 2] > 244));
+            let x0 = W, y0 = H, x1 = -1, y1 = -1, lum = 0, solid = 0;
+            for (let y = 0; y < H; y++) {
+              for (let xx = 0; xx < W; xx++) {
+                const k = (y * W + xx) * 4;
+                if (!ink(k)) continue;
+                if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (y < y0) y0 = y; if (y > y1) y1 = y;
+                if (px[k + 3] >= 40) { solid++; lum += 0.2126 * px[k] + 0.7152 * px[k + 1] + 0.0722 * px[k + 2]; }
+              }
             }
-            onInk = solid > 0 && solid < w * hh * 0.92 && lum / solid / 255 > 0.8;
-          } catch (e) { onInk = false; }
+            onInk = seeThrough && solid > 0 && lum / solid / 255 > 0.8;
+            if (x1 >= x0 && y1 >= y0) {
+              const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+              ratio = bw / bh;
+              if (bw < W - 2 || bh < H - 2) {
+                const o = document.createElement('canvas'); o.width = bw; o.height = bh;
+                o.getContext('2d').drawImage(c, x0, y0, bw, bh, 0, 0, bw, bh);
+                src = o.toDataURL('image/png');
+              }
+            }
+          } catch (e) { onInk = false; src = ''; ratio = nw / nh; }
         }
-        this.setState({ logoRatio: ratio, logoOnInk: onInk, logoFailed: false });
+        this.setState({ logoRatio: ratio, logoOnInk: onInk, logoSrc: src, logoFailed: false });
       };
       i.onerror = () => (cors ? probe(false) : this.setState({ logoFailed: true }));
       i.src = url;
@@ -1251,7 +1271,7 @@ class Component extends DCLogic {
     const b = s.brand || (d && (d.brand || { client: d.client, logo: d.logo })) || {};
     const client = String(b.client || '');
     const logo = b.logo && /^https:\/\//i.test(b.logo) && !s.logoFailed && s.logoRatio
-      ? String(b.logo).replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')) : '';
+      ? String(s.logoSrc || b.logo).replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')) : '';
     const sinceD = b.since ? new Date(String(b.since).slice(0, 10) + 'T12:00:00') : null;
     const since = sinceD && !isNaN(sinceD) ? MON[sinceD.getMonth()] + ' ' + sinceD.getFullYear() : '';
     const lr = Math.min(Math.max(s.logoRatio || 3, 0.6), 8);
