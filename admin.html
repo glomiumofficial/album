@@ -6435,12 +6435,15 @@
         <div style="display:flex; flex-direction:column; gap:16px">
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px">
             <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Photos ({{ photoCount }})</span>
-            <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
-            <div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <sc-if value="{{ hasHeavyPhotos }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ repairAlbumPhotos }}" disabled="{{ repairBusy }}" title="{{ heavyTitle }}" style="padding:10px 18px; background:none; border:1px solid #9A6A12; border-radius:0; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:#9A6A12; cursor:pointer">{{ heavyLabel }}</button>
+              </sc-if>
+              <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}">
               <input type="file" accept="image/*" multiple="{{ true }}" ref="{{ setPhotosInputRef }}" onChange="{{ onPhotosFileChange }}" style="display:none">
               <button onClick="{{ triggerPhotosPicker }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:12px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Upload photos</button>
+              </sc-if>
             </div>
-            </sc-if>
           </div>
           <sc-if value="{{ uploadStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ uploadStatus }}</span></sc-if>
           <sc-if value="{{ albumEditable }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px; color:#6B7572">Drag a photo to reorder, or type a position number.</span></sc-if>
@@ -9067,7 +9070,7 @@ class Component extends DCLogic {
     const out = { url: original, url_grid: original, url_view: original };
     let bmp = null;
     try {
-      bmp = await createImageBitmap(file);
+      bmp = await this.decodeForResize(file);
       // Stored so album pages can reserve each tile's box before it loads.
       out.width = bmp.width; out.height = bmp.height;
       const view = await this.resizeImage(file, 2800, 0.92, bmp);
@@ -9076,12 +9079,82 @@ class Component extends DCLogic {
       if (grid) out.url_grid = await this.uploadBlob(grid.blob, 'grid', grid.ext);
       else out.url_grid = out.url_view;
     } catch (e) {
-      // The original is already up and still serves; the page is just heavier.
+      // The original is already up and still serves — but a 30-megapixel
+      // original in the grid is what turned album pages white on scroll, so
+      // it is counted and the Photos header offers to fix it.
       console.warn('photo copies failed, serving the original', file.name, e);
+      this._heavyUploads = (this._heavyUploads || 0) + 1;
     } finally {
       if (bmp && bmp.close) bmp.close();
     }
     return out;
+  }
+
+  // createImageBitmap refuses some very large or unusual JPEGs (Safari most of
+  // all); an <img> decode still reads them, and the bitmap is taken from that.
+  async decodeForResize(blob) {
+    try { return await createImageBitmap(blob); } catch (e) {
+      const u = URL.createObjectURL(blob);
+      try {
+        const im = new Image(); im.decoding = 'async'; im.src = u;
+        await im.decode();
+        return await createImageBitmap(im);
+      } finally { URL.revokeObjectURL(u); }
+    }
+  }
+
+  // Photos with no grid copy (the full original sat in the album grid) or no
+  // stored size. Nabin & Fathima had four 33-megapixel originals in the grid —
+  // ~130 MB each once decoded, and Safari blanked the page scrolling past them.
+  heavyPhotos() {
+    return (this.state.media || []).filter(m => m.kind !== 'video' && m.url && (
+      !(m.width > 0 && m.height > 0) || (m.url_grid === m.url && Math.max(m.width, m.height) > 1230)));
+  }
+
+  async repairAlbumPhotos() {
+    const list = this.heavyPhotos();
+    if (!list.length || this.state.repairBusy) return;
+    this.setState({ repairBusy: true, uploadStatus: 'Fixing photo sizes — 0 of ' + list.length + '…' });
+    let done = 0, fixed = 0, sized = 0, noDims = false;
+    const fails = [];
+    for (const m of list) {
+      let bmp = null;
+      try {
+        const res = await fetch(m.url);
+        if (!res.ok) throw new Error('could not read the original (' + res.status + ')');
+        const blob = await res.blob();
+        const file = new File([blob], (m.name || 'photo') + '.jpg', { type: blob.type || 'image/jpeg' });
+        bmp = await this.decodeForResize(file);
+        const patch = { width: bmp.width, height: bmp.height };
+        if (m.url_grid === m.url || !m.url_grid) {
+          const grid = await this.resizeImage(file, 1200, 0.9, bmp);
+          if (grid) { patch.url_grid = await this.uploadBlob(grid.blob, 'grid', grid.ext); fixed++; }
+        }
+        if (m.url_view === m.url || !m.url_view) {
+          const view = await this.resizeImage(file, 2800, 0.92, bmp);
+          if (view) patch.url_view = await this.uploadBlob(view.blob, 'view', view.ext);
+        }
+        let { error } = await this.sb.from('media').update(patch).eq('id', m.id);
+        if (error && this.isMissingDimsColumn(error)) {
+          noDims = true;
+          const { width, height, ...rest } = patch;
+          ({ error } = Object.keys(rest).length ? await this.sb.from('media').update(rest).eq('id', m.id) : { error: null });
+        }
+        if (error) throw error;
+        sized++;
+      } catch (e) {
+        fails.push((m.name || 'photo') + ': ' + (e.message || e));
+      } finally {
+        if (bmp && bmp.close) bmp.close();
+      }
+      done++;
+      this.setState({ uploadStatus: 'Fixing photo sizes — ' + done + ' of ' + list.length + '…' });
+    }
+    await this.loadMedia(this.state.current.id);
+    this.setState({ repairBusy: false, uploadStatus:
+      (fixed ? fixed + (fixed === 1 ? ' heavy photo now has a light grid copy. ' : ' heavy photos now have light grid copies. ') : '')
+      + (noDims ? 'Sizes not stored — run the width/height migration. ' : sized ? sized + ' photos have their size stored. ' : '')
+      + (fails.length ? fails.length + ' could not be fixed — ' + fails.slice(0, 3).join('; ') : '') });
   }
 
   async onCoverFile(file) {
@@ -20824,6 +20897,18 @@ class Component extends DCLogic {
       setPhotosInputRef: el => { this.photosInputEl = el; },
       triggerPhotosPicker: () => this.photosInputEl && this.photosInputEl.click(),
       onPhotosFileChange: e => this.onPhotosFiles(e.target.files),
+      ...(() => {
+        const heavy = this.heavyPhotos();
+        const big = heavy.filter(m => m.url_grid === m.url).length;
+        return {
+          hasHeavyPhotos: heavy.length > 0,
+          repairAlbumPhotos: () => this.repairAlbumPhotos(),
+          repairBusy: !!s.repairBusy,
+          heavyLabel: s.repairBusy ? 'Fixing…' : 'Fix photo sizes (' + heavy.length + ')',
+          heavyTitle: (big ? big + ' photos show their full original in the grid, which can blank the album on phones and Safari. ' : '')
+            + 'Makes light grid copies and stores each photo\u2019s size.',
+        };
+      })(),
       uploadStatus: s.uploadStatus, photoCount: photosVM.length, photosVM,
 
       setVideoInputRef: el => { this.videoInputEl = el; },

@@ -64,7 +64,7 @@
 
   <sc-if value="{{ hasEvent }}" hint-placeholder-val="{{ false }}">
     <div>
-      <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:6px clamp(20px,4vw,56px); opacity:0; pointer-events:none; background:rgba(255,255,255,.94); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid #EEF1F0; transition:opacity .4s">
+      <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:6px clamp(20px,4vw,56px); opacity:0; pointer-events:none; background:#FFFFFF; border-bottom:1px solid #EEF1F0; transition:opacity .4s">
         <span style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; color:#1B1D1E">{{ event.couple_names }}</span>
         <div style="display:flex; align-items:center; gap:clamp(20px,3vw,36px); font-size:10px; letter-spacing:2.6px; text-transform:uppercase; white-space:nowrap">
           <sc-if value="{{ navFilms }}" hint-placeholder-val="{{ false }}">
@@ -409,11 +409,10 @@ class Component extends DCLogic {
       const past = window.scrollY > window.innerHeight * 0.85;
       if (past === this._barOn) return;
       let bar = this.topbarEl;
-      if (!bar) {
-        bar = this.topbarEl = document.querySelector('[data-el="topbar"]');
-        // A live blur over a scrolling photo grid is what blanked phone screens.
-        if (bar && this.state.isMobile) { bar.style.backdropFilter = 'none'; bar.style.webkitBackdropFilter = 'none'; bar.style.background = '#FFFFFF'; }
-      }
+      // No blur on the bar, on any screen: a live backdrop-filter over the
+      // photo grid made Safari (Mac and iPad, not just phones) drop the whole
+      // page to white the moment the bar faded in, one screen down.
+      if (!bar) bar = this.topbarEl = document.querySelector('[data-el="topbar"]');
       if (!bar) return;
       this._barOn = past;
       bar.style.opacity = past ? '1' : '0';
