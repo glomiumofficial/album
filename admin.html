@@ -7694,9 +7694,13 @@ class Component extends DCLogic {
     this.setState({ visitStatus: 'loading…' });
     let q = this.sb.from('album_visits').select('*').order('last_seen', { ascending: false }).limit(2000);
     if (days) q = q.gte('last_seen', new Date(Date.now() - days * 86400000).toISOString());
-    const [{ data, error }, ev] = await Promise.all([q, this.sb.from('events').select('slug, couple_names, event_date').limit(2000)]);
+    const [{ data, error }, ev, pj] = await Promise.all([q, this.sb.from('events').select('slug, couple_names, event_date').limit(2000),
+      this.sb.from('projects').select('id, client_name, project_title').limit(2000)]);
     const visitNames = {};
     (ev.data || []).forEach(e => { if (e.slug) visitNames[e.slug] = { name: e.couple_names || e.slug, date: e.event_date }; });
+    // Client insights pages log as insights:<project id> — never the link's token.
+    (pj.data || []).forEach(p => { visitNames['insights:' + p.id] = { name: 'Client insights · ' + (p.client_name || p.project_title || 'client') }; });
+    visitNames['insights:unknown'] = { name: 'Client insights · unknown links' };
     this.setState({ visitNames });
     if (error) { this.setState({ visits: [], visitStatus: /album_visits/.test(error.message || '') ? 'run album-visits.sql in supabase first.' : 'could not load: ' + error.message }); return; }
     this.setState({ visits: data || [], visitStatus: '' }, () => this.geoVisits());
@@ -7845,17 +7849,17 @@ class Component extends DCLogic {
         rows.forEach(r => { (groups[r.v.slug] = groups[r.v.slug] || { slug: r.v.slug, page: r.page, list: [] }).list.push(r); });
         const shut = s.visitShut || {};
         return Object.values(groups)
-          .sort((a, b) => { const top = x => x === 'admin' ? -1 : x === 'home' ? 0 : x === 'home-mobile' ? 1 : x === 'portfolio' ? 2 : 3; return (top(a.slug) - top(b.slug)) || a.page.localeCompare(b.page, 'en', { sensitivity: 'base' }); })
+          .sort((a, b) => { const top = x => x === 'admin' ? -1 : x === 'home' ? 0 : x === 'home-mobile' ? 1 : x === 'portfolio' ? 2 : /^insights:/.test(x) ? 3 : 4; return (top(a.slug) - top(b.slug)) || a.page.localeCompare(b.page, 'en', { sensitivity: 'base' }); })
           .map(g => {
             const gv = g.list.reduce((n, r) => n + (r.v.views || 1), 0), gi = new Set(g.list.map(r => r.v.ip).filter(Boolean)).size;
             const open = !shut[g.slug];
             return {
               page: g.page,
-              sub: g.slug === 'admin' ? 'sign-ins, album and file changes, refused requests' : g.slug === 'home' ? 'glomium.co' : g.slug === 'home-mobile' ? 'm.glomium.in' : g.slug === 'portfolio' ? 'portfolio.html' : '/album/' + g.slug + (names[g.slug] && names[g.slug].date ? ' · ' + new Date(names[g.slug].date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''),
+              sub: /^insights:/.test(g.slug) ? 'insights.html · PIN tries, lockouts and opens' : g.slug === 'admin' ? 'sign-ins, album and file changes, refused requests' : g.slug === 'home' ? 'glomium.co' : g.slug === 'home-mobile' ? 'm.glomium.in' : g.slug === 'portfolio' ? 'portfolio.html' : '/album/' + g.slug + (names[g.slug] && names[g.slug].date ? ' · ' + new Date(names[g.slug].date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''),
               stats: gv + (gv === 1 ? ' view' : ' views') + ' · ' + gi + (gi === 1 ? ' ip' : ' ips') + ' · last ' + when(g.list[0].v.last_seen),
               open, arrow: open ? '−' : '+',
               toggle: () => this.setState(st => ({ visitShut: { ...(st.visitShut || {}), [g.slug]: open } })),
-              openPage: () => window.open(g.slug === 'admin' ? 'admin.html' : g.slug === 'home' ? 'https://glomium.co' : g.slug === 'home-mobile' ? 'https://m.glomium.in' : g.slug === 'portfolio' ? 'portfolio.html' : 'album.html?event=' + encodeURIComponent(g.slug), '_blank'),
+              openPage: () => /^insights:/.test(g.slug) ? null : window.open(g.slug === 'admin' ? 'admin.html' : g.slug === 'home' ? 'https://glomium.co' : g.slug === 'home-mobile' ? 'https://m.glomium.in' : g.slug === 'portfolio' ? 'portfolio.html' : 'album.html?event=' + encodeURIComponent(g.slug), '_blank'),
               rows: g.list.slice(0, 300).map(({ v, dev }) => ({
                 when: when(v.last_seen), ip: v.ip || '—', device: dev, ua: v.user_agent || '—',
                 country: [v.city && v.city !== '—' ? v.city : '', v.region && v.region !== v.city ? v.region : '', v.country].filter(Boolean).join(', ') || (v.ip && !v.city ? 'locating…' : '—'),

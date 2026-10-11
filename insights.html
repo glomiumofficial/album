@@ -762,9 +762,33 @@ class Component extends DCLogic {
     return (q.get('k') || fromPath || '').trim();
   }
 
+  // What the security log keeps beside the IP and browser the server reads
+  // itself: session, screen, language and timezone — the same as the albums.
+  visitMeta() {
+    let sid = '', tz = '';
+    try { sid = sessionStorage.getItem('g_sid') || ''; if (!sid) { sid = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2); sessionStorage.setItem('g_sid', sid); } } catch (e) {}
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+    return { session: sid, method: 'GET', referrer: document.referrer || null,
+      screen: screen.width + 'x' + screen.height + '@' + (window.devicePixelRatio || 1),
+      viewport: innerWidth + 'x' + innerHeight, lang: navigator.language || '', tz };
+  }
+
+  // The logging version takes p_meta. Until insights-security-2026-10.sql is
+  // run the database only knows the three-argument call, so fall back to it.
+  async ask(pin, month) {
+    const args = { p_token: this.token(), p_pin: pin, p_month: month };
+    if (this._noMeta) return this.sb.rpc('client_insights', args);
+    const r = await this.sb.rpc('client_insights', { ...args, p_meta: this.visitMeta() });
+    if (r.error && /PGRST202|could not find the function|p_meta/i.test(String(r.error.code || '') + ' ' + String(r.error.message || ''))) {
+      this._noMeta = true;
+      return this.sb.rpc('client_insights', args);
+    }
+    return r;
+  }
+
   async fetch(pin, month) {
     this.setState({ checking: true, gateStatus: '' });
-    const { data, error } = await this.sb.rpc('client_insights', { p_token: this.token(), p_pin: pin, p_month: month || null });
+    const { data, error } = await this.ask(pin, month || null);
     if (error) { this.setState({ loading: false, checking: false, reason: 'gate', gateStatus: 'that did not go through — ' + error.message }); return; }
     const d = data || {};
     if (!d.ok) {
@@ -888,7 +912,7 @@ class Component extends DCLogic {
     clearTimeout(this._poll);
     if (tries > 14) { this.setState({ refreshing: false, refreshNote: 'still working on it — reload the page in a little while.' }); return; }
     this._poll = setTimeout(async () => {
-      const { data } = await this.sb.rpc('client_insights', { p_token: this.token(), p_pin: this.pinUsed, p_month: null });
+      const { data } = await this.ask(this.pinUsed, null);
       if (data && data.ok && data.mode === 'live' && (!data.sync_pending || data.updated_at !== before)) {
         if (this.state.data && this.state.data.mode === 'live') this.setState({ data });
         if (!data.sync_pending) { this.setState({ refreshing: false, refreshNote: 'up to date.' }); setTimeout(() => this.setState({ refreshNote: '' }), 6000); return; }
