@@ -4405,6 +4405,128 @@
           </div>
           </sc-if>
 
+          <sc-if value="{{ digIsHouseBm }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:24px; padding:22px; border:1px solid var(--line); border-radius:0; background:#fff">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+              <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">Business manager</span>
+              <span style="padding:3px 8px; background:{{ bmMetaBg }}; color:{{ bmMetaColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ bmMetaLabel }}</span>
+              <span style="margin-left:auto; font-size:12px; color:#6B7572">{{ bmCheckedLabel }}</span>
+              <button onClick="{{ checkBm }}" disabled="{{ digHealthBusy }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ bmCheckLabel }}</button>
+            </div>
+            <sc-if value="{{ hasBmErr }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:12px; color:#B4433A; line-height:1.6">{{ bmErr }}</span>
+            </sc-if>
+
+            <sc-if value="{{ hasBmFacts }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr)); gap:12px">
+              <sc-for list="{{ bmFactsVM }}" as="k" hint-placeholder-count="4">
+                <div style="display:flex; flex-direction:column; gap:6px; padding:16px 18px; border:1px solid var(--line); border-radius:0; min-width:0">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                  <span style="font-size:17px; font-weight:300; color:#1B1D1E; overflow-wrap:anywhere">{{ k.value }}</span>
+                  <span style="font-size:12px; color:#4A524F">{{ k.sub }}</span>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ hasBmMissing }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:8px; padding:14px 16px; background:#F6EEDC; border:1px solid rgba(154,106,18,.25)">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#9A6A12">Missing permissions — regenerate the token with these ticked</span>
+              <sc-for list="{{ bmMissingVM }}" as="x" hint-placeholder-count="2">
+                <span style="font-size:12px; color:#1B1D1E; line-height:1.6">{{ x.scope }} — needed for {{ x.why }}</span>
+              </sc-for>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ hasBmAdAccounts }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Ad accounts · as Meta reports them</span>
+              <div style="display:flex; flex-direction:column; border:1px solid var(--line)">
+                <sc-for list="{{ bmAdAccountsVM }}" as="r" hint-placeholder-count="1">
+                  <div style="display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:center; padding:14px 18px; border-bottom:1px solid var(--line)">
+                    <div style="display:flex; flex-direction:column; gap:5px; min-width:0">
+                      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                        <span style="padding:3px 8px; background:{{ r.stBg }}; color:{{ r.stColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ r.stLabel }}</span>
+                        <span style="font-size:12px; color:{{ r.regColor }}">{{ r.regLabel }}</span>
+                      </div>
+                      <span style="font-size:14px; color:#1B1D1E">{{ r.name }}</span>
+                      <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ r.id }}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:3px">
+                      <span style="font-size:20px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ r.spent }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ r.spentSub }}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:3px">
+                      <span style="font-size:13px; color:#1B1D1E">{{ r.balance }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ r.cap }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ hasBmClients }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Boost spend by client · all time</span>
+              <div style="display:flex; flex-direction:column; border:1px solid var(--line)">
+                <sc-for list="{{ bmClientsVM }}" as="c" hint-placeholder-count="2">
+                  <div style="display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1.4fr) auto; gap:16px; align-items:center; padding:14px 18px; border-bottom:1px solid var(--line)">
+                    <div style="display:flex; flex-direction:column; gap:4px; min-width:0">
+                      <span style="font-size:14px; color:#1B1D1E">{{ c.name }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ c.ads }}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
+                      <div style="position:relative; height:3px; background:#EEF2F1">
+                        <span style="position:absolute; left:0; top:0; height:3px; width:{{ c.bar }}; background:#10AF8B"></span>
+                      </div>
+                      <span style="font-size:12px; color:#4A524F">{{ c.split }}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:3px; align-items:flex-end">
+                      <span style="font-size:17px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ c.spend }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ c.share }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ hasBmIntegrations }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Connections · Meta, SEO and the rest</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr)); gap:12px">
+                <sc-for list="{{ bmIntegrationsVM }}" as="i" hint-placeholder-count="4">
+                  <div style="display:flex; flex-direction:column; gap:8px; padding:16px 18px; border:1px solid var(--line); border-radius:0; min-width:0">
+                    <div style="display:flex; align-items:center; gap:10px">
+                      <span style="font-size:14px; color:#1B1D1E; margin-right:auto">{{ i.name }}</span>
+                      <span style="padding:3px 8px; background:{{ i.bg }}; color:{{ i.color }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ i.label }}</span>
+                    </div>
+                    <span style="font-size:12px; color:#6B7572; line-height:1.5">{{ i.covers }}</span>
+                    <span style="font-size:12px; color:#4A524F; line-height:1.6; overflow-wrap:anywhere">{{ i.note }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ hasBmRuns }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Syncs · last 3 days, every client</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr)); gap:12px">
+                <sc-for list="{{ bmRunsVM }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex; flex-direction:column; gap:4px; padding:14px 16px; border:1px solid var(--line); border-radius:0">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ r.name }}</span>
+                    <span style="font-size:13px; color:{{ r.color }}">{{ r.counts }}</span>
+                    <span style="font-size:12px; color:#6B7572">{{ r.last }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ hasDigLedger }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; gap:14px">
             <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
@@ -7067,6 +7189,8 @@ const DIG_FEE_TYPES = [
 ];
 // Our own accounts, kept out of the client register without inventing a fake
 // client row for ourselves.
+// Permissions the sync asks Meta for; the health check reports any missing.
+const META_SCOPE_COUNT = 7;
 const HOUSE = 'house';
 const HOUSE_LABEL = 'Glomium (house)';
 const DIG_TABS = [
@@ -15783,6 +15907,13 @@ class Component extends DCLogic {
         : Promise.resolve({ data: [] }),
     ]);
     if (acc.error) { this.setState({ digStatus: say(acc.error.message), digLoading: false }); return; }
+    // The posts the ledger's ads promote, whatever client they belong to —
+    // the house view shows every client's boosts, and the content list is
+    // scoped to one client.
+    const ledgerPostIds = [...new Set(((led && led.data) || []).flatMap(L => [L.ig_post_id, L.fb_post_id]).filter(Boolean))];
+    const lp = ledgerPostIds.length
+      ? await this.sb.from('content_posts').select('id, account_id, caption, thumb_url, permalink, published_at').in('id', ledgerPostIds)
+      : { data: [] };
 
     // The client list is this page's own, not whatever division list happened
     // to be open last: coming here straight from the sidebar used to leave
@@ -15819,6 +15950,7 @@ class Component extends DCLogic {
       digTerms: terms.error ? [] : (terms.data || []),
       digRuns: runs.error ? [] : (runs.data || []),
       digLedger: led.error ? [] : (led.data || []),
+      digLedgerPosts: lp.error ? [] : (lp.data || []),
       digMetrics: metrics,
       digStatus: keepStatus, digLoading: false,
     }, () => {
@@ -15845,6 +15977,7 @@ class Component extends DCLogic {
       .map(a => a.id);
 
     if (tab === 'accounts' && this.can('digitalSecret')) this.loadSecretStatus();
+    if (tab === 'overview' && scope === HOUSE && !s.digHealth && !s.digHealthBusy && this.can('digitalMoney')) this.loadBmHealth();
 
     if (tab === 'content' || tab === 'overview') {
       if (!ids.length) { this.setState({ digPosts: [], digLoading: false }); return; }
@@ -15883,6 +16016,18 @@ class Component extends DCLogic {
       const r = await this.sb.from('spend_bills').select('*').order('period_start', { ascending: false }).limit(300);
       this.setState({ digBills: r.error ? [] : (r.data || []), digLoading: false });
     }
+  }
+
+  // The business manager as Meta sees it: token, permissions, ad accounts,
+  // and which other platforms have credentials. Read on demand, not stored.
+  async loadBmHealth() {
+    this.setState({ digHealthBusy: true, digHealthErr: '' });
+    const { data, error } = await this.sb.functions.invoke('digital-sync', { body: { action: 'health' } });
+    if (error || !data || data.error) {
+      this.setState({ digHealthBusy: false, digHealthErr: (data && data.error) || 'The sync function did not answer — redeploy the latest digital-sync.' });
+      return;
+    }
+    this.setState({ digHealth: data, digHealthBusy: false });
   }
 
   setDigitalTab(tab) {
@@ -17871,16 +18016,22 @@ class Component extends DCLogic {
     // client view keeps the ads tied to that client's posts; house keeps the
     // ads tied to nothing (or to our own posts).
     const ledgerAll = this.can('digitalMoney') ? (s.digLedger || []) : [];
-    const postById = new Map((s.digPosts || []).map(p => [p.id, p]));
+    const postById = new Map((s.digLedgerPosts || []).concat(s.digPosts || []).map(p => [p.id, p]));
     const spendByPost = new Map();
     ledgerAll.forEach(L => {
       const n = Number(L.spend) || 0;
       if (L.ig_post_id) spendByPost.set(L.ig_post_id, (spendByPost.get(L.ig_post_id) || 0) + (Number(L.ig_spend) || 0));
       if (L.fb_post_id) spendByPost.set(L.fb_post_id, (spendByPost.get(L.fb_post_id) || 0) + (L.ig_post_id ? Number(L.fb_spend) || 0 : n));
     });
-    const ledgerRows = ledgerAll.filter(L => scope === 'all' ? true
-      : (postById.has(L.ig_post_id) || postById.has(L.fb_post_id)) ? true
-      : scope === HOUSE && !L.ig_post_id && !L.fb_post_id);
+    // Which client an ad served: the client of the post it promotes. An ad
+    // tied to no post we track is ours. The house view shows every ad — it
+    // is the account that pays — and a client view shows that client's.
+    const ledgerClientOf = L => {
+      const p = postById.get(L.ig_post_id) || postById.get(L.fb_post_id);
+      const acc = p && accById.get(p.account_id);
+      return acc && acc.project_id != null ? acc.project_id : HOUSE;
+    };
+    const ledgerRows = ledgerAll.filter(L => scope === 'all' || scope === HOUSE ? true : ledgerClientOf(L) === scope);
     const lSum = k => ledgerRows.reduce((t, L) => t + (Number(L[k]) || 0), 0);
     const lTotal = lSum('spend'), lIg = lSum('ig_spend'), lFb = lSum('fb_spend');
     const lTied = ledgerRows.filter(L => L.ig_post_id || L.fb_post_id).length;
@@ -17922,6 +18073,88 @@ class Component extends DCLogic {
         cost: reach ? this.inr(Number(L.spend) * 1000 / reach) + ' per 1k reached' : '—',
       };
     });
+
+    // ---- house: the business manager, technically ----
+    const isHouseBm = scope === HOUSE && s.digitalTab === 'overview' && this.can('digitalMoney');
+    const BMH = s.digHealth || null, BMM = (BMH && BMH.meta) || {};
+    const tsDay = t => new Date(t * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const expSoon = BMM.expires_at > 0 && (BMM.expires_at * 1000 - Date.now()) < 14 * 86400000;
+    const expLabel = BMM.expires_at === 0 ? 'never expires' : BMM.expires_at ? 'expires ' + tsDay(BMM.expires_at) : 'expiry not readable';
+    const missing = BMM.missing || [];
+    const [bmMetaLabel, bmMetaBg, bmMetaColor] = s.digHealthErr ? ['Could not check', '#F7E4E1', '#B4433A']
+      : !BMH ? ['Checking…', '#EAF1EE', '#0A6E58']
+      : !BMM.set ? ['Meta token not set', '#F7E4E1', '#B4433A']
+      : !BMM.ok ? ['Meta token rejected', '#F7E4E1', '#B4433A']
+      : missing.length || expSoon ? ['Needs a look', '#F6EEDC', '#9A6A12'] : ['Connected', '#DDEFE8', '#0A6E58'];
+    const normAct = v => String(v || '').replace(/^act_/, '');
+    const metaInReg = s.digAccounts.filter(a => ['facebook', 'instagram', 'meta_ads'].indexOf(a.platform) !== -1).length;
+    const metaReach = BMH && BMM.ok ? (Number(BMH.pages) || 0) + (Number(BMH.instagrams) || 0) + (BMH.adAccounts || []).length : 0;
+    const bmFactsVM = BMH && BMM.ok ? [
+      { label: 'Token', value: BMM.name || 'System user', sub: (BMM.type ? String(BMM.type).toLowerCase().replace(/_/g, ' ') + ' · ' : '') + expLabel },
+      { label: 'It reaches', value: (BMH.pages ?? '—') + ' Pages · ' + (BMH.instagrams ?? '—') + ' Instagram', sub: (BMH.adAccounts || []).length + ((BMH.adAccounts || []).length === 1 ? ' ad account' : ' ad accounts') },
+      { label: 'In our register', value: metaInReg + ' of ' + metaReach, sub: metaReach > metaInReg ? 'Accounts → Find accounts adds the rest' : 'everything it reaches is listed' },
+      { label: 'Permissions', value: BMM.scopesKnown ? (META_SCOPE_COUNT - missing.length) + ' of ' + META_SCOPE_COUNT : '—', sub: BMM.scopesKnown ? (missing.length ? missing.length + ' missing, below' : 'all the sync needs') : 'Meta did not say' },
+    ] : [];
+    const AD_STATUS = { 1: ['Active', '#DDEFE8', '#0A6E58'], 2: ['Disabled', '#F7E4E1', '#B4433A'], 3: ['Payment due', '#F7E4E1', '#B4433A'],
+      7: ['In review', '#F6EEDC', '#9A6A12'], 8: ['Settling', '#F6EEDC', '#9A6A12'], 9: ['Grace period', '#F6EEDC', '#9A6A12'],
+      100: ['Closing', '#F1F4F3', '#4A524F'], 101: ['Closed', '#F1F4F3', '#4A524F'] };
+    const money = (v, cur) => (cur && cur !== 'INR' ? cur + ' ' + Number(v || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }) : this.inr(v || 0));
+    const bmAdAccountsVM = ((BMH && BMH.adAccounts) || []).map(x => {
+      const [stLabel, stBg, stColor] = AD_STATUS[x.status] || ['Unknown', '#F1F4F3', '#4A524F'];
+      const inReg = s.digAccounts.some(a => a.platform === 'meta_ads' && normAct(a.external_id) === normAct(x.id));
+      return {
+        name: x.name || x.id, id: x.id, stLabel, stBg, stColor,
+        spent: money(x.amount_spent, x.currency),
+        spentSub: x.spend_cap ? 'since the spend cap was last reset' : 'all time, by Meta',
+        balance: x.balance ? money(x.balance, x.currency) + ' to be billed' : 'nothing to be billed',
+        cap: x.spend_cap ? 'cap ' + money(x.spend_cap, x.currency) + ' · ' + Math.round(x.amount_spent * 100 / x.spend_cap) + '% used' : 'no spend cap',
+        regLabel: inReg ? 'In the register' : 'Not in the register', regColor: inReg ? '#6B7572' : '#9A6A12',
+      };
+    });
+    const byClient = new Map();
+    ledgerAll.forEach(L => {
+      const k = ledgerClientOf(L);
+      const e = byClient.get(k) || { k, n: 0, live: 0, spend: 0, ig: 0, fb: 0 };
+      e.n++; if (adState(L)[0] === 'Running') e.live++;
+      e.spend += Number(L.spend) || 0; e.ig += Number(L.ig_spend) || 0; e.fb += Number(L.fb_spend) || 0;
+      byClient.set(k, e);
+    });
+    const allSpend = ledgerAll.reduce((t, L) => t + (Number(L.spend) || 0), 0);
+    const bmClientsVM = [...byClient.values()].sort((x, y) => y.spend - x.spend).map(e => ({
+      name: e.k === HOUSE ? 'Not tied to a client post' : clientName(e.k),
+      ads: e.n + (e.n === 1 ? ' ad' : ' ads') + (e.live ? ' · ' + e.live + ' running' : ''),
+      spend: this.inr(e.spend),
+      split: [e.ig ? 'Instagram ' + this.inr(e.ig) : '', e.fb ? 'Facebook ' + this.inr(e.fb) : ''].filter(Boolean).join(' · '),
+      share: allSpend ? Math.round(e.spend * 100 / allSpend) + '%' : '',
+      bar: (allSpend ? Math.max(2, e.spend * 100 / allSpend) : 0) + '%',
+    }));
+    const INTEG_PLATFORMS = { meta: ['instagram', 'facebook', 'meta_ads'], google: ['search_console', 'ga4', 'youtube', 'gbp', 'adsense'], google_ads: ['google_ads'], x: ['x'], snap: ['snapchat_ads'] };
+    const INTEG_FIX = {
+      meta: 'Add META_ACCESS_TOKEN (the glomium-sync system user token) to the digital-sync secrets.',
+      google: 'Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REFRESH_TOKEN to the digital-sync secrets.',
+      google_ads: 'Needs the Google secrets plus GOOGLE_ADS_DEVELOPER_TOKEN.',
+      x: 'Add X_BEARER_TOKEN to the digital-sync secrets.',
+      snap: 'Add SNAP_CLIENT_ID, SNAP_CLIENT_SECRET and SNAP_REFRESH_TOKEN to the digital-sync secrets.',
+    };
+    const bmIntegrationsVM = ((BMH && BMH.integrations) || []).map(i => {
+      const used = s.digAccounts.filter(a => (INTEG_PLATFORMS[i.key] || []).indexOf(a.platform) !== -1).length;
+      const [label, bg, color] = i.ok ? ['Working', '#DDEFE8', '#0A6E58'] : i.set ? ['Set, not working', '#F7E4E1', '#B4433A'] : ['Not set up', '#F1F4F3', '#4A524F'];
+      return { name: i.name, covers: i.covers, label, bg, color,
+        note: i.ok ? (used ? used + (used === 1 ? ' account uses it' : ' accounts use it') : 'nothing in the register uses it yet') : (i.error || INTEG_FIX[i.key] || '') };
+    });
+    const runsBy = new Map();
+    (s.digRuns || []).forEach(r => {
+      const e = runsBy.get(r.platform) || { p: r.platform, ok: 0, partial: 0, error: 0, last: '' };
+      if (r.status === 'ok') e.ok++; else if (r.status === 'partial') e.partial++; else if (r.status === 'error') e.error++;
+      if (!e.last || String(r.started_at) > e.last) e.last = String(r.started_at);
+      runsBy.set(r.platform, e);
+    });
+    const bmRunsVM = [...runsBy.values()].sort((x, y) => y.error - x.error || y.partial - x.partial).map(e => ({
+      name: DIG_PLATFORM_LABEL[e.p] || e.p,
+      counts: e.ok + ' ok' + (e.partial ? ' · ' + e.partial + ' partial' : '') + (e.error ? ' · ' + e.error + ' failed' : ''),
+      last: e.last ? 'last ' + fmtStampTime(e.last) : '',
+      color: e.error ? '#B4433A' : e.partial ? '#9A6A12' : '#0A6E58',
+    }));
 
     const card = p => {
       const acc = accById.get(p.account_id);
@@ -18544,6 +18777,19 @@ class Component extends DCLogic {
       digLedgerMore: ledgerRows.length > 8,
       digLedgerMoreLabel: s.digLedgerAll ? 'Show fewer' : 'Show all ' + ledgerRows.length,
       toggleLedger: () => this.setState({ digLedgerAll: !s.digLedgerAll }),
+      digIsHouseBm: isHouseBm,
+      bmMetaLabel, bmMetaBg, bmMetaColor,
+      bmCheckedLabel: BMH && BMH.checked_at ? 'checked ' + fmtStampTime(BMH.checked_at) : '',
+      checkBm: () => this.loadBmHealth(),
+      digHealthBusy: !!s.digHealthBusy,
+      bmCheckLabel: s.digHealthBusy ? 'Checking…' : 'Check again',
+      hasBmErr: !!s.digHealthErr || !!(BMH && BMM.set && !BMM.ok), bmErr: s.digHealthErr || BMM.error || '',
+      bmFactsVM, hasBmFacts: bmFactsVM.length > 0,
+      bmMissingVM: missing, hasBmMissing: missing.length > 0,
+      bmAdAccountsVM, hasBmAdAccounts: bmAdAccountsVM.length > 0,
+      bmClientsVM, hasBmClients: bmClientsVM.length > 0,
+      bmIntegrationsVM, hasBmIntegrations: bmIntegrationsVM.length > 0,
+      bmRunsVM, hasBmRuns: bmRunsVM.length > 0,
 
       hasNumForm: !!nf,
       numFormTitle: nf ? 'Log numbers — ' + (nfAcc ? String(nfAcc.label || nfAcc.handle || '').trim() || DIG_PLATFORM_LABEL[nf.platform] : DIG_PLATFORM_LABEL[nf.platform])
