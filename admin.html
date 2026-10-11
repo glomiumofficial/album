@@ -4405,6 +4405,56 @@
           </div>
           </sc-if>
 
+          <sc-if value="{{ hasDigLedger }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Ad spend · Glomium ad manager · all time</span>
+              <span style="font-size:12px; color:#6B7572">Lifetime per ad, so it ignores the date range above.</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr)); gap:12px">
+              <sc-for list="{{ digLedgerKpisVM }}" as="k" hint-placeholder-count="4">
+                <div style="display:flex; flex-direction:column; gap:6px; padding:16px 18px; border:1px solid var(--line); border-radius:0; min-width:0">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                  <span style="font-size:24px; font-weight:200; letter-spacing:-0.02em; color:#1B1D1E">{{ k.value }}</span>
+                  <span style="font-size:12px; color:#4A524F">{{ k.sub }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-direction:column; border:1px solid var(--line); border-radius:0">
+              <sc-for list="{{ digLedgerVM }}" as="r" hint-placeholder-count="3">
+                <div style="display:grid; grid-template-columns:56px minmax(0,1fr) auto; gap:16px; align-items:center; padding:14px 18px; border-bottom:1px solid var(--line)">
+                  <div style="position:relative; width:56px; height:70px; background:#F1F4F3; overflow:hidden">
+                    <sc-if value="{{ r.hasThumb }}" hint-placeholder-val="{{ false }}">
+                      <img src="{{ r.thumb }}" alt="" loading="lazy" referrerpolicy="no-referrer" onError="{{ r.hideImg }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block">
+                    </sc-if>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:5px; min-width:0">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                      <span style="padding:3px 8px; background:{{ r.stBg }}; color:{{ r.stColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ r.stLabel }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ r.when }}</span>
+                    </div>
+                    <span style="font-size:13px; color:#1B1D1E; line-height:1.5; overflow:hidden; text-overflow:ellipsis">{{ r.title }}</span>
+                    <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ r.sub }}</span>
+                    <sc-if value="{{ r.hasLink }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ r.link }}" target="_blank" rel="noopener noreferrer" style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); text-decoration:none">Open the post ↗</a>
+                    </sc-if>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end; text-align:right">
+                    <span style="font-size:20px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ r.spend }}</span>
+                    <sc-if value="{{ r.hasSplit }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size:12px; color:#4A524F">{{ r.split }}</span>
+                    </sc-if>
+                    <span style="font-size:12px; color:#6B7572">{{ r.reach }} reached · {{ r.cost }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ digLedgerMore }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ toggleLedger }}" style="align-self:flex-start; padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ digLedgerMoreLabel }}</button>
+            </sc-if>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ digIsClientView }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex; flex-direction:column; gap:30px">
           <sc-if value="{{ hasDigProfiles }}" hint-placeholder-val="{{ false }}">
@@ -4900,6 +4950,9 @@
                       </div>
                     </sc-for>
                   </div>
+                  <sc-if value="{{ p.hasAd }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:12px; color:var(--green-deep); line-height:1.5">{{ p.adLabel }}</span>
+                  </sc-if>
                   <div style="display:flex; align-items:center; gap:10px; margin-top:auto; flex-wrap:wrap">
                     <span style="font-size:12px; color:{{ p.promoColor }}">{{ p.promoLabel }}</span>
                     <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
@@ -15718,11 +15771,16 @@ class Component extends DCLogic {
     const say = m => /social_accounts|digital_terms|metrics_daily|sync_runs/i.test(m || '')
       ? 'Run album-system/digital-schema.sql in Supabase — the digital tables do not exist yet.' : m;
     this.setState({ digLoading: true });
-    const [acc, terms, runs, ppl] = await Promise.all([
+    const [acc, terms, runs, ppl, led] = await Promise.all([
       this.sb.from('social_accounts').select('*').order('platform'),
       this.sb.from('digital_terms').select('*'),
       this.digRunsQuery(),
       this.sb.from('people').select('id, full_name, active').order('full_name'),
+      // What each boost cost. Money, so only read with the money permission;
+      // a missing table (SQL not run yet) just leaves the section hidden.
+      this.can('digitalMoney')
+        ? this.sb.from('ad_spend_ledger').select('*').order('spend', { ascending: false }).limit(1000)
+        : Promise.resolve({ data: [] }),
     ]);
     if (acc.error) { this.setState({ digStatus: say(acc.error.message), digLoading: false }); return; }
 
@@ -15760,6 +15818,7 @@ class Component extends DCLogic {
       digHolders: ppl.error ? [] : (ppl.data || []),
       digTerms: terms.error ? [] : (terms.data || []),
       digRuns: runs.error ? [] : (runs.data || []),
+      digLedger: led.error ? [] : (led.data || []),
       digMetrics: metrics,
       digStatus: keepStatus, digLoading: false,
     }, () => {
@@ -17807,9 +17866,67 @@ class Component extends DCLogic {
         };
       });
 
+    // ---- ad spend: Glomium's ad manager, lifetime, per ad and per post ----
+    // The ledger is lifetime per ad, so it is not cut to the date range. A
+    // client view keeps the ads tied to that client's posts; house keeps the
+    // ads tied to nothing (or to our own posts).
+    const ledgerAll = this.can('digitalMoney') ? (s.digLedger || []) : [];
+    const postById = new Map((s.digPosts || []).map(p => [p.id, p]));
+    const spendByPost = new Map();
+    ledgerAll.forEach(L => {
+      const n = Number(L.spend) || 0;
+      if (L.ig_post_id) spendByPost.set(L.ig_post_id, (spendByPost.get(L.ig_post_id) || 0) + (Number(L.ig_spend) || 0));
+      if (L.fb_post_id) spendByPost.set(L.fb_post_id, (spendByPost.get(L.fb_post_id) || 0) + (L.ig_post_id ? Number(L.fb_spend) || 0 : n));
+    });
+    const ledgerRows = ledgerAll.filter(L => scope === 'all' ? true
+      : (postById.has(L.ig_post_id) || postById.has(L.fb_post_id)) ? true
+      : scope === HOUSE && !L.ig_post_id && !L.fb_post_id);
+    const lSum = k => ledgerRows.reduce((t, L) => t + (Number(L[k]) || 0), 0);
+    const lTotal = lSum('spend'), lIg = lSum('ig_spend'), lFb = lSum('fb_spend');
+    const lTied = ledgerRows.filter(L => L.ig_post_id || L.fb_post_id).length;
+    const lFirst = ledgerRows.map(L => L.first_day).filter(Boolean).sort()[0] || '';
+    const yesterday = this.daysAgo(1);
+    const adState = L => {
+      const st = String(L.status || '').toUpperCase();
+      if (st === 'ACTIVE' && (!L.last_day || L.last_day >= yesterday)) return ['Running', '#DDEFE8', '#0A6E58'];
+      if (/PAUSED/.test(st)) return ['Paused', '#F6EEDC', '#9A6A12'];
+      if (/DISAPPROVED|WITH_ISSUES/.test(st)) return ['Needs a look', '#F7E4E1', '#B4433A'];
+      if (/REVIEW|IN_PROCESS/.test(st)) return ['In review', '#EAF1EE', '#0A6E58'];
+      return ['Ended', '#F1F4F3', '#4A524F'];
+    };
+    const share = n => lTotal ? Math.round(n * 100 / lTotal) + '% of it' : '';
+    const digLedgerKpisVM = [
+      { label: 'Spent, all time', value: this.inr(lTotal), sub: lFirst ? 'since ' + fmtDay(lFirst) + ' · ' + ledgerRows.length + (ledgerRows.length === 1 ? ' ad' : ' ads') : '' },
+      { label: 'On Instagram', value: this.inr(lIg), sub: share(lIg) },
+      { label: 'On Facebook', value: this.inr(lFb), sub: share(lFb) },
+      { label: 'Tied to a post', value: lTied + ' of ' + ledgerRows.length, sub: lTied < ledgerRows.length ? 'the rest promote no post we track' : 'every ad is matched' },
+    ];
+    const digLedgerVM = ledgerRows.slice(0, s.digLedgerAll ? 300 : 8).map(L => {
+      const p = postById.get(L.ig_post_id) || postById.get(L.fb_post_id);
+      const acc = p && accById.get(p.account_id);
+      const thumb = p && /^https:\/\//i.test(p.thumb_url || '') ? p.thumb_url : '';
+      const link = p && /^https:\/\//i.test(p.permalink || '') ? p.permalink : '';
+      const cap = p ? String(p.caption || '').replace(/\s+/g, ' ').trim() : '';
+      const [stLabel, stBg, stColor] = adState(L);
+      const split = [Number(L.ig_spend) > 0 ? 'Instagram ' + this.inr(L.ig_spend) : '', Number(L.fb_spend) > 0 ? 'Facebook ' + this.inr(L.fb_spend) : ''].filter(Boolean).join(' · ');
+      const reach = Number(L.reach) || 0;
+      return {
+        thumb, hasThumb: !!thumb, link, hasLink: !!link,
+        hideImg: e => { if (e && e.currentTarget) e.currentTarget.style.display = 'none'; },
+        title: cap ? cap.slice(0, 90) + (cap.length > 90 ? '…' : '') : (L.ad_name || 'Ad ' + L.ad_id),
+        sub: [L.campaign_name, acc ? clientName(acc.project_id) : (L.ig_post_id || L.fb_post_id ? '' : 'no tracked post')].filter(Boolean).join(' · '),
+        when: L.first_day ? fmtDay(L.first_day) + (L.last_day && L.last_day !== L.first_day ? ' – ' + fmtDay(L.last_day) : '') : '',
+        stLabel, stBg, stColor,
+        spend: this.inr(L.spend), split, hasSplit: !!split,
+        reach: this.compact(reach),
+        cost: reach ? this.inr(Number(L.spend) * 1000 / reach) + ' per 1k reached' : '—',
+      };
+    });
+
     const card = p => {
       const acc = accById.get(p.account_id);
       const story = p.kind === 'story';
+      const adReach = pNum(p, 'ad_reach'), adSpend = spendByPost.get(p.id) || 0;
       const reachN = pNum(p, 'reach'), viewsN = pNum(p, 'video_views');
       const er = erBase(p) ? inter(p) * 100 / erBase(p) : null;
       const ageH = p.published_at ? (Date.now() - new Date(p.published_at).getTime()) / 3600000 : 999;
@@ -17841,6 +17958,8 @@ class Component extends DCLogic {
         thirdName: story ? 'Replies' : 'Engagement',
         permalink: link, hasLink: !!link,
         linkLabel: 'Open on ' + ({ facebook: 'Facebook', youtube: 'YouTube', x: 'X' }[acc && acc.platform] || 'Instagram'),
+        hasAd: adReach > 0 || adSpend > 0,
+        adLabel: 'Boosted' + (adReach ? ' · ' + this.compact(adReach) + ' of the reach from ads' : '') + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
         promoColor: p.is_paid_promo && !p.disclosure_ok ? '#B4433A' : '#6B7572',
       };
@@ -18057,6 +18176,9 @@ class Component extends DCLogic {
         const mtd = accs.reduce((tt, a) => tt + sumOf(accRows(a.id, mStart), 'spend'), 0);
         const ok = prevCovered(soc);
         const d = change(r, pr, ok);
+        // Boosts paid from our house ad account land on no client's ad
+        // account, so the spend column read "—" for a client we had boosted.
+        const boost = id === HOUSE ? 0 : posts.reduce((tt, p) => tt + (spendByPost.get(p.id) || 0), 0);
         return {
           name, tagsVM: [...new Set(accs.map(a => a.platform))].map(p => ({ label: DIG_PLATFORM_SHORT[p] || p })),
           sub: accs.length ? accs.length + (accs.length === 1 ? ' account' : ' accounts') : 'No accounts yet',
@@ -18071,7 +18193,7 @@ class Component extends DCLogic {
           lastPostLabel: quiet == null ? '' : quiet === 0 ? 'last today' : 'last ' + quiet + 'd ago',
           lastPostColor: quiet != null && quiet >= 7 ? '#9A6A12' : '#6B7572',
           spendLabel: spd ? this.inr(spd) : '—',
-          paceLabel: budget ? Math.round(mtd * 100 / budget) + '% of month budget' : '',
+          paceLabel: budget ? Math.round(mtd * 100 / budget) + '% of month budget' : boost ? this.inr(boost) + ' in boosts, all time' : '',
           healthLabel: !accs.length ? 'No accounts' : nFail ? nFail + ' failing' : nBehind ? nBehind + ' behind' : nWarn ? nWarn + ' to check' : 'Healthy',
           healthBg: !accs.length ? '#F1F4F3' : nFail || nBehind ? '#F7E4E1' : nWarn ? '#F6EEDC' : '#DDEFE8',
           healthColor: !accs.length ? '#5C6864' : nFail || nBehind ? '#B4433A' : nWarn ? '#9A6A12' : '#0A6E58',
@@ -18417,6 +18539,11 @@ class Component extends DCLogic {
       digAttnMore: attn.length > 8,
       digAttnMoreLabel: s.digAttnAll ? 'Show fewer' : 'Show all ' + attn.length,
       toggleAttn: () => this.setState({ digAttnAll: !s.digAttnAll }),
+      hasDigLedger: ledgerRows.length > 0,
+      digLedgerKpisVM, digLedgerVM,
+      digLedgerMore: ledgerRows.length > 8,
+      digLedgerMoreLabel: s.digLedgerAll ? 'Show fewer' : 'Show all ' + ledgerRows.length,
+      toggleLedger: () => this.setState({ digLedgerAll: !s.digLedgerAll }),
 
       hasNumForm: !!nf,
       numFormTitle: nf ? 'Log numbers — ' + (nfAcc ? String(nfAcc.label || nfAcc.handle || '').trim() || DIG_PLATFORM_LABEL[nf.platform] : DIG_PLATFORM_LABEL[nf.platform])

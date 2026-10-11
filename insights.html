@@ -982,11 +982,20 @@ class Component extends DCLogic {
     const stories = wPosts.filter(p => p.kind === 'story').sort(byDate).reverse();
     const erOf = list => { const m = list.filter(p => p.kind !== 'story' && base(p) > 0); const b = m.reduce((t, p) => t + base(p), 0); return b ? m.reduce((t, p) => t + inter(p), 0) * 100 / b : null; };
     const er = erOf(feed);
+    // A cross-post is one piece of work on two profiles. Counts and the best-of
+    // list take it once (the copy with more views); views, reach and
+    // engagement still add both copies, because both were seen.
+    const capKey = p => String(p.caption || '').replace(/\s+/g, ' ').trim().toLowerCase().slice(0, 80);
+    const twins = (p, q) => q.account_id !== p.account_id && capKey(q) === capKey(p)
+      && Math.abs(Date.parse(q.published_at) - Date.parse(p.published_at)) <= 10 * 60000;
+    const onePer = list => list.slice().sort((x, y) => (pN(y, 'video_views') - pN(x, 'video_views')) || (base(y) - base(x)))
+      .reduce((keep, p) => (keep.some(q => twins(p, q)) ? keep : keep.concat([p])), []);
+    const pieces = onePer(feed);
     const views = wPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
     const viewsPrev = pPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
     const postsCovered = !report ? posts.some(p => day(p) <= addDays(prevFrom, 3)) : pPosts.length > 0 || socCov;
     const rv = deltaSub(reach, reachPrev, socCov, reach ? 'across ' + plural(socAccs.length, 'profile', 'profiles') : 'nothing yet');
-    const vv = deltaSub(views, viewsPrev, postsCovered && socCov, wPosts.length ? 'from ' + plural(wPosts.length, 'piece', 'pieces') + ' of content' : 'nothing published');
+    const vv = deltaSub(views, viewsPrev, postsCovered && socCov, (pieces.length + stories.length) ? 'from ' + plural(pieces.length + stories.length, 'piece', 'pieces') + ' of content' : 'nothing published');
     const rc = change(reach, reachPrev, socCov);
 
     // ---- daily series ------------------------------------------------------
@@ -1022,7 +1031,7 @@ class Component extends DCLogic {
     const kGain = { label: 'new followers', raw: gain, fmt: 'signed', dir: gain > 0 ? 1 : gain < 0 ? -1 : 0, sub: growth != null ? pct(growth) + ' growth in ' + periodWord : 'in ' + periodWord, ...spark(col(gainDay), 40) };
     const kReach = { label: 'reach', raw: reach, fmt: 'compact', dir: rv.dir, sub: rv.sub, ...spark(col(reachDay), 40) };
     const kViews = { label: 'views', raw: views, fmt: 'compact', dir: vv.dir, sub: vv.sub, ...spark(col(viewsDay), 40) };
-    const kEr = { label: 'engagement', raw: er, fmt: 'pct', dir: 0, sub: feed.length ? 'of reach, across ' + plural(feed.length, 'post', 'posts') : 'no posts in ' + periodWord, ...spark(erSeq.length > 1 ? erSeq : [], 40) };
+    const kEr = { label: 'engagement', raw: er, fmt: 'pct', dir: 0, sub: pieces.length ? 'of reach, across ' + plural(pieces.length, 'post', 'posts') : 'no posts in ' + periodWord, ...spark(erSeq.length > 1 ? erSeq : [], 40) };
     const heroKpi = fNow ? kFol : kReach;
     const kpis = fNow ? [kGain, kReach, kViews, kEr] : [kFol, kGain, kViews, kEr];
 
@@ -1087,7 +1096,7 @@ class Component extends DCLogic {
     const safe = u => (/^https:\/\//i.test(u || '') ? u : '');
     // Thumbs sit in an unquoted CSS url(); escape the few characters that end one.
     const cssUrl = u => String(u || '').replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'));
-    const newest = (report ? feed : posts.filter(p => p.kind !== 'story')).slice().sort(byDate).reverse().slice(0, 12);
+    const newest = onePer(report ? feed : posts.filter(p => p.kind !== 'story')).sort(byDate).reverse().slice(0, 12);
     const latestVM = newest.map(p => {
       const t = cssUrl(safe(p.thumb_url)), l = safe(p.permalink);
       return {
@@ -1097,7 +1106,7 @@ class Component extends DCLogic {
         likes: compact(pN(p, 'likes')),
       };
     });
-    const ranked = feed.slice().sort((x, y) => (pN(y, 'video_views') - pN(x, 'video_views')) || (base(y) - base(x)));
+    const ranked = pieces.slice().sort((x, y) => (pN(y, 'video_views') - pN(x, 'video_views')) || (base(y) - base(x)));
     const topVM = ranked.slice(0, 7).map((p, i) => {
       const e = base(p) ? inter(p) * 100 / base(p) : null;
       const thumb = cssUrl(safe(p.thumb_url)), link = safe(p.permalink);
@@ -1119,7 +1128,7 @@ class Component extends DCLogic {
     });
 
     const mix = {};
-    feed.forEach(p => { const k = p.kind || 'post'; const m = mix[k] || (mix[k] = { n: 0, b: 0 }); m.n++; m.b += base(p); });
+    pieces.forEach(p => { const k = p.kind || 'post'; const m = mix[k] || (mix[k] = { n: 0, b: 0 }); m.n++; m.b += base(p); });
     const mixRows = Object.keys(mix).map(k => ({ k, n: mix[k].n, avg: mix[k].b / mix[k].n })).filter(x => x.avg > 0).sort((x, y) => y.avg - x.avg);
     const mixMax = mixRows.length ? mixRows[0].avg : 1;
     const kp = k => KINDS[k] || k + 's';
@@ -1134,24 +1143,24 @@ class Component extends DCLogic {
     const mixVM = mixRows.map((x, i) => ({ label: kp(x.k), count: plural(x.n, 'piece', 'pieces'), value: compact(x.avg), f: x.avg / mixMax, color: i === 0 ? '#10AF8B' : '#C9D0CE' }));
 
     const wd = Array.from({ length: 7 }, () => ({ n: 0, b: 0 }));
-    feed.forEach(p => { const t = new Date(p.published_at); if (isNaN(t)) return; const w = wd[t.getDay()]; w.n++; w.b += base(p); });
+    pieces.forEach(p => { const t = new Date(p.published_at); if (isNaN(t)) return; const w = wd[t.getDay()]; w.n++; w.b += base(p); });
     const order = [1, 2, 3, 4, 5, 6, 0];
     const avgs = order.map(i => (wd[i].n ? wd[i].b / wd[i].n : 0));
     const wMax = Math.max(0, ...avgs);
     const solid = order.map((i, j) => (wd[i].n >= 2 ? j : -1)).filter(j => j >= 0);
     const pool = solid.length ? solid : order.map((_, j) => j);
     const bestJ = pool.reduce((b, j) => (avgs[j] > avgs[b] ? j : b), pool[0]);
-    const hasDays = feed.length >= 6 && wd.filter(x => x.n).length >= 3 && wMax > 0;
+    const hasDays = pieces.length >= 6 && wd.filter(x => x.n).length >= 3 && wMax > 0;
     const daysVM = order.map((i, j) => ({
       label: WEEK[i].slice(0, 3), value: wd[i].n ? compact(avgs[j]) : '—', f: wMax ? avgs[j] / wMax : 0,
       color: j === bestJ ? '#10AF8B' : '#C9D0CE', valueColor: j === bestJ ? '#0A6E58' : '#6B7572', labelColor: j === bestJ ? '#1B1D1E' : '#8A9390',
     }));
     const dayLine = hasDays ? WEEK[order[bestJ]] + ' posts reached the most people — ' + compact(avgs[bestJ]) + ' on average.' : '';
 
-    const counts = {}; feed.forEach(p => { counts[p.kind] = (counts[p.kind] || 0) + 1; });
+    const counts = {}; pieces.forEach(p => { counts[p.kind] = (counts[p.kind] || 0) + 1; });
     const parts = Object.keys(counts).sort((x, y) => counts[y] - counts[x]).map(k => counts[k] + ' ' + (counts[k] === 1 ? KIND[k] || k : kp(k)));
-    const contentTitle = mixLeads ? kp(mixRows[0].k) + ' did the heavy lifting.' : feed.length ? plural(feed.length, 'piece', 'pieces') + ' went live.' : 'your latest content.';
-    const contentLine = feed.length ? (mixLeads ? plural(feed.length, 'piece', 'pieces') + ' went live in ' + periodWord : 'in ' + periodWord) + ': ' + parts.join(', ') + (stories.length ? ', plus ' + plural(stories.length, 'story', 'stories') : '') + '.' : '';
+    const contentTitle = mixLeads ? kp(mixRows[0].k) + ' did the heavy lifting.' : pieces.length ? plural(pieces.length, 'piece', 'pieces') + ' went live.' : 'your latest content.';
+    const contentLine = pieces.length ? (mixLeads ? plural(pieces.length, 'piece', 'pieces') + ' went live in ' + periodWord : 'in ' + periodWord) + ': ' + parts.join(', ') + (stories.length ? ', plus ' + plural(stories.length, 'story', 'stories') : '') + '.' : '';
 
     // ---- stories -----------------------------------------------------------
     const sViews = stories.reduce((t, p) => t + pN(p, 'video_views'), 0);
@@ -1225,8 +1234,9 @@ class Component extends DCLogic {
     };
     const [heroA, heroB, heroC] = heroFor();
     const bits = [];
-    if (reach) bits.push(compact(reach) + ' accounts reached');
-    if (feed.length) bits.push(plural(feed.length, 'piece', 'pieces') + ' published');
+    // Daily reach added up — not unique accounts, so it is not called that.
+    if (reach) bits.push(compact(reach) + ' in reach');
+    if (pieces.length) bits.push(plural(pieces.length, 'piece', 'pieces') + ' published');
     if (stories.length) bits.push(plural(stories.length, 'story', 'stories'));
     if (aConv) bits.push(compact(aConv) + ' ad results');
     const coverLine = bits.length ? (report ? monthOnly(from) : periodWord) + ', at a glance: ' + (bits.length > 1 ? bits.slice(0, -1).join(', ') + ' and ' + bits[bits.length - 1] : bits[0]) + '.' : '';
