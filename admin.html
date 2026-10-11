@@ -5458,6 +5458,7 @@
           <span style="font-size:15px; color:#1B1D1E">{{ editorEventName }}</span>
           <span style="font-size:11px; color:#4A524F">{{ editorEventMeta }}</span>
         </div>
+        <button onClick="{{ refreshEditor }}" disabled="{{ refreshing }}" title="Reload this job's details, photos, crew and billing without leaving the page" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ refreshLabel }}</button>
         <div style="display:flex; gap:4px 26px; flex-wrap:wrap; margin-left:auto">
           <sc-for list="{{ navVM }}" as="nv" hint-placeholder-count="1">
             <button onClick="{{ nv.go }}" style="padding:12px 0 10px; background:none; border:0; border-bottom:1px solid {{ nv.border }}; border-radius:0; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:{{ nv.color }}; cursor:pointer; transition:color .3s" style-hover="color:#0A6E58">{{ nv.label }}</button>
@@ -8043,7 +8044,7 @@ class Component extends DCLogic {
     // multi-megabyte download. Nothing here paginates yet; the cap is the
     // signal that it will need to.
     const { data, error } = await this.sb.from('events').select('*').order('created_at', { ascending: false }).limit(500);
-    if (!error) this.setState({ events: (data || []).map(ev => ({ ...ev, _table: 'events' })) });
+    if (!error) this.setState({ events: (data || []).map(ev => ({ ...ev, _table: 'events' })) }, () => this.restorePlace());
   }
 
   async doCreateEvent() {
@@ -12614,7 +12615,55 @@ class Component extends DCLogic {
     if (w > 0 && Math.abs(w - (this.state.previewBoxW || 0)) > 2) this.setState({ previewBoxW: w });
   }
 
-  componentDidUpdate() { this.measurePreviewBox(); }
+  componentDidUpdate() { this.measurePreviewBox(); this.rememberPlace(); }
+
+  // A reload lands back where you were in the wedding division: the same
+  // event, on the same tab. Per browser tab (sessionStorage), never shared.
+  rememberPlace() {
+    const s = this.state;
+    if (s.view === 'login' || !s.view) return;
+    const ev = s.view === 'editor' && s.current && s.current._table === 'events' ? s.current : null;
+    const place = ev ? 'editor:' + ev.id + ':' + (s.editorTab || '') : s.view === 'dashboard' ? 'dashboard' : '';
+    if (place === this._place) return;
+    this._place = place;
+    try { if (place) sessionStorage.setItem('g_admin_place', place); else sessionStorage.removeItem('g_admin_place'); } catch (e) {}
+  }
+
+  async restorePlace() {
+    if (this._restored) return;
+    this._restored = true;
+    let place = '';
+    try { place = sessionStorage.getItem('g_admin_place') || ''; } catch (e) {}
+    const m = /^editor:([0-9a-f-]{36}):([a-z]*)$/.exec(place);
+    if (!m || this.state.view !== 'dashboard') return;
+    let ev = (this.state.events || []).find(x => x.id === m[1]);
+    if (!ev) {
+      const { data } = await this.sb.from('events').select('*').eq('id', m[1]).maybeSingle();
+      if (data) ev = { ...data, _table: 'events' };
+    }
+    if (!ev || this.state.view !== 'dashboard') return;
+    this.openEvent(ev);
+    const tabs = ['album', 'access', 'crew', 'billing', 'profile'];
+    if (tabs.indexOf(m[2]) !== -1) this.setState({ editorTab: m[2] });
+  }
+
+  // Re-read the open event and everything under it without leaving the page.
+  async refreshEditor() {
+    const cur = this.state.current;
+    if (!cur) { this.loadForDivision(); return; }
+    const tab = this.state.editorTab;
+    this.setState({ refreshing: true });
+    if (cur._table === 'projects') {
+      const { data } = await this.sb.from('projects').select('*').eq('id', cur.id).maybeSingle();
+      if (data) this.openProject(data);
+    } else {
+      const { data } = await this.sb.from('events').select('*').eq('id', cur.id).maybeSingle();
+      if (data) this.openEvent({ ...data, _table: 'events' });
+      this.loadEvents();
+    }
+    this.setState({ editorTab: tab, refreshing: false, refreshedAt: Date.now() });
+    setTimeout(() => { if (this.state.refreshedAt && Date.now() - this.state.refreshedAt > 1900) this.setState({ refreshedAt: null }); }, 2000);
+  }
 
   // The paid flag is derived from the receipts ledger now (see
   // receipts-schema.sql), so there is no button that simply asserts it.
@@ -21098,6 +21147,8 @@ class Component extends DCLogic {
       hasNoEvents: s.events.length === 0, eventsVM,
 
       backToDashboard: () => this.backToDashboard(),
+      refreshEditor: () => this.refreshEditor(), refreshing: !!s.refreshing,
+      refreshLabel: s.refreshing ? 'Refreshing…' : s.refreshedAt ? 'Up to date' : '↻ Refresh',
       editCouple: s.editCouple, editDate: s.editDate, editTaken: s.editTaken, editDelivered: s.editDelivered, editVenue: s.editVenue, editSlug: s.editSlug,
       onEditCoupleChange: e => this.setState({ editCouple: e.target.value }),
       onEditDateChange: e => this.setState({ editDate: e.target.value }),
