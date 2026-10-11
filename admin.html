@@ -6432,6 +6432,78 @@
         </sc-if>
 
         <sc-if value="{{ isWeddingAlbumTab }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ albumV2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr)); gap:14px; margin-bottom:8px">
+          <div style="display:flex; flex-direction:column; gap:14px; padding:18px 20px; border:1px solid var(--line); border-radius:0; background:#fff">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:auto">Album access</span>
+              <span style="padding:3px 8px; background:{{ albumPinBg }}; color:{{ albumPinColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ albumPinLabel }}</span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+              <input value="{{ albumPinInput }}" onChange="{{ onAlbumPin }}" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit; width:130px; letter-spacing:.3em">
+              <button onClick="{{ setAlbumPin }}" style="padding:9px 16px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">{{ albumPinBtn }}</button>
+              <sc-if value="{{ albumPrivate }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ clearAlbumPin }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; color:#B4433A">Remove PIN</button>
+              </sc-if>
+            </div>
+            <span style="font-size:12px; color:#6B7572; line-height:1.6">Same as the insights page: five wrong PINs in 15 minutes locks the album, and every try is in Visitors. Staff are never asked.</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; padding-top:12px; border-top:1px solid var(--line)">
+              <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Closes on</span><input type="date" value="{{ albumExpiry }}" onChange="{{ onAlbumExpiry }}" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit"></label>
+              <label style="display:flex; flex-direction:column; gap:6px"><span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Couple's hashtag</span><input value="{{ albumHashtag }}" onChange="{{ onAlbumHashtag }}" placeholder="nabinweds" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit"></label>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+              <button onClick="{{ saveAlbumAccess }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Save</button>
+              <span style="font-size:12px; color:#6B7572">Blank date: never closes. The hashtag goes into every share.</span>
+            </div>
+            <sc-if value="{{ hasAlbumAccessStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ albumAccessStatus }}</span></sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px; padding:18px 20px; border:1px solid var(--line); border-radius:0; background:#fff">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Chapters</span>
+            <sc-if value="{{ hasAlbumSections }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; border:1px solid var(--line)">
+                <sc-for list="{{ albumSectionsVM }}" as="c" hint-placeholder-count="3">
+                  <div style="display:grid; grid-template-columns:28px minmax(0,1fr) auto auto; gap:10px; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line)">
+                    <span style="font-size:11px; color:#8A9390; font-variant-numeric:tabular-nums">{{ c.no }}</span>
+                    <input defaultValue="{{ c.name }}" onBlur="{{ c.onRename }}" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit; padding:6px 8px; min-width:0">
+                    <span style="font-size:12px; color:#6B7572; white-space:nowrap">{{ c.count }}</span>
+                    <div style="display:flex; gap:4px">
+                      <button onClick="{{ c.up }}" aria-label="move up" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; padding:5px 8px; letter-spacing:0">↑</button>
+                      <button onClick="{{ c.down }}" aria-label="move down" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; padding:5px 8px; letter-spacing:0">↓</button>
+                      <button onClick="{{ c.remove }}" aria-label="delete chapter" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; padding:5px 8px; letter-spacing:0; color:#B4433A">✕</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="font-size:12px; color:#6B7572">{{ unassignedLabel }}</span>
+            </sc-if>
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <input value="{{ newSectionName }}" onChange="{{ onNewSection }}" onKeyDown="{{ onNewSectionKey }}" placeholder="haldi, mehendi, wedding…" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit; flex:1; min-width:160px">
+              <button onClick="{{ addAlbumSection }}" style="padding:9px 16px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Add chapter</button>
+            </div>
+            <sc-if value="{{ hasAlbumSections }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top:12px; border-top:1px solid var(--line)">
+                <span style="font-size:12px; color:#4A524F">Photos</span>
+                <input type="number" min="1" value="{{ rangeFrom }}" onChange="{{ onRangeFrom }}" placeholder="1" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit; width:70px">
+                <span style="font-size:12px; color:#4A524F">to</span>
+                <input type="number" min="1" value="{{ rangeTo }}" onChange="{{ onRangeTo }}" placeholder="40" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit; width:70px">
+                <select value="{{ rangeSection }}" onChange="{{ onRangeSection }}" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit">
+                  <sc-for list="{{ rangeSectionOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                </select>
+                <button onClick="{{ assignSectionRange }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Move</button>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px; padding:18px 20px; border:1px solid var(--line); border-radius:0; background:#fff">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">The couple's favourites and photo numbers</span>
+            <span style="font-size:17px; font-weight:300; color:#1B1D1E">{{ albumNumbersLabel }}</span>
+            <sc-if value="{{ hasAlbumTop }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#4A524F; line-height:1.6">{{ albumTopLabel }}</span></sc-if>
+            <button onClick="{{ toggleAlbumFavOnly }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; align-self:flex-start" style-hover="border-color:var(--green)">{{ albumFavOnlyLabel }}</button>
+            <span style="font-size:12px; color:#6B7572; line-height:1.6">The couple hearts photos in their album. Use the shortlist for the printed album. Views, saves and shares count from the album page.</span>
+          </div>
+        </div>
+        </sc-if>
         <div style="display:flex; flex-direction:column; gap:16px">
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px">
             <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Photos ({{ photoCount }})</span>
@@ -6470,6 +6542,19 @@
                 </sc-if>
                 <sc-if value="{{ albumLocked }}" hint-placeholder-val="{{ false }}">
                   <div style="padding:8px 10px; font-size:11px; color:#4A524F; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ ph.nameOrDash }}</div>
+                </sc-if>
+                <sc-if value="{{ ph.hasSections }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:0 10px 8px">
+                    <select value="{{ ph.sectionValue }}" onChange="{{ ph.onSection }}" aria-label="chapter" style="width:100%; padding:5px 6px; border:1px solid var(--line); border-radius:0; font-size:11px; font-family:inherit; color:#1B1D1E; background:#fff">
+                      <sc-for list="{{ ph.sectionOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                    </select>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ph.isFav }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:0 10px 8px; font-size:11px; color:var(--green-deep)">♥ couple's favourite</div>
+                </sc-if>
+                <sc-if value="{{ ph.statLabel }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:0 10px 8px; font-size:11px; color:#6B7572">{{ ph.statLabel }}</div>
                 </sc-if>
               </div>
             </sc-for>
@@ -8682,7 +8767,109 @@ class Component extends DCLogic {
 
   // ---- Media: upload, order, delete --------------------------------------------
 
+  // Chapters, the couple's favourites and per-photo numbers. A missing table
+  // (wedding-phase1-2026-10.sql not run yet) just hides those controls.
+  async loadAlbumExtras(eventId) {
+    if (this.parentTable() === 'projects') return;
+    const [sec, fav, st] = await Promise.all([
+      this.sb.from('album_sections').select('*').eq('event_id', eventId).order('sort_order').order('created_at'),
+      this.sb.from('album_favourites').select('media_id').eq('event_id', eventId),
+      this.sb.from('media_stats').select('media_id, views, downloads, shares').eq('event_id', eventId),
+    ]);
+    if (this.state.current && this.state.current.id !== eventId) return;
+    this.setState({
+      albumV2: !sec.error,
+      albumSections: sec.error ? [] : (sec.data || []),
+      albumFavs: fav.error ? [] : (fav.data || []).map(x => x.media_id),
+      albumStats: st.error ? {} : Object.fromEntries((st.data || []).map(x => [x.media_id, x])),
+    });
+  }
+
+  async addAlbumSection() {
+    const name = String(this.state.newSectionName || '').trim().toLowerCase();
+    const ev = this.state.current;
+    if (!name || !ev) return;
+    const order = (this.state.albumSections || []).length;
+    const { error } = await this.sb.from('album_sections').insert({ event_id: ev.id, name, sort_order: order });
+    if (error) { this.setState({ uploadStatus: 'Chapter not added: ' + error.message }); return; }
+    this.setState({ newSectionName: '' });
+    this.loadAlbumExtras(ev.id);
+  }
+
+  async renameAlbumSection(sec, name) {
+    const n = String(name || '').trim().toLowerCase();
+    if (!n || n === sec.name) return;
+    const { error } = await this.sb.from('album_sections').update({ name: n }).eq('id', sec.id);
+    if (error) this.setState({ uploadStatus: 'Chapter not renamed: ' + error.message });
+    this.loadAlbumExtras(sec.event_id);
+  }
+
+  async moveAlbumSection(sec, dir) {
+    const list = (this.state.albumSections || []).slice();
+    const i = list.findIndex(x => x.id === sec.id), j = i + dir;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    this.setState({ albumSections: list.map((x, k) => ({ ...x, sort_order: k })) });
+    await Promise.all(list.map((x, k) => this.sb.from('album_sections').update({ sort_order: k }).eq('id', x.id)));
+  }
+
+  async deleteAlbumSection(sec) {
+    const n = (this.state.media || []).filter(m => m.section_id === sec.id).length;
+    if (!confirm('Delete the chapter “' + sec.name + '”?' + (n ? ' Its ' + n + ' photos stay in the album, under “more moments”.' : ''))) return;
+    const { error } = await this.sb.from('album_sections').delete().eq('id', sec.id);
+    if (error) { this.setState({ uploadStatus: 'Chapter not deleted: ' + error.message }); return; }
+    this.setState({ media: this.state.media.map(m => m.section_id === sec.id ? { ...m, section_id: null } : m) });
+    this.loadAlbumExtras(sec.event_id);
+  }
+
+  async setMediaSection(ids, sectionId) {
+    if (!ids.length) return;
+    const val = sectionId || null;
+    this.setState({ media: this.state.media.map(m => ids.includes(m.id) ? { ...m, section_id: val } : m) });
+    const { error } = await this.sb.from('media').update({ section_id: val }).in('id', ids);
+    if (error) { this.setState({ uploadStatus: 'Chapter not saved: ' + error.message }); this.loadMedia(this.state.current.id); }
+  }
+
+  // Photos #from to #to (their album positions) into one chapter — uploads
+  // arrive in shooting order, so a function is usually one run of numbers.
+  async assignSectionRange() {
+    const s = this.state;
+    const photos = (s.media || []).filter(m => m.kind === 'photo');
+    const a = parseInt(s.rangeFrom, 10), b = parseInt(s.rangeTo, 10);
+    if (!(a >= 1) || !(b >= a) || !s.rangeSection) { this.setState({ uploadStatus: 'Pick a chapter and a photo range (for example 1 to 40).' }); return; }
+    const ids = photos.slice(a - 1, b).map(m => m.id);
+    await this.setMediaSection(ids, s.rangeSection === 'none' ? null : s.rangeSection);
+    const sec = (s.albumSections || []).find(x => x.id === s.rangeSection);
+    this.setState({ uploadStatus: ids.length + ' photos moved to ' + (sec ? '“' + sec.name + '”' : 'no chapter') + '.', rangeFrom: '', rangeTo: '' });
+  }
+
+  async setAlbumPin(clear) {
+    const ev = this.state.current;
+    if (!ev) return;
+    const pin = clear ? null : String(this.state.albumPinInput || '').trim();
+    if (!clear && !/^\d{4}$/.test(pin)) { this.setState({ albumAccessStatus: 'The PIN must be 4 digits.' }); return; }
+    const { data, error } = await this.sb.rpc('album_set_pin', { p_event: ev.id, p_pin: pin });
+    if (error || !data || !data.ok) {
+      this.setState({ albumAccessStatus: (data && data.error) || (error && /album_set_pin/.test(error.message || '') ? 'Run album-system/wedding-phase1-2026-10.sql in Supabase first.' : (error ? error.message : 'Not saved.')) });
+      return;
+    }
+    const patch = { pin_hash: clear ? null : 'set', pin_set_at: clear ? null : new Date().toISOString() };
+    this.setState({ current: { ...ev, ...patch }, albumPinInput: '', albumAccessStatus: clear ? 'PIN removed — anyone with the link can open the album.' : 'PIN set. Send it to the couple with the link.' });
+  }
+
+  async saveAlbumAccess() {
+    const ev = this.state.current;
+    if (!ev) return;
+    const tag = String(this.state.albumHashtag != null ? this.state.albumHashtag : (ev.hashtag || '')).trim().replace(/^#/, '').replace(/\s+/g, '');
+    const exp = this.state.albumExpiry != null ? this.state.albumExpiry : (ev.album_expires_on || '');
+    const patch = { hashtag: tag || null, album_expires_on: exp || null };
+    const { error } = await this.sb.from('events').update(patch).eq('id', ev.id);
+    if (error) { this.setState({ albumAccessStatus: /hashtag|album_expires_on/.test(error.message || '') ? 'Run album-system/wedding-phase1-2026-10.sql in Supabase first.' : error.message }); return; }
+    this.setState({ current: { ...ev, ...patch }, albumHashtag: null, albumExpiry: null, albumAccessStatus: 'Saved.' });
+  }
+
   async loadMedia(eventId) {
+    this.loadAlbumExtras(eventId);
     const { data, error } = await this.sb.from('media').select('*').eq('event_id', eventId).order('sort_order', { ascending: true });
     if (!error) this.setState({ media: data || [] });
   }
@@ -20677,8 +20864,19 @@ class Component extends DCLogic {
       setCoverRef: el => { if (el && ev.cover_url) { el.src = ev.cover_url; el.style.display = 'block'; } },
     }));
     const media = s.media;
+    const secs = s.albumSections || [];
+    const favSet = new Set(s.albumFavs || []);
+    const stats = s.albumStats || {};
+    const secName = id => { const x = secs.find(y => y.id === id); return x ? x.name : ''; };
     const photosVM = media.filter(m => m.kind === 'photo').map((ph, i, arr) => ({
       ...ph, name: ph.name || '', nameOrDash: ph.name || 'Untitled',
+      hasSections: secs.length > 0,
+      sectionOpts: [{ value: '', label: 'No chapter' }].concat(secs.map(x => ({ value: x.id, label: x.name }))),
+      sectionValue: ph.section_id || '',
+      onSection: e => this.setMediaSection([ph.id], e.target.value),
+      isFav: favSet.has(ph.id),
+      statLabel: (() => { const t = stats[ph.id]; if (!t) return ''; return [t.views ? t.views + ' views' : '', t.downloads ? t.downloads + ' saved' : '', t.shares ? t.shares + ' shared' : ''].filter(Boolean).join(' · '); })(),
+      chapterLabel: secName(ph.section_id),
       posInputValue: s.posEdits[ph.id] !== undefined ? s.posEdits[ph.id] : String(i + 1),
       toggleFull: () => this.toggleFullBleed(ph, !ph.full_bleed),
       remove: () => this.deleteMedia(ph),
@@ -20691,7 +20889,51 @@ class Component extends DCLogic {
       onPosChange: e => this.onPosInputChange(ph, e.target.value),
       commitPos: () => this.commitPos(ph),
       onPosKeyDown: e => { if (e.key === 'Enter') e.target.blur(); },
-    }));
+    })).filter(ph => !s.albumFavOnly || ph.isFav);
+    const allStats = Object.values(stats);
+    const sumOf = k => allStats.reduce((t, x) => t + (x[k] || 0), 0);
+    const top = media.filter(m => m.kind === 'photo' && stats[m.id] && stats[m.id].views)
+      .sort((x, y) => stats[y.id].views - stats[x.id].views).slice(0, 3);
+    const evc = s.current || {};
+    const albumExtrasVM = {
+      albumV2: !!s.albumV2 && this.parentTable() !== 'projects',
+      albumPrivate: !!evc.pin_hash,
+      albumPinLabel: evc.pin_hash ? 'Private — opens with a 4-digit PIN' + (evc.pin_set_at ? ' · set ' + fmtDay(String(evc.pin_set_at).slice(0, 10)) : '') : 'Open — anyone with the link',
+      albumPinBg: evc.pin_hash ? '#DDEFE8' : '#F1F4F3', albumPinColor: evc.pin_hash ? '#0A6E58' : '#4A524F',
+      albumPinInput: s.albumPinInput || '',
+      onAlbumPin: e => this.setState({ albumPinInput: String(e.target.value || '').replace(/\D/g, '').slice(0, 4) }),
+      setAlbumPin: () => this.setAlbumPin(false), clearAlbumPin: () => this.setAlbumPin(true),
+      albumPinBtn: evc.pin_hash ? 'Change PIN' : 'Set PIN',
+      albumExpiry: s.albumExpiry != null ? s.albumExpiry : (evc.album_expires_on || ''),
+      onAlbumExpiry: e => this.setState({ albumExpiry: e.target.value }),
+      albumHashtag: s.albumHashtag != null ? s.albumHashtag : (evc.hashtag || ''),
+      onAlbumHashtag: e => this.setState({ albumHashtag: e.target.value }),
+      saveAlbumAccess: () => this.saveAlbumAccess(),
+      albumAccessStatus: s.albumAccessStatus || '', hasAlbumAccessStatus: !!s.albumAccessStatus,
+      albumSectionsVM: secs.map((x, k) => ({
+        ...x, no: String(k + 1).padStart(2, '0'),
+        count: media.filter(m => m.kind === 'photo' && m.section_id === x.id).length + ' photos',
+        onRename: e => this.renameAlbumSection(x, e.target.value),
+        up: () => this.moveAlbumSection(x, -1), down: () => this.moveAlbumSection(x, 1),
+        remove: () => this.deleteAlbumSection(x),
+      })),
+      hasAlbumSections: secs.length > 0,
+      unassignedLabel: secs.length ? (() => { const n = media.filter(m => m.kind === 'photo' && (!m.section_id || !secs.some(x => x.id === m.section_id))).length; return n ? n + ' photos in no chapter — they show last, under “more moments”.' : 'Every photo is in a chapter.'; })() : '',
+      newSectionName: s.newSectionName || '', onNewSection: e => this.setState({ newSectionName: e.target.value }),
+      addAlbumSection: () => this.addAlbumSection(),
+      onNewSectionKey: e => { if (e.key === 'Enter') this.addAlbumSection(); },
+      rangeFrom: s.rangeFrom || '', rangeTo: s.rangeTo || '',
+      onRangeFrom: e => this.setState({ rangeFrom: e.target.value }), onRangeTo: e => this.setState({ rangeTo: e.target.value }),
+      rangeSectionOpts: [{ value: '', label: 'Chapter…' }].concat(secs.map(x => ({ value: x.id, label: x.name })), [{ value: 'none', label: 'No chapter' }]),
+      rangeSection: s.rangeSection || '', onRangeSection: e => this.setState({ rangeSection: e.target.value }),
+      assignSectionRange: () => this.assignSectionRange(),
+      albumNumbersLabel: [favSet.size + (favSet.size === 1 ? ' favourite' : ' favourites'), sumOf('views') + ' views', sumOf('downloads') + ' saved', sumOf('shares') + ' shared'].join(' · '),
+      albumTopLabel: top.length ? 'Most viewed: ' + top.map(m => (m.name || 'untitled') + ' (' + stats[m.id].views + ')').join(', ') : '',
+      hasAlbumTop: top.length > 0,
+      albumFavOnly: !!s.albumFavOnly,
+      toggleAlbumFavOnly: () => this.setState({ albumFavOnly: !s.albumFavOnly }),
+      albumFavOnlyLabel: s.albumFavOnly ? 'Show all photos' : 'Show favourites only (' + favSet.size + ')',
+    };
     const videosVM = media.filter(m => m.kind === 'video').map((vd, i) => ({
       ...vd, name: vd.name || '', nameOrDash: vd.name || 'Untitled film', remove: () => this.deleteMedia(vd),
       posInputValue: s.posEdits[vd.id] !== undefined ? s.posEdits[vd.id] : String(i + 1),
@@ -20914,6 +21156,7 @@ class Component extends DCLogic {
         };
       })(),
       uploadStatus: s.uploadStatus, photoCount: photosVM.length, photosVM,
+      ...albumExtrasVM,
 
       setVideoInputRef: el => { this.videoInputEl = el; },
       triggerVideoPicker: () => this.videoInputEl && this.videoInputEl.click(),

@@ -62,6 +62,27 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ hasGate }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height:100vh; min-height:100svh; display:flex; flex-direction:column; justify-content:space-between; gap:48px; padding:22px clamp(20px,4vw,56px) clamp(28px,5vh,48px)">
+      <img src="assets/wordmark-green.png" alt="glomium" style="height:20px; width:auto; align-self:flex-start">
+      <div style="display:flex; flex-direction:column; align-items:flex-start; gap:22px; max-width:40em">
+        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ gateKicker }}</span>
+        <h1 style="margin:0; font-size:clamp(40px,7vw,120px); font-weight:200; line-height:.94; letter-spacing:-0.035em; color:#1B1D1E; text-wrap:balance">{{ gateNames }}</h1>
+        <p style="margin:0; max-width:30em; font-size:16px; line-height:1.8; font-weight:300; color:#4A524F; text-wrap:pretty">{{ gateLine }}</p>
+        <sc-if value="{{ gateAsksPin }}" hint-placeholder-val="{{ false }}">
+          <form onSubmit="{{ submitPin }}" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center">
+            <input value="{{ pinValue }}" onChange="{{ onPin }}" inputmode="numeric" autocomplete="one-time-code" maxlength="4" placeholder="····" aria-label="4-digit pin" style="width:150px; min-height:48px; padding:12px 16px; border:1px solid #DDE3E1; border-radius:0; font:inherit; font-size:22px; letter-spacing:.5em; color:#1B1D1E; outline:none; background:#FFFFFF" style-focus="border-color:#0E8E72">
+            <button type="submit" disabled="{{ pinBusy }}" style="min-height:48px; padding:14px 24px; background:none; border:1px solid #0E8E72; border-radius:0; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#0E8E72; cursor:pointer; transition:background .3s, color .3s" style-hover="background:#0E8E72; color:#FFFFFF">{{ pinBtn }}</button>
+          </form>
+        </sc-if>
+        <sc-if value="{{ hasGateNote }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:13px; color:{{ gateNoteColor }}">{{ gateNote }}</span>
+        </sc-if>
+      </div>
+      <span style="font-size:11px; letter-spacing:2.6px; color:#8A9390">creative INFINITELY</span>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ hasEvent }}" hint-placeholder-val="{{ false }}">
     <div>
       <div data-el="topbar" style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:6px clamp(20px,4vw,56px); opacity:0; pointer-events:none; background:#FFFFFF; border-bottom:1px solid #EEF1F0; transition:opacity .4s">
@@ -69,6 +90,9 @@
         <div style="display:flex; align-items:center; gap:clamp(20px,3vw,36px); font-size:10px; letter-spacing:2.6px; text-transform:uppercase; white-space:nowrap">
           <sc-if value="{{ navFilms }}" hint-placeholder-val="{{ false }}">
             <a href="#films" onClick="{{ jump }}" style="display:flex; align-items:center; min-height:44px; color:#1B1D1E" style-hover="color:#10AF8B">films</a>
+          </sc-if>
+          <sc-if value="{{ hasChapterNav }}" hint-placeholder-val="{{ false }}">
+            <a href="#photos" onClick="{{ jumpChapters }}" style="display:flex; align-items:center; min-height:44px; color:#1B1D1E" style-hover="color:#10AF8B">chapters</a>
           </sc-if>
           <button onClick="{{ share }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#0A6E58; cursor:pointer" style-hover="color:#10AF8B">{{ shareLabel }}</button>
         </div>
@@ -93,22 +117,53 @@
         </div>
       </div>
 
-      <section style="padding:clamp(96px,12vw,180px) clamp(20px,4vw,56px) 0">
+      <section id="photos" style="padding:clamp(96px,12vw,180px) clamp(20px,4vw,56px) 0">
         <sc-if value="{{ hasPhotos }}" hint-placeholder-val="{{ true }}">
-          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:24px; margin-bottom:clamp(40px,5vw,72px); font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">
-            <span>{{ photosHead }}</span>
-            <span style="font-variant-numeric:tabular-nums">{{ photoCount }}</span>
+          <div style="display:flex; flex-direction:column; gap:22px; margin-bottom:clamp(40px,5vw,72px)">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:24px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">
+              <span>{{ photosHead }}</span>
+              <div style="display:flex; align-items:baseline; gap:clamp(16px,3vw,32px)">
+                <sc-if value="{{ hasAllDl }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ allDl }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#0A6E58; cursor:pointer" style-hover="color:#1B1D1E">{{ allDlLabel }}</button>
+                </sc-if>
+                <sc-if value="{{ hasFavs }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ toggleFavOnly }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:{{ favChipColor }}; cursor:pointer" style-hover="color:#10AF8B">{{ favChipLabel }}</button>
+                </sc-if>
+                <span style="font-variant-numeric:tabular-nums">{{ photoCount }}</span>
+              </div>
+            </div>
+            <sc-if value="{{ hasChapterNav }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:clamp(18px,3vw,36px); overflow-x:auto; padding-bottom:4px; border-top:1px solid #EEF1F0; padding-top:14px">
+                <sc-for list="{{ chapterNav }}" as="cn" hint-placeholder-count="3">
+                  <a href="{{ cn.href }}" onClick="{{ cn.go }}" style="display:flex; align-items:baseline; gap:8px; min-height:44px; white-space:nowrap; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E" style-hover="color:#10AF8B"><span style="color:#8A9390; font-variant-numeric:tabular-nums">{{ cn.no }}</span>{{ cn.title }}</a>
+                </sc-for>
+              </div>
+            </sc-if>
           </div>
         </sc-if>
-        <div style="display:flex; flex-direction:column; gap:clamp(10px,1.4vw,20px)">
-          <sc-for list="{{ blocks }}" as="block" hint-placeholder-count="2">
+        <div style="display:flex; flex-direction:column; gap:clamp(72px,9vw,140px)">
+          <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="1">
+          <div id="{{ ch.anchor }}" style="display:flex; flex-direction:column; gap:clamp(10px,1.4vw,20px); scroll-margin-top:96px">
+            <sc-if value="{{ ch.hasTitle }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:16px 32px; margin-bottom:clamp(14px,2vw,28px)">
+                <div style="display:flex; flex-direction:column; gap:10px; min-width:0">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; font-variant-numeric:tabular-nums">{{ ch.no }} · {{ ch.countLabel }}</span>
+                  <h2 style="margin:0; font-size:clamp(30px,4.4vw,68px); font-weight:200; line-height:1; letter-spacing:-0.03em; color:#1B1D1E; overflow-wrap:anywhere">{{ ch.title }}</h2>
+                </div>
+                <button onClick="{{ ch.download }}" disabled="{{ ch.busy }}" style="min-height:44px; padding:0; border:0; background:none; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58; cursor:pointer" style-hover="color:#1B1D1E">{{ ch.dlLabel }}</button>
+              </div>
+            </sc-if>
+            <sc-for list="{{ ch.blocks }}" as="block" hint-placeholder-count="2">
             <sc-if value="{{ block.isGrid }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex; gap:clamp(10px,1.4vw,20px); align-items:flex-start; width:{{ block.width }}; margin:0 auto">
                 <sc-for list="{{ block.columns }}" as="col" hint-placeholder-count="3">
                   <div style="flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:clamp(10px,1.4vw,20px)">
                     <sc-for list="{{ col.items }}" as="ph" hint-placeholder-count="2">
-                      <button onClick="{{ ph.openLightbox }}" aria-label="{{ ph.aria }}" style="display:block; width:100%; padding:0; border:0; background:#F1F4F3; overflow:hidden; cursor:zoom-in">
+                      <button onClick="{{ ph.openLightbox }}" aria-label="{{ ph.aria }}" style="position:relative; display:block; width:100%; padding:0; border:0; background:#F1F4F3; overflow:hidden; cursor:zoom-in">
                         <img ref="{{ ph.setImgRef }}" alt="{{ ph.name }}" loading="lazy" decoding="async" style="width:100%; display:block; transition:opacity .8s, transform 1.4s cubic-bezier(.2,.8,.2,1)" style-hover="transform:scale(1.025)">
+                        <sc-if value="{{ ph.isFav }}" hint-placeholder-val="{{ false }}">
+                          <span aria-label="favourite" style="position:absolute; top:10px; right:10px; display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:#FFFFFF; color:#0E8E72; font-size:14px; line-height:1">♥</span>
+                        </sc-if>
                       </button>
                     </sc-for>
                   </div>
@@ -120,7 +175,12 @@
                 <img ref="{{ block.setImgRef }}" alt="{{ block.name }}" loading="lazy" decoding="async" style="width:100%; max-height:92vh; object-fit:cover; display:block; transition:opacity .8s">
               </button>
             </sc-if>
+            </sc-for>
+          </div>
           </sc-for>
+          <sc-if value="{{ favOnlyEmpty }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:16px; line-height:1.8; font-weight:300; color:#4A524F">no favourites yet — open a photo and tap favourite.</span>
+          </sc-if>
         </div>
 
         <sc-if value="{{ hasVideos }}" hint-placeholder-val="{{ false }}">
@@ -209,6 +269,9 @@
           <sc-if value="{{ showSlideshowBtn }}" hint-placeholder-val="{{ true }}">
             <button onClick="{{ toggleSlideshow }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">{{ slideshowLabel }}</button>
           </sc-if>
+          <sc-if value="{{ canFav }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ toggleFav }}" aria-pressed="{{ isFavCurrent }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:{{ favBtnColor }}; cursor:pointer" style-hover="color:#10AF8B">{{ favBtnLabel }}</button>
+          </sc-if>
           <button onClick="{{ shareCurrent }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer" style-hover="color:#10AF8B">share</button>
           <button onClick="{{ downloadCurrent }}" style="min-height:44px; padding:0; border:0; background:none; font:inherit; letter-spacing:inherit; text-transform:inherit; color:#FFFFFF; cursor:pointer; color:#10AF8B" style-hover="color:#FFFFFF">download</button>
         </div>
@@ -226,6 +289,35 @@
 const SUPABASE_URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
 
+// Minimal zip writer (stored entries). Enough for a chapter of JPEGs; parts
+// stay well under 4 GB, so no zip64.
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files) {
+  const enc = new TextEncoder(), d = new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  const body = [], dir = []; let off = 0, dirSize = 0;
+  for (const f of files) {
+    const n = enc.encode(f.name);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true);
+    h.setUint16(10, time, true); h.setUint16(12, date, true); h.setUint32(14, f.crc, true);
+    h.setUint32(18, f.size, true); h.setUint32(22, f.size, true); h.setUint16(26, n.length, true);
+    body.push(h.buffer, n, f.blob);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+    c.setUint16(12, time, true); c.setUint16(14, date, true); c.setUint32(16, f.crc, true);
+    c.setUint32(20, f.size, true); c.setUint32(24, f.size, true); c.setUint16(28, n.length, true); c.setUint32(42, off, true);
+    dir.push(c.buffer, n); dirSize += 46 + n.length;
+    off += 30 + n.length + f.size;
+  }
+  const e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+  e.setUint32(12, dirSize, true); e.setUint32(16, off, true);
+  return new Blob(body.concat(dir, [e.buffer]), { type: 'application/zip' });
+}
+
 class Component extends DCLogic {
   state = {
     loading: true, notFound: false, loadError: '', slug: '', event: null, media: [], shareLabel: 'share album',
@@ -233,6 +325,8 @@ class Component extends DCLogic {
     isMobile: typeof window !== 'undefined' ? window.innerWidth < 768 : false,
     wide: typeof window !== 'undefined' ? window.innerWidth >= 1680 : false,
     videoShareId: null, isFullscreen: false, loaderGone: false,
+    gate: '', gateLeft: null, gateTried: false, gateNames: '', gateNote: '', pin: '', pinBusy: false,
+    sections: [], favs: [], favOnly: false, v2: false, zip: null,
   };
 
   loaderRef = React.createRef(); loadNumRef = React.createRef(); loadBarRef = React.createRef(); loadLabelRef = React.createRef(); loadMarkRef = React.createRef();
@@ -334,12 +428,12 @@ class Component extends DCLogic {
     // Never lift the loader onto an empty page: if the album still has not
     // arrived, show the retry screen instead of a blank white one.
     const s = this.state;
-    if (!s.event && !s.notFound && !s.loadError) this.setState({ loading: false, loadError: 'the connection dropped before the album arrived. your link is fine — try again.' });
+    if (!s.event && !s.notFound && !s.loadError && !s.gate) this.setState({ loading: false, loadError: 'the connection dropped before the album arrived. your link is fine — try again.' });
     document.body.style.overflow = this.state.lightboxOpen ? 'hidden' : '';
     if (this.loadLabelRef.current) this.loadLabelRef.current.textContent = 'ready';
     if (this.loaderRef.current) this.loaderRef.current.style.clipPath = 'inset(0% 0% 100% 0%)';
     this.intro();
-    setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); } }, 1200);
+    setTimeout(() => { if (!this.unmounted) { this.setState({ loaderGone: true }); this.prefetchRest(); this.openDeepLink(); } }, 1200);
   }
 
   // After the reveal, warm photos a few screens ahead of the reader, two at a
@@ -386,7 +480,121 @@ class Component extends DCLogic {
     if (document.title !== t) document.title = t;
   }
 
-  componentDidUpdate() { this.syncTitle(); }
+  componentDidUpdate() {
+    this.syncTitle();
+    const s = this.state;
+    if (s.lightboxOpen) {
+      const m = s.media[s.lightboxIndex];
+      this._seen = this._seen || new Set();
+      if (m && !this._seen.has(m.id)) { this._seen.add(m.id); this.stat([m.id], 'view'); }
+    }
+  }
+
+  // Views, downloads and shares per photo. Fire and forget: a missing
+  // function (SQL not run yet) or a dropped request never touches the page.
+  stat(ids, kind) {
+    if (!this.sb || !this.state.v2 || !this.state.slug || !ids || !ids.length) return;
+    this.sb.rpc('album_stat', { p_slug: this.state.slug, p_pin: this.pinUsed || null, p_media: ids, p_kind: kind }).then(() => {}, () => {});
+  }
+
+  onPin = e => this.setState({ pin: String(e.target.value || '').replace(/\D/g, '').slice(0, 4), gateNote: '' });
+  submitPin = async e => {
+    if (e && e.preventDefault) e.preventDefault();
+    const pin = String(this.state.pin || '');
+    if (!/^\d{4}$/.test(pin)) { this.setState({ gateNote: 'the pin is 4 digits.' }); return; }
+    if (!this.sb) return;
+    this.setState({ pinBusy: true, gateNote: '' });
+    await this.load(this.state.slug, pin);
+    if (this.state.event) {
+      this.setState({ pin: '', pinBusy: false }, () => {
+        try { window.scrollTo(0, 0); } catch (err) {}
+        requestAnimationFrame(() => this.intro());
+        this.prefetchRest();
+        this.openDeepLink();
+      });
+    }
+  };
+
+  // ?photo=<id> from a shared photo opens straight onto it.
+  openDeepLink() {
+    if (this._deep) return;
+    const id = new URLSearchParams(window.location.search).get('photo');
+    if (!id || !this.state.event) return;
+    this._deep = true;
+    const i = this.state.media.findIndex(m => m.id === id);
+    if (i >= 0) this.openLightbox(i);
+  }
+
+  shareUrl(photoId) {
+    const q = new URLSearchParams();
+    q.set('event', this.state.slug || (this.state.event && this.state.event.slug) || '');
+    if (photoId) q.set('photo', photoId);
+    q.set('ref', 'share');
+    return window.location.origin + window.location.pathname + '?' + q.toString();
+  }
+  shareText() {
+    const e = this.state.event || {};
+    const tag = String(e.hashtag || '').trim().replace(/^#/, '').replace(/\s+/g, '');
+    return (e.couple_names || 'our album') + ' — ' + (tag ? '#' + tag + ' · ' : '') + 'photos by glomium';
+  }
+
+  toggleFav = async () => {
+    const m = this.state.media[this.state.lightboxIndex];
+    if (!m || m.kind === 'video' || !this.sb) return;
+    const on = this.state.favs.indexOf(m.id) === -1;
+    const flip = add => st => ({ favs: add ? st.favs.concat([m.id]) : st.favs.filter(x => x !== m.id) });
+    this.setState(flip(on));
+    const { data, error } = await this.sb.rpc('album_favourite', { p_slug: this.state.slug, p_pin: this.pinUsed || null, p_media: m.id, p_on: on });
+    if (error || !data || !data.ok) this.setState(flip(!on));
+  };
+
+  // Photos by chapter, in page order. No chapters: one untitled group.
+  chapterGroups() {
+    const s = this.state, secs = s.sections || [];
+    const photos = s.media.map((m, i) => ({ ...m, idx: i })).filter(m => m.kind !== 'video');
+    if (!secs.length) return [{ key: 'all', title: '', items: photos }];
+    const known = new Set(secs.map(x => x.id));
+    const out = secs.map(x => ({ key: x.id, title: x.name, items: photos.filter(m => m.section_id === x.id) }));
+    const rest = photos.filter(m => !m.section_id || !known.has(m.section_id));
+    if (rest.length) out.push({ key: 'more', title: 'more moments', items: rest });
+    return out.filter(g => g.items.length);
+  }
+
+  // A chapter as zip files, built in the browser from the full-size originals.
+  // Stored, not compressed (JPEGs do not shrink), and split into parts so a
+  // phone never holds more than ~250 MB at once.
+  async downloadChapter(key) {
+    if (this.state.zip) return;
+    const g = this.chapterGroups().find(x => x.key === key);
+    if (!g || !g.items.length) return;
+    const cap = (this.state.isMobile ? 250 : 1500) * 1048576;
+    const base = ((this.state.event && this.state.event.couple_names) || 'album') + (g.title ? ' - ' + g.title : '');
+    const safe = base.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-').toLowerCase() || 'album';
+    const total = g.items.length;
+    let files = [], size = 0, part = 1, done = 0, failed = 0;
+    const used = new Set();
+    const nameFor = m => { let n = this.fileNameFor(m), k = 2; const dot = n.lastIndexOf('.'); while (used.has(n)) n = n.slice(0, dot) + '-' + (k++) + n.slice(dot); used.add(n); return n; };
+    const save = (blob, name) => { const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 60000); };
+    const flush = last => { if (!files.length) return; save(zipStore(files), safe + (part > 1 || !last ? '-part-' + part : '') + '.zip'); part++; files = []; size = 0; };
+    this.setState({ zip: { key, done: 0, total } });
+    for (const m of g.items) {
+      try {
+        const res = await fetch(m.url);
+        if (!res.ok) throw new Error(res.status);
+        const blob = await res.blob();
+        const crc = crc32(new Uint8Array(await blob.arrayBuffer()));
+        if (size && size + blob.size > cap) flush(false);
+        files.push({ name: nameFor(m), blob, crc, size: blob.size });
+        size += blob.size;
+      } catch (e) { failed++; }
+      done++;
+      if (!this.unmounted) this.setState({ zip: { key, done, total } });
+    }
+    flush(true);
+    this.stat(g.items.map(m => m.id), 'download');
+    if (!this.unmounted) this.setState({ zip: null });
+    if (failed) window.alert(failed + (failed === 1 ? ' photo' : ' photos') + ' could not be added — open them one by one to download.');
+  }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.onScroll);
@@ -495,7 +703,7 @@ class Component extends DCLogic {
     if (this.sb) this.load(this.state.slug); else window.location.reload();
   };
 
-  async load(slug) {
+  async load(slug, pinIn) {
     const OFFLINE = 'the connection dropped before the album arrived. your link is fine — try again.';
     this.setState({ loading: true, notFound: false, loadError: '', slug });
     try {
@@ -505,7 +713,16 @@ class Component extends DCLogic {
       // A request that never answers used to leave the page white until a
       // reload. Give each try 10s, retry once, then offer the retry screen.
       const TIMEOUT = { error: { code: 'timeout', message: 'timeout' } };
-      const ask = () => Promise.race([this.sb.rpc('get_album', { p_slug: slug }), new Promise(r => setTimeout(() => r(TIMEOUT), 10000))]);
+      let pin = pinIn || null;
+      if (!pin) { try { pin = sessionStorage.getItem('ga:' + slug) || null; } catch (e) {} }
+      const call = args => Promise.race([this.sb.rpc('get_album', args), new Promise(r => setTimeout(() => r(TIMEOUT), 10000))]);
+      // A database without the private-album version only knows get_album(p_slug).
+      const ask = async () => {
+        if (!pin) return call({ p_slug: slug });
+        const r = await call({ p_slug: slug, p_pin: pin });
+        return r !== TIMEOUT && r.error && this.rpcMissing(r.error) ? call({ p_slug: slug }) : r;
+      };
+      let sections = [], favs = [], v2 = false;
       let rpc = await ask();
       if (rpc === TIMEOUT && !this.unmounted) rpc = await ask();
 
@@ -524,9 +741,27 @@ class Component extends DCLogic {
         // album that is not published yet — deliberately indistinguishable from
         // out here, so an unsent album cannot be confirmed to exist by guessing.
         if (!rpc.data || !rpc.data.event) { this.setState({ loading: false, notFound: true }); return; }
+        // A private album, a wrong PIN, a lockout or a closed album: the page
+        // shows the gate and nothing else came back.
+        if (rpc.data.gate) {
+          if (pin) { try { sessionStorage.removeItem('ga:' + slug); } catch (e) {} }
+          this.setState({ loading: false, gate: rpc.data.gate, gateLeft: rpc.data.left, gateTried: !!rpc.data.tried,
+            gateNames: (rpc.data.event && rpc.data.event.couple_names) || '', pinBusy: false, pin: '' });
+          this.logVisit(slug);
+          return;
+        }
+        if (pin) { try { sessionStorage.setItem('ga:' + slug, pin); } catch (e) {} }
+        this.pinUsed = pin;
         ev = rpc.data.event; media = rpc.data.media || [];
+        v2 = Array.isArray(rpc.data.sections);
+        sections = rpc.data.sections || []; favs = rpc.data.favourites || [];
       }
-      this.setState({ loading: false, event: ev, media: (media || []).filter(x => x.url) });
+      // Chapter order first, then the album's own order inside each chapter,
+      // so the viewer steps through photos in the order the page shows them.
+      const rank = new Map(sections.map((x, i) => [x.id, i]));
+      const key = m => m.kind === 'video' ? 1e6 : (m.section_id && rank.has(m.section_id) ? rank.get(m.section_id) : sections.length);
+      const list = (media || []).filter(x => x.url).map((m, i) => ({ m, i })).sort((a, b) => (key(a.m) - key(b.m)) || (a.i - b.i)).map(x => x.m);
+      this.setState({ loading: false, gate: '', event: ev, media: list, sections, favs, v2 });
       this.logVisit(slug);
     } catch (e) { this.setState({ loading: false, loadError: OFFLINE }); }
   }
@@ -537,8 +772,8 @@ class Component extends DCLogic {
   }
 
   share() {
-    const url = window.location.href;
-    if (navigator.share) { navigator.share({ title: this.state.event.couple_names, url }).catch(() => {}); return; }
+    const url = this.shareUrl(), text = this.shareText();
+    if (navigator.share) { navigator.share({ title: this.state.event.couple_names, text, url }).catch(() => {}); return; }
     const done = label => { this.setState({ shareLabel: label }); setTimeout(() => { if (!this.unmounted) this.setState({ shareLabel: 'share album' }); }, 1800); };
     if (!navigator.clipboard || !navigator.clipboard.writeText) { window.prompt('copy this link', url); return; }
     navigator.clipboard.writeText(url).then(() => done('link copied'), () => window.prompt('copy this link', url));
@@ -706,6 +941,7 @@ class Component extends DCLogic {
   async downloadCurrent() {
     const item = this.state.media[this.state.lightboxIndex];
     if (!item) return;
+    this.stat([item.id], 'download');
     const name = this.fileNameFor(item);
     // Buffering a multi-hundred-MB film into a Blob crashes phones. Storage can set
     // the attachment header itself, so hand the save straight to the browser.
@@ -723,8 +959,11 @@ class Component extends DCLogic {
   shareCurrent() {
     const item = this.state.media[this.state.lightboxIndex];
     if (!item) return;
-    if (navigator.share) { navigator.share({ title: item.name || this.state.event.couple_names, url: item.url }).catch(() => {}); return; }
-    navigator.clipboard.writeText(item.url);
+    this.stat([item.id], 'share');
+    const url = this.shareUrl(item.id), text = this.shareText();
+    if (navigator.share) { navigator.share({ title: this.state.event.couple_names, text, url }).catch(() => {}); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text + ' ' + url).then(() => {}, () => window.prompt('copy this link', url));
+    else window.prompt('copy this link', url);
   }
 
   renderVals() {
@@ -738,6 +977,8 @@ class Component extends DCLogic {
     const cols = s.isMobile ? 2 : (s.wide ? 4 : 3);
     const G = 'clamp(10px,1.4vw,20px)';
     const sizes = s.isMobile ? '50vw' : (s.wide ? '25vw' : '34vw');
+    const favSet = new Set(s.favs || []);
+    const buildBlocks = list => {
     const blocks = [];
     let run = [];
     const flush = () => {
@@ -745,6 +986,7 @@ class Component extends DCLogic {
       const items = run.map(ph => ({
         ...ph,
         aria: ph.name ? 'open ' + ph.name : 'open photo ' + (ph.idx + 1),
+        isFav: favSet.has(ph.id),
         setImgRef: el => this.wireImg(el, ph, sizes),
         openLightbox: () => this.openLightbox(ph.idx),
       }));
@@ -760,7 +1002,7 @@ class Component extends DCLogic {
       blocks.push({ isGrid: true, isFull: false, width, columns: columns.map(x => ({ items: x.items })) });
       run = [];
     };
-    for (const m of indexed) {
+    for (const m of list) {
       if (m.kind === 'video') continue;
       if (m.full_bleed) {
         flush();
@@ -768,6 +1010,25 @@ class Component extends DCLogic {
       } else run.push(m);
     }
     flush();
+    return blocks;
+    };
+    const groups = this.chapterGroups();
+    const titled = groups.some(g => g.title);
+    const zipLabel = k => s.zip && s.zip.key === k ? 'preparing ' + s.zip.done + ' / ' + s.zip.total + '…' : '';
+    const chapters = groups.map((g, ci) => {
+      const items = s.favOnly ? g.items.filter(m => favSet.has(m.id)) : g.items;
+      const n = items.length;
+      return {
+        key: g.key, anchor: 'ch-' + (ci + 1), title: g.title, hasTitle: titled && !!g.title,
+        no: String(ci + 1).padStart(2, '0'), countLabel: n + (n === 1 ? ' photograph' : ' photographs'),
+        blocks: buildBlocks(items), n,
+        download: () => this.downloadChapter(g.key), busy: !!s.zip,
+        dlLabel: zipLabel(g.key) || (s.zip ? 'download chapter' : 'download chapter'),
+      };
+    }).filter(c => c.n > 0);
+    const scrollTo = id => { const el = document.getElementById(id); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); };
+    const chapterNav = titled ? chapters.map(c => ({ no: c.no, title: c.title, href: '#' + c.anchor, go: e => { e.preventDefault(); scrollTo(c.anchor); } })) : [];
+    const allKey = groups.length === 1 && !titled ? groups[0].key : null;
 
     // Videos always sit below the full photo grid, in their own labelled section.
     const videos = indexed.filter(m => m.kind === 'video').map((m, vi) => ({
@@ -839,7 +1100,32 @@ class Component extends DCLogic {
       pageTitle: s.event ? s.event.couple_names + ' — Infinitely' : 'Infinitely — Glomium',
       event: s.event || {}, dateLabel, hasDate: !!dateLabel, hasVenue: !!(s.event && s.event.venue),
       footerMeta, hasFooterMeta: !!footerMeta,
-      blocks, videos, hasVideos: videos.length > 0, hasPhotos: nPhotos > 0,
+      chapters, chapterNav, hasChapterNav: chapterNav.length > 1,
+      jumpChapters: e => { e.preventDefault(); scrollTo('photos'); },
+      favOnlyEmpty: !!s.favOnly && chapters.length === 0,
+      hasFavs: !!s.v2 && (favSet.size > 0 || !!s.favOnly),
+      favChipLabel: s.favOnly ? 'show all' : '♥ favourites · ' + favSet.size,
+      favChipColor: s.favOnly ? '#0E8E72' : '#1B1D1E',
+      toggleFavOnly: () => this.setState({ favOnly: !s.favOnly }),
+      hasAllDl: !!allKey && nPhotos > 0, allDl: () => allKey && this.downloadChapter(allKey),
+      allDlLabel: (allKey && zipLabel(allKey)) || 'download all',
+      canFav: !!s.v2 && !!current && current.kind !== 'video',
+      isFavCurrent: !!current && favSet.has(current.id),
+      favBtnLabel: current && favSet.has(current.id) ? '♥ favourite' : '♡ favourite',
+      favBtnColor: current && favSet.has(current.id) ? '#10AF8B' : '#FFFFFF',
+      toggleFav: this.toggleFav,
+      hasGate: !!s.gate && !s.event,
+      gateKicker: s.gate === 'expired' ? 'album closed' : 'private album',
+      gateNames: s.gateNames || 'your album',
+      gateLine: s.gate === 'expired' ? 'this album has closed. ask your photographer to open it again.'
+        : s.gate === 'locked' ? 'too many wrong pins. try again in 15 minutes.'
+        : s.gateTried ? 'that pin didn’t match — ' + (s.gateLeft == null ? '' : s.gateLeft + (s.gateLeft === 1 ? ' try' : ' tries') + ' left.')
+        : 'enter the 4-digit pin from your photographer to open your album.',
+      gateAsksPin: s.gate === 'pin',
+      pinValue: s.pin, onPin: this.onPin, submitPin: this.submitPin, pinBusy: !!s.pinBusy,
+      pinBtn: s.pinBusy ? 'opening…' : 'open album',
+      hasGateNote: !!s.gateNote, gateNote: s.gateNote, gateNoteColor: '#B4433A',
+      videos, hasVideos: videos.length > 0, hasPhotos: nPhotos > 0,
       photosHead: '01 — photographs', photoCount: String(nPhotos),
       filmsHead: (nPhotos ? '02' : '01') + ' — films', filmCount: String(videos.length),
       filmsTop: nPhotos ? 'clamp(120px,14vw,200px)' : '0px',
