@@ -5031,7 +5031,7 @@
                   <button onClick="{{ a.toggleInbox }}" disabled="{{ a.msgLocked }}" title="DMs and comments in the Inbox tab" style="padding:6px 10px; background:{{ a.inboxBg }}; border:1px solid {{ a.inboxBorder }}; border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:{{ a.inboxColor }}; cursor:{{ a.msgCursor }}">{{ a.inboxLabel }}</button>
                   <button onClick="{{ a.toggleMod }}" disabled="{{ a.msgLocked }}" title="Check comments against the moderation rules" style="padding:6px 10px; background:{{ a.modBg }}; border:1px solid {{ a.modBorder }}; border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:{{ a.modColor }}; cursor:{{ a.msgCursor }}">{{ a.modLabel }}</button>
                   <sc-if value="{{ a.canBackfill }}" hint-placeholder-val="{{ false }}">
-                    <button onClick="{{ a.backfill }}" title="Pull the last 25 conversations into the inbox" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Backfill</button>
+                    <button onClick="{{ a.backfill }}" title="Pull recent conversations into the inbox" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Backfill</button>
                   </sc-if>
                 </div>
               </sc-if>
@@ -16946,7 +16946,7 @@ class Component extends DCLogic {
     const say = m => /social_accounts|digital_terms|metrics_daily|sync_runs/i.test(m || '')
       ? 'Run album-system/digital-schema.sql in Supabase — the digital tables do not exist yet.' : m;
     this.setState({ digLoading: true });
-    const [acc, terms, runs, ppl, led] = await Promise.all([
+    const [acc, terms, runs, ppl, led, tops] = await Promise.all([
       this.sb.from('social_accounts').select('*').order('platform'),
       this.sb.from('digital_terms').select('*'),
       this.digRunsQuery(),
@@ -16956,6 +16956,8 @@ class Component extends DCLogic {
       this.can('digitalMoney')
         ? this.sb.from('ad_spend_ledger').select('*').order('spend', { ascending: false }).limit(1000)
         : Promise.resolve({ data: [] }),
+      // Meta's own 7/30-day reach and views per account (digital-sync writes them).
+      this.sb.from('web_top').select('account_id, rows, synced_at').eq('kind', 'totals'),
     ]);
     if (acc.error) { this.setState({ digStatus: say(acc.error.message), digLoading: false }); return; }
     // The posts the ledger's ads promote, whatever client they belong to —
@@ -17002,6 +17004,7 @@ class Component extends DCLogic {
       digRuns: runs.error ? [] : (runs.data || []),
       digLedger: led.error ? [] : (led.data || []),
       digLedgerPosts: lp.error ? [] : (lp.data || []),
+      digTotals: (tops && !tops.error && tops.data) || [],
       digMetrics: metrics,
       digStatus: keepStatus, digLoading: false,
     }, () => {
@@ -17256,7 +17259,7 @@ class Component extends DCLogic {
     if (err) { this.setState({ digStatus: err }); return; }
     this.setState({
       digAccounts: this.state.digAccounts.map(x => (x.id === a.id ? { ...x, inbox_enabled: on, moderation_enabled: on ? true : x.moderation_enabled, link_page_id: (data && data.page) || x.link_page_id } : x)),
-      digStatus: on ? 'Inbox on. New messages and comments arrive as they are sent — Backfill pulls the last 25 conversations.' : 'Inbox off for this account.',
+      digStatus: on ? 'Inbox on. New messages and comments arrive as they are sent — Backfill pulls in recent conversations.' : 'Inbox off for this account.',
     });
   }
 
@@ -17267,11 +17270,38 @@ class Component extends DCLogic {
     this.setState({ digAccounts: this.state.digAccounts.map(x => (x.id === a.id ? { ...x, moderation_enabled: on } : x)) });
   }
 
+  // The function answers at once and works in the background; conversations
+  // stream into the inbox live, and the outcome is read off the account row.
   async backfillInbox(a) {
-    this.setState({ digStatus: 'Pulling recent conversations…' });
+    const name = a.handle || a.label || 'this account';
+    this.setState({ digStatus: 'Starting the backfill for ' + name + '…' });
     const { data, err } = await this.inboxFn({ action: 'backfill', account_id: a.id });
-    this.setState({ digStatus: err || ('Pulled ' + ((data && data.messages) || 0) + ' messages into the inbox.') });
-    if (!err) this.loadInboxLists();
+    if (err) { this.setState({ digStatus: err }); return; }
+    this.setState({ digStatus: (data && data.running ? 'A backfill is already running for ' : 'Backfilling ') + name
+      + ' in the background — conversations appear in the inbox as they are saved. This can take a few minutes.' });
+    this.pollBackfill(a.id, name, Date.now());
+  }
+
+  pollBackfill(id, name, t0) {
+    this._bfT = this._bfT || {};
+    clearTimeout(this._bfT[id]);
+    this._bfT[id] = setTimeout(async () => {
+      if (!this.sb) return;
+      const r = await this.sb.from('social_accounts').select('inbox_backfill').eq('id', id).maybeSingle();
+      const b = r.data && r.data.inbox_backfill;
+      const waited = Date.now() - t0;
+      if (r.error || !b || b.status === 'running') {
+        if (r.error && /inbox_backfill/i.test(r.error.message || '')) { this.setState({ digStatus: 'Backfill is running, but its progress column is missing — run the latest digital-inbox-2026-10.sql.' }); return; }
+        if (waited < 8 * 60000) return this.pollBackfill(id, name, t0);
+        this.setState({ digStatus: 'The backfill for ' + name + ' stopped without reporting back. Supabase → Edge Functions → meta-inbox → Logs shows why.' });
+        return;
+      }
+      if (Date.parse(b.started_at || 0) < t0 - 60000) { if (waited < 20000) return this.pollBackfill(id, name, t0); }
+      this.setState({ digStatus: b.status === 'error' ? 'Backfill failed for ' + name + ': ' + (b.error || 'no reason given')
+        : 'Backfill done for ' + name + ' — ' + (b.conversations || 0) + ' conversations, ' + (b.messages || 0) + ' new messages.'
+          + (b.status === 'partial' ? ' It ran out of time; run it again for the rest.' : '') + (b.note ? ' ' + b.note : '') });
+      this.loadInboxLists();
+    }, 4000);
   }
 
   async setManager(projectId, uid) {
@@ -19494,7 +19524,28 @@ class Component extends DCLogic {
     const socialRows = ofGroup(rows, 'social'), adsRows = ofGroup(rows, 'ads');
     const spend = sumOf(adsRows, 'spend'), impressions = sumOf(adsRows, 'impressions'), clicks = sumOf(adsRows, 'clicks');
     const conv = sumOf(adsRows, 'conversions'), convValue = sumOf(adsRows, 'conv_value'), revenue = sumOf(rows, 'revenue');
-    const reach = sumOf(socialRows, 'reach');
+    // Reach as Meta counts it: people, de-duplicated over the window, from the
+    // platform's own totals (Instagram 7/30/~90 days, Facebook 7/28). Adding up
+    // daily reach counted a follower once for every day they were reached —
+    // several times what the Instagram app shows. Days are still added up where
+    // no total exists, and for the up/down comparison, which needs the same
+    // measure on both sides.
+    const metaTotals = new Map();
+    (s.digTotals || []).forEach(t => {
+      const r = (Array.isArray(t.rows) ? t.rows : []).find(x => Number(x.days) === range);
+      if (r) metaTotals.set(t.account_id, r);
+    });
+    const digSocAccs = scoped.filter(isSocial);
+    const reachOfAcc = a => { const t = metaTotals.get(a.id); return t && t.reach != null ? Number(t.reach) : sumOf(socialRows.filter(m => m.account_id === a.id), 'reach'); };
+    const viewsOfAcc = a => { const t = metaTotals.get(a.id); return t && t.views != null ? Number(t.views) : null; };
+    const reachDaily = sumOf(socialRows, 'reach');
+    const reach = digSocAccs.length ? digSocAccs.reduce((t, a) => t + reachOfAcc(a), 0) : reachDaily;
+    const platSplit = f => {
+      const by = {};
+      digSocAccs.forEach(a => { const v = f(a); if (v) by[a.platform] = (by[a.platform] || 0) + v; });
+      const k = Object.keys(by);
+      return k.length > 1 ? k.map(p => (DIG_PLATFORM_LABEL[p] || p) + ' ' + this.compact(by[p])).join(' · ') : '';
+    };
     const prevReach = sumOf(ofGroup(prevRows, 'social'), 'reach'), prevSpend = sumOf(ofGroup(prevRows, 'ads'), 'spend');
     const followerGain = sumOf(socialRows, 'follower_delta');
     const followersNow = scoped.filter(isSocial).reduce((t, a) => t + (followersOf(a.id) || 0), 0);
@@ -19555,7 +19606,9 @@ class Component extends DCLogic {
     const feedInter = p => pNum(p, 'likes') + pNum(p, 'comments') + pNum(p, 'shares') + pNum(p, 'saves');
     const storyInter = p => pNum(p, 'replies') + pNum(p, 'shares');
     const inter = p => (p.kind === 'story' ? storyInter(p) : feedInter(p));
-    const erBase = p => pNum(p, 'reach') || pNum(p, 'impressions');
+    // Likes and comments include the boosted copy, so the rate is over the
+    // post's whole reach, organic and ads.
+    const erBase = p => (pNum(p, 'reach') + pNum(p, 'ad_reach')) || pNum(p, 'impressions');
     const tot = (list, f) => list.reduce((t, p) => t + f(p), 0);
     const erOfList = list => {
       const m = list.filter(p => p.kind !== 'story' && erBase(p) > 0);
@@ -19568,6 +19621,16 @@ class Component extends DCLogic {
     const feedEng = tot(feed, feedInter);
     const feedEr = erOfList(feed);
     const contentViews = tot(rangePosts, p => pNum(p, 'video_views'));
+    // An account's views for the window: Meta's own total where there is one,
+    // else the days on record, else what its posts in the window drew.
+    const viewsOf = a => {
+      const t = viewsOfAcc(a);
+      if (t != null) return t;
+      const dv = sumOf(socialRows.filter(m => m.account_id === a.id), 'video_views');
+      return dv || tot(rangePosts.filter(p => p.account_id === a.id), p => pNum(p, 'video_views'));
+    };
+    const viewsAll = digSocAccs.length ? digSocAccs.reduce((t, a) => t + viewsOf(a), 0) : contentViews;
+    const reachSplit = platSplit(reachOfAcc), viewsSplit = platSplit(viewsOf);
     const storyViews = tot(storyList, p => pNum(p, 'video_views'));
     const kindKey = p => (p.kind === 'carousel' ? 'post' : p.kind);
     const kindSummary = list => {
@@ -19581,13 +19644,13 @@ class Component extends DCLogic {
     const digKpiGroupsVM = [];
     if (hasSocial) {
       const covSoc = prevCovered(scoped.filter(isSocial));
-      const rd = dir(reach, prevReach, covSoc);
+      const rd = dir(reachDaily, prevReach, covSoc);
       digKpiGroupsVM.push({ title: 'Audience · last ' + rangeLabel, kpis: [
         kpi('Followers', followersNow ? this.compact(followersNow) : '—', followersNow ? 'across ' + scoped.filter(isSocial).length + ' profiles, right now' : 'no reading yet'),
         kpi('New followers', followerGain ? signed(followerGain) : '0',
           followersNow && followersNow - followerGain > 0 ? pct(followerGain * 100 / (followersNow - followerGain)) + ' growth in ' + rangeLabel : 'in the last ' + rangeLabel, followerGain > 0, followerGain < 0),
-        kpi('Reach', this.compact(reach), changeSub(reach, prevReach, reach ? 'avg ' + this.compact(Math.round(reach / range)) + ' a day' : 'nothing yet', covSoc), rd.good, rd.bad),
-        kpi('Content views', this.compact(contentViews), rangePosts.length ? 'across ' + rangePosts.length + ' items' : 'nothing published'),
+        kpi('Reach', this.compact(reach), [reachSplit || (reach ? 'people reached' : 'nothing yet'), changeLabel(reachDaily, prevReach, covSoc)].filter(Boolean).join(' · '), rd.good, rd.bad),
+        kpi('Views', this.compact(viewsAll), viewsSplit || (metaTotals.size ? 'as the platforms count them' : rangePosts.length ? 'across ' + rangePosts.length + ' items' : 'nothing published')),
       ] });
       digKpiGroupsVM.push({ title: 'Content · last ' + rangeLabel, kpis: [
         kpi('Published', String(rangePosts.length), rangePosts.length ? kindSummary(rangePosts) : 'nothing in this window'),
@@ -19992,7 +20055,7 @@ class Component extends DCLogic {
     const card = p => {
       const acc = accById.get(p.account_id);
       const story = p.kind === 'story';
-      const adReach = pNum(p, 'ad_reach'), adSpend = spendByPost.get(p.id) || 0;
+      const adReach = pNum(p, 'ad_reach'), adViews = pNum(p, 'ad_views'), adSpend = spendByPost.get(p.id) || 0;
       const reachN = pNum(p, 'reach'), viewsN = pNum(p, 'video_views');
       const er = erBase(p) ? inter(p) * 100 / erBase(p) : null;
       const ageH = p.published_at ? (Date.now() - new Date(p.published_at).getTime()) / 3600000 : 999;
@@ -20028,8 +20091,10 @@ class Component extends DCLogic {
         alsoLabel: fbTwin.has(p.id) ? 'Also on Facebook · ' + this.compact(pNum(fbTwin.get(p.id), 'video_views')) + ' views · '
           + this.compact(pNum(fbTwin.get(p.id), 'reach')) + ' reach · ' + this.compact(pNum(fbTwin.get(p.id), 'likes')) + ' likes' : '',
         alsoLink: fbTwin.has(p.id) && /^https:\/\//i.test(fbTwin.get(p.id).permalink || '') ? fbTwin.get(p.id).permalink : '',
-        hasAd: adReach > 0 || adSpend > 0,
-        adLabel: 'Boosted' + (adReach ? ' · ' + this.compact(adReach) + ' of the reach from ads' : '') + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
+        hasAd: adReach > 0 || adViews > 0 || adSpend > 0,
+        // Views and reach above are the post's own, as its Instagram insights
+        // show them; what the ads added is told here, not folded in.
+        adLabel: 'Boosted' + (adViews ? ' · +' + this.compact(adViews) + ' views' : '') + (adReach ? ' · +' + this.compact(adReach) + ' reach from ads' : '') + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
         promoColor: p.is_paid_promo && !p.disclosure_ok ? '#B4433A' : '#6B7572',
       };
@@ -20085,7 +20150,8 @@ class Component extends DCLogic {
       const fN = followersOf(a.id);
       const gain = asum('follower_delta');
       const ap = rangePosts.filter(p => p.account_id === a.id);
-      const views = tot(ap, p => pNum(p, 'video_views')) || asum('video_views');
+      const views = isSocial(a) && a.platform !== 'youtube' ? viewsOf(a) : (tot(ap, p => pNum(p, 'video_views')) || asum('video_views'));
+      const mt = metaTotals.get(a.id);
       const st = (label, value, sub, good) => ({ label, value, sub: sub || '', subColor: good ? '#0E8E72' : '#6B7572' });
       const rd = range + ' days';
       const fol = label => st(label, fN == null ? '—' : this.compact(fN), gain ? signed(gain) + ' in ' + range + 'd' : 'no change yet', gain > 0);
@@ -20095,8 +20161,11 @@ class Component extends DCLogic {
       else if (a.platform === 'x') statsVM = [fol('Followers'),
         st('Impressions', this.compact(tot(ap, p => pNum(p, 'impressions'))), ap.length ? ap.length + ' posts' : 'no posts in range'),
         st('Engagement', pct(erOfList(ap)), 'of impressions')];
-      else if (isSocial(a)) statsVM = [fol('Followers'), st('Reach', this.compact(asum('reach')), rd),
-        st('Views', this.compact(views), ap.length ? ap.length + ' items' : rd)];
+      else if (isSocial(a)) {
+        const totNote = mt ? rd + (mt.approx ? ' · approx.' : mt.span ? ' · Facebook gives 28' : '') : rd + ' · daily figures added up';
+        statsVM = [fol('Followers'), st('Reach', this.compact(reachOfAcc(a)), totNote),
+          st('Views', this.compact(views), mt && mt.views != null ? totNote : ap.length ? ap.length + ' items' : rd)];
+      }
       else if (a.platform === 'adsense') statsVM = [st('Revenue', this.inr(asum('revenue')), rd),
         st('Impressions', this.compact(asum('impressions')), rd), st('Clicks', this.compact(asum('clicks')), rd)];
       else if (a.platform === 'search_console') statsVM = [st('Clicks', this.compact(asum('clicks')), rd),
