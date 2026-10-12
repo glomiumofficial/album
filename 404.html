@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>glomium</title>
+<script>
+// GitHub Pages has no rewrites. Short links that reach here are sent to the
+// real page: /i/<token> → insights, /f/<token> → feedback, /a/ and /p/ → albums.
+(function () {
+  var p = location.pathname, m, q = location.search.replace(/^\?/, '');
+  var go = function (u) { location.replace(u + (q ? '&' + q : '')); };
+  if ((m = p.match(/\/i\/([^/?#]+)/))) return go('/insights.html?k=' + m[1]);
+  if ((m = p.match(/\/f\/([^/?#]+)/))) return go('/feedback.html?t=' + m[1]);
+  if ((m = p.match(/\/a\/([^/?#]+)/))) return go('/album.html?event=' + m[1]);
+  if ((m = p.match(/\/p\/([^/?#]+)/))) return go('/commercial.html?project=' + m[1]);
+  if (/^\/admin\/?$/.test(p)) return location.replace('/admin.html');
+  if (/^\/crew\/?$/.test(p)) return location.replace('/crew.html');
+  if (/^\/work\/?$/.test(p)) return location.replace('/portfolio.html');
+  document.addEventListener('DOMContentLoaded', function () { document.getElementById('nf').style.display = 'block'; });
+})();
+</script>
+</head>
+<body style="margin:0; font-family:Jost,Helvetica,sans-serif; font-weight:300; color:#1B1D1E; background:#fff">
+<main id="nf" style="display:none; max-width:640px; margin:0 auto; padding:120px 24px">
+  <p style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin:0 0 24px">glomium</p>
+  <h1 style="font-size:56px; font-weight:200; letter-spacing:-0.03em; line-height:1; margin:0 0 24px">page not found.</h1>
+  <p style="font-size:16px; line-height:1.8; color:#4A524F; margin:0">the link may be mistyped or out of date. ask your glomium contact for a fresh one.</p>
+  <p style="font-size:11px; letter-spacing:2.6px; color:#8A9390; margin:64px 0 0">creative INFINITELY</p>
+</main>
+</body>
+</html>

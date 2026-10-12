@@ -4233,7 +4233,12 @@
         <div style="display:flex; align-items:flex-end; gap:12px 24px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
           <div style="display:flex; gap:22px; flex-wrap:wrap; margin-right:auto">
             <sc-for list="{{ digTabLinksVM }}" as="t" hint-placeholder-count="6">
-              <button onClick="{{ t.go }}" style="padding:12px 0 11px; margin-bottom:-1px; background:none; border:none; border-bottom:2px solid {{ t.bar }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ t.color }}; cursor:pointer" style-hover="color:#1B1D1E">{{ t.label }}</button>
+              <button onClick="{{ t.go }}" style="display:flex; align-items:center; gap:7px; padding:12px 0 11px; margin-bottom:-1px; background:none; border:none; border-bottom:2px solid {{ t.bar }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ t.color }}; cursor:pointer" style-hover="color:#1B1D1E">
+                <span>{{ t.label }}</span>
+                <sc-if value="{{ t.hasCount }}" hint-placeholder-val="{{ false }}">
+                  <span style="min-width:20px; padding:2px 6px; background:{{ t.countBg }}; color:#fff; font-size:10px; letter-spacing:.06em; text-align:center; font-variant-numeric:tabular-nums">{{ t.count }}</span>
+                </sc-if>
+              </button>
             </sc-for>
           </div>
           <label style="display:flex; align-items:center; gap:10px; padding-bottom:9px; max-width:100%">
@@ -4280,6 +4285,19 @@
 
         <sc-if value="{{ digIsOverview }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex; flex-direction:column; gap:30px">
+
+          <sc-if value="{{ hasDigToday }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr)); gap:12px">
+              <sc-for list="{{ digTodayVM }}" as="k" hint-placeholder-count="3">
+                <button onClick="{{ k.go }}" style="display:flex; flex-direction:column; gap:8px; padding:18px 20px; background:#fff; border:1px solid var(--line); border-radius:0; text-align:left; cursor:pointer; min-width:0" style-hover="border-color:var(--green)">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                  <span style="font-size:32px; font-weight:200; letter-spacing:-0.02em; line-height:1.1; color:{{ k.color }}; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+                  <span style="font-size:12px; color:#4A524F; line-height:1.55; text-wrap:pretty">{{ k.sub }}</span>
+                  <span style="margin-top:4px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">{{ k.cta }} →</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
 
           <sc-if value="{{ digNoAccounts }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; flex-direction:column; gap:6px; padding:22px; border:1px dashed var(--line); border-radius:0">
@@ -4779,6 +4797,19 @@
 
           <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center">
             <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep); margin-right:auto">The register</span>
+            <sc-if value="{{ hasDigCm }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex; align-items:center; gap:10px">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Community manager</span>
+                <sc-if value="{{ digCmCanEdit }}" hint-placeholder-val="{{ false }}">
+                  <select value="{{ digCmValue }}" onChange="{{ onDigCm }}" style="font-family:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; color:#1B1D1E; background:#fff; outline:none; cursor:pointer">
+                    <sc-for list="{{ digCmOptsVM }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                  </select>
+                </sc-if>
+                <sc-if value="{{ digCmReadOnly }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:13px; color:#1B1D1E">{{ digCmName }}</span>
+                </sc-if>
+              </label>
+            </sc-if>
             <sc-if value="{{ canEditTerms }}" hint-placeholder-val="{{ false }}">
               <button onClick="{{ editTerms }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Client terms</button>
             </sc-if>
@@ -4995,6 +5026,15 @@
               </div>
               <span style="font-size:11px; color:#4A524F; flex:1 1 150px">{{ a.routeLabel }}</span>
               <span style="font-size:11px; padding:3px 9px; border-radius:0; background:{{ a.freshBg }}; color:{{ a.freshColor }}; letter-spacing:.06em">{{ a.freshLabel }}</span>
+              <sc-if value="{{ a.hasMsg }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; gap:6px; flex-wrap:wrap">
+                  <button onClick="{{ a.toggleInbox }}" disabled="{{ a.msgLocked }}" title="DMs and comments in the Inbox tab" style="padding:6px 10px; background:{{ a.inboxBg }}; border:1px solid {{ a.inboxBorder }}; border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:{{ a.inboxColor }}; cursor:{{ a.msgCursor }}">{{ a.inboxLabel }}</button>
+                  <button onClick="{{ a.toggleMod }}" disabled="{{ a.msgLocked }}" title="Check comments against the moderation rules" style="padding:6px 10px; background:{{ a.modBg }}; border:1px solid {{ a.modBorder }}; border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:{{ a.modColor }}; cursor:{{ a.msgCursor }}">{{ a.modLabel }}</button>
+                  <sc-if value="{{ a.canBackfill }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ a.backfill }}" title="Pull the last 25 conversations into the inbox" style="padding:6px 10px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">Backfill</button>
+                  </sc-if>
+                </div>
+              </sc-if>
               <sc-if value="{{ a.canLog }}" hint-placeholder-val="{{ false }}">
                 <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
                   <button onClick="{{ a.logNumbers }}" style="padding:7px 14px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="background:#F3FAF8">Log numbers</button>
@@ -5072,6 +5112,9 @@
                       </div>
                     </sc-for>
                   </div>
+                  <sc-if value="{{ p.hasAlso }}" hint-placeholder-val="{{ false }}">
+                    <a href="{{ p.alsoLink }}" target="_blank" rel="noopener noreferrer" style="font-size:12px; color:#4A524F; line-height:1.5; text-decoration:none">{{ p.alsoLabel }}</a>
+                  </sc-if>
                   <sc-if value="{{ p.hasAd }}" hint-placeholder-val="{{ false }}">
                     <span style="font-size:12px; color:var(--green-deep); line-height:1.5">{{ p.adLabel }}</span>
                   </sc-if>
@@ -5265,8 +5308,690 @@
         </div>
         </sc-if>
 
+        <sc-if value="{{ v2MissingShown }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px; color:#9A6A12; line-height:1.6; padding:10px 14px; background:#F6EEDC; border:1px solid rgba(154,106,18,.25)">{{ v2MissingNote }}</span>
+        </sc-if>
+
+        <sc-if value="{{ inbOn }}" hint-placeholder-val="{{ false }}">
+        <div ref="{{ inbRef }}" style="display:flex; flex-direction:column; gap:12px">
+          <sc-if value="{{ hasInbErr }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px; color:#B4433A; line-height:1.6; padding:10px 14px; background:#F7E4E1; border:1px solid rgba(180,67,58,.25)">{{ inbErr }}</span>
+          </sc-if>
+          <sc-if value="{{ inbChips }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <sc-for list="{{ inbFiltersVM }}" as="g" hint-placeholder-count="2">
+                <div style="display:flex; gap:6px; flex-wrap:wrap">
+                  <sc-for list="{{ g.items }}" as="f" hint-placeholder-count="4">
+                    <button onClick="{{ f.go }}" style="display:flex; gap:6px; align-items:baseline; padding:7px 11px; background:{{ f.chipBg }}; border:1px solid {{ f.chipBorder }}; border-radius:0; font-size:12px; color:{{ f.chipColor }}; cursor:pointer"><span>{{ f.label }}</span><span style="font-variant-numeric:tabular-nums">{{ f.count }}</span></button>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="display:grid; grid-template-columns:{{ inbCols }}; height:clamp(540px,72vh,840px); border:1px solid var(--line); background:#fff">
+            <sc-if value="{{ inbWide }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; gap:20px; padding:16px 10px; border-right:1px solid var(--line); overflow-y:auto; min-height:0; background:#FAFBFB">
+                <sc-for list="{{ inbFiltersVM }}" as="g" hint-placeholder-count="3">
+                  <div style="display:flex; flex-direction:column; gap:2px">
+                    <span style="padding:0 10px 6px; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ g.label }}</span>
+                    <sc-for list="{{ g.items }}" as="f" hint-placeholder-count="4">
+                      <button onClick="{{ f.go }}" style="display:flex; align-items:baseline; gap:8px; padding:8px 10px; background:{{ f.bg }}; border:none; border-radius:0; text-align:left; cursor:pointer; font-size:13px; color:{{ f.color }}; font-weight:{{ f.weight }}" style-hover="color:#1B1D1E">
+                        <span style="margin-right:auto; min-width:0; overflow-wrap:anywhere">{{ f.label }}</span>
+                        <span style="font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums">{{ f.count }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ inbShowList }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; min-height:0; min-width:0; border-right:{{ inbListBorder }}">
+                <div style="padding:12px; border-bottom:1px solid var(--line)">
+                  <input value="{{ inbQ }}" onChange="{{ onInbQ }}" placeholder="Search name, handle or message" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                </div>
+                <div style="flex:1; overflow-y:auto; min-height:0">
+                  <sc-for list="{{ inbThreadsVM }}" as="t" hint-placeholder-count="8">
+                    <button onClick="{{ t.go }}" style="display:grid; grid-template-columns:36px minmax(0,1fr) auto; gap:12px; width:100%; padding:14px 14px 14px 16px; background:{{ t.bg }}; border:none; border-bottom:1px solid #E7ECEA; border-radius:0; text-align:left; cursor:pointer" style-hover="background:#F7F9F8">
+                      <span style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:{{ t.avBg }}; color:{{ t.avColor }}; font-size:12px; letter-spacing:.06em">{{ t.ini }}</span>
+                      <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                        <div style="display:flex; align-items:center; gap:6px; min-width:0">
+                          <span style="font-size:14px; color:#1B1D1E; font-weight:{{ t.weight }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0">{{ t.name }}</span>
+                          <sc-if value="{{ t.vip }}" hint-placeholder-val="{{ false }}"><span style="flex:none; padding:1px 5px; background:#1B1D1E; color:#fff; font-size:10px; letter-spacing:.14em">VIP</span></sc-if>
+                          <sc-if value="{{ t.hasFlag }}" hint-placeholder-val="{{ false }}"><span style="flex:none; padding:1px 5px; background:#F7E4E1; color:#B4433A; font-size:10px; letter-spacing:.08em">{{ t.flag }}</span></sc-if>
+                        </div>
+                        <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ t.where }}</span>
+                        <span style="font-size:13px; color:#4A524F; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">{{ t.snippet }}</span>
+                        <sc-if value="{{ t.hasWin }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:{{ t.winColor }}">{{ t.winLabel }}</span></sc-if>
+                      </div>
+                      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px">
+                        <span style="font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums">{{ t.when }}</span>
+                        <sc-if value="{{ t.hasUnread }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px; height:18px; padding:0 5px; display:flex; align-items:center; justify-content:center; background:var(--green-deep); color:#fff; font-size:11px">{{ t.unread }}</span></sc-if>
+                        <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:{{ t.assColor }}">{{ t.assLabel }}</span>
+                      </div>
+                    </button>
+                  </sc-for>
+                  <sc-if value="{{ inbListEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:28px 16px; font-size:13px; color:#6B7572; line-height:1.6; text-wrap:pretty">{{ inbEmptyText }}</div>
+                  </sc-if>
+                </div>
+                <div style="padding:10px 14px; border-top:1px solid var(--line); font-size:12px; color:#6B7572">{{ inbFoot }}</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ inbShowConvo }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; min-height:0; min-width:0">
+                <sc-if value="{{ inbHasConvo }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; align-items:flex-start; gap:12px 14px; flex-wrap:wrap; padding:14px 18px; border-bottom:1px solid var(--line)">
+                    <sc-if value="{{ inbNarrow }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ inbBack }}" style="flex-basis:100%; padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer; text-align:left">← All conversations</button>
+                    </sc-if>
+                    <span style="flex:none; width:42px; height:42px; display:flex; align-items:center; justify-content:center; background:{{ inbCv.avBg }}; color:{{ inbCv.avColor }}; font-size:13px; letter-spacing:.06em">{{ inbCv.ini }}</span>
+                    <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 220px; min-width:0">
+                      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                        <span style="font-size:17px; color:#1B1D1E; overflow-wrap:anywhere">{{ inbCv.name }}</span>
+                        <sc-if value="{{ inbCv.vip }}" hint-placeholder-val="{{ false }}"><span style="padding:2px 6px; background:#1B1D1E; color:#fff; font-size:10px; letter-spacing:.14em">VIP</span></sc-if>
+                      </div>
+                      <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ inbCv.facts }}</span>
+                      <span style="font-size:12px; color:#4A524F; overflow-wrap:anywhere">{{ inbCv.toLine }}</span>
+                      <sc-if value="{{ inbCv.vip }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ inbCv.vipReason }}</span></sc-if>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+                      <select value="{{ inbCv.assignValue }}" onChange="{{ inbCv.onAssign }}" title="Assign this conversation" style="font-family:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; color:#1B1D1E; background:#fff; outline:none; cursor:pointer">
+                        <sc-for list="{{ inbAssignOptsVM }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                      </select>
+                      <button onClick="{{ inbCv.toggleVip }}" style="padding:9px 12px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ inbCv.vipLabel }}</button>
+                      <button onClick="{{ inbCv.toggleSpam }}" style="padding:9px 12px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer" style-hover="border-color:var(--green)">{{ inbCv.spamLabel }}</button>
+                      <button onClick="{{ inbCv.toggleDone }}" style="padding:9px 12px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ inbCv.doneLabel }}</button>
+                    </div>
+                  </div>
+                  <sc-if value="{{ inbCv.isComment }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid #E7ECEA; background:#FAFBFB">
+                      <span style="flex:none; width:40px; height:48px; display:flex; align-items:center; justify-content:center; background:#E7ECEA; font-size:10px; letter-spacing:.14em; color:#6B7572">{{ inbCv.postKind }}</span>
+                      <span style="flex:1; min-width:0; font-size:13px; color:#1B1D1E; line-height:1.5; overflow-wrap:anywhere">{{ inbCv.postTitle }}</span>
+                      <sc-if value="{{ inbCv.hasPostLink }}" hint-placeholder-val="{{ false }}">
+                        <a href="{{ inbCv.postLink }}" target="_blank" rel="noopener noreferrer" style="flex:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Post ↗</a>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                  <div ref="{{ inbMsgsRef }}" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:18px">
+                    <sc-for list="{{ inbCv.msgsVM }}" as="m" hint-placeholder-count="3">
+                      <div style="display:flex; flex-direction:column; align-items:{{ m.align }}; gap:4px">
+                        <sc-if value="{{ m.isEvent }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#8A9390; text-align:center">{{ m.text }}</span></sc-if>
+                        <sc-if value="{{ m.isMsg }}" hint-placeholder-val="{{ true }}">
+                          <span style="max-width:min(78%,560px); padding:10px 14px; background:{{ m.bg }}; color:{{ m.color }}; font-size:14px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere">{{ m.text }}</span>
+                          <span style="font-size:12px; color:{{ m.metaColor }}">{{ m.meta }}</span>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:10px; padding:14px 18px 16px; border-top:1px solid var(--line)">
+                    <span style="font-size:12px; color:{{ inbCv.windowColor }}; line-height:1.55; text-wrap:pretty">{{ inbCv.windowLine }}</span>
+                    <sc-if value="{{ inbCv.canCompose }}" hint-placeholder-val="{{ true }}">
+                      <textarea value="{{ inbCv.draft }}" onChange="{{ inbCv.onDraft }}" onKeyDown="{{ inbCv.onKey }}" placeholder="{{ inbCv.placeholder }}" rows="3" style="width:100%; resize:vertical; padding:12px; border:1px solid var(--line); border-radius:0; font-size:14px; line-height:1.5; color:#1B1D1E; outline:none"></textarea>
+                      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                        <span style="font-size:12px; color:#6B7572; margin-right:auto">{{ inbCv.asLine }}</span>
+                        <sc-if value="{{ inbCv.isComment }}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{ inbCv.hideComment }}" style="padding:10px 14px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer" style-hover="border-color:#B4433A; color:#B4433A">{{ inbCv.hideLabel }}</button>
+                        </sc-if>
+                        <button onClick="{{ inbCv.send }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; opacity:{{ inbCv.sendOpacity }}" style-hover="background:#1B1D1E">{{ inbCv.sendLabel }}</button>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ inbCv.cantCompose }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ inbCv.openHref }}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start; padding:10px 14px; border:1px solid var(--line); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">{{ inbCv.openLabel }}</a>
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ inbNoConvo }}" hint-placeholder-val="{{ true }}">
+                  <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:24px; font-size:13px; color:#6B7572">Pick a conversation.</div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ planOn }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:16px">
+          <div style="display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap">
+            <div style="display:flex">
+              <sc-for list="{{ planViewVM }}" as="c" hint-placeholder-count="2">
+                <button onClick="{{ c.go }}" style="padding:8px 14px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:6px">
+              <button onClick="{{ planPrev }}" title="Previous" style="width:36px; padding:8px 0; background:#fff; border:1px solid var(--line); border-radius:0; font-size:13px; color:#1B1D1E; cursor:pointer">←</button>
+              <button onClick="{{ planToday }}" style="padding:8px 12px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Today</button>
+              <button onClick="{{ planNext }}" title="Next" style="width:36px; padding:8px 0; background:#fff; border:1px solid var(--line); border-radius:0; font-size:13px; color:#1B1D1E; cursor:pointer">→</button>
+            </div>
+            <span style="font-size:18px; font-weight:300; color:#1B1D1E; margin-right:auto">{{ planRange }}</span>
+            <sc-if value="{{ planCanEdit }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ planOpenForm }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">New plan</button>
+            </sc-if>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
+            <sc-for list="{{ planStatusVM }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.go }}" style="padding:7px 11px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.08em; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+            </sc-for>
+            <span style="font-size:12px; color:#6B7572; margin-left:auto">{{ planBestNote }}</span>
+          </div>
+
+          <sc-if value="{{ planHasForm }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:14px; padding:20px; border:1px solid var(--green); background:#FCFEFD">
+              <span style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">New plan</span>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr)); gap:12px">
+                <label style="display:flex; flex-direction:column; gap:5px; grid-column:1 / -1">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Working title</span>
+                  <input value="{{ planF.title }}" onChange="{{ planF.onTitle }}" placeholder="e.g. Release day reel" style="padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:14px; outline:none">
+                </label>
+                <sc-if value="{{ planF.pickClient }}" hint-placeholder-val="{{ false }}">
+                  <label style="display:flex; flex-direction:column; gap:5px">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Client</span>
+                    <select value="{{ planF.projectValue }}" onChange="{{ planF.onProject }}" style="font-family:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; background:#fff; outline:none">
+                      <sc-for list="{{ planF.clientOpts }}" as="o" hint-placeholder-count="4"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                    </select>
+                  </label>
+                </sc-if>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Date</span>
+                  <input type="date" value="{{ planF.date }}" onChange="{{ planF.onDate }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Time</span>
+                  <input type="time" value="{{ planF.time }}" onChange="{{ planF.onTime }}" style="padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Format</span>
+                  <select value="{{ planF.kind }}" onChange="{{ planF.onKind }}" style="font-family:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; background:#fff; outline:none">
+                    <sc-for list="{{ planF.kindOpts }}" as="o" hint-placeholder-count="5"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                  </select>
+                </label>
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Status</span>
+                  <select value="{{ planF.status }}" onChange="{{ planF.onStatus }}" style="font-family:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; background:#fff; outline:none">
+                    <sc-for list="{{ planF.statusOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                  </select>
+                </label>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Goes out on</span>
+                <div style="display:flex; gap:6px; flex-wrap:wrap">
+                  <sc-for list="{{ planF.accsVM }}" as="c" hint-placeholder-count="3">
+                    <button onClick="{{ c.go }}" style="padding:7px 11px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:12px; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+                  </sc-for>
+                  <sc-if value="{{ planF.noAccs }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#9A6A12">This client has no social accounts in the register yet.</span></sc-if>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap">
+                <button onClick="{{ planF.save }}" style="padding:11px 20px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; opacity:{{ planF.saveOpacity }}" style-hover="background:#1B1D1E">Save plan</button>
+                <button onClick="{{ planF.cancel }}" style="padding:11px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer">Cancel</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ planHasDetail }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:16px 28px; padding:18px 20px; border:1px solid #1B1D1E; background:#fff">
+              <div style="display:flex; flex-direction:column; gap:4px; flex:1 1 280px; min-width:0">
+                <span style="font-size:18px; font-weight:300; color:#1B1D1E; overflow-wrap:anywhere">{{ planD.title }}</span>
+                <span style="font-size:12px; color:#4A524F; overflow-wrap:anywhere">{{ planD.line }}</span>
+                <span style="font-size:12px; color:#6B7572">{{ planD.when }}</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:8px; flex:1 1 280px">
+                <sc-if value="{{ planD.notPublished }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:6px; flex-wrap:wrap">
+                    <sc-for list="{{ planD.statusVM }}" as="c" hint-placeholder-count="3">
+                      <button onClick="{{ c.go }}" style="padding:7px 11px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.08em; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ planD.isPublished }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; gap:24px; flex-wrap:wrap">
+                    <sc-for list="{{ planD.statsVM }}" as="x" hint-placeholder-count="3">
+                      <div style="display:flex; flex-direction:column; gap:2px">
+                        <span style="font-size:22px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ x.value }}</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <span style="font-size:12px; color:#6B7572; line-height:1.5">{{ planD.note }}</span>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <sc-if value="{{ planD.hasLink }}" hint-placeholder-val="{{ false }}">
+                  <a href="{{ planD.link }}" target="_blank" rel="noopener noreferrer" style="padding:8px 12px; border:1px solid var(--line); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Open post ↗</a>
+                </sc-if>
+                <sc-if value="{{ planD.isPlan }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ planD.remove }}" style="padding:8px 12px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4433A; cursor:pointer">Delete</button>
+                </sc-if>
+                <button onClick="{{ planD.close }}" style="padding:8px 12px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer">Close</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ planIsWeek }}" hint-placeholder-val="{{ true }}">
+            <div style="overflow-x:auto">
+              <div style="display:grid; grid-template-columns:repeat(7,minmax(140px,1fr)); min-width:1000px; border-top:1px solid var(--line); border-left:1px solid var(--line)">
+                <sc-for list="{{ planWeekVM }}" as="d" hint-placeholder-count="7">
+                  <div style="display:flex; flex-direction:column; gap:8px; padding:12px 10px 14px; min-height:420px; min-width:0; background:{{ d.bg }}; border-right:1px solid var(--line); border-bottom:1px solid var(--line)">
+                    <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ d.dow }}</span>
+                      <span style="font-size:20px; font-weight:300; color:{{ d.numColor }}; font-variant-numeric:tabular-nums">{{ d.num }}</span>
+                      <sc-if value="{{ d.isToday }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 6px; background:var(--green-deep); color:#fff; font-size:10px; letter-spacing:.14em; text-transform:uppercase">Today</span></sc-if>
+                    </div>
+                    <sc-if value="{{ d.hasBest }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep)">{{ d.best }}</span></sc-if>
+                    <sc-for list="{{ d.itemsVM }}" as="it" hint-placeholder-count="2">
+                      <button onClick="{{ it.go }}" style="display:flex; flex-direction:column; gap:5px; padding:10px; background:#fff; border:1px solid {{ it.border }}; border-radius:0; text-align:left; cursor:pointer; min-width:0" style-hover="border-color:var(--green)">
+                        <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap">
+                          <span style="font-size:12px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ it.time }}</span>
+                          <span style="font-size:10px; letter-spacing:.14em; color:#6B7572">{{ it.codes }}</span>
+                        </div>
+                        <span style="font-size:13px; color:#1B1D1E; line-height:1.4; overflow-wrap:anywhere">{{ it.title }}</span>
+                        <span style="font-size:12px; color:#6B7572">{{ it.client }}</span>
+                        <span style="align-self:flex-start; padding:2px 6px; background:{{ it.stBg }}; color:{{ it.stColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ it.status }}</span>
+                        <sc-if value="{{ it.hasStats }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:var(--green-deep); font-variant-numeric:tabular-nums">{{ it.stats }}</span></sc-if>
+                      </button>
+                    </sc-for>
+                    <sc-if value="{{ d.empty }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#8A9390">Nothing planned</span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ planIsMonth }}" hint-placeholder-val="{{ false }}">
+            <div style="overflow-x:auto">
+              <div style="min-width:840px; border-top:1px solid var(--line); border-left:1px solid var(--line)">
+                <div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr))">
+                  <sc-for list="{{ planMonthHeadVM }}" as="h" hint-placeholder-count="7">
+                    <span style="padding:8px 10px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ h.d }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr))">
+                  <sc-for list="{{ planMonthVM }}" as="c" hint-placeholder-count="35">
+                    <div style="display:flex; flex-direction:column; gap:4px; min-height:108px; padding:8px; min-width:0; background:{{ c.bg }}; border-right:1px solid var(--line); border-bottom:1px solid var(--line)">
+                      <span style="font-size:13px; color:{{ c.numColor }}; font-variant-numeric:tabular-nums">{{ c.num }}</span>
+                      <sc-for list="{{ c.itemsVM }}" as="it" hint-placeholder-count="1">
+                        <button onClick="{{ it.go }}" title="{{ it.title }}" style="display:flex; align-items:center; gap:6px; padding:2px 0; background:none; border:none; border-radius:0; text-align:left; cursor:pointer; min-width:0">
+                          <span style="flex:none; width:6px; height:6px; background:{{ it.miniDot }}"></span>
+                          <span style="font-size:12px; color:{{ it.miniColor }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0">{{ it.mini }}</span>
+                        </button>
+                      </sc-for>
+                      <sc-if value="{{ c.hasMore }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#6B7572">{{ c.more }}</span></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ audOn }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:28px">
+          <sc-if value="{{ audNoAcc }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px; color:#6B7572; line-height:1.6">No social account in this view yet.</span>
+          </sc-if>
+          <sc-if value="{{ audHasAcc }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:28px">
+              <div style="display:flex; align-items:flex-end; gap:12px 24px; flex-wrap:wrap">
+                <label style="display:flex; flex-direction:column; gap:5px">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Account</span>
+                  <select value="{{ audValue }}" onChange="{{ onAud }}" style="font-family:inherit; min-width:260px; max-width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; color:#1B1D1E; background:#fff; outline:none; cursor:pointer">
+                    <sc-for list="{{ audGroupsVM }}" as="g" hint-placeholder-count="1">
+                      <optgroup label="{{ g.label }}">
+                        <sc-for list="{{ g.opts }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                      </optgroup>
+                    </sc-for>
+                  </select>
+                </label>
+                <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                  <span style="font-size:24px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ audFollowers }}</span>
+                  <span style="font-size:12px; color:#6B7572">{{ audSource }}</span>
+                </div>
+              </div>
+              <sc-if value="{{ audHasNote }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size:12px; color:#4A524F; line-height:1.6; padding:10px 14px; background:#F2F4F3; text-wrap:pretty">{{ audNote }}</span>
+              </sc-if>
+              <sc-if value="{{ audHasDemo }}" hint-placeholder-val="{{ false }}">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:32px 44px">
+                  <div style="display:flex; flex-direction:column; gap:22px; min-width:0">
+                    <div style="display:flex; flex-direction:column; gap:10px">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Gender</span>
+                      <div style="display:flex; height:12px; gap:2px; background:#F2F4F3">
+                        <sc-for list="{{ audGenderVM }}" as="g" hint-placeholder-count="3"><span title="{{ g.label }} · {{ g.value }}" style="display:block; height:100%; width:{{ g.w }}; background:{{ g.color }}"></span></sc-for>
+                      </div>
+                      <div style="display:flex; gap:18px; flex-wrap:wrap">
+                        <sc-for list="{{ audGenderVM }}" as="g" hint-placeholder-count="3">
+                          <span style="display:flex; align-items:center; gap:6px; font-size:13px; color:#1B1D1E"><span style="width:10px; height:10px; background:{{ g.color }}"></span>{{ g.label }} <span style="color:#6B7572; font-variant-numeric:tabular-nums">{{ g.value }}</span></span>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Age</span>
+                      <sc-for list="{{ audAgeVM }}" as="r" hint-placeholder-count="7">
+                        <div style="display:grid; grid-template-columns:52px minmax(0,1fr) 52px; gap:10px; align-items:center">
+                          <span style="font-size:12px; color:#4A524F; font-variant-numeric:tabular-nums">{{ r.label }}</span>
+                          <div style="height:10px; background:#F2F4F3"><span style="display:block; height:100%; width:{{ r.w }}; background:var(--green)"></span></div>
+                          <span style="font-size:12px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.value }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <sc-if value="{{ audHasCities }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; min-width:0">
+                      <div style="display:grid; grid-template-columns:28px minmax(0,1fr) 64px 64px; gap:10px; padding-bottom:8px; border-bottom:1px solid var(--line)">
+                        <span></span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Top cities</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Share</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">People</span>
+                      </div>
+                      <sc-for list="{{ audCitiesVM }}" as="r" hint-placeholder-count="8">
+                        <div style="display:grid; grid-template-columns:28px minmax(0,1fr) 64px 64px; gap:10px; padding:9px 0; border-bottom:1px solid #E7ECEA; align-items:baseline">
+                          <span style="font-size:12px; color:#8A9390; font-variant-numeric:tabular-nums">{{ r.rank }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ r.city }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.share }}</span>
+                          <span style="font-size:12px; color:#6B7572; text-align:right; font-variant-numeric:tabular-nums">{{ r.people }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ audHasCountries }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; min-width:0">
+                      <div style="display:grid; grid-template-columns:minmax(0,1fr) 64px 64px; gap:10px; padding-bottom:8px; border-bottom:1px solid var(--line)">
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Countries</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Share</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">People</span>
+                      </div>
+                      <sc-for list="{{ audCountriesVM }}" as="r" hint-placeholder-count="6">
+                        <div style="display:grid; grid-template-columns:minmax(0,1fr) 64px 64px; gap:10px; padding:9px 0; border-bottom:1px solid #E7ECEA; align-items:baseline">
+                          <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ r.country }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.share }}</span>
+                          <span style="font-size:12px; color:#6B7572; text-align:right; font-variant-numeric:tabular-nums">{{ r.people }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <div style="display:flex; flex-direction:column; gap:14px; padding-top:24px; border-top:1px solid var(--line)">
+                <div style="display:flex; align-items:center; gap:10px 16px; flex-wrap:wrap">
+                  <span style="font-size:20px; font-weight:300; color:#1B1D1E; margin-right:auto">{{ audHeatTitle }}</span>
+                  <div style="display:flex">
+                    <sc-for list="{{ audHeatModeVM }}" as="c" hint-placeholder-count="2">
+                      <button onClick="{{ c.go }}" style="padding:8px 14px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <sc-if value="{{ audNoHeat }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:#6B7572; line-height:1.6">Not enough history yet — the heatmap fills in as posts and audience numbers sync.</span>
+                </sc-if>
+                <sc-if value="{{ audHasHeat }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:#4A524F; line-height:1.6">{{ audHeatSub }}</span>
+                  <div style="overflow-x:auto">
+                    <div style="min-width:720px; display:flex; flex-direction:column; gap:3px">
+                      <div style="display:grid; grid-template-columns:44px repeat(24,minmax(0,1fr)); gap:3px">
+                        <span></span>
+                        <sc-for list="{{ audHoursVM }}" as="h" hint-placeholder-count="24"><span style="font-size:10px; color:#8A9390">{{ h.label }}</span></sc-for>
+                      </div>
+                      <sc-for list="{{ audHeatVM }}" as="row" hint-placeholder-count="7">
+                        <div style="display:grid; grid-template-columns:44px repeat(24,minmax(0,1fr)); gap:3px; align-items:center">
+                          <span style="font-size:12px; color:#4A524F">{{ row.dow }}</span>
+                          <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="24"><span title="{{ c.title }}" style="display:block; height:26px; background:{{ c.bg }}; box-shadow:{{ c.shadow }}"></span></sc-for>
+                        </div>
+                      </sc-for>
+                      <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end; padding-top:8px">
+                        <span style="font-size:12px; color:#6B7572">Less</span>
+                        <sc-for list="{{ audLegendVM }}" as="l" hint-placeholder-count="5"><span style="display:block; width:18px; height:12px; background:{{ l.bg }}"></span></sc-for>
+                        <span style="font-size:12px; color:#6B7572">More</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)); gap:12px; padding-top:6px">
+                    <sc-for list="{{ audBestVM }}" as="b" hint-placeholder-count="3">
+                      <div style="display:flex; flex-direction:column; gap:6px; padding:16px 18px; border:1px solid var(--line); min-width:0">
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:var(--green-deep)">Slot {{ b.rank }}</span>
+                        <span style="font-size:17px; color:#1B1D1E">{{ b.when }}</span>
+                        <span style="font-size:12px; color:#4A524F; line-height:1.55; text-wrap:pretty">{{ b.line }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ modOn }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; flex-direction:column; gap:28px">
+          <sc-for list="{{ modSpikesVM }}" as="x" hint-placeholder-count="1">
+            <div style="display:flex; align-items:flex-start; gap:12px 20px; flex-wrap:wrap; padding:18px 20px; background:#F7E4E1; border:1px solid rgba(180,67,58,.3)">
+              <div style="display:flex; flex-direction:column; gap:5px; flex:1 1 320px; min-width:0">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#B4433A">Spike</span>
+                <span style="font-size:16px; color:#1B1D1E; overflow-wrap:anywhere">{{ x.title }}</span>
+                <span style="font-size:12px; color:#4A524F; line-height:1.6">{{ x.line }}</span>
+              </div>
+              <button onClick="{{ x.dismiss }}" style="padding:9px 14px; background:#fff; border:1px solid rgba(180,67,58,.35); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4433A; cursor:pointer">It’s settled</button>
+            </div>
+          </sc-for>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr)); gap:0 28px; border-top:1px solid var(--line)">
+            <sc-for list="{{ modKpisVM }}" as="k" hint-placeholder-count="4">
+              <div style="display:flex; flex-direction:column; gap:6px; padding:16px 0; border-bottom:1px solid #E7ECEA">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                <span style="font-size:26px; font-weight:300; color:{{ k.color }}; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; gap:6px; flex-wrap:wrap">
+              <sc-for list="{{ modChipsVM }}" as="c" hint-placeholder-count="5">
+                <button onClick="{{ c.go }}" style="padding:7px 11px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:11px; letter-spacing:.08em; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex; flex-direction:column; border-top:1px solid var(--line)">
+              <sc-for list="{{ modAlertsVM }}" as="a" hint-placeholder-count="4">
+                <div style="display:grid; grid-template-columns:76px minmax(0,1fr); gap:10px 16px; padding:16px 0; border-bottom:1px solid #E7ECEA">
+                  <span style="align-self:start; padding:4px 0; background:{{ a.sevBg }}; color:{{ a.sevColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; text-align:center">{{ a.sev }}</span>
+                  <div style="display:flex; flex-wrap:wrap; gap:10px 24px; align-items:flex-start; min-width:0">
+                    <div style="display:flex; flex-direction:column; gap:5px; flex:1 1 340px; min-width:0">
+                      <span style="font-size:14px; color:#1B1D1E; line-height:1.55; overflow-wrap:anywhere">{{ a.pre }}<mark style="background:#F7E4E1; color:#B4433A; padding:0 2px">{{ a.term }}</mark>{{ a.post }}</span>
+                      <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ a.meta }}</span>
+                      <span style="font-size:12px; color:{{ a.lineColor }}">{{ a.line }}</span>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap">
+                      <sc-for list="{{ a.actsVM }}" as="x" hint-placeholder-count="3">
+                        <button onClick="{{ x.go }}" style="padding:8px 12px; background:#fff; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ x.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ modEmpty }}" hint-placeholder-val="{{ false }}">
+                <span style="padding:22px 0; font-size:13px; color:#6B7572; line-height:1.6">{{ modEmptyText }}</span>
+              </sc-if>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+              <span style="font-size:20px; font-weight:300; color:#1B1D1E; margin-right:auto">Rules</span>
+              <span style="font-size:12px; color:#6B7572; line-height:1.5; max-width:640px; text-wrap:pretty">{{ modRulesNote }}</span>
+            </div>
+            <div style="overflow-x:auto; border-top:1px solid var(--line)">
+              <div style="min-width:780px; display:flex; flex-direction:column">
+                <div style="display:grid; grid-template-columns:minmax(170px,1.3fr) 90px minmax(140px,1fr) 84px 84px 84px 110px; gap:0 14px; padding:10px 0; border-bottom:1px solid var(--line)">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Category</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Terms</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Applies to</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Active</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Auto-hide</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Escalate</span>
+                  <span></span>
+                </div>
+                <sc-for list="{{ modRulesVM }}" as="r" hint-placeholder-count="7">
+                  <div style="display:flex; flex-direction:column; border-bottom:1px solid #E7ECEA">
+                    <div style="display:grid; grid-template-columns:minmax(170px,1.3fr) 90px minmax(140px,1fr) 84px 84px 84px 110px; gap:0 14px; padding:11px 0; align-items:center">
+                      <span style="font-size:13px; color:#1B1D1E">{{ r.cat }}</span>
+                      <span style="font-size:13px; color:#4A524F; font-variant-numeric:tabular-nums">{{ r.terms }}</span>
+                      <span style="font-size:12px; color:#4A524F">{{ r.scope }}</span>
+                      <button onClick="{{ r.toggleAct }}" style="justify-self:start; min-width:52px; padding:5px 10px; background:{{ r.act.bg }}; border:1px solid {{ r.act.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ r.act.color }}; cursor:{{ r.cursor }}">{{ r.act.label }}</button>
+                      <button onClick="{{ r.toggleAuto }}" style="justify-self:start; min-width:52px; padding:5px 10px; background:{{ r.auto.bg }}; border:1px solid {{ r.auto.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ r.auto.color }}; cursor:{{ r.cursor }}">{{ r.auto.label }}</button>
+                      <button onClick="{{ r.toggleEsc }}" style="justify-self:start; min-width:52px; padding:5px 10px; background:{{ r.esc.bg }}; border:1px solid {{ r.esc.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:{{ r.esc.color }}; cursor:{{ r.cursor }}">{{ r.esc.label }}</button>
+                      <button onClick="{{ r.toggleOpen }}" style="justify-self:end; padding:5px 0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">{{ r.editLabel }}</button>
+                    </div>
+                    <sc-if value="{{ r.isOpen }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex; flex-direction:column; gap:10px; padding:4px 0 16px">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap">
+                          <sc-for list="{{ r.termsVM }}" as="x" hint-placeholder-count="4">
+                            <span style="display:flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid var(--line); font-size:12px; color:#1B1D1E">{{ x.t }}<sc-if value="{{ r.canEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ x.remove }}" title="Remove" style="padding:0; background:none; border:none; font-size:13px; line-height:1; color:#8A9390; cursor:pointer">×</button></sc-if></span>
+                          </sc-for>
+                          <sc-if value="{{ r.noTerms }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#9A6A12">No terms yet — nothing is flagged under this category.</span></sc-if>
+                        </div>
+                        <sc-if value="{{ r.canEdit }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; gap:8px; flex-wrap:wrap">
+                            <input value="{{ modTerm }}" onChange="{{ onModTerm }}" onKeyDown="{{ modTermKey }}" placeholder="Add terms — commas for several" style="flex:1 1 260px; padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                            <button onClick="{{ modAddTerm }}" style="padding:9px 14px; background:none; border:1px solid var(--green); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Add</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
         <sc-if value="{{ digIsSeo }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex; flex-direction:column; gap:14px">
+          <div style="display:flex; flex-direction:column; gap:26px; padding-bottom:30px; margin-bottom:8px; border-bottom:1px solid var(--line)">
+            <div style="display:flex; gap:6px; flex-wrap:wrap">
+              <sc-for list="{{ webPickVM }}" as="c" hint-placeholder-count="2">
+                <button onClick="{{ c.go }}" style="padding:8px 12px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:0; font-size:12px; color:{{ c.color }}; cursor:pointer">{{ c.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ webNoSite }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:6px; padding:20px; border:1px dashed var(--line)">
+                <span style="font-size:13px; color:#1B1D1E">No website in this view</span>
+                <span style="font-size:12px; color:#4A524F; line-height:1.6; text-wrap:pretty">Once Google is connected, Accounts → Find accounts lists every Analytics property and Search Console site. File each under its client and its numbers fill in here.</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ webHasSite }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:26px">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr)); gap:0 28px; border-top:1px solid var(--line)">
+                  <sc-for list="{{ webKpisVM }}" as="k" hint-placeholder-count="6">
+                    <div style="display:flex; flex-direction:column; gap:6px; padding:16px 0; border-bottom:1px solid #E7ECEA; min-width:0">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                      <span style="font-size:26px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+                      <span style="font-size:12px; color:{{ k.subColor }}; line-height:1.5">{{ k.sub }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ webHasSeries }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-direction:column; gap:10px">
+                    <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:auto">{{ webSeriesLabel }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ webPeak }}</span>
+                    </div>
+                    <svg viewBox="0 0 1000 200" preserveAspectRatio="none" style="display:block; width:100%; height:170px">
+                      <path d="{{ webArea }}" style="fill:#E6F4F0"></path>
+                      <polyline points="{{ webLine }}" style="fill:none; stroke:#0A6E58; stroke-width:2"></polyline>
+                    </svg>
+                    <div style="display:flex; justify-content:space-between; gap:8px">
+                      <sc-for list="{{ webAxisVM }}" as="a" hint-placeholder-count="4"><span style="font-size:12px; color:#8A9390">{{ a.l }}</span></sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ webNoTop }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:#6B7572; line-height:1.6">Channels, top pages and search queries fill in from the next Google sync.</span>
+                </sc-if>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:30px 40px">
+                  <sc-if value="{{ webHasChannels }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; min-width:0">
+                      <div style="display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 64px 64px 48px; gap:10px; padding-bottom:8px; border-bottom:1px solid var(--line)">
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Channel</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Share</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Sessions</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Engaged</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Key</span>
+                      </div>
+                      <sc-for list="{{ webChannelsVM }}" as="r" hint-placeholder-count="6">
+                        <div style="display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 64px 64px 48px; gap:10px; padding:10px 0; border-bottom:1px solid #E7ECEA; align-items:center">
+                          <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ r.name }}</span>
+                          <div style="display:flex; align-items:center; gap:8px; min-width:0">
+                            <div style="flex:1; height:8px; background:#F2F4F3"><span style="display:block; height:100%; width:{{ r.w }}; background:var(--green)"></span></div>
+                            <span style="font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums">{{ r.share }}</span>
+                          </div>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.sessions }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.engaged }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.key }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ webHasSocial }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; gap:10px; min-width:0">
+                      <div style="display:flex; flex-direction:column">
+                        <div style="display:grid; grid-template-columns:minmax(0,1fr) 72px 56px 64px; gap:10px; padding-bottom:8px; border-bottom:1px solid var(--line)">
+                          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">From social</span>
+                          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Sessions</span>
+                          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Key</span>
+                          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Rate</span>
+                        </div>
+                        <sc-for list="{{ webSocialVM }}" as="r" hint-placeholder-count="3">
+                          <div style="display:grid; grid-template-columns:minmax(0,1fr) 72px 56px 64px; gap:10px; padding:10px 0; border-bottom:1px solid #E7ECEA; align-items:baseline">
+                            <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ r.name }}</span>
+                            <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.sessions }}</span>
+                            <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.key }}</span>
+                            <span style="font-size:13px; color:var(--green-deep); text-align:right; font-variant-numeric:tabular-nums">{{ r.rate }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                      <span style="font-size:12px; color:#6B7572; line-height:1.6; text-wrap:pretty">Visits that began on Instagram, Facebook, YouTube or X — bio links, stories, posts and ads — and the key events they led to.</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ webHasPages }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; min-width:0">
+                      <div style="display:grid; grid-template-columns:minmax(0,1fr) 64px 72px 48px; gap:10px; padding-bottom:8px; border-bottom:1px solid var(--line)">
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Top pages</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Views</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Avg time</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Key</span>
+                      </div>
+                      <sc-for list="{{ webPagesVM }}" as="r" hint-placeholder-count="5">
+                        <div style="display:grid; grid-template-columns:minmax(0,1fr) 64px 72px 48px; gap:10px; padding:10px 0; border-bottom:1px solid #E7ECEA; align-items:baseline">
+                          <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ r.path }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.views }}</span>
+                          <span style="font-size:13px; color:#4A524F; text-align:right; font-variant-numeric:tabular-nums">{{ r.time }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.key }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ webHasQueries }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; min-width:0">
+                      <div style="display:grid; grid-template-columns:minmax(0,1fr) 56px 60px 52px 44px 52px; gap:10px; padding-bottom:8px; border-bottom:1px solid var(--line)">
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Search queries</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Clicks</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Shown</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">CTR</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Pos</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">Move</span>
+                      </div>
+                      <sc-for list="{{ webQueriesVM }}" as="r" hint-placeholder-count="5">
+                        <div style="display:grid; grid-template-columns:minmax(0,1fr) 56px 60px 52px 44px 52px; gap:10px; padding:10px 0; border-bottom:1px solid #E7ECEA; align-items:baseline">
+                          <span style="font-size:13px; color:#1B1D1E; overflow-wrap:anywhere">{{ r.q }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.clicks }}</span>
+                          <span style="font-size:13px; color:#4A524F; text-align:right; font-variant-numeric:tabular-nums">{{ r.impr }}</span>
+                          <span style="font-size:13px; color:#4A524F; text-align:right; font-variant-numeric:tabular-nums">{{ r.ctr }}</span>
+                          <span style="font-size:13px; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.pos }}</span>
+                          <span style="font-size:13px; color:{{ r.moveColor }}; text-align:right; font-variant-numeric:tabular-nums">{{ r.move }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+          </div>
           <div style="display:flex; flex-direction:column; gap:4px">
             <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--green-deep)">Keyword watchlist</span>
             <span style="font-size:11px; color:#6B7572">{{ seoPropertyLabel }}</span>
@@ -7079,7 +7804,7 @@ const CREW_ROLES = [
   ['assistant', 'Assistant'],
 ];
 const ROLE_LABEL = CREW_ROLES.reduce((m, [k, v]) => { m[k] = v; return m; }, {});
-const STAFF_ROLE_LABEL = { admin: 'Admin', creative: 'Creative', accounts: 'Accounts', hr: 'People & HR', none: 'No role set' };
+const STAFF_ROLE_LABEL = { admin: 'Admin', creative: 'Creative', accounts: 'Accounts', hr: 'People & HR', community: 'Community', none: 'No role set' };
 
 // Who may reach what. Mirrors the row-level policies in team-schema.sql — the UI hides
 // what the database would refuse anyway. The division of labour is deliberate:
@@ -7128,10 +7853,16 @@ const CAPS = {
   // numbers describe; terms, deals and recharge are money and stay out of reach.
   // A stored credential is admin-only, and the edge function enforces that again
   // server-side — this flag only decides whether the button is drawn.
-  digital:       ['admin', 'accounts', 'hr', 'creative'],
+  digital:       ['admin', 'accounts', 'hr', 'creative', 'community'],
   digitalEdit:   ['admin', 'accounts'],
   digitalMoney:  ['admin', 'accounts'],
   digitalSecret: ['admin'],
+  // The inbox and comment moderation: admin and community managers answer
+  // for the accounts; only admin changes what the rules hide.
+  inbox:         ['admin', 'community'],
+  inboxRules:    ['admin'],
+  // The content planner is the creative team's as much as the community's.
+  planEdit:      ['admin', 'creative', 'community'],
   docs:        ['admin', 'hr'],
   // The enquiry composer is read-only for creative: they send the house email,
   // they do not rewrite or delete the template everybody else sends.
@@ -7283,8 +8014,9 @@ const META_SCOPE_COUNT = 7;
 const HOUSE = 'house';
 const HOUSE_LABEL = 'Glomium (house)';
 const DIG_TABS = [
-  ['overview', 'Overview'], ['accounts', 'Accounts'], ['content', 'Content'],
-  ['portal', 'Client page'], ['seo', 'SEO'], ['deals', 'Brand deals'], ['recharge', 'Recharge'],
+  ['overview', 'Home'], ['inbox', 'Inbox'], ['planner', 'Planner'], ['content', 'Content'], ['audience', 'Audience'],
+  ['seo', 'Web'], ['moderation', 'Moderation'], ['accounts', 'Accounts'],
+  ['portal', 'Client page'], ['deals', 'Brand deals'], ['recharge', 'Recharge'],
 ];
 // Only metrics with data in the window are offered, in this order, so a social
 // client opens on reach and an ads client on spend without either seeing a row
@@ -7735,7 +8467,7 @@ class Component extends DCLogic {
     // connection, the other is an account nobody has approved yet.
     if (error) { this.setState({ role: 'none', roleError: error.message }); return; }
     const role = (data && data.role) || 'none';
-    this.setState({ role, roleError: '' });
+    this.setState({ role, roleError: '', myUid: uid });
     this.fitWorkspace(role);
     // The nav badge needs the pending count before the page is ever opened.
     this.loadChangeRequests(role);
@@ -7755,6 +8487,12 @@ class Component extends DCLogic {
   }
 
   fitWorkspace(role) {
+    // A community manager works the digital division and nothing else, so
+    // they skip the division picker and land on the inbox.
+    if (role === 'community') {
+      this.setState({ division: 'digital', pickingDivision: false, digitalTab: 'inbox' }, () => this.goWorkspace('digital'));
+      return;
+    }
     const ws = this.activeWorkspace(role);
     this.setState({ workspace: ws }, () => {
       if (ws === 'finance' && this.state.view === 'dashboard') this.goWorkspace('finance');
@@ -16272,6 +17010,7 @@ class Component extends DCLogic {
       // the Content and SEO tabs came up empty on their first open.
       this.subscribeDigital();
       this.loadDigitalTab();
+      this.loadDigitalV2();
     });
   }
 
@@ -16292,7 +17031,7 @@ class Component extends DCLogic {
     if (tab === 'accounts' && this.can('digitalSecret')) this.loadSecretStatus();
     if (tab === 'overview' && scope === HOUSE && !s.digHealth && !s.digHealthBusy && this.can('digitalMoney')) this.loadBmHealth();
 
-    if (tab === 'content' || tab === 'overview') {
+    if (tab === 'content' || tab === 'overview' || tab === 'planner' || tab === 'audience') {
       if (!ids.length) { this.setState({ digPosts: [], digLoading: false }); return; }
       this.setState({ digLoading: true });
       // Six months, paged. The old 200-row cap meant a busy client's last week
@@ -16300,9 +17039,11 @@ class Component extends DCLogic {
       const r = await this.selectAll(() => this.sb.from('content_posts').select('*').in('account_id', ids)
         .gte('published_at', this.daysAgo(185))
         .order('published_at', { ascending: false }).order('id'));
-      this.setState({ digPosts: r.data || [], digLoading: false });
+      this.setState({ digPosts: r.data || [], digLoading: false }, () => this.matchPlans());
+      if (tab === 'planner' || tab === 'audience') this.loadAudience(ids);
       return;
     }
+    if (tab === 'inbox' || tab === 'moderation') { this.loadInboxLists(); return; }
     if (tab === 'seo') {
       if (!ids.length) { this.setState({ digKeywords: [], digRanks: [], digLoading: false }); return; }
       this.setState({ digLoading: true });
@@ -16315,6 +17056,7 @@ class Component extends DCLogic {
         ranks = r.error ? [] : (r.data || []);
       }
       this.setState({ digKeywords: kws, digRanks: ranks, digLoading: false });
+      this.loadWebTop(ids);
       return;
     }
     if (tab === 'portal') { this.loadPortal(); return; }
@@ -16347,6 +17089,7 @@ class Component extends DCLogic {
     // The money tabs render nothing without the permission; don't strand
     // someone on a blank page if a stale state value points at one.
     if ((tab === 'deals' || tab === 'recharge') && !this.can('digitalMoney')) tab = 'overview';
+    if ((tab === 'inbox' || tab === 'moderation') && !this.can('inbox')) tab = 'overview';
     // The client page belongs to one client; there is no "all clients" link.
     const sc = this.state.digProject;
     if (tab === 'portal' && (sc === 'all' || sc === HOUSE || !this.can('digitalEdit'))) tab = 'overview';
@@ -16364,6 +17107,757 @@ class Component extends DCLogic {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'metrics_daily' },
         () => this.queueDigitalRefresh())
       .subscribe();
+  }
+
+  // ---- Digital v2: inbox, moderation, planner, audience, web ----------------
+  // Everything here reads tables from digital-inbox-2026-10.sql. Until that has
+  // run, v2Missing keeps the new tabs on a one-line notice instead of erroring.
+  async loadDigitalV2() {
+    const [ru, pl, st, mg] = await Promise.all([
+      this.sb.from('moderation_rules').select('*').order('category'),
+      this.sb.from('content_plans').select('*')
+        .gte('planned_at', new Date(Date.now() - 70 * 86400000).toISOString())
+        .lte('planned_at', new Date(Date.now() + 120 * 86400000).toISOString()).order('planned_at'),
+      this.can('inbox') ? this.sb.rpc('inbox_staff') : Promise.resolve({ data: [] }),
+      this.sb.from('digital_managers').select('*'),
+    ]);
+    const missing = !!pl.error && /does not exist|schema cache|relation/i.test(pl.error.message || '');
+    this.setState({
+      v2Missing: missing,
+      modRules: ru.error ? [] : (ru.data || []), plans: pl.error ? [] : (pl.data || []),
+      inbStaff: st.error ? [] : (st.data || []), digManagers: mg.error ? [] : (mg.data || []),
+    }, () => {
+      if (missing) return;
+      if (this.can('inbox')) { this.loadInboxLists(); this.subscribeInbox(); }
+      this.matchPlans();
+    });
+  }
+
+  async loadInboxLists() {
+    if (!this.can('inbox')) return;
+    const since = new Date(Date.now() - 30 * 86400000).toISOString();
+    const [th, al] = await Promise.all([
+      this.sb.from('inbox_threads').select('*').or('status.eq.open,last_message_at.gte.' + since)
+        .order('last_message_at', { ascending: false, nullsFirst: false }).limit(1000),
+      this.sb.from('moderation_alerts').select('*').or('status.in.(open,escalated),created_at.gte.' + since)
+        .order('created_at', { ascending: false }).limit(500),
+    ]);
+    this.setState({
+      inbThreads: th.error ? (this.state.inbThreads || []) : (th.data || []),
+      modAlerts: al.error ? (this.state.modAlerts || []) : (al.data || []),
+    });
+  }
+
+  // Its own channel: a binding on a table that does not exist yet must not
+  // take the sync_runs live updates down with it.
+  subscribeInbox() {
+    if (this._inbChannel || !this.sb || !this.can('inbox')) return;
+    this._inbChannel = this.sb.channel('digital-inbox')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inbox_threads' }, () => this.queueInboxRefresh())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'inbox_messages' },
+        p => this.queueInboxRefresh(p && p.new && p.new.thread_id))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'moderation_alerts' }, () => this.queueInboxRefresh())
+      .subscribe();
+  }
+
+  queueInboxRefresh(threadId) {
+    if (threadId && threadId === this.state.inbSel) this.loadThreadMsgs(threadId);
+    clearTimeout(this._inbTimer);
+    this._inbTimer = setTimeout(() => { if (this.state.view === 'digital') this.loadInboxLists(); }, 700);
+  }
+
+  async inboxFn(body) {
+    const { data, error } = await this.sb.functions.invoke('meta-inbox', { body });
+    let err = data && data.error;
+    if (!err && error) {
+      try { const b = await error.context.json(); err = b.error || error.message; }
+      catch (e) { err = /not found|404/i.test(error.message || '') ? 'The meta-inbox function is not deployed yet.' : error.message; }
+    }
+    return { data, err };
+  }
+
+  async openThread(t) {
+    this.setState({ inbSel: t.id, inbConvoOpen: true, inbErr: '' });
+    this.loadThreadMsgs(t.id);
+    if (t.unread) {
+      this.setState({ inbThreads: (this.state.inbThreads || []).map(x => (x.id === t.id ? { ...x, unread: 0 } : x)) });
+      await this.sb.from('inbox_threads').update({ unread: 0 }).eq('id', t.id);
+    }
+  }
+
+  async loadThreadMsgs(id) {
+    const r = await this.sb.from('inbox_messages').select('*').eq('thread_id', id).order('at').limit(500);
+    if (r.error) return;
+    this.setState({ inbMsgs: { ...(this.state.inbMsgs || {}), [id]: r.data || [] } }, () => {
+      requestAnimationFrame(() => { const el = this._inbMsgsEl; if (el) el.scrollTop = el.scrollHeight; });
+    });
+  }
+
+  async inboxPatch(t, patch, event) {
+    this.setState({ inbThreads: (this.state.inbThreads || []).map(x => (x.id === t.id ? { ...x, ...patch } : x)), inbErr: '' });
+    const { error } = await this.sb.from('inbox_threads').update(patch).eq('id', t.id);
+    if (error) { this.setState({ inbErr: error.message }); return; }
+    if (event) {
+      await this.sb.from('inbox_messages').insert({ thread_id: t.id, direction: 'event', body: event, sent_by: this.state.myUid || null });
+      this.loadThreadMsgs(t.id);
+    }
+  }
+
+  async inboxReply(t) {
+    const text = String((this.state.inbDrafts || {})[t.id] || '').trim();
+    if (!text || this.state.inbSending) return;
+    this.setState({ inbSending: true, inbErr: '' });
+    const { err } = await this.inboxFn({ action: 'reply', thread_id: t.id, text });
+    this.setState(err ? { inbSending: false, inbErr: err }
+      : { inbSending: false, inbDrafts: { ...(this.state.inbDrafts || {}), [t.id]: '' } });
+    this.loadThreadMsgs(t.id);
+    if (!err) this.loadInboxLists();
+  }
+
+  async inboxHide(t) {
+    const { err } = await this.inboxFn({ action: 'hide', thread_id: t.id, hidden: !t.hidden });
+    if (err) { this.setState({ inbErr: err }); return; }
+    this.setState({ inbThreads: (this.state.inbThreads || []).map(x => (x.id === t.id ? { ...x, hidden: !t.hidden } : x)) });
+    this.loadThreadMsgs(t.id);
+  }
+
+  async setAlert(a, status) {
+    const patch = { status, handled_by: this.state.myUid || null, handled_at: new Date().toISOString() };
+    this.setState({ modAlerts: (this.state.modAlerts || []).map(x => (x.id === a.id ? { ...x, ...patch } : x)) });
+    const { error } = await this.sb.from('moderation_alerts').update(patch).eq('id', a.id);
+    if (error) this.setState({ digStatus: error.message });
+  }
+
+  async hideAlert(a, hidden) {
+    const { err } = await this.inboxFn({ action: 'hide', alert_id: a.id, hidden });
+    if (err) { this.setState({ digStatus: err }); return; }
+    this.setState({ modAlerts: (this.state.modAlerts || []).map(x => (x.id === a.id ? { ...x, status: hidden ? 'hidden' : 'open', auto: false, handled_by: this.state.myUid } : x)) });
+  }
+
+  async ruleUpdate(r, patch) {
+    if (!this.can('inboxRules')) return;
+    this.setState({ modRules: (this.state.modRules || []).map(x => (x.id === r.id ? { ...x, ...patch } : x)) });
+    const { error } = await this.sb.from('moderation_rules').update(patch).eq('id', r.id);
+    if (error) this.setState({ digStatus: error.message });
+  }
+
+  addRuleTerm(r) {
+    const t = String(this.state.ruleTerm || '').trim().toLowerCase();
+    if (!t) return;
+    const terms = [...new Set((r.terms || []).concat(t.split(',').map(x => x.trim()).filter(Boolean)))];
+    this.setState({ ruleTerm: '' });
+    this.ruleUpdate(r, { terms });
+  }
+
+  async toggleAccInbox(a) {
+    const on = !a.inbox_enabled;
+    this.setState({ digStatus: on ? 'Connecting the inbox…' : 'Turning the inbox off…' });
+    const { data, err } = await this.inboxFn({ action: 'subscribe', account_id: a.id, on });
+    if (err) { this.setState({ digStatus: err }); return; }
+    this.setState({
+      digAccounts: this.state.digAccounts.map(x => (x.id === a.id ? { ...x, inbox_enabled: on, moderation_enabled: on ? true : x.moderation_enabled, link_page_id: (data && data.page) || x.link_page_id } : x)),
+      digStatus: on ? 'Inbox on. New messages and comments arrive as they are sent — Backfill pulls the last 25 conversations.' : 'Inbox off for this account.',
+    });
+  }
+
+  async toggleAccMod(a) {
+    const on = !a.moderation_enabled;
+    const { error } = await this.sb.from('social_accounts').update({ moderation_enabled: on }).eq('id', a.id);
+    if (error) { this.setState({ digStatus: error.message }); return; }
+    this.setState({ digAccounts: this.state.digAccounts.map(x => (x.id === a.id ? { ...x, moderation_enabled: on } : x)) });
+  }
+
+  async backfillInbox(a) {
+    this.setState({ digStatus: 'Pulling recent conversations…' });
+    const { data, err } = await this.inboxFn({ action: 'backfill', account_id: a.id });
+    this.setState({ digStatus: err || ('Pulled ' + ((data && data.messages) || 0) + ' messages into the inbox.') });
+    if (!err) this.loadInboxLists();
+  }
+
+  async setManager(projectId, uid) {
+    const row = { project_id: projectId, manager: uid || null, updated_at: new Date().toISOString() };
+    const { error } = await this.sb.from('digital_managers').upsert(row, { onConflict: 'project_id' });
+    if (error) { this.setState({ digStatus: error.message }); return; }
+    this.setState({ digManagers: (this.state.digManagers || []).filter(m => m.project_id !== projectId).concat([row]) });
+  }
+
+  // A plan that went out is matched to the synced post: same account, within
+  // three hours of the planned time. Written back so it sticks.
+  async matchPlans() {
+    const posts = this.state.digPosts || [];
+    if (!posts.length || !this.can('planEdit')) return;
+    const ups = [];
+    (this.state.plans || []).forEach(p => {
+      if (p.post_id || p.status === 'published' || p.status === 'dropped') return;
+      const t = Date.parse(p.planned_at);
+      const hit = posts.find(x => (p.account_ids || []).indexOf(x.account_id) !== -1 && x.published_at
+        && Math.abs(Date.parse(x.published_at) - t) <= 3 * 3600000 && (x.kind === 'story') === (p.kind === 'story'));
+      if (hit) ups.push({ id: p.id, post_id: hit.id });
+    });
+    if (!ups.length) return;
+    await Promise.all(ups.map(u => this.sb.from('content_plans').update({ post_id: u.post_id, status: 'published', updated_at: new Date().toISOString() }).eq('id', u.id)));
+    this.setState({ plans: this.state.plans.map(p => { const u = ups.find(x => x.id === p.id); return u ? { ...p, post_id: u.post_id, status: 'published' } : p; }) });
+  }
+
+  async savePlan() {
+    const f = this.state.planForm;
+    if (!f || !f.title.trim() || !f.date || !f.time || !f.accs.length) return;
+    const row = {
+      project_id: f.project === HOUSE ? null : f.project, account_ids: f.accs, title: f.title.trim(), kind: f.kind || 'post',
+      planned_at: new Date(f.date + 'T' + f.time).toISOString(), status: f.status || 'idea', created_by: this.state.myUid || null,
+    };
+    const { data, error } = await this.sb.from('content_plans').insert(row).select('*').single();
+    if (error) { this.setState({ digStatus: error.message }); return; }
+    this.setState({ plans: (this.state.plans || []).concat([data]), planForm: null, planSel: data.id }, () => this.matchPlans());
+  }
+
+  async planUpdate(p, patch) {
+    this.setState({ plans: (this.state.plans || []).map(x => (x.id === p.id ? { ...x, ...patch } : x)) });
+    const { error } = await this.sb.from('content_plans').update({ ...patch, updated_at: new Date().toISOString() }).eq('id', p.id);
+    if (error) this.setState({ digStatus: error.message });
+  }
+
+  async deletePlan(p) {
+    const { error } = await this.sb.from('content_plans').delete().eq('id', p.id);
+    if (error) { this.setState({ digStatus: error.message }); return; }
+    this.setState({ plans: (this.state.plans || []).filter(x => x.id !== p.id), planSel: null });
+  }
+
+  async loadAudience(ids) {
+    if (!ids.length) return;
+    const r = await this.sb.from('audience_daily').select('*').in('account_id', ids).gte('on_date', this.daysAgo(14)).order('on_date', { ascending: false });
+    const latest = {};
+    (r.error ? [] : (r.data || [])).forEach(x => { if (!latest[x.account_id]) latest[x.account_id] = x; });
+    this.setState({ audRows: latest });
+  }
+
+  async loadWebTop(ids) {
+    if (!ids.length) return;
+    const r = await this.sb.from('web_top').select('*').in('account_id', ids);
+    this.setState({ webTop: r.error ? [] : (r.data || []) });
+  }
+
+  inbRefSet(el) {
+    if (this._inbRo) { this._inbRo.disconnect(); this._inbRo = null; }
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    this._inbRo = new ResizeObserver(es => {
+      const w = Math.round(es[0].contentRect.width);
+      if (Math.abs(w - (this.state.inbW || 0)) > 6) this.setState({ inbW: w });
+    });
+    this._inbRo.observe(el);
+  }
+
+  digV2VM(ctx) {
+    const { s, scope, isHouse, scoped, clientName, clients } = ctx;
+    const now = Date.now(), MIN = 60000, HOUR = 3600000;
+    const me = s.myUid || '';
+    const canInbox = this.can('inbox'), canRules = this.can('inboxRules'), canPlan = this.can('planEdit');
+    const accById = new Map(s.digAccounts.map(a => [a.id, a]));
+    const scopedIds = new Set(scoped.map(a => a.id));
+    const inS = id => scopedIds.has(id);
+    const accName = a => (a ? String(a.handle || a.label || DIG_PLATFORM_LABEL[a.platform] || '').trim() : '');
+    const projKey = a => (a ? (a.project_id == null ? HOUSE : a.project_id) : null);
+    const ini = n => (String(n || '').match(/[A-Za-z]+/g) || ['·']).map(x => x[0]).join('').slice(0, 2).toUpperCase();
+    const staff = s.inbStaff || [];
+    const staffName = id => { if (!id) return ''; const p = staff.find(x => x.auth_id === id); return id === me ? 'You' : p ? p.name : 'Staff'; };
+    const agoS = ms => { const m = Math.max(0, Math.round(ms / MIN)); return m < 1 ? 'now' : m < 60 ? m + 'm' : m < 1440 ? Math.floor(m / 60) + 'h' : Math.floor(m / 1440) + 'd'; };
+    const clock = ts => new Date(ts).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+    const day0 = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
+    const addD = (ts, n) => { const d = new Date(ts); d.setDate(d.getDate() + n); return d.getTime(); };
+    const stamp = ts => { const t = new Date(ts).getTime(), d = day0(t), t0 = day0(now); return (d === t0 ? '' : d === addD(t0, -1) ? 'Yesterday ' : new Date(t).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ', ') + clock(t); };
+    const hourLabel = h => (h % 12 || 12) + (h < 12 ? ' am' : ' pm');
+    const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const DOWL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const dowOf = ts => (new Date(ts).getDay() + 6) % 7;
+    const pct = (v, d = 1) => (v == null || !isFinite(v) ? '—' : v.toFixed(d) + '%');
+    const C = n => (n == null || !isFinite(n) ? '—' : this.compact(n));
+    const num = v => Number(v || 0);
+    const mix = t => { const a = [242, 244, 243], b = [10, 110, 88], k = Math.max(0, Math.min(1, t)); return 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(',') + ')'; };
+    const pick = (list, sel, go) => list.map(([k, label]) => { const on = k === sel; return { label, go: () => go(k), bg: on ? '#1B1D1E' : '#fff', border: on ? '#1B1D1E' : 'var(--line)', color: on ? '#fff' : '#4A524F' }; });
+    const SOC = ['instagram', 'facebook', 'youtube', 'x', 'linkedin', 'threads', 'pinterest', 'snapchat'];
+    const CODE = { instagram: 'IG', facebook: 'FB', youtube: 'YT', x: 'X', linkedin: 'LI', threads: 'TH', pinterest: 'PIN', snapchat: 'SNAP' };
+    const CH = { ig_dm: 'Instagram DM', ig_comment: 'Instagram comment', fb_msg: 'Messenger', fb_comment: 'Facebook comment' };
+    const ST = { idea: ['Idea', '#F2F4F3', '#4A524F'], production: ['In production', '#F6EEDC', '#9A6A12'], ready: ['Ready', '#E6F4F0', '#0A6E58'], published: ['Published', '#1B1D1E', '#FFFFFF'] };
+    const inter = p => num(p.likes) + num(p.comments) + num(p.shares) + num(p.saves);
+    const tab = s.digitalTab;
+    const missing = !!s.v2Missing;
+    const out = { v2Missing: missing, v2MissingNote: 'Run the digital inbox SQL in Supabase — the inbox, planner and moderation tables do not exist yet.' };
+
+    const threads = canInbox ? (s.inbThreads || []).filter(t => inS(t.account_id)).map(t => ({
+      ...t, lastAt: Date.parse(t.last_message_at || t.created_at) || 0, lastIn: Date.parse(t.last_inbound_at || '') || 0,
+    })) : [];
+    const open = threads.filter(t => t.status === 'open');
+    const alerts = canInbox ? (s.modAlerts || []).filter(a => inS(a.account_id)) : [];
+    const isOpenA = a => a.status === 'open' || a.status === 'escalated';
+    const openAlerts = alerts.filter(isOpenA);
+    const projIn = p => (isHouse ? p.project_id == null : scope === 'all' ? p.project_id != null : p.project_id === scope);
+    const plans = (s.plans || []).filter(p => projIn(p) && p.status !== 'dropped');
+    out.digV2Counts = { inbox: open.length, moderation: openAlerts.length };
+
+    // ---- home: today --------------------------------------------------------
+    const t0 = day0(now), t1 = addD(t0, 1);
+    const todays = plans.filter(p => { const t = Date.parse(p.planned_at); return t >= t0 && t < t1; });
+    const cntSt = st => todays.filter(p => p.status === st).length;
+    const oldest = open.length ? Math.min(...open.map(t => t.lastAt)) : null;
+    const highs = openAlerts.filter(a => a.severity === 'high').length, spikes = openAlerts.filter(a => a.kind === 'spike').length;
+    out.digTodayVM = [
+      canInbox && { label: 'Messages waiting', value: String(open.length), color: '#1B1D1E',
+        sub: open.length ? [open.filter(t => t.vip).length + ' VIP', open.filter(t => !t.assigned_to).length + ' unassigned', 'oldest ' + agoS(now - oldest)].join(' · ') : 'everything answered',
+        cta: 'Open inbox', go: () => this.setDigitalTab('inbox') },
+      canInbox && { label: 'Comment alerts', value: String(openAlerts.length), color: openAlerts.length ? '#B4433A' : '#1B1D1E',
+        sub: openAlerts.length ? [spikes ? spikes + (spikes === 1 ? ' spike' : ' spikes') : '', highs ? highs + ' high' : '', (openAlerts.length - highs) + ' to review'].filter(Boolean).join(' · ') : 'nothing flagged',
+        cta: 'Review', go: () => this.setDigitalTab('moderation') },
+      { label: 'Planned today', value: String(todays.length), color: '#1B1D1E',
+        sub: todays.length ? [cntSt('published') + ' published', cntSt('ready') + ' ready', cntSt('production') + ' in production'].join(' · ') : 'nothing on the calendar',
+        cta: 'Planner', go: () => this.setDigitalTab('planner') },
+    ].filter(Boolean);
+    out.hasDigToday = !missing && out.digTodayVM.length > 0;
+
+    // ---- managers -----------------------------------------------------------
+    const mgrOf = pid => ((s.digManagers || []).find(m => m.project_id === pid) || {}).manager || '';
+    const single = scope !== 'all' && !isHouse;
+    out.hasDigCm = single && !missing;
+    out.digCmCanEdit = s.role === 'admin';
+    out.digCmReadOnly = s.role !== 'admin';
+    out.digCmValue = single ? mgrOf(scope) : '';
+    out.digCmName = single ? (staffName(mgrOf(scope)) || 'Nobody yet') : '';
+    out.digCmOptsVM = [{ value: '', label: 'Nobody yet' }].concat(staff.map(p => ({ value: p.auth_id, label: p.name })));
+    out.onDigCm = e => this.setManager(scope, e.target.value);
+
+    // ---- inbox --------------------------------------------------------------
+    out.digIsInbox = tab === 'inbox' && canInbox;
+    if (out.digIsInbox && !missing) {
+      const VIEWS = [['open', 'All open', t => t.status === 'open'], ['mine', 'Assigned to me', t => t.status === 'open' && t.assigned_to === me],
+        ['unassigned', 'Unassigned', t => t.status === 'open' && !t.assigned_to], ['vip', 'VIP', t => t.status === 'open' && t.vip],
+        ['done', 'Done', t => t.status === 'done'], ['spam', 'Spam', t => t.status === 'spam']];
+      const CHS = [['all', 'All channels'], ['ig_dm', 'Instagram DMs'], ['ig_comment', 'Instagram comments'], ['fb_msg', 'Messenger'], ['fb_comment', 'Facebook comments']];
+      const view = s.inbView || 'open', chSel = s.inbCh || 'all', cf = s.inbClient || 'all';
+      const vf = (VIEWS.find(v => v[0] === view) || VIEWS[0])[2];
+      const q = String(s.inbQ || '').trim().toLowerCase();
+      const list = threads.filter(vf).filter(t => chSel === 'all' || t.channel === chSel).filter(t => cf === 'all' || projKey(accById.get(t.account_id)) === cf)
+        .filter(t => !q || [t.sender_name, t.sender_handle, t.last_snippet].join(' ').toLowerCase().indexOf(q) !== -1)
+        .sort((x, y) => (['open', 'mine', 'unassigned'].indexOf(view) !== -1 ? Number(!!y.vip) - Number(!!x.vip) : 0) || y.lastAt - x.lastAt);
+      const w = s.inbW || 1100, wide = w >= 1000, narrow = w < 700;
+      const fItem = (label, count, on, go) => ({ label, count: count == null ? '' : String(count), go,
+        bg: on ? '#E6F4F0' : 'transparent', color: on ? '#1B1D1E' : '#4A524F', weight: on ? '500' : '400',
+        chipBg: on ? '#1B1D1E' : '#fff', chipBorder: on ? '#1B1D1E' : 'var(--line)', chipColor: on ? '#fff' : '#4A524F' });
+      const groups = [
+        { label: 'Views', items: VIEWS.map(([k, l, f]) => fItem(l, threads.filter(f).length, view === k, () => this.setState({ inbView: k }))) },
+        { label: 'Channels', items: CHS.map(([k, l]) => fItem(l, k === 'all' ? null : open.filter(t => t.channel === k).length, chSel === k, () => this.setState({ inbCh: k }))) },
+      ];
+      if (scope === 'all') {
+        const keys = [...new Set(open.map(t => projKey(accById.get(t.account_id))))];
+        groups.push({ label: 'Clients', items: [fItem('All clients', null, cf === 'all', () => this.setState({ inbClient: 'all' }))]
+          .concat(keys.map(k => fItem(clientName(k), open.filter(t => projKey(accById.get(t.account_id)) === k).length, cf === k, () => this.setState({ inbClient: k })))) });
+      }
+      const exists = s.inbSel && threads.some(t => t.id === s.inbSel);
+      const showConvoNarrow = narrow && exists && s.inbConvoOpen;
+      const isDm = t => t.channel === 'ig_dm' || t.channel === 'fb_msg';
+      const leftMin = t => Math.round((t.lastIn + 1440 * MIN - now) / MIN);
+      const fmtLeft = m => (m >= 60 ? Math.floor(m / 60) + 'h' : m + 'm');
+      const sender = t => t.sender_name || t.sender_handle || (t.channel === 'fb_msg' ? 'Messenger user' : 'Instagram user');
+      Object.assign(out, {
+        inbRef: this._inbRefFn || (this._inbRefFn = el => this.inbRefSet(el)),
+        inbMsgsRef: this._inbMsgsFn || (this._inbMsgsFn = el => { this._inbMsgsEl = el; if (el) el.scrollTop = el.scrollHeight; }),
+        inbCols: wide ? '210px minmax(250px,330px) minmax(0,1fr)' : narrow ? 'minmax(0,1fr)' : 'minmax(240px,310px) minmax(0,1fr)',
+        inbWide: wide, inbChips: !wide, inbNarrow: narrow, inbFiltersVM: groups,
+        inbShowList: !showConvoNarrow, inbShowConvo: !narrow || showConvoNarrow,
+        inbListBorder: narrow ? 'none' : '1px solid var(--line)',
+        inbQ: s.inbQ || '', onInbQ: e => this.setState({ inbQ: e.target.value }),
+        inbListEmpty: !list.length,
+        inbEmptyText: !threads.length ? 'No conversations yet. Turn the inbox on for an Instagram or Facebook account under Accounts — new messages land here as they arrive.'
+          : view === 'mine' ? 'Nothing assigned to you right now.' : q ? 'No conversation matches “' + String(s.inbQ).trim() + '”.' : 'Nothing here.',
+        inbFoot: list.length + (list.length === 1 ? ' conversation' : ' conversations') + (['open', 'mine', 'unassigned'].indexOf(view) !== -1 ? ' · VIP first, then newest' : ''),
+        inbThreadsVM: list.map(t => {
+          const on = t.id === s.inbSel, l = isDm(t) && t.status === 'open' ? leftMin(t) : null;
+          return {
+            go: () => this.openThread(t),
+            bg: on ? '#F3FAF8' : '#fff', ini: ini(sender(t)), avBg: t.vip ? '#1B1D1E' : '#E7ECEA', avColor: t.vip ? '#fff' : '#4A524F',
+            name: sender(t), weight: t.unread ? '500' : '400', vip: !!t.vip,
+            where: CH[t.channel] + ' · ' + (scope === 'all' ? clientName(projKey(accById.get(t.account_id))) : accName(accById.get(t.account_id))),
+            snippet: t.last_snippet || '', when: agoS(now - t.lastAt),
+            hasUnread: t.unread > 0, unread: String(t.unread || 0),
+            assLabel: t.assigned_to ? ini(staffName(t.assigned_to) === 'You' ? (staff.find(x => x.auth_id === me) || {}).name : staffName(t.assigned_to)) : 'Unassigned',
+            assColor: t.assigned_to ? '#4A524F' : '#9A6A12',
+            hasFlag: !!t.flag, flag: t.flag || '',
+            hasWin: l != null && l < 180, winLabel: l != null && l <= 0 ? 'Window closed' : l != null ? fmtLeft(l) + ' to reply' : '',
+            winColor: l != null && l <= 0 ? '#B4433A' : '#9A6A12',
+          };
+        }),
+        inbAssignOptsVM: [{ value: '', label: 'Unassigned' }].concat(staff.map(p => ({ value: p.auth_id, label: p.name + (p.auth_id === me ? ' (you)' : '') }))),
+        inbErr: s.inbErr || '', hasInbErr: !!s.inbErr,
+        inbBack: () => this.setState({ inbConvoOpen: false }),
+      });
+      const t = exists ? threads.find(x => x.id === s.inbSel) : null;
+      out.inbHasConvo = !!t; out.inbNoConvo = !t; out.inbCv = {};
+      if (t) {
+        const acc = accById.get(t.account_id) || {};
+        const comment = !isDm(t), l = comment ? null : leftMin(t);
+        const canCompose = comment || l > 0;
+        const plat = acc.platform === 'instagram' ? 'Instagram' : 'Facebook';
+        const draft = (s.inbDrafts || {})[t.id] || '';
+        const msgs = (s.inbMsgs || {})[t.id] || [];
+        out.inbCv = {
+          ini: ini(sender(t)), avBg: t.vip ? '#1B1D1E' : '#E7ECEA', avColor: t.vip ? '#fff' : '#4A524F',
+          name: sender(t), vip: !!t.vip, vipReason: t.vip_reason || 'VIP',
+          facts: [t.sender_handle, t.sender_followers != null ? C(t.sender_followers) + ' followers' : '', t.sender_verified ? 'verified' : '', t.sender_follows ? 'follows ' + accName(acc) : ''].filter(Boolean).join(' · ') || CH[t.channel],
+          toLine: 'To ' + accName(acc) + ' · ' + CH[t.channel] + (scope === 'all' ? ' · ' + clientName(projKey(acc)) : ''),
+          assignValue: t.assigned_to || '',
+          onAssign: e => { const v = e.target.value; this.inboxPatch(t, { assigned_to: v || null, assigned_at: v ? new Date().toISOString() : null },
+            v ? 'Assigned to ' + (staff.find(x => x.auth_id === v) || {}).name : 'Unassigned'); },
+          vipLabel: t.vip ? 'Remove VIP' : 'Mark VIP',
+          toggleVip: () => this.inboxPatch(t, t.vip ? { vip: false, vip_reason: null } : { vip: true, vip_reason: 'Marked VIP by the team' }),
+          doneLabel: t.status === 'done' ? 'Reopen' : 'Mark done',
+          toggleDone: () => this.inboxPatch(t, { status: t.status === 'done' ? 'open' : 'done' }, t.status === 'done' ? 'Reopened' : 'Marked done'),
+          spamLabel: t.status === 'spam' ? 'Not spam' : 'Spam',
+          toggleSpam: () => this.inboxPatch(t, { status: t.status === 'spam' ? 'open' : 'spam' }),
+          isComment: comment, postTitle: String(t.post_caption || '').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Post', postKind: acc.platform === 'instagram' ? 'IG' : 'FB',
+          postLink: /^https:\/\//i.test(t.post_permalink || '') ? t.post_permalink : '', hasPostLink: /^https:\/\//i.test(t.post_permalink || ''),
+          msgsVM: msgs.map(m => (m.direction === 'event'
+            ? { isEvent: true, isMsg: false, align: 'center', text: m.body + (m.sent_by ? ' · ' + staffName(m.sent_by) : '') + ' · ' + stamp(m.at) }
+            : { isEvent: false, isMsg: true, align: m.direction === 'out' ? 'flex-end' : 'flex-start',
+                text: m.body || (m.attachments ? 'Sent an attachment — open in ' + plat : ''),
+                bg: m.status === 'failed' ? '#F6E2DF' : m.direction === 'out' ? 'var(--green-deep)' : '#F2F4F3',
+                color: m.status === 'failed' ? '#B4433A' : m.direction === 'out' ? '#fff' : '#1B1D1E',
+                meta: stamp(m.at) + (m.direction === 'out' ? ' · ' + (staffName(m.sent_by) || 'From ' + plat) + (comment ? ' · public reply' : '') : '') + (m.status === 'failed' ? ' · not sent: ' + (m.error || 'error') : ''),
+                metaColor: m.status === 'failed' ? '#B4433A' : '#8A9390' })),
+          windowLine: comment ? 'Public reply — everyone can see it.'
+            : l > 0 ? 'Reply window open · ' + fmtLeft(l) + ' left. Meta closes it 24 h after their last message.'
+            : 'Reply window closed ' + agoS(-l * MIN) + ' ago. Meta allows no reply after 24 h — it reopens when they message again.',
+          windowColor: comment ? '#6B7572' : l > 180 ? '#4A524F' : l > 0 ? '#9A6A12' : '#B4433A',
+          canCompose, cantCompose: !canCompose, draft,
+          onDraft: e => { const v = e.target.value; this.setState({ inbDrafts: { ...(this.state.inbDrafts || {}), [t.id]: v } }); },
+          onKey: e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); this.inboxReply(t); } },
+          placeholder: comment ? 'Reply publicly as ' + accName(acc) : 'Message ' + sender(t),
+          asLine: 'Sending as ' + accName(acc) + ' · ⌘/Ctrl + Enter',
+          send: () => this.inboxReply(t), sendLabel: s.inbSending ? 'Sending…' : comment ? 'Reply publicly' : 'Send',
+          sendOpacity: draft.trim() && !s.inbSending ? '1' : '0.45',
+          hideLabel: t.hidden ? 'Unhide comment' : 'Hide comment', hideComment: () => this.inboxHide(t),
+          openLabel: 'Open in ' + plat + ' ↗',
+          openHref: acc.platform === 'instagram' ? 'https://www.instagram.com/direct/inbox/' : 'https://business.facebook.com/latest/inbox',
+        };
+      }
+    }
+
+    // ---- planner ------------------------------------------------------------
+    out.digIsPlanner = tab === 'planner';
+    const postsAll = s.digPosts || [];
+    const audRow = id => (s.audRows || {})[id] || null;
+    const capKey = p => String(p.caption || '').toLowerCase().replace(/#[^\s#]+/g, '').replace(/[^\p{L}\p{N}]+/gu, '').slice(0, 60);
+    const postHeat = id => {
+      const grid = DOW.map(() => new Array(24).fill(null).map(() => ({ e: 0, n: 0 })));
+      const since = now - 90 * 86400000;
+      postsAll.forEach(p => {
+        if (p.account_id !== id || p.kind === 'story' || !p.published_at) return;
+        const t = Date.parse(p.published_at), b = num(p.reach) || num(p.impressions);
+        if (t < since || !b) return;
+        const c = grid[dowOf(t)][new Date(t).getHours()]; c.e += inter(p) * 100 / b; c.n++;
+      });
+      return grid.map(r => r.map(c => (c.n ? +(c.e / c.n).toFixed(1) : null)));
+    };
+    const onlineOf = id => { const r = audRow(id); return r && Array.isArray(r.online) && r.online.length === 7 ? r.online : null; };
+    if (out.digIsPlanner && !missing) {
+      const igAcc = single ? scoped.find(a => a.platform === 'instagram' && a.active !== false) : isHouse ? scoped.find(a => a.platform === 'instagram') : null;
+      const onl = igAcc ? onlineOf(igAcc.id) : null, ph = igAcc && !onl ? postHeat(igAcc.id) : null;
+      const bestH = d => {
+        const row = onl ? onl[d] : ph ? ph[d] : null;
+        if (!row) return null;
+        let bi = -1, bv = -1; row.forEach((v, h) => { if (v != null && Number(v) > bv) { bv = Number(v); bi = h; } });
+        return bi < 0 ? null : bi;
+      };
+      const used = new Set(plans.map(p => p.post_id).filter(Boolean));
+      const unplanned = [];
+      postsAll.filter(p => inS(p.account_id) && p.kind !== 'story' && p.published_at && !used.has(p.id) && SOC.indexOf((accById.get(p.account_id) || {}).platform) !== -1)
+        .sort((x, y) => String(x.published_at).localeCompare(String(y.published_at)))
+        .forEach(p => {
+          const pa = accById.get(p.account_id), k = capKey(p), t = Date.parse(p.published_at);
+          if (!unplanned.some(q => q.account_id !== p.account_id && projKey(accById.get(q.account_id)) === projKey(pa) && capKey(q) === k && Math.abs(Date.parse(q.published_at) - t) <= 600000)) unplanned.push(p);
+        });
+      const postById = new Map(postsAll.map(p => [p.id, p]));
+      const items = plans.map(p => ({ id: p.id, plan: p, at: Date.parse(p.planned_at), title: p.title, accs: p.account_ids || [], status: p.status, post: p.post_id ? postById.get(p.post_id) : null, proj: p.project_id == null ? HOUSE : p.project_id }))
+        .concat(unplanned.map(p => ({ id: 'post:' + p.id, plan: null, at: Date.parse(p.published_at), accs: [p.account_id], status: 'published', post: p, unplanned: true, proj: projKey(accById.get(p.account_id)),
+          title: String(p.caption || '').replace(/\s+/g, ' ').trim().slice(0, 70) || (POST_KIND_LABEL[p.kind] || p.kind) })));
+      const pStatus = s.planStatus || 'all';
+      const shown = items.filter(it => pStatus === 'all' || it.status === pStatus);
+      const statOf = p => { if (!p) return ''; const v = num(p.video_views), b = num(p.reach) || num(p.impressions); return [v ? C(v) + ' views' : b ? C(b) + ' reach' : '', b ? pct(inter(p) * 100 / b) : ''].filter(Boolean).join(' · '); };
+      const itemVM = it => { const st = ST[it.status] || ST.idea; return {
+        go: () => this.setState({ planSel: s.planSel === it.id ? null : it.id, planForm: null }),
+        time: clock(it.at), codes: it.accs.map(id => CODE[(accById.get(id) || {}).platform] || '').filter(Boolean).join(' · '),
+        title: it.title, client: clientName(it.proj), status: it.unplanned ? 'Published · not planned' : st[0], stBg: st[1], stColor: st[2],
+        border: s.planSel === it.id ? '#1B1D1E' : 'var(--line)', hasStats: !!it.post, stats: statOf(it.post),
+        mini: clock(it.at).replace(':00', '') + ' ' + it.title, miniColor: it.status === 'published' ? '#6B7572' : '#1B1D1E', miniDot: it.status === 'published' ? '#1B1D1E' : st[2],
+      }; };
+      const isWeek = (s.planView || 'week') === 'week', off = s.planOff || 0;
+      Object.assign(out, {
+        planIsWeek: isWeek, planIsMonth: !isWeek, planCanEdit: canPlan,
+        planViewVM: pick([['week', 'Week'], ['month', 'Month']], isWeek ? 'week' : 'month', k => this.setState({ planView: k, planOff: 0 })),
+        planPrev: () => this.setState({ planOff: off - 1 }), planNext: () => this.setState({ planOff: off + 1 }), planToday: () => this.setState({ planOff: 0 }),
+        planStatusVM: pick([['all', 'All'], ['idea', 'Ideas'], ['production', 'In production'], ['ready', 'Ready'], ['published', 'Published']]
+          .map(([k, l]) => [k, l + ' · ' + items.filter(it => k === 'all' || it.status === k).length]), pStatus, k => this.setState({ planStatus: k })),
+        planBestNote: igAcc ? 'Best hour per day comes from ' + (onl ? 'when ' + accName(igAcc) + '’s followers are online' : accName(igAcc) + '’s past posts') + '.' : 'Pick one client to see the best hour to post each day.',
+        planOpenForm: () => this.setState({ planSel: null, planForm: { title: '', date: this.daysAgo(0), time: '19:00', project: single ? scope : isHouse ? HOUSE : ((clients[0] || {}).id || HOUSE), accs: [], status: 'idea', kind: 'reel' } }),
+      });
+      if (isWeek) {
+        const ws = addD(t0 - dowOf(now) * 86400000, off * 7), we = addD(ws, 6);
+        const f = (ts, m) => new Date(ts).toLocaleDateString('en-GB', m ? { day: 'numeric', month: 'long' } : { day: 'numeric' });
+        out.planRange = (new Date(ws).getMonth() === new Date(we).getMonth() ? f(ws) : f(ws, true)) + ' – ' + f(we, true) + ' ' + new Date(we).getFullYear();
+        out.planWeekVM = DOW.map((dw, i) => {
+          const ds = addD(ws, i), de = addD(ds, 1);
+          const its = shown.filter(it => it.at >= ds && it.at < de).sort((x, y) => x.at - y.at);
+          const h = bestH(i), isToday = ds === t0;
+          return { dow: dw, num: String(new Date(ds).getDate()), isToday, bg: isToday ? '#FAFCFB' : '#fff', numColor: isToday ? 'var(--green-deep)' : '#1B1D1E',
+            hasBest: h != null, best: h != null ? 'Best · ' + hourLabel(h) : '', itemsVM: its.map(itemVM), empty: !its.length };
+        });
+      } else {
+        const ref = new Date(t0); ref.setDate(1); ref.setMonth(ref.getMonth() + off);
+        const mStart = ref.getTime(), month = ref.getMonth(), gStart = addD(mStart, -dowOf(mStart));
+        const end = new Date(mStart); end.setMonth(month + 1);
+        const weeks = Math.ceil((dowOf(mStart) + Math.round((end.getTime() - mStart) / 86400000)) / 7);
+        out.planRange = ref.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+        out.planMonthHeadVM = DOW.map(d => ({ d }));
+        out.planMonthVM = Array.from({ length: weeks * 7 }, (_, i) => {
+          const ds = addD(gStart, i), de = addD(ds, 1), inM = new Date(ds).getMonth() === month, isToday = ds === t0;
+          const its = shown.filter(it => it.at >= ds && it.at < de).sort((x, y) => x.at - y.at);
+          return { num: String(new Date(ds).getDate()), numColor: isToday ? 'var(--green-deep)' : inM ? '#1B1D1E' : '#8A9390', bg: isToday ? '#F3FAF8' : inM ? '#fff' : '#FAFBFB',
+            itemsVM: its.slice(0, 3).map(itemVM), hasMore: its.length > 3, more: '+' + (its.length - 3) + ' more' };
+        });
+      }
+      const sel = items.find(it => it.id === s.planSel);
+      out.planHasDetail = !!sel; out.planD = {};
+      if (sel) {
+        const p = sel.post, link = p && /^https:\/\//i.test(p.permalink || '') ? p.permalink : '';
+        out.planD = {
+          title: sel.title, line: clientName(sel.proj) + ' · ' + sel.accs.map(id => accName(accById.get(id))).filter(Boolean).join(', '),
+          when: new Date(sel.at).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) + ', ' + clock(sel.at) + (sel.plan ? ' · ' + (POST_KIND_LABEL[sel.plan.kind] || sel.plan.kind) : ''),
+          isPublished: !!p, notPublished: !p && !!sel.plan && canPlan, isPlan: !!sel.plan && canPlan,
+          statusVM: ['idea', 'production', 'ready'].map(k => { const on = sel.status === k; return { label: ST[k][0], go: () => this.planUpdate(sel.plan, { status: k }), bg: on ? '#1B1D1E' : '#fff', border: on ? '#1B1D1E' : 'var(--line)', color: on ? '#fff' : '#4A524F' }; }),
+          statsVM: p ? [{ label: num(p.video_views) ? 'Views' : 'Reach', value: C(num(p.video_views) || num(p.reach)) }, { label: 'Likes', value: C(num(p.likes)) }, { label: 'Engagement', value: (num(p.reach) || num(p.impressions)) ? pct(inter(p) * 100 / (num(p.reach) || num(p.impressions))) : '—' }] : [],
+          note: sel.unplanned ? 'Published without a plan.' : p ? 'Matched to the synced post — same account, within 3 hours of the plan.' : 'Matched to the real post automatically when it goes live. Nothing posts from here.',
+          link, hasLink: !!link,
+          remove: () => sel.plan && this.deletePlan(sel.plan), close: () => this.setState({ planSel: null }),
+        };
+      }
+      const fm = s.planForm;
+      out.planHasForm = !!fm && canPlan; out.planF = {};
+      if (fm) {
+        const up = k => e => { const v = e.target.value; this.setState({ planForm: { ...this.state.planForm, [k]: v, ...(k === 'project' ? { accs: [] } : {}) } }); };
+        const ok = fm.title.trim() && fm.date && fm.time && fm.accs.length;
+        const accsFor = s.digAccounts.filter(a => a.active !== false && SOC.indexOf(a.platform) !== -1 && projKey(a) === fm.project);
+        out.planF = {
+          title: fm.title, date: fm.date, time: fm.time, status: fm.status, kind: fm.kind, projectValue: fm.project, pickClient: !single && !isHouse,
+          clientOpts: clients.map(c => ({ value: c.id, label: c.client_name || c.project_title || 'Client' })).concat([{ value: HOUSE, label: HOUSE_LABEL }]),
+          statusOpts: ['idea', 'production', 'ready'].map(k => ({ value: k, label: ST[k][0] })),
+          kindOpts: ['post', 'carousel', 'reel', 'story', 'video', 'short'].map(k => ({ value: k, label: POST_KIND_LABEL[k] || k })),
+          onTitle: up('title'), onDate: up('date'), onTime: up('time'), onStatus: up('status'), onKind: up('kind'), onProject: up('project'),
+          accsVM: accsFor.map(a => { const on = fm.accs.indexOf(a.id) !== -1; return { label: CODE[a.platform] + ' ' + accName(a),
+            bg: on ? '#1B1D1E' : '#fff', border: on ? '#1B1D1E' : 'var(--line)', color: on ? '#fff' : '#4A524F',
+            go: () => this.setState({ planForm: { ...this.state.planForm, accs: on ? this.state.planForm.accs.filter(x => x !== a.id) : this.state.planForm.accs.concat([a.id]) } }) }; }),
+          noAccs: !accsFor.length,
+          saveOpacity: ok ? '1' : '0.45', save: () => this.savePlan(), cancel: () => this.setState({ planForm: null }),
+        };
+      }
+    }
+
+    // ---- audience + best time ----------------------------------------------
+    out.digIsAudience = tab === 'audience';
+    if (out.digIsAudience && !missing) {
+      const soc = scoped.filter(a => a.active !== false && SOC.indexOf(a.platform) !== -1)
+        .sort((x, y) => (x.platform === 'instagram' ? 0 : 1) - (y.platform === 'instagram' ? 0 : 1));
+      const a = soc.find(x => x.id === s.audAcc) || soc[0];
+      out.audHasAcc = !!a; out.audNoAcc = !a;
+      if (a) {
+        const row = audRow(a.id);
+        const NOTES = {
+          youtube: 'YouTube shares age, gender and country, but not cities or when viewers are online — the heatmap uses this channel’s uploads.',
+          facebook: 'Meta no longer reports a Page’s follower age, gender or city. Use the linked Instagram for audience — the heatmap uses this Page’s posts.',
+          x: 'X doesn’t share audience demographics through its API. The heatmap uses post performance.',
+        };
+        const note = a.platform === 'instagram' ? (row ? '' : 'Audience numbers arrive with the next Instagram sync. Meta shares them for accounts over 100 followers.') : (NOTES[a.platform] || 'This platform doesn’t share audience data. The heatmap uses post performance.');
+        const fol = (() => { const r = s.digMetrics.filter(m => m.account_id === a.id && m.followers != null).sort((x, y) => (x.on_date < y.on_date ? 1 : -1))[0]; return r ? num(r.followers) : null; })();
+        const shareRows = (obj, top, label) => {
+          const ent = Object.entries(obj || {}).map(([k, v]) => [label ? label(k) : k, num(v)]).filter(x => x[1] > 0).sort((x, y) => y[1] - x[1]);
+          const tot = ent.reduce((t, x) => t + x[1], 0);
+          return { rows: ent.slice(0, top), tot };
+        };
+        const g = shareRows(row && row.gender, 3, k => ({ F: 'Women', M: 'Men', U: 'Unspecified' }[k] || k));
+        const AGE = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
+        const ageTot = AGE.reduce((t, k) => t + num(row && row.age && row.age[k]), 0);
+        const ages = AGE.map(k => [k.replace('-', '–'), ageTot ? num(row.age[k]) * 100 / ageTot : 0]);
+        const ageMax = Math.max(1, ...ages.map(x => x[1]));
+        let dn = null; try { dn = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
+        const ci = shareRows(row && row.city, 8, k => String(k).split(',')[0]);
+        const co = shareRows(row && row.country, 6, k => (dn && /^[A-Z]{2}$/.test(k) ? dn.of(k) : k));
+        const onl = onlineOf(a.id), ph = postHeat(a.id);
+        const hasOnline = !!onl;
+        const mode = hasOnline && (s.audHeat || 'online') === 'online' ? 'online' : 'posts';
+        const onMax = hasOnline ? Math.max(1, ...onl.flat().map(num)) : 1;
+        const phVals = ph.flat().filter(v => v != null), phMin = phVals.length ? Math.min(...phVals) : 0, phMax = phVals.length ? Math.max(...phVals) : 1;
+        const cells = [];
+        DOW.forEach((_, d) => { for (let h = 0; h < 24; h++) cells.push({ d, h, on: hasOnline ? num(onl[d][h]) / onMax : null, er: ph[d][h] }); });
+        const score = c => (hasOnline ? c.on * (c.er ? 1 + c.er / 12 : 0.9) : (c.er || 0));
+        const picked = [];
+        cells.slice().sort((x, y) => score(y) - score(x)).forEach(c => { if (picked.length < 3 && score(c) > 0 && !picked.some(p => p.d === c.d && Math.abs(p.h - c.h) <= 2)) picked.push(c); });
+        Object.assign(out, {
+          audGroupsVM: [{ label: 'Accounts', opts: soc.map(x => ({ value: x.id, label: (DIG_PLATFORM_LABEL[x.platform] || x.platform) + ' · ' + accName(x) + (scope === 'all' ? ' · ' + clientName(projKey(x)) : '') })) }],
+          audValue: a.id, onAud: e => this.setState({ audAcc: e.target.value }),
+          audFollowers: fol != null ? C(fol) + (a.platform === 'youtube' ? ' subscribers' : ' followers') : accName(a),
+          audSource: clientName(projKey(a)) + ' · ' + (DIG_PLATFORM_LABEL[a.platform] || a.platform) + (row ? ' · updated ' + new Date(row.on_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''),
+          audHasNote: !!note, audNote: note,
+          audHasDemo: !!row && (g.tot > 0 || ageTot > 0), audHasCities: ci.tot > 0, audHasCountries: co.tot > 0,
+          audGenderVM: g.rows.map(([l, v], i) => ({ label: l, value: pct(v * 100 / g.tot), w: (v * 100 / g.tot).toFixed(1) + '%', color: ['#0A6E58', '#10AF8B', '#8A9390'][i] })),
+          audAgeVM: ages.map(([l, v]) => ({ label: l, value: pct(v), w: (v * 100 / ageMax).toFixed(1) + '%' })),
+          audCitiesVM: ci.rows.map(([c, v], i) => ({ rank: String(i + 1).padStart(2, '0'), city: c, share: pct(v * 100 / ci.tot), people: C(v) })),
+          audCountriesVM: co.rows.map(([c, v]) => ({ country: c, share: pct(v * 100 / co.tot), people: C(v) })),
+          audHeatTitle: hasOnline ? 'Best time to post' : 'Best time to post · from post history',
+          audHeatModeVM: hasOnline ? pick([['online', 'Followers online'], ['posts', 'Post engagement']], mode, k => this.setState({ audHeat: k })) : [],
+          audHeatSub: mode === 'online' ? 'Followers online by weekday and hour, IST, averaged over Meta’s last 30 days. Darker is more people.'
+            : 'Average engagement of posts published at each hour over the last 90 days. Blank hours had no posts.',
+          audHasHeat: hasOnline || phVals.length > 0, audNoHeat: !hasOnline && !phVals.length,
+          audHoursVM: Array.from({ length: 24 }, (_, h) => ({ label: h % 3 ? '' : h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h - 12) + 'p' })),
+          audHeatVM: DOW.map((dw, d) => ({ dow: dw, cells: Array.from({ length: 24 }, (_, h) => {
+            if (mode === 'online') { const v = num(onl[d][h]) / onMax; return { bg: mix(Math.pow(v, 1.5)), shadow: 'none', title: DOWL[d] + ', ' + hourLabel(h) + ' · ' + Math.round(v * 100) + '% of the peak online' }; }
+            const er = ph[d][h];
+            return er == null ? { bg: '#fff', shadow: 'inset 0 0 0 1px #E7ECEA', title: DOWL[d] + ', ' + hourLabel(h) + ' · no posts' }
+              : { bg: mix(phMax > phMin ? (er - phMin) / (phMax - phMin) : 0.6), shadow: 'none', title: DOWL[d] + ', ' + hourLabel(h) + ' · ' + er + '% engagement' };
+          }) })),
+          audLegendVM: [0, 0.25, 0.5, 0.75, 1].map(t => ({ bg: mix(t) })),
+          audBestVM: picked.map((c, i) => ({ rank: String(i + 1).padStart(2, '0'), when: DOWL[c.d] + ' · ' + hourLabel(c.h) + '–' + hourLabel((c.h + 1) % 24),
+            line: hasOnline ? Math.round(c.on * 100) + '% of peak followers online' + (c.er ? ' · posts at this hour averaged ' + c.er + '% engagement' : ' · no posts here yet — worth a test') : 'posts at this hour averaged ' + c.er + '% engagement' })),
+        });
+      }
+    }
+
+    // ---- web: analytics + search console -----------------------------------
+    if (tab === 'seo') {
+      const gas = scoped.filter(a => a.platform === 'ga4' && a.active !== false), scs = scoped.filter(a => a.platform === 'search_console' && a.active !== false);
+      const sites = gas.length ? gas : scs;
+      const site = sites.find(a => a.id === s.webAcc) || sites[0];
+      out.webHasSite = !!site; out.webNoSite = !site;
+      out.webPickVM = sites.length > 1 ? pick(sites.map(a => [a.id, accName(a) + ' · ' + clientName(projKey(a))]), site && site.id, k => this.setState({ webAcc: k })) : [];
+      if (site) {
+        const ga = site.platform === 'ga4' ? site : gas.find(a => a.project_id === site.project_id);
+        const sc = site.platform === 'search_console' ? site : scs.find(a => a.project_id === site.project_id);
+        const f30 = this.daysAgo(29), f60 = this.daysAgo(59);
+        const rowsOf = (a, f, t) => (a ? s.digMetrics.filter(m => m.account_id === a.id && m.on_date >= f && (!t || m.on_date < t)) : []);
+        const sum = (rs, k) => rs.reduce((x, r) => x + num(r[k]), 0);
+        const g1 = rowsOf(ga, f30), g0 = rowsOf(ga, f60, f30), c1 = rowsOf(sc, f30), c0 = rowsOf(sc, f60, f30);
+        const chg = (x, y) => (y > 0 ? (x - y) * 100 / y : null);
+        const sub = v => (v == null ? 'no earlier 30 days on record' : (v > 0 ? '↑ ' : v < 0 ? '↓ ' : '') + Math.abs(v).toFixed(1) + '% on the 30 days before');
+        const col = v => (v == null ? '#6B7572' : v >= 0 ? 'var(--green-deep)' : '#B4433A');
+        const posOf = rs => { const im = sum(rs, 'impressions'); return im ? rs.reduce((x, r) => x + num((r.extra || {}).position) * num(r.impressions), 0) / im : null; };
+        const kp = [];
+        if (ga) {
+          const u = chg(sum(g1, 'reach'), sum(g0, 'reach')), se = chg(sum(g1, 'clicks'), sum(g0, 'clicks'));
+          kp.push({ label: 'Users', value: C(sum(g1, 'reach')), sub: sub(u), subColor: col(u) });
+          kp.push({ label: 'Sessions', value: C(sum(g1, 'clicks')), sub: sub(se), subColor: col(se) });
+          kp.push({ label: 'Engaged sessions', value: sum(g1, 'clicks') ? pct(sum(g1, 'engagements') * 100 / sum(g1, 'clicks')) : '—', sub: 'stayed 10 s or more, or saw 2+ pages', subColor: '#4A524F' });
+          kp.push({ label: 'Key events', value: C(sum(g1, 'conversions')), sub: 'enquiries, bookings, orders', subColor: '#4A524F' });
+        }
+        if (sc) {
+          const cl = chg(sum(c1, 'clicks'), sum(c0, 'clicks')), p1 = posOf(c1), p0 = posOf(c0);
+          kp.push({ label: 'Search clicks', value: C(sum(c1, 'clicks')), sub: sub(cl), subColor: col(cl) });
+          kp.push({ label: 'Avg position', value: p1 == null ? '—' : p1.toFixed(1), sub: p1 != null && p0 != null ? (p1 <= p0 ? '↑ ' : '↓ ') + Math.abs(p0 - p1).toFixed(1) + ' places · ' + C(sum(c1, 'impressions')) + ' impressions' : C(sum(c1, 'impressions')) + ' impressions', subColor: p1 != null && p0 != null ? (p1 <= p0 ? 'var(--green-deep)' : '#B4433A') : '#4A524F' });
+        }
+        out.webKpisVM = kp;
+        const days = []; for (let i = 29; i >= 0; i--) days.push(this.daysAgo(i));
+        const by = new Map((ga ? g1 : c1).map(r => [r.on_date, num(r.clicks)]));
+        const series = days.map(d => by.get(d) || 0), mx = Math.max(1, ...series) * 1.1;
+        const pts = series.map((v, i) => (i * 1000 / 29).toFixed(1) + ',' + (200 - v / mx * 190).toFixed(1));
+        out.webHasSeries = series.some(v => v > 0); out.webNoSeries = !out.webHasSeries;
+        out.webLine = pts.join(' '); out.webArea = 'M0,200 L' + pts.join(' L') + ' L1000,200 Z';
+        out.webSeriesLabel = (ga ? 'Sessions' : 'Search clicks') + ' a day · ' + accName(site);
+        out.webPeak = 'Peak ' + C(Math.max(...series));
+        const dl = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        out.webAxisVM = [days[0], days[10], days[20], days[29]].map(d => ({ l: dl(d) }));
+        const top = (acc, k) => { const r = acc && (s.webTop || []).find(x => x.account_id === acc.id && x.kind === k); return r && Array.isArray(r.rows) ? r.rows : []; };
+        const chs = top(ga, 'channels'), chTot = chs.reduce((t, r) => t + num(r.sessions), 0), chMax = Math.max(1, ...chs.map(r => num(r.sessions)));
+        out.webChannelsVM = chs.slice(0, 8).map(r => ({ name: r.name, sessions: C(num(r.sessions)), share: chTot ? pct(num(r.sessions) * 100 / chTot) : '—', w: (num(r.sessions) * 100 / chMax).toFixed(1) + '%', engaged: num(r.sessions) ? pct(num(r.engaged) * 100 / num(r.sessions)) : '—', key: C(num(r.key)) }));
+        out.webSocialVM = top(ga, 'social').slice(0, 6).map(r => ({ name: r.source, sessions: C(num(r.sessions)), key: C(num(r.key)), rate: num(r.sessions) ? pct(num(r.key) * 100 / num(r.sessions)) : '—' }));
+        const mmss = sec => { const v = Math.round(num(sec)); return Math.floor(v / 60) + 'm ' + String(v % 60).padStart(2, '0') + 's'; };
+        out.webPagesVM = top(ga, 'pages').slice(0, 8).map(r => ({ path: r.path, views: C(num(r.views)), time: mmss(r.seconds), key: num(r.key) ? C(num(r.key)) : '—' }));
+        out.webQueriesVM = top(sc, 'queries').slice(0, 10).map(r => {
+          const d = r.prev_position != null ? num(r.position) - num(r.prev_position) : null;
+          return { q: r.query, clicks: C(num(r.clicks)), impr: C(num(r.impressions)), ctr: num(r.impressions) ? pct(num(r.clicks) * 100 / num(r.impressions)) : '—', pos: num(r.position).toFixed(1),
+            move: d == null ? 'new' : Math.abs(d) < 0.05 ? '—' : (d < 0 ? '↑ ' : '↓ ') + Math.abs(d).toFixed(1), moveColor: d == null ? '#6B7572' : d < -0.05 ? 'var(--green-deep)' : d > 0.05 ? '#B4433A' : '#8A9390' };
+        });
+        out.webHasChannels = out.webChannelsVM.length > 0; out.webHasSocial = out.webSocialVM.length > 0;
+        out.webHasPages = out.webPagesVM.length > 0; out.webHasQueries = out.webQueriesVM.length > 0;
+        out.webNoTop = !out.webHasChannels && !out.webHasPages && !out.webHasQueries;
+      }
+    }
+
+    // ---- moderation --------------------------------------------------------
+    out.digIsModeration = tab === 'moderation' && canInbox;
+    if (out.digIsModeration && !missing) {
+      const AF = [['open', 'Open'], ['escalated', 'Escalated'], ['hidden', 'Hidden'], ['safe', 'Marked safe'], ['all', 'All']];
+      const fSel = s.modF || 'open';
+      const match = (a, k) => (k === 'all' ? true : k === 'open' ? isOpenA(a) : a.status === k);
+      const SEV = { high: ['High', '#B4433A', '#fff', 0], medium: ['Medium', '#F6EEDC', '#9A6A12', 1], low: ['Low', '#F2F4F3', '#4A524F', 2] };
+      const comments = alerts.filter(a => a.kind !== 'spike');
+      const split = a => {
+        const b = String(a.body || ''), m = String(a.matched || '');
+        const i = m ? b.toLowerCase().indexOf(m.toLowerCase()) : -1;
+        return i < 0 ? { pre: b, term: '', post: '' } : { pre: b.slice(0, i), term: b.slice(i, i + m.length), post: b.slice(i + m.length) };
+      };
+      const week = now - 7 * 86400000;
+      Object.assign(out, {
+        modSpikesVM: alerts.filter(a => a.kind === 'spike' && isOpenA(a)).map(a => {
+          const acc = accById.get(a.account_id);
+          return { title: 'Comment spike on ' + clientName(projKey(acc)) + ' · ' + accName(acc), line: (a.body || '') + '. Flagged ones are below.', dismiss: () => this.setAlert(a, 'safe') };
+        }),
+        modKpisVM: [
+          { label: 'Waiting for review', value: String(comments.filter(a => a.status === 'open').length), color: '#1B1D1E' },
+          { label: 'Escalated to admin', value: String(comments.filter(a => a.status === 'escalated').length), color: comments.some(a => a.status === 'escalated') ? '#B4433A' : '#1B1D1E' },
+          { label: 'Auto-hidden · 7 days', value: String(comments.filter(a => a.auto && Date.parse(a.created_at) >= week).length), color: '#1B1D1E' },
+          { label: 'Accounts watched', value: String(scoped.filter(a => a.moderation_enabled && a.active !== false).length), color: '#1B1D1E' },
+        ],
+        modChipsVM: pick(AF.map(([k, l]) => [k, l + ' · ' + comments.filter(a => match(a, k)).length]), fSel, k => this.setState({ modF: k })),
+        modAlertsVM: comments.filter(a => match(a, fSel)).sort((x, y) => (SEV[x.severity] || SEV.medium)[3] - (SEV[y.severity] || SEV.medium)[3] || Date.parse(y.created_at) - Date.parse(x.created_at)).map(a => {
+          const sv = SEV[a.severity] || SEV.medium, acc = accById.get(a.account_id), sp = split(a), acts = [];
+          if (isOpenA(a)) {
+            if (!a.auto) acts.push({ label: 'Hide', go: () => this.hideAlert(a, true) });
+            acts.push({ label: 'Mark safe', go: () => this.setAlert(a, 'safe') });
+            if (a.status === 'open') acts.push({ label: 'Escalate', go: () => this.setAlert(a, 'escalated') });
+          } else if (a.status === 'hidden') acts.push({ label: 'Unhide', go: () => this.hideAlert(a, false) });
+          else acts.push({ label: 'Reopen', go: () => this.setAlert(a, 'open') });
+          return {
+            sev: sv[0], sevBg: sv[1], sevColor: sv[2], pre: sp.pre, term: sp.term, post: sp.post,
+            meta: [a.author, clientName(projKey(acc)), CODE[(acc || {}).platform] || ''].filter(Boolean).join(' · '),
+            line: (a.category || 'Flagged') + ' · ' + (a.status === 'escalated' ? (a.auto ? 'hidden and sent to admin' : 'sent to admin') : a.status === 'hidden' ? (a.auto ? 'hidden automatically' : 'hidden by ' + (staffName(a.handled_by) || 'the team')) : a.status === 'safe' ? 'marked safe' : 'waiting for review') + ' · ' + agoS(now - Date.parse(a.created_at)) + ' ago',
+            lineColor: a.status === 'escalated' ? '#B4433A' : a.status === 'open' ? '#9A6A12' : '#6B7572',
+            actsVM: acts,
+          };
+        }),
+        modRulesNote: canRules ? 'Terms match whole words. Add Malayalam script and Manglish spellings alongside English. Auto-hide hides the comment on Instagram or Facebook — the author still sees it, nobody else does.' : 'Only admin changes rules.',
+        modRulesVM: (s.modRules || []).map(r => {
+          const tg = on => ({ label: on ? 'On' : 'Off', bg: on ? 'var(--green-deep)' : '#fff', color: on ? '#fff' : '#4A524F', border: on ? 'var(--green-deep)' : 'var(--line)' });
+          const openR = s.ruleOpen === r.id;
+          return {
+            cat: r.category, terms: (r.terms || []).length + ((r.terms || []).length === 1 ? ' term' : ' terms'), scope: r.project_id ? clientName(r.project_id) : 'All accounts',
+            auto: tg(r.auto_hide), esc: tg(r.escalate), act: tg(r.active), cursor: canRules ? 'pointer' : 'default',
+            toggleAuto: () => this.ruleUpdate(r, { auto_hide: !r.auto_hide }), toggleEsc: () => this.ruleUpdate(r, { escalate: !r.escalate }),
+            toggleAct: () => this.ruleUpdate(r, { active: !r.active }),
+            editLabel: openR ? 'Close' : canRules ? 'Edit terms' : 'View terms', toggleOpen: () => this.setState({ ruleOpen: openR ? null : r.id, ruleTerm: '' }),
+            isOpen: openR, canEdit: canRules,
+            termsVM: (r.terms || []).map(t => ({ t, remove: () => this.ruleUpdate(r, { terms: (r.terms || []).filter(x => x !== t) }) })),
+            noTerms: !(r.terms || []).length,
+          };
+        }),
+        modTerm: s.ruleTerm || '', onModTerm: e => this.setState({ ruleTerm: e.target.value }),
+        modAddTerm: () => { const r = (s.modRules || []).find(x => x.id === s.ruleOpen); if (r) this.addRuleTerm(r); },
+        modTermKey: e => { if (e.key === 'Enter') { e.preventDefault(); const r = (s.modRules || []).find(x => x.id === s.ruleOpen); if (r) this.addRuleTerm(r); } },
+        modCanRules: canRules,
+      });
+      out.modHasSpikes = out.modSpikesVM.length > 0;
+      out.modEmpty = !out.modAlertsVM.length;
+      out.modEmptyText = !scoped.some(a => a.moderation_enabled) ? 'No account is being watched yet. Switch Moderation on for an Instagram or Facebook account under Accounts.' : 'Nothing in this list.';
+    }
+    out.inbOn = out.digIsInbox && !missing;
+    out.planOn = out.digIsPlanner && !missing;
+    out.audOn = out.digIsAudience && !missing;
+    out.modOn = out.digIsModeration && !missing;
+    out.v2MissingShown = missing && (out.digIsInbox || out.digIsPlanner || out.digIsAudience || out.digIsModeration);
+    return out;
   }
 
   // Three days of runs, not the newest 24. With the hourly job and a dozen
@@ -18040,6 +19534,23 @@ class Component extends DCLogic {
     // (or, on X, impressions): a Facebook post whose insights were refused
     // carried its reactions into the numerator with nothing below it.
     const scopedPosts = s.digPosts.filter(p => inScope(p.account_id));
+    // A Facebook copy of an Instagram post (same client, same caption, within
+    // ten minutes) is one piece of work. Its card folds into the Instagram one,
+    // which carries the Facebook numbers underneath; totals still add both.
+    const capKey = p => String(p.caption || '').toLowerCase().replace(/#[^\s#]+/g, '').replace(/[^\p{L}\p{N}]+/gu, '').slice(0, 60);
+    const twinOf = new Map(), fbTwin = new Map();
+    {
+      const projOf = id => (accById.get(id) || {}).project_id;
+      const igs = scopedPosts.filter(p => p.kind !== 'story' && platOf(p.account_id) === 'instagram');
+      scopedPosts.forEach(f => {
+        if (f.kind === 'story' || platOf(f.account_id) !== 'facebook') return;
+        const t = Date.parse(f.published_at), k = capKey(f);
+        const ig = igs.find(q => !fbTwin.has(q.id) && projOf(q.account_id) === projOf(f.account_id) && capKey(q) === k
+          && Math.abs(Date.parse(q.published_at) - t) <= 10 * 60000);
+        if (ig) { twinOf.set(f.id, ig.id); fbTwin.set(ig.id, f); }
+      });
+    }
+    const cardPosts = scopedPosts.filter(p => !twinOf.has(p.id));
     const pNum = (p, k) => Number(p[k] || 0);
     const feedInter = p => pNum(p, 'likes') + pNum(p, 'comments') + pNum(p, 'shares') + pNum(p, 'saves');
     const storyInter = p => pNum(p, 'replies') + pNum(p, 'shares');
@@ -18294,6 +19805,15 @@ class Component extends DCLogic {
         vaultLabel: a.vault_ref ? 'Vault: ' + a.vault_ref : '',
         secretLabel: sec ? 'Credential stored' + (sec.hint ? ' · ' + sec.hint : '') : '',
         canLog: !canSyncAcc(a) && a.active !== false,
+        hasMsg: (a.platform === 'instagram' || a.platform === 'facebook') && a.active !== false && !s.v2Missing,
+        msgLocked: s.role !== 'admin', msgCursor: s.role === 'admin' ? 'pointer' : 'default',
+        inboxLabel: a.inbox_enabled ? 'Inbox on' : 'Inbox off',
+        inboxBg: a.inbox_enabled ? 'var(--green-deep)' : '#fff', inboxColor: a.inbox_enabled ? '#fff' : '#4A524F', inboxBorder: a.inbox_enabled ? 'var(--green-deep)' : 'var(--line)',
+        modLabel: a.moderation_enabled ? 'Moderation on' : 'Moderation off',
+        modBg: a.moderation_enabled ? 'var(--green-deep)' : '#fff', modColor: a.moderation_enabled ? '#fff' : '#4A524F', modBorder: a.moderation_enabled ? 'var(--green-deep)' : 'var(--line)',
+        toggleInbox: () => { if (s.role === 'admin') this.toggleAccInbox(a); },
+        toggleMod: () => { if (s.role === 'admin') this.toggleAccMod(a); },
+        canBackfill: s.role === 'admin' && !!a.inbox_enabled, backfill: () => this.backfillInbox(a),
         logNumbers: () => this.openNumbers(a),
         edit: () => this.editAccount(a),
         syncOne: () => this.syncDigital({ account_ids: [a.id] }),
@@ -18504,6 +20024,10 @@ class Component extends DCLogic {
         thirdName: story ? 'Replies' : 'Engagement',
         permalink: link, hasLink: !!link,
         linkLabel: 'Open on ' + ({ facebook: 'Facebook', youtube: 'YouTube', x: 'X' }[acc && acc.platform] || 'Instagram'),
+        hasAlso: fbTwin.has(p.id),
+        alsoLabel: fbTwin.has(p.id) ? 'Also on Facebook · ' + this.compact(pNum(fbTwin.get(p.id), 'video_views')) + ' views · '
+          + this.compact(pNum(fbTwin.get(p.id), 'reach')) + ' reach · ' + this.compact(pNum(fbTwin.get(p.id), 'likes')) + ' likes' : '',
+        alsoLink: fbTwin.has(p.id) && /^https:\/\//i.test(fbTwin.get(p.id).permalink || '') ? fbTwin.get(p.id).permalink : '',
         hasAd: adReach > 0 || adSpend > 0,
         adLabel: 'Boosted' + (adReach ? ' · ' + this.compact(adReach) + ' of the reach from ads' : '') + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
@@ -18511,16 +20035,16 @@ class Component extends DCLogic {
       };
     };
 
-    const digTopVM = rangePosts.slice()
+    const digTopVM = rangePosts.filter(p => !twinOf.has(p.id))
       .sort((x, y) => (pNum(y, 'video_views') - pNum(x, 'video_views')) || (pNum(y, 'reach') - pNum(x, 'reach')))
       .slice(0, 5).map(card);
 
     const kc = {};
-    scopedPosts.forEach(p => { kc[kindKey(p)] = (kc[kindKey(p)] || 0) + 1; });
+    cardPosts.forEach(p => { kc[kindKey(p)] = (kc[kindKey(p)] || 0) + 1; });
     const kindSel = s.digKind === 'all' || kc[s.digKind] ? (s.digKind || 'all') : 'all';
     const KIND_CHIPS = [['all', 'All'], ['reel', 'Reels'], ['post', 'Posts'], ['story', 'Stories'], ['video', 'Videos'], ['short', 'Shorts']];
     const digKindChipsVM = chip(
-      KIND_CHIPS.filter(([k]) => k === 'all' || kc[k]).map(([k, l]) => [k, l + ' · ' + (k === 'all' ? scopedPosts.length : kc[k])]),
+      KIND_CHIPS.filter(([k]) => k === 'all' || kc[k]).map(([k, l]) => [k, l + ' · ' + (k === 'all' ? cardPosts.length : kc[k])]),
       kindSel, k => this.setState({ digKind: k }));
     const SORTS = [['new', 'Newest'], ['views', 'Most views'], ['reach', 'Most reach'], ['er', 'Engagement']];
     const sortSel = SORTS.some(x => x[0] === s.digSort) ? s.digSort : 'new';
@@ -18532,7 +20056,7 @@ class Component extends DCLogic {
       reach: (x, y) => pNum(y, 'reach') - pNum(x, 'reach'),
       er: (x, y) => erOf(y) - erOf(x),
     };
-    const filtered = scopedPosts.filter(p => kindSel === 'all' || kindKey(p) === kindSel);
+    const filtered = cardPosts.filter(p => kindSel === 'all' || kindKey(p) === kindSel);
     const digPostsVM = filtered.slice().sort(sorters[sortSel]).slice(0, 60).map(card);
     const fFeed = filtered.filter(p => p.kind !== 'story'), fStories = filtered.filter(p => p.kind === 'story');
     const fViews = tot(filtered, p => pNum(p, 'video_views'));
@@ -18922,6 +20446,7 @@ class Component extends DCLogic {
       };
     });
     const tabList = DIG_TABS.filter(t => (t[0] === 'portal' ? (!isMaster && !isHouse && this.can('digitalEdit'))
+      : (t[0] === 'inbox' || t[0] === 'moderation') ? this.can('inbox')
       : (t[0] !== 'deals' && t[0] !== 'recharge') || (this.can('digitalMoney') && !isHouse)));
     const pt = s.portal;
     const monthsBack = [];
@@ -19049,6 +20574,7 @@ class Component extends DCLogic {
     const accCount = id => s.digAccounts.filter(a => a.active !== false && (id === HOUSE ? a.project_id == null : a.project_id === id)).length;
     const lastOk = s.digRuns.find(r => (r.status === 'ok' || r.status === 'partial') && (scope === 'all' || inScope(r.scope)));
     const scopedOn = scoped.filter(a => a.active !== false);
+    const v2 = this.digV2VM({ s, scope, isHouse, scoped: scopedOn, clientName, clients });
     const digExtraVM = {
       ...portalVM,
       digTitle: scope === 'all' ? 'All clients' : isHouse ? 'Glomium — our own' : clientName(scope),
@@ -19059,11 +20585,15 @@ class Component extends DCLogic {
         scopedOn.filter(a => !DIG_PLATFORM_AUTO[a.platform]).length ? scopedOn.filter(a => !DIG_PLATFORM_AUTO[a.platform]).length + ' by hand' : '',
         lastOk ? 'last sync ' + ago(lastOk.finished_at || lastOk.started_at) : '',
       ].filter(Boolean).join(' · '),
-      digTabLinksVM: tabList.map(([k, label]) => ({
-        label, go: () => this.setDigitalTab(k),
-        color: s.digitalTab === k ? '#1B1D1E' : '#4A524F',
-        bar: s.digitalTab === k ? 'var(--green)' : 'transparent',
-      })),
+      digTabLinksVM: tabList.map(([k, label]) => {
+        const n = (v2.digV2Counts || {})[k] || 0;
+        return {
+          label, go: () => this.setDigitalTab(k),
+          color: s.digitalTab === k ? '#1B1D1E' : '#4A524F',
+          bar: s.digitalTab === k ? 'var(--green)' : 'transparent',
+          hasCount: n > 0, count: String(n), countBg: k === 'moderation' ? '#B4433A' : 'var(--green-deep)',
+        };
+      }),
       digScopeValue: s.digProject,
       onDigScope: e => this.setDigScope(e.target.value),
       digScopeGroupsVM: [
@@ -19182,6 +20712,7 @@ class Component extends DCLogic {
       syncAll: () => this.syncDigital(scope === 'all' ? {} : { project_id: isHouse ? 'house' : scope }),
       syncBackfill: () => this.syncDigital(scope === 'all' ? { days: 30 } : { project_id: isHouse ? 'house' : scope, days: 30 }),
       ...digExtraVM,
+      ...v2,
       goContent: () => this.setDigitalTab('content'),
 
       digKpiGroupsVM, digChartGridVM, digChartAxisVM, digChartSummaryVM,

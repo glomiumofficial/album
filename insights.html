@@ -996,6 +996,7 @@ class Component extends DCLogic {
     const growth = fNow && fNow - gain > 0 && gain ? gain * 100 / (fNow - gain) : null;
 
     const pN = (p, k) => n(p[k]);
+    const safe = u => (/^https:\/\//i.test(u || '') ? u : '');
     const inter = p => pN(p, 'likes') + pN(p, 'comments') + pN(p, 'shares') + pN(p, 'saves');
     const base = p => pN(p, 'reach') || pN(p, 'impressions');
     const day = p => String(p.published_at || '').slice(0, 10);
@@ -1006,14 +1007,32 @@ class Component extends DCLogic {
     const stories = wPosts.filter(p => p.kind === 'story').sort(byDate).reverse();
     const erOf = list => { const m = list.filter(p => p.kind !== 'story' && base(p) > 0); const b = m.reduce((t, p) => t + base(p), 0); return b ? m.reduce((t, p) => t + inter(p), 0) * 100 / b : null; };
     const er = erOf(feed);
-    // A cross-post is one piece of work on two profiles. Counts and the best-of
-    // list take it once (the copy with more views); views, reach and
-    // engagement still add both copies, because both were seen.
-    const capKey = p => String(p.caption || '').replace(/\s+/g, ' ').trim().toLowerCase().slice(0, 80);
-    const twins = (p, q) => q.account_id !== p.account_id && capKey(q) === capKey(p)
+    // A cross-post is one piece of work on two profiles. It shows once, as the
+    // Instagram copy (its picture, link and label), carrying the numbers of
+    // both copies added together. Picking the copy with more views let the
+    // Facebook copy — impressions plus ad views — hide the Instagram post.
+    const capKey = p => String(p.caption || '').toLowerCase().replace(/#[^\s#]+/g, '').replace(/[^\p{L}\p{N}]+/gu, '').slice(0, 60);
+    const twins = (p, q) => q.account_id !== p.account_id && plat(q.account_id) !== plat(p.account_id) && capKey(q) === capKey(p)
       && Math.abs(Date.parse(q.published_at) - Date.parse(p.published_at)) <= 10 * 60000;
-    const onePer = list => list.slice().sort((x, y) => (pN(y, 'video_views') - pN(x, 'video_views')) || (base(y) - base(x)))
-      .reduce((keep, p) => (keep.some(q => twins(p, q)) ? keep : keep.concat([p])), []);
+    const SUMS = ['video_views', 'reach', 'impressions', 'likes', 'comments', 'shares', 'saves'];
+    const lead = p => (plat(p.account_id) === 'instagram' ? 0 : 1);
+    const onePer = list => {
+      const groups = [];
+      list.slice().sort((x, y) => lead(x) - lead(y) || byDate(x, y)).forEach(p => {
+        const g = groups.find(gr => gr.length < SOCIAL.length && gr.every(q => twins(p, q)));
+        if (g) g.push(p); else groups.push([p]);
+      });
+      return groups.map(g => {
+        if (g.length === 1) return g[0];
+        const m = { ...g[0], twinOf: g.length };
+        SUMS.forEach(k => { m[k] = g.reduce((t, q) => t + pN(q, k), 0); });
+        m.platLabel = g.map(q => PLATFORM[plat(q.account_id)] || '').filter(Boolean).join(' + ');
+        if (!safe(m.thumb_url)) m.thumb_url = (g.find(q => safe(q.thumb_url)) || {}).thumb_url;
+        if (!safe(m.permalink)) m.permalink = (g.find(q => safe(q.permalink)) || {}).permalink;
+        return m;
+      });
+    };
+    const platOf = p => p.platLabel || PLATFORM[plat(p.account_id)] || '';
     const pieces = onePer(feed);
     const views = wPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
     const viewsPrev = pPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
@@ -1117,7 +1136,6 @@ class Component extends DCLogic {
     else if (reach) audienceBits.push('your content reached ' + compact(reach) + ' accounts.');
 
     // ---- content -----------------------------------------------------------
-    const safe = u => (/^https:\/\//i.test(u || '') ? u : '');
     // Thumbs sit in an unquoted CSS url(); escape the few characters that end one.
     const cssUrl = u => String(u || '').replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'));
     const newest = onePer(report ? feed : posts.filter(p => p.kind !== 'story')).sort(byDate).reverse().slice(0, 12);
@@ -1125,7 +1143,7 @@ class Component extends DCLogic {
       const t = cssUrl(safe(p.thumb_url)), l = safe(p.permalink);
       return {
         thumb: t, hasThumb: !!t, href: l, hasLink: !!l, kind: KIND[p.kind] || p.kind,
-        when: fmtDay(p.published_at), platform: PLATFORM[plat(p.account_id)] || '',
+        when: fmtDay(p.published_at), platform: platOf(p),
         views: compact(pN(p, 'video_views') || base(p)), viewsLabel: pN(p, 'video_views') ? 'views' : 'reach',
         likes: compact(pN(p, 'likes')),
       };
@@ -1137,7 +1155,7 @@ class Component extends DCLogic {
       const cap = String(p.caption || '').replace(/\s+/g, ' ').trim();
       const vw = pN(p, 'video_views');
       return {
-        rank: String(i + 1).padStart(2, '0'), kind: KIND[p.kind] || p.kind, platform: PLATFORM[plat(p.account_id)] || '',
+        rank: String(i + 1).padStart(2, '0'), kind: KIND[p.kind] || p.kind, platform: platOf(p),
         when: fmtDay(p.published_at), captionLong: cap ? cap.slice(0, 220).toLowerCase() + (cap.length > 220 ? '…' : '') : 'no caption', captionColor: cap ? '#1B1D1E' : '#8A9390',
         thumb, hasThumb: !!thumb, link, hasLink: !!link,
         headline: compact(vw || base(p)), headlineLabel: vw ? 'views' : 'reach', er: e == null ? '' : pct(e),
