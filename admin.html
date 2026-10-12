@@ -20069,7 +20069,10 @@ class Component extends DCLogic {
         // Instagram CDN links expire after a few days; a dead one falls back to
         // the grey tile underneath instead of a broken-image icon.
         hideImg: e => { if (e && e.currentTarget) e.currentTarget.style.display = 'none'; },
-        accountLabel: acc ? String(acc.label || acc.handle || '').trim() + (scope === 'all' ? ' · ' + clientName(acc.project_id) : '') : '',
+        // How old the numbers are — a fresh reel read 6 h ago looks far behind the app.
+        accountLabel: (acc ? String(acc.label || acc.handle || '').trim() + (scope === 'all' ? ' · ' + clientName(acc.project_id) : '') : '')
+          + (() => { const m = p.synced_at ? Math.max(0, Math.round((Date.now() - Date.parse(p.synced_at)) / 60000)) : null;
+            return m == null || !Number.isFinite(m) ? '' : ' · updated ' + (m < 60 ? m + ' min' : m < 2880 ? Math.round(m / 60) + ' h' : Math.round(m / 1440) + ' d') + ' ago'; })(),
         whenLabel: p.published_at ? fmtStampTime(p.published_at) : '—',
         caption: String(p.caption || '').replace(/\s+/g, ' ').trim().slice(0, 160) || 'No caption',
         captionColor: p.caption ? '#1B1D1E' : '#8A9390',
