@@ -19608,7 +19608,13 @@ class Component extends DCLogic {
     const inter = p => (p.kind === 'story' ? storyInter(p) : feedInter(p));
     // Likes and comments include the boosted copy, so the rate is over the
     // post's whole reach, organic and ads.
-    const erBase = p => (pNum(p, 'reach') + pNum(p, 'ad_reach')) || pNum(p, 'impressions');
+    // Instagram's count on a boosted reel includes the ad's plays (app 14.5k =
+    // 1.1k organic + 13.4k from the ad), so Instagram rows read organic + ad.
+    // Facebook post views and reach already include the boost.
+    const withAd = p => platOf(p.account_id) !== 'facebook';
+    const viewsT = p => pNum(p, 'video_views') + (withAd(p) ? pNum(p, 'ad_views') : 0);
+    const reachT = p => pNum(p, 'reach') + (withAd(p) ? pNum(p, 'ad_reach') : 0);
+    const erBase = p => reachT(p) || pNum(p, 'impressions');
     const tot = (list, f) => list.reduce((t, p) => t + f(p), 0);
     const erOfList = list => {
       const m = list.filter(p => p.kind !== 'story' && erBase(p) > 0);
@@ -19620,14 +19626,14 @@ class Component extends DCLogic {
     const storyList = rangePosts.filter(p => p.kind === 'story');
     const feedEng = tot(feed, feedInter);
     const feedEr = erOfList(feed);
-    const contentViews = tot(rangePosts, p => pNum(p, 'video_views'));
+    const contentViews = tot(rangePosts, viewsT);
     // An account's views for the window: Meta's own total where there is one,
     // else the days on record, else what its posts in the window drew.
     const viewsOf = a => {
       const t = viewsOfAcc(a);
       if (t != null) return t;
       const dv = sumOf(socialRows.filter(m => m.account_id === a.id), 'video_views');
-      return dv || tot(rangePosts.filter(p => p.account_id === a.id), p => pNum(p, 'video_views'));
+      return dv || tot(rangePosts.filter(p => p.account_id === a.id), viewsT);
     };
     const viewsAll = digSocAccs.length ? digSocAccs.reduce((t, a) => t + viewsOf(a), 0) : contentViews;
     const reachSplit = platSplit(reachOfAcc), viewsSplit = platSplit(viewsOf);
@@ -20056,7 +20062,8 @@ class Component extends DCLogic {
       const acc = accById.get(p.account_id);
       const story = p.kind === 'story';
       const adReach = pNum(p, 'ad_reach'), adViews = pNum(p, 'ad_views'), adSpend = spendByPost.get(p.id) || 0;
-      const reachN = pNum(p, 'reach'), viewsN = pNum(p, 'video_views');
+      const reachN = reachT(p), viewsN = viewsT(p);
+      const adV = withAd(p) ? adViews : 0, adR = withAd(p) ? adReach : 0;
       const er = erBase(p) ? inter(p) * 100 / erBase(p) : null;
       const ageH = p.published_at ? (Date.now() - new Date(p.published_at).getTime()) / 3600000 : 999;
       const thumb = /^https:\/\//i.test(p.thumb_url || '') ? p.thumb_url : '';
@@ -20095,16 +20102,16 @@ class Component extends DCLogic {
           + this.compact(pNum(fbTwin.get(p.id), 'reach')) + ' reach · ' + this.compact(pNum(fbTwin.get(p.id), 'likes')) + ' likes' : '',
         alsoLink: fbTwin.has(p.id) && /^https:\/\//i.test(fbTwin.get(p.id).permalink || '') ? fbTwin.get(p.id).permalink : '',
         hasAd: adReach > 0 || adViews > 0 || adSpend > 0,
-        // Views and reach above are the post's own, as its Instagram insights
-        // show them; what the ads added is told here, not folded in.
-        adLabel: 'Boosted' + (adViews ? ' · +' + this.compact(adViews) + ' views' : '') + (adReach ? ' · +' + this.compact(adReach) + ' reach from ads' : '') + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
+        // Views and reach above include the ad, as the Instagram app counts
+        // them; the share that came from ads is told here.
+        adLabel: 'Boosted' + (adV ? ' · ' + this.compact(adV) + ' views from ads' : '') + (adR ? ' · ' + this.compact(adR) + ' reach from ads' : '') + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
         promoColor: p.is_paid_promo && !p.disclosure_ok ? '#B4433A' : '#6B7572',
       };
     };
 
     const digTopVM = rangePosts.filter(p => !twinOf.has(p.id))
-      .sort((x, y) => (pNum(y, 'video_views') - pNum(x, 'video_views')) || (pNum(y, 'reach') - pNum(x, 'reach')))
+      .sort((x, y) => (viewsT(y) - viewsT(x)) || (reachT(y) - reachT(x)))
       .slice(0, 5).map(card);
 
     const kc = {};
@@ -20120,14 +20127,14 @@ class Component extends DCLogic {
     const erOf = p => (erBase(p) ? inter(p) * 100 / erBase(p) : -1);
     const sorters = {
       new: (x, y) => String(y.published_at || '').localeCompare(String(x.published_at || '')),
-      views: (x, y) => pNum(y, 'video_views') - pNum(x, 'video_views'),
-      reach: (x, y) => pNum(y, 'reach') - pNum(x, 'reach'),
+      views: (x, y) => viewsT(y) - viewsT(x),
+      reach: (x, y) => reachT(y) - reachT(x),
       er: (x, y) => erOf(y) - erOf(x),
     };
     const filtered = cardPosts.filter(p => kindSel === 'all' || kindKey(p) === kindSel);
     const digPostsVM = filtered.slice().sort(sorters[sortSel]).slice(0, 60).map(card);
     const fFeed = filtered.filter(p => p.kind !== 'story'), fStories = filtered.filter(p => p.kind === 'story');
-    const fViews = tot(filtered, p => pNum(p, 'video_views'));
+    const fViews = tot(filtered, viewsT);
     const oldest = filtered.map(p => p.published_at).filter(Boolean).sort()[0] || '';
     const digContentSummaryVM = [
       { label: 'Items', value: String(filtered.length), sub: oldest ? 'since ' + fmtDay(String(oldest).slice(0, 10)) : '' },
@@ -20153,7 +20160,7 @@ class Component extends DCLogic {
       const fN = followersOf(a.id);
       const gain = asum('follower_delta');
       const ap = rangePosts.filter(p => p.account_id === a.id);
-      const views = isSocial(a) && a.platform !== 'youtube' ? viewsOf(a) : (tot(ap, p => pNum(p, 'video_views')) || asum('video_views'));
+      const views = isSocial(a) && a.platform !== 'youtube' ? viewsOf(a) : (tot(ap, viewsT) || asum('video_views'));
       const mt = metaTotals.get(a.id);
       const st = (label, value, sub, good) => ({ label, value, sub: sub || '', subColor: good ? '#0E8E72' : '#6B7572' });
       const rd = range + ' days';
