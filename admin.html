@@ -5128,7 +5128,8 @@
                 </div>
                 <div style="display:flex; flex-direction:column; gap:3px; flex:1 1 220px; min-width:0">
                   <span style="font-size:13px; color:{{ p.captionColor }}; line-height:1.5; max-height:3em; overflow:hidden">{{ p.caption }}</span>
-                  <span style="font-size:12px; color:#6B7572">{{ p.kindLabel }} · {{ p.whenLabel }}</span>
+                  <span style="font-size:12px; color:#6B7572">{{ p.kindLabel }} · {{ p.platLabel }} · {{ p.whenLabel }}</span>
+                  <span style="font-size:12px; color:#4A524F">{{ p.countsLine }}</span>
                 </div>
                 <div style="display:flex; gap:22px; align-items:center">
                   <div style="display:flex; flex-direction:column; gap:2px; min-width:56px; text-align:right">
@@ -5505,19 +5506,50 @@
                       </div>
                     </sc-for>
                   </div>
-                  <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; padding-top:12px; border-top:1px solid var(--line)">
-                    <sc-for list="{{ p.detailVM }}" as="x" hint-placeholder-count="4">
+                  <div style="display:flex; flex-wrap:wrap; gap:10px 16px; padding-top:12px; border-top:1px solid var(--line)">
+                    <sc-for list="{{ p.detailVM }}" as="x" hint-placeholder-count="5">
                       <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
                         <span style="font-size:13px; color:#1B1D1E">{{ x.value }}</span>
                         <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
                       </div>
                     </sc-for>
                   </div>
-                  <sc-if value="{{ p.hasAlso }}" hint-placeholder-val="{{ false }}">
-                    <a href="{{ p.alsoLink }}" target="_blank" rel="noopener noreferrer" style="font-size:12px; color:#4A524F; line-height:1.5; text-decoration:none">{{ p.alsoLabel }}</a>
+                  <sc-if value="{{ p.hasSplit }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column; gap:10px; padding-top:12px; border-top:1px solid var(--line)">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Each platform</span>
+                      <sc-for list="{{ p.splitVM }}" as="q" hint-placeholder-count="2">
+                        <div style="display:flex; flex-direction:column; gap:3px">
+                          <div style="display:flex; align-items:baseline; gap:8px">
+                            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:var(--green-deep); margin-right:auto">{{ q.platform }}</span>
+                            <sc-if value="{{ q.hasLink }}" hint-placeholder-val="{{ false }}">
+                              <a href="{{ q.link }}" target="_blank" rel="noopener noreferrer" style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); text-decoration:none">Open ↗</a>
+                            </sc-if>
+                          </div>
+                          <span style="font-size:12px; color:#4A524F; line-height:1.5">{{ q.line }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
                   </sc-if>
                   <sc-if value="{{ p.hasAd }}" hint-placeholder-val="{{ false }}">
                     <span style="font-size:12px; color:var(--green-deep); line-height:1.5">{{ p.adLabel }}</span>
+                  </sc-if>
+                  <sc-if value="{{ p.hasPaid }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; flex-direction:column">
+                      <div style="display:grid; grid-template-columns:minmax(0,1fr) 52px 40px 40px; gap:6px; padding-bottom:6px">
+                        <span></span>
+                        <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#8A9390; text-align:right">Organic</span>
+                        <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--green-deep); text-align:right">Ads</span>
+                        <span style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#1B1D1E; text-align:right">Total</span>
+                      </div>
+                      <sc-for list="{{ p.paidVM }}" as="r" hint-placeholder-count="6">
+                        <div style="display:grid; grid-template-columns:minmax(0,1fr) 52px 40px 40px; gap:6px; padding:5px 0; border-top:1px solid var(--line)">
+                          <span style="font-size:12px; color:#4A524F">{{ r.label }}</span>
+                          <span style="font-size:12px; color:#4A524F; text-align:right">{{ r.organic }}</span>
+                          <span style="font-size:12px; color:var(--green-deep); text-align:right">{{ r.paid }}</span>
+                          <span style="font-size:12px; color:#1B1D1E; text-align:right">{{ r.total }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
                   </sc-if>
                   <div style="display:flex; align-items:center; gap:10px; margin-top:auto; flex-wrap:wrap">
                     <span style="font-size:12px; color:{{ p.promoColor }}">{{ p.promoLabel }}</span>
@@ -20630,7 +20662,13 @@ class Component extends DCLogic {
     }
     const cardPosts = scopedPosts.filter(p => !twinOf.has(p.id));
     const pNum = (p, k) => Number(p[k] || 0);
-    const feedInter = p => pNum(p, 'likes') + pNum(p, 'comments') + pNum(p, 'shares') + pNum(p, 'saves');
+    // Organic and paid: Instagram keeps a post's own views, reach, shares and
+    // saves apart from its boost (ad_*), so the ad adds on top; its likes and
+    // comments already include it. Facebook's numbers all include the boost.
+    const AD_COL = { video_views: 'ad_views', reach: 'ad_reach', likes: 'ad_likes', comments: 'ad_comments', shares: 'ad_shares', saves: 'ad_saves' };
+    const ADD_ON = { video_views: 1, reach: 1, shares: 1, saves: 1 };
+    const tv = (p, k) => pNum(p, k) + (platOf(p.account_id) !== 'facebook' && ADD_ON[k] ? pNum(p, AD_COL[k]) : 0);
+    const feedInter = p => tv(p, 'likes') + tv(p, 'comments') + tv(p, 'shares') + tv(p, 'saves') + pNum(p, 'reposts');
     const storyInter = p => pNum(p, 'replies') + pNum(p, 'shares');
     const inter = p => (p.kind === 'story' ? storyInter(p) : feedInter(p));
     // Likes and comments include the boosted copy, so the rate is over the
@@ -20641,7 +20679,9 @@ class Component extends DCLogic {
     const withAd = p => platOf(p.account_id) !== 'facebook';
     const viewsT = p => pNum(p, 'video_views') + (withAd(p) ? pNum(p, 'ad_views') : 0);
     const reachT = p => pNum(p, 'reach') + (withAd(p) ? pNum(p, 'ad_reach') : 0);
-    const erBase = p => reachT(p) || pNum(p, 'impressions');
+    // More interactions than reach cannot happen: the reach on record is short
+    // (a boost Meta did not tie to its ad), so views stand in for the rate.
+    const erBase = p => { const r = reachT(p) || pNum(p, 'impressions'); return r < feedInter(p) && viewsT(p) > r ? viewsT(p) : r; };
     const tot = (list, f) => list.reduce((t, p) => t + f(p), 0);
     const erOfList = list => {
       const m = list.filter(p => p.kind !== 'story' && erBase(p) > 0);
@@ -20649,6 +20689,30 @@ class Component extends DCLogic {
       return b ? tot(m, feedInter) * 100 / b : null;
     };
     const rangePosts = scopedPosts.filter(p => p.published_at && String(p.published_at).slice(0, 10) >= from);
+    // A cross-post reads as one piece, as on the client's page: views, reach
+    // and engagement add both copies, and each platform's own numbers sit
+    // underneath. Facebook Pages report no saves or reposts, X counts reposts
+    // as shares and YouTube has neither — those read “—”, never 0.
+    const copiesOf = p => (fbTwin.has(p.id) ? [p, fbTwin.get(p.id)] : [p]);
+    const viewsC = p => tot(copiesOf(p), viewsT), reachC = p => tot(copiesOf(p), reachT);
+    const erC = p => { const c = copiesOf(p), b = tot(c, erBase); return b ? tot(c, feedInter) * 100 / b : null; };
+    const NO_COUNT = { facebook: ['saves', 'reposts'], youtube: ['shares', 'saves', 'reposts'], x: ['reposts'] };
+    const counted = (p, k) => (NO_COUNT[platOf(p.account_id)] || []).indexOf(k) === -1 && p[k] != null;
+    const countOf = (list, k) => { const r = list.filter(p => counted(p, k)); return r.length ? this.compact(tot(r, p => tv(p, k))) : '—'; };
+    // What the promotion added. Facebook splits out only views, reach and
+    // shares, and nobody splits reposts — those read “—” on a boosted post.
+    const AD_KNOWN_FB = { video_views: 1, reach: 1, shares: 1 };
+    const boostedP = p => Object.values(AD_COL).some(a => pNum(p, a) > 0);
+    const adOf = (p, k) => (!counted(p, k) ? null : !boostedP(p) ? 0
+      : AD_COL[k] && (platOf(p.account_id) !== 'facebook' || AD_KNOWN_FB[k]) ? Math.min(pNum(p, AD_COL[k]), tv(p, k)) : null);
+    const PAID_ROWS = [['video_views', 'Views'], ['reach', 'Reach'], ['likes', 'Likes'], ['comments', 'Comments'], ['shares', 'Shares'], ['saves', 'Saves']];
+    const paidRows = list => PAID_ROWS.map(([k, l]) => {
+      const r = list.filter(p => counted(p, k));
+      if (!r.length) return null;
+      const total = tot(r, p => tv(p, k)), parts = r.map(p => adOf(p, k));
+      const ad = parts.some(x => x == null) ? null : parts.reduce((t, x) => t + x, 0);
+      return { label: l, total: this.compact(total), paid: ad == null ? '—' : this.compact(ad), organic: ad == null ? '—' : this.compact(Math.max(0, total - ad)) };
+    }).filter(Boolean);
     const feed = rangePosts.filter(p => p.kind !== 'story');
     const storyList = rangePosts.filter(p => p.kind === 'story');
     const feedEng = tot(feed, feedInter);
@@ -20690,7 +20754,8 @@ class Component extends DCLogic {
         kpi('Engagement rate', pct(feedEr), 'posts and reels, of reach', feedEr != null && feedEr >= 3),
         kpi('Interactions', this.compact(feedEng + tot(storyList, storyInter)),
           this.compact(tot(feed, p => pNum(p, 'likes'))) + ' likes · ' + this.compact(tot(feed, p => pNum(p, 'comments'))) + ' comments · '
-          + this.compact(tot(rangePosts, p => pNum(p, 'shares'))) + ' shares'),
+          + this.compact(tot(rangePosts, p => tv(p, 'shares'))) + ' shares · ' + this.compact(tot(feed, p => tv(p, 'saves'))) + ' saves · '
+          + this.compact(tot(feed, p => pNum(p, 'reposts'))) + ' reposts'),
         kpi('Avg story views', storyList.length ? this.compact(Math.round(storyViews / storyList.length)) : '—',
           storyList.length ? storyList.length + ' stories · ' + pct(storyViews ? tot(storyList, p => pNum(p, 'exits')) * 100 / storyViews : null) + ' exit rate'
             : 'stories are captured from the first sync on'),
@@ -21088,10 +21153,12 @@ class Component extends DCLogic {
     const card = p => {
       const acc = accById.get(p.account_id);
       const story = p.kind === 'story';
-      const adReach = pNum(p, 'ad_reach'), adViews = pNum(p, 'ad_views'), adSpend = spendByPost.get(p.id) || 0;
-      const reachN = reachT(p), viewsN = viewsT(p);
+      const adReach = pNum(p, 'ad_reach'), adViews = pNum(p, 'ad_views');
+      const copies = story ? [p] : copiesOf(p);
+      const adSpend = tot(copies, q => spendByPost.get(q.id) || 0);
+      const reachN = story ? reachT(p) : reachC(p), viewsN = story ? viewsT(p) : viewsC(p);
       const adV = withAd(p) ? adViews : 0, adR = withAd(p) ? adReach : 0;
-      const er = erBase(p) ? inter(p) * 100 / erBase(p) : null;
+      const er = story ? (erBase(p) ? inter(p) * 100 / erBase(p) : null) : erC(p);
       const ageH = p.published_at ? (Date.now() - new Date(p.published_at).getTime()) / 3600000 : 999;
       const thumb = /^https:\/\//i.test(p.thumb_url || '') ? p.thumb_url : '';
       const link = /^https:\/\//i.test(p.permalink || '') ? p.permalink : '';
@@ -21117,28 +21184,36 @@ class Component extends DCLogic {
         detailVM: story
           ? [d('Forward', this.compact(pNum(p, 'taps_forward'))), d('Back', this.compact(pNum(p, 'taps_back'))),
              d('Exits', this.compact(pNum(p, 'exits'))), d('Exit rate', pct(viewsN ? pNum(p, 'exits') * 100 / viewsN : null))]
-          : [d('Likes', this.compact(pNum(p, 'likes'))), d('Comments', this.compact(pNum(p, 'comments'))),
-             d('Shares', this.compact(pNum(p, 'shares'))), d('Saves', this.compact(pNum(p, 'saves')))],
+          : [['likes', 'Likes'], ['comments', 'Comments'], ['shares', 'Shares'], ['saves', 'Saves'], ['reposts', 'Reposts']].map(([k, l]) => d(l, countOf(copies, k))),
+        countsLine: story ? '' : [['shares', 'shares'], ['saves', 'saves'], ['reposts', 'reposts']]
+          .map(([k, l]) => [copies.filter(q => counted(q, k)), k, l]).filter(x => x[0].length)
+          .map(([r, k, l]) => { const v = tot(r, q => tv(q, k)); return this.compact(v) + ' ' + (v === 1 ? l.replace(/s$/, '') : l); }).join(' · '),
+        platLabel: copies.map(q => DIG_PLATFORM_LABEL[platOf(q.account_id)] || platOf(q.account_id)).join(' + '),
         viewsLabel: this.compact(viewsN), reachLabel: this.compact(reachN),
         thirdLabel: story ? this.compact(pNum(p, 'replies')) : pct(er),
         thirdName: story ? 'Replies' : 'Engagement',
         permalink: link, hasLink: !!link,
         linkLabel: 'Open on ' + ({ facebook: 'Facebook', youtube: 'YouTube', x: 'X' }[acc && acc.platform] || 'Instagram'),
-        hasAlso: fbTwin.has(p.id),
-        alsoLabel: fbTwin.has(p.id) ? 'Also on Facebook · ' + this.compact(pNum(fbTwin.get(p.id), 'video_views')) + ' views · '
-          + this.compact(pNum(fbTwin.get(p.id), 'reach')) + ' reach · ' + this.compact(pNum(fbTwin.get(p.id), 'likes')) + ' likes' : '',
-        alsoLink: fbTwin.has(p.id) && /^https:\/\//i.test(fbTwin.get(p.id).permalink || '') ? fbTwin.get(p.id).permalink : '',
-        hasAd: adReach > 0 || adViews > 0 || adSpend > 0,
-        // Views and reach above include the ad, as the Instagram app counts
-        // them; the share that came from ads is told here.
-        adLabel: 'Boosted' + (adV ? ' · ' + this.compact(adV) + ' views from ads' : '') + (adR ? ' · ' + this.compact(adR) + ' reach from ads' : '') + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
+        hasSplit: copies.length > 1,
+        splitVM: copies.length > 1 ? copies.map(q => {
+          const pl = platOf(q.account_id), ql = /^https:\/\//i.test(q.permalink || '') ? q.permalink : '';
+          const bits = [this.compact(viewsT(q)) + ' views', this.compact(reachT(q)) + ' reach']
+            .concat(['likes', 'comments', 'shares', 'saves', 'reposts'].filter(k => counted(q, k)).map(k => this.compact(tv(q, k)) + ' ' + (tv(q, k) === 1 ? k.replace(/s$/, '') : k)));
+          const paid = boostedP(q) ? PAID_ROWS.map(([k, l]) => [adOf(q, k), l.toLowerCase()]).filter(x => x[0]).map(([v, l]) => this.compact(v) + ' ' + l) : [];
+          if (paid.length) bits.push('ads: ' + paid.join(', '));
+          return { platform: DIG_PLATFORM_LABEL[pl] || pl, line: bits.join(' · '), link: ql, hasLink: !!ql };
+        }) : [],
+        hasAd: copies.some(boostedP) || adSpend > 0,
+        adLabel: 'Boosted' + (adSpend ? ' · ' + this.inr(adSpend) + ' spent' : ''),
+        hasPaid: copies.some(boostedP),
+        paidVM: copies.some(boostedP) ? paidRows(copies) : [],
         promoLabel: p.is_paid_promo ? (p.disclosure_ok ? 'Paid · disclosed' : 'Paid · NOT disclosed') : '',
         promoColor: p.is_paid_promo && !p.disclosure_ok ? '#B4433A' : '#6B7572',
       };
     };
 
     const digTopVM = rangePosts.filter(p => !twinOf.has(p.id))
-      .sort((x, y) => (viewsT(y) - viewsT(x)) || (reachT(y) - reachT(x)))
+      .sort((x, y) => (viewsC(y) - viewsC(x)) || (reachC(y) - reachC(x)))
       .slice(0, 5).map(card);
 
     const kc = {};
@@ -21151,22 +21226,22 @@ class Component extends DCLogic {
     const SORTS = [['new', 'Newest'], ['views', 'Most views'], ['reach', 'Most reach'], ['er', 'Engagement']];
     const sortSel = SORTS.some(x => x[0] === s.digSort) ? s.digSort : 'new';
     const digSortChipsVM = chip(SORTS, sortSel, k => this.setState({ digSort: k }));
-    const erOf = p => (erBase(p) ? inter(p) * 100 / erBase(p) : -1);
+    const erOf = p => (p.kind === 'story' ? (erBase(p) ? inter(p) * 100 / erBase(p) : -1) : (erC(p) ?? -1));
     const sorters = {
       new: (x, y) => String(y.published_at || '').localeCompare(String(x.published_at || '')),
-      views: (x, y) => viewsT(y) - viewsT(x),
-      reach: (x, y) => reachT(y) - reachT(x),
+      views: (x, y) => viewsC(y) - viewsC(x),
+      reach: (x, y) => reachC(y) - reachC(x),
       er: (x, y) => erOf(y) - erOf(x),
     };
     const filtered = cardPosts.filter(p => kindSel === 'all' || kindKey(p) === kindSel);
     const digPostsVM = filtered.slice().sort(sorters[sortSel]).slice(0, 60).map(card);
     const fFeed = filtered.filter(p => p.kind !== 'story'), fStories = filtered.filter(p => p.kind === 'story');
-    const fViews = tot(filtered, viewsT);
+    const fViews = tot(filtered, viewsC);
     const oldest = filtered.map(p => p.published_at).filter(Boolean).sort()[0] || '';
     const digContentSummaryVM = [
       { label: 'Items', value: String(filtered.length), sub: oldest ? 'since ' + fmtDay(String(oldest).slice(0, 10)) : '' },
       { label: 'Views', value: this.compact(fViews), sub: filtered.length ? 'avg ' + this.compact(Math.round(fViews / filtered.length)) + ' each' : '' },
-      { label: 'Avg reach', value: filtered.length ? this.compact(Math.round(tot(filtered, p => pNum(p, 'reach')) / filtered.length)) : '—', sub: 'accounts per item' },
+      { label: 'Avg reach', value: filtered.length ? this.compact(Math.round(tot(filtered, reachC) / filtered.length)) : '—', sub: 'accounts per item' },
     ];
     if (fFeed.length) {
       digContentSummaryVM.push({ label: 'Engagement rate', value: pct(erOfList(fFeed)),

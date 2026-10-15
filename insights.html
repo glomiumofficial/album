@@ -355,9 +355,7 @@
                 <span style="position:absolute; inset:0; background-image:url({{ feature.thumb }}); background-size:cover; background-position:center"></span>
               </sc-if>
               <span style="position:absolute; top:0; left:0; padding:10px 14px; background:#1B1D1E; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#FFFFFF">no. 1 · best performer</span>
-              <sc-if value="{{ feature.hasLink }}" hint-placeholder-val="{{ false }}">
-                <a href="{{ feature.link }}" target="_blank" rel="noopener noreferrer" aria-label="open the post" style="position:absolute; inset:0"></a>
-              </sc-if>
+              <button data-noprint="1" onClick="{{ feature.open }}" aria-label="see every number for this post" style="position:absolute; inset:0; padding:0; background:none; border:0; border-radius:0; cursor:pointer"></button>
             </div>
             <div style="display:flex; flex-direction:column; gap:clamp(20px,2.6vw,28px); min-width:0">
               <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ feature.kind }} · {{ feature.when }} · {{ feature.platform }}</span>
@@ -375,9 +373,23 @@
                   <span style="font-size:14px; color:#4A524F; font-variant-numeric:tabular-nums">{{ x.value }} {{ x.label }}</span>
                 </sc-for>
               </div>
-              <sc-if value="{{ feature.hasLink }}" hint-placeholder-val="{{ false }}">
-                <a href="{{ feature.link }}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start; padding:12px 18px; border:1px solid #0E8E72; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#0E8E72">view post ↗</a>
+              <sc-if value="{{ feature.hasSplit }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex; flex-direction:column; gap:12px; padding-top:18px; border-top:1px solid #E2E7E5">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">on each platform</span>
+                  <sc-for list="{{ feature.splitVM }}" as="q" hint-placeholder-count="2">
+                    <div style="display:grid; grid-template-columns:minmax(84px,auto) minmax(0,1fr); gap:4px 16px; align-items:baseline">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ q.platform }}</span>
+                      <span style="font-size:14px; line-height:1.6; color:#4A524F; font-variant-numeric:tabular-nums">{{ q.line }}</span>
+                    </div>
+                  </sc-for>
+                </div>
               </sc-if>
+              <div data-noprint="1" style="display:flex; gap:10px; flex-wrap:wrap">
+                <button onClick="{{ feature.open }}" style="padding:12px 18px; background:none; border:1px solid #0E8E72; border-radius:0; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#0E8E72; cursor:pointer" style-hover="background:#0E8E72; color:#FFFFFF">every number →</button>
+                <sc-for list="{{ feature.linksVM }}" as="l" hint-placeholder-count="1">
+                  <a href="{{ l.href }}" target="_blank" rel="noopener noreferrer" style="padding:12px 18px; border:1px solid #DDE3E1; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#1B1D1E" style-hover="border-color:#0E8E72; color:#0E8E72">{{ l.label }}</a>
+                </sc-for>
+              </div>
             </div>
           </div>
         </sc-if>
@@ -395,15 +407,14 @@
                     </sc-if>
                     <span style="position:absolute; top:0; left:0; padding:6px 10px; background:#FFFFFF; font-size:10px; letter-spacing:2.6px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ p.rank }}</span>
                   </div>
-                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.kind }} · {{ p.when }}</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.kind }} · {{ p.when }} · {{ p.platform }}</span>
                   <div style="display:flex; gap:14px; align-items:baseline; flex-wrap:wrap">
                     <span style="font-size:22px; font-weight:300; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ p.headline }}</span>
                     <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.headlineLabel }}</span>
                     <span style="margin-left:auto; font-size:13px; color:#4A524F; font-variant-numeric:tabular-nums">{{ p.er }}</span>
                   </div>
-                  <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
-                    <a href="{{ p.link }}" target="_blank" rel="noopener noreferrer" aria-label="open the post" style="position:absolute; inset:0"></a>
-                  </sc-if>
+                  <span style="font-size:12px; line-height:1.5; color:#6B7572; font-variant-numeric:tabular-nums">{{ p.countsLine }}</span>
+                  <button data-noprint="1" onClick="{{ p.open }}" aria-label="see every number for this post" style="position:absolute; inset:0; padding:0; background:none; border:0; border-radius:0; cursor:pointer"></button>
                 </div>
               </sc-for>
             </div>
@@ -469,9 +480,7 @@
                     <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ p.viewsLabel }}</span>
                     <span style="margin-left:auto; font-size:13px; color:#4A524F; font-variant-numeric:tabular-nums">♡ {{ p.likes }}</span>
                   </div>
-                  <sc-if value="{{ p.hasLink }}" hint-placeholder-val="{{ false }}">
-                    <a href="{{ p.href }}" target="_blank" rel="noopener noreferrer" aria-label="open the post" style="position:absolute; inset:0"></a>
-                  </sc-if>
+                  <button data-noprint="1" onClick="{{ p.open }}" aria-label="see every number for this post" style="position:absolute; inset:0; padding:0; background:none; border:0; border-radius:0; cursor:pointer"></button>
                 </div>
               </sc-for>
             </div>
@@ -608,6 +617,111 @@
         </div>
       </section>
     </sc-if>
+    <sc-if value="{{ hasSheet }}" hint-placeholder-val="{{ false }}">
+      <div data-noprint="1" role="dialog" aria-modal="true" aria-label="every number for this post" style="position:fixed; inset:0; z-index:60; display:flex; justify-content:flex-end; background:rgba(27,29,30,.46)">
+        <button onClick="{{ closeSheet }}" aria-label="close" tabindex="-1" style="position:absolute; inset:0; padding:0; background:none; border:0; border-radius:0; cursor:default"></button>
+        <div style="position:relative; width:min(100%,600px); height:100%; overflow-y:auto; overscroll-behavior:contain; background:#FFFFFF; display:flex; flex-direction:column; gap:clamp(28px,4vw,40px); padding:0 clamp(20px,4vw,40px) clamp(48px,6vw,72px)">
+          <div style="position:sticky; top:0; z-index:1; display:flex; align-items:center; gap:16px; padding:6px 0 0; background:#FFFFFF; border-bottom:1px solid #E2E7E5">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58; margin-right:auto">{{ sheet.kicker }}</span>
+            <button onClick="{{ closeSheet }}" style="min-height:52px; padding:0 0 0 12px; background:none; border:0; border-radius:0; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E; cursor:pointer" style-hover="color:#0A6E58">close ×</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:minmax(0,132px) minmax(0,1fr); gap:clamp(16px,3vw,24px); align-items:start">
+            <div style="position:relative; aspect-ratio:4/5; background:#F2F4F3; overflow:hidden">
+              <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ sheet.kind }}</span>
+              <sc-if value="{{ sheet.hasThumb }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute; inset:0; background-image:url({{ sheet.thumb }}); background-size:cover; background-position:center"></span>
+              </sc-if>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px; min-width:0">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ sheet.platform }}</span>
+              <p style="margin:0; font-size:16px; line-height:1.7; color:{{ sheet.captionColor }}; text-wrap:pretty; overflow-wrap:anywhere">{{ sheet.caption }}</p>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:22px">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; padding-top:16px; border-top:1px solid #1B1D1E">{{ sheet.totalsLabel }}</span>
+            <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px">
+              <sc-for list="{{ sheet.bigVM }}" as="x" hint-placeholder-count="3">
+                <div style="display:flex; flex-direction:column; gap:8px; min-width:0">
+                  <span style="font-size:clamp(30px,5vw,44px); font-weight:200; line-height:1; letter-spacing:-0.03em; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ x.value }}</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:18px 16px; padding-top:18px; border-top:1px solid #E2E7E5">
+              <sc-for list="{{ sheet.countsVM }}" as="x" hint-placeholder-count="5">
+                <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
+                  <span style="font-size:24px; font-weight:300; line-height:1; color:{{ x.color }}; font-variant-numeric:tabular-nums">{{ x.value }}</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ x.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ sheet.hasOrganicLine }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:14px; line-height:1.6; color:#4A524F; text-wrap:pretty">{{ sheet.organicLine }}</span>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ sheet.hasPaid }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:0">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; padding:16px 0 14px; border-top:1px solid #1B1D1E">organic and paid</span>
+              <div style="display:grid; grid-template-columns:minmax(0,1.2fr) repeat(3,minmax(0,1fr)); gap:12px; padding-bottom:10px">
+                <span></span>
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; text-align:right">organic</span>
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58; text-align:right">paid</span>
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#1B1D1E; text-align:right">total</span>
+              </div>
+              <sc-for list="{{ sheet.paidVM }}" as="r" hint-placeholder-count="6">
+                <div style="display:grid; grid-template-columns:minmax(0,1.2fr) repeat(3,minmax(0,1fr)); gap:12px; align-items:baseline; padding:12px 0; border-top:1px solid #E2E7E5">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ r.label }}</span>
+                  <span style="font-size:17px; font-weight:300; color:#4A524F; text-align:right; font-variant-numeric:tabular-nums">{{ r.organic }}</span>
+                  <span style="font-size:17px; font-weight:300; color:#0A6E58; text-align:right; font-variant-numeric:tabular-nums">{{ r.paid }}</span>
+                  <span style="font-size:17px; font-weight:400; color:#1B1D1E; text-align:right; font-variant-numeric:tabular-nums">{{ r.total }}</span>
+                </div>
+              </sc-for>
+              <span style="padding-top:12px; border-top:1px solid #E2E7E5; font-size:12px; line-height:1.6; color:#6B7572; text-wrap:pretty">{{ sheet.paidNote }}</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ sheet.hasSplit }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex; flex-direction:column; gap:22px">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; padding-top:16px; border-top:1px solid #1B1D1E">on each platform</span>
+              <sc-for list="{{ sheet.splitVM }}" as="q" hint-placeholder-count="2">
+                <div style="display:flex; flex-direction:column; gap:16px; padding-bottom:22px; border-bottom:1px solid #E2E7E5">
+                  <div style="display:flex; align-items:baseline; gap:8px 16px; flex-wrap:wrap">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ q.platform }}</span>
+                    <span style="font-size:15px; color:#1B1D1E; margin-right:auto; overflow-wrap:anywhere">{{ q.name }}</span>
+                    <sc-if value="{{ q.hasLink }}" hint-placeholder-val="{{ false }}">
+                      <a href="{{ q.href }}" target="_blank" rel="noopener noreferrer" style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#0A6E58">{{ q.linkLabel }}</a>
+                    </sc-if>
+                  </div>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); gap:14px 12px">
+                    <sc-for list="{{ q.cellsVM }}" as="c" hint-placeholder-count="7">
+                      <div style="display:flex; flex-direction:column; gap:5px; min-width:0">
+                        <span style="font-size:19px; font-weight:300; line-height:1; color:{{ c.color }}; font-variant-numeric:tabular-nums">{{ c.value }}</span>
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ c.label }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ q.hasPaidLine }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:13px; line-height:1.6; color:#0A6E58; font-variant-numeric:tabular-nums">{{ q.paidLine }}</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ sheet.hasNote }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px; line-height:1.6; color:#6B7572; text-wrap:pretty">{{ sheet.note }}</span>
+          </sc-if>
+          <div style="display:flex; gap:10px; flex-wrap:wrap">
+            <sc-for list="{{ sheet.linksVM }}" as="l" hint-placeholder-count="1">
+              <a href="{{ l.href }}" target="_blank" rel="noopener noreferrer" style="padding:12px 18px; border:1px solid #0E8E72; font-size:10px; letter-spacing:3.4px; text-transform:uppercase; color:#0E8E72" style-hover="background:#0E8E72; color:#FFFFFF">{{ l.label }}</a>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
   </sc-if>
 
   <footer style="display:flex; flex-direction:column; align-items:center; gap:22px; padding:clamp(88px,11vw,140px) 24px 80px; text-align:center">
@@ -679,6 +793,7 @@ class Component extends DCLogic {
 
   async componentDidMount() {
     window.addEventListener('scroll', this.onScroll, { passive: true });
+    window.addEventListener('keydown', this.onKey);
     const q = new URLSearchParams(window.location.search);
     if (q.get('demo') === '1' || (!this.token() && !/glomium\.co$/i.test(window.location.hostname))) {
       const dd = demoData(q.get('m'));
@@ -698,7 +813,11 @@ class Component extends DCLogic {
     this.fetch(saved || null, q.get('m'));
   }
 
+  onKey = e => { if (e.key === 'Escape' && this.state.sheet) this.setState({ sheet: null }); };
+
   componentWillUnmount() {
+    window.removeEventListener('keydown', this.onKey);
+    document.body.style.overflow = '';
     if (this._logoBlob) URL.revokeObjectURL(this._logoBlob);
     clearTimeout(this._poll); clearTimeout(this._safety);
     cancelAnimationFrame(this._raf); cancelAnimationFrame(this._spy);
@@ -706,6 +825,9 @@ class Component extends DCLogic {
   }
 
   componentDidUpdate() {
+    // The page behind the post sheet stays put while it is open.
+    const lock = !!this.state.sheet;
+    if (lock !== !!this._locked) { this._locked = lock; document.body.style.overflow = lock ? 'hidden' : ''; }
     if (this.state.active && this.state.active !== this._lastActive) {
       this._lastActive = this.state.active;
       const nav = document.getElementById('chnav');
@@ -997,15 +1119,30 @@ class Component extends DCLogic {
 
     const pN = (p, k) => n(p[k]);
     const safe = u => (/^https:\/\//i.test(u || '') ? u : '');
-    const inter = p => pN(p, 'likes') + pN(p, 'comments') + pN(p, 'shares') + pN(p, 'saves');
-    const base = p => pN(p, 'reach') || pN(p, 'impressions');
+    // Organic and paid. Instagram keeps a post's own views, reach, shares and
+    // saves apart from its boost (ad_*), so the ad is added on top to match the
+    // app; its likes and comments already include the boost. Facebook's numbers
+    // all include the boost, with the ad's part stored beside them.
+    const withAd = p => plat(p.account_id) !== 'facebook';
+    const AD = { video_views: 'ad_views', reach: 'ad_reach', likes: 'ad_likes', comments: 'ad_comments', shares: 'ad_shares', saves: 'ad_saves' };
+    const ADD_ON = { video_views: 1, reach: 1, shares: 1, saves: 1 };
+    const tv = (p, k) => pN(p, k) + (withAd(p) && ADD_ON[k] ? pN(p, AD[k]) : 0);
+    const viewsT = p => tv(p, 'video_views');
+    const reachT = p => tv(p, 'reach');
+    const inter = p => tv(p, 'likes') + tv(p, 'comments') + tv(p, 'shares') + tv(p, 'saves') + pN(p, 'reposts');
+    const base = p => reachT(p) || pN(p, 'impressions');
+    // Engagement is over reach. More interactions than people reached cannot
+    // happen, so it means the reach on record is short (a boost Meta did not
+    // tie to its ad): views stand in rather than print a rate above 100%.
+    const odd = p => base(p) < inter(p) && viewsT(p) > base(p);
+    const erBase = p => (odd(p) ? viewsT(p) : base(p));
     const day = p => String(p.published_at || '').slice(0, 10);
     const byDate = (x, y) => String(x.published_at || '').localeCompare(String(y.published_at || ''));
     const wPosts = posts.filter(p => day(p) >= from && day(p) <= to);
     const pPosts = posts.filter(p => day(p) >= prevFrom && day(p) <= prevTo);
     const feed = wPosts.filter(p => p.kind !== 'story');
     const stories = wPosts.filter(p => p.kind === 'story').sort(byDate).reverse();
-    const erOf = list => { const m = list.filter(p => p.kind !== 'story' && base(p) > 0); const b = m.reduce((t, p) => t + base(p), 0); return b ? m.reduce((t, p) => t + inter(p), 0) * 100 / b : null; };
+    const erOf = list => { const m = list.filter(p => p.kind !== 'story' && erBase(p) > 0); const b = m.reduce((t, p) => t + erBase(p), 0); return b ? m.reduce((t, p) => t + inter(p), 0) * 100 / b : null; };
     const er = erOf(feed);
     // A cross-post is one piece of work on two profiles. It shows once, as the
     // Instagram copy (its picture, link and label), carrying the numbers of
@@ -1014,7 +1151,8 @@ class Component extends DCLogic {
     const capKey = p => String(p.caption || '').toLowerCase().replace(/#[^\s#]+/g, '').replace(/[^\p{L}\p{N}]+/gu, '').slice(0, 60);
     const twins = (p, q) => q.account_id !== p.account_id && plat(q.account_id) !== plat(p.account_id) && capKey(q) === capKey(p)
       && Math.abs(Date.parse(q.published_at) - Date.parse(p.published_at)) <= 10 * 60000;
-    const SUMS = ['video_views', 'reach', 'impressions', 'likes', 'comments', 'shares', 'saves'];
+    // Each copy stays on the piece (copies) so its own numbers can be shown.
+    const SUMS = ['impressions', 'likes', 'comments', 'shares', 'saves', 'reposts'];
     const lead = p => (plat(p.account_id) === 'instagram' ? 0 : 1);
     const onePer = list => {
       const groups = [];
@@ -1023,9 +1161,12 @@ class Component extends DCLogic {
         if (g) g.push(p); else groups.push([p]);
       });
       return groups.map(g => {
-        if (g.length === 1) return g[0];
-        const m = { ...g[0], twinOf: g.length };
-        SUMS.forEach(k => { m[k] = g.reduce((t, q) => t + pN(q, k), 0); });
+        if (g.length === 1) return { ...g[0], copies: g };
+        const m = { ...g[0], copies: g, twinOf: g.length };
+        Object.values(AD).forEach(a => { m[a] = 0; });
+        SUMS.forEach(k => { m[k] = g.some(q => q[k] != null) ? g.reduce((t, q) => t + tv(q, k), 0) : null; });
+        m.video_views = g.reduce((t, q) => t + viewsT(q), 0);
+        m.reach = g.reduce((t, q) => t + reachT(q), 0);
         m.platLabel = g.map(q => PLATFORM[plat(q.account_id)] || '').filter(Boolean).join(' + ');
         if (!safe(m.thumb_url)) m.thumb_url = (g.find(q => safe(q.thumb_url)) || {}).thumb_url;
         if (!safe(m.permalink)) m.permalink = (g.find(q => safe(q.permalink)) || {}).permalink;
@@ -1034,8 +1175,8 @@ class Component extends DCLogic {
     };
     const platOf = p => p.platLabel || PLATFORM[plat(p.account_id)] || '';
     const pieces = onePer(feed);
-    const views = wPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
-    const viewsPrev = pPosts.reduce((t, p) => t + pN(p, 'video_views'), 0);
+    const views = wPosts.reduce((t, p) => t + viewsT(p), 0);
+    const viewsPrev = pPosts.reduce((t, p) => t + viewsT(p), 0);
     const postsCovered = !report ? posts.some(p => day(p) <= addDays(prevFrom, 3)) : pPosts.length > 0 || socCov;
     const rv = deltaSub(reach, reachPrev, socCov, reach ? 'across ' + plural(socAccs.length, 'profile', 'profiles') : 'nothing yet');
     const vv = deltaSub(views, viewsPrev, postsCovered && socCov, (pieces.length + stories.length) ? 'from ' + plural(pieces.length + stories.length, 'piece', 'pieces') + ' of content' : 'nothing published');
@@ -1049,7 +1190,7 @@ class Component extends DCLogic {
       reachDay.set(m.on_date, reachDay.get(m.on_date) + n(m.reach));
       gainDay.set(m.on_date, gainDay.get(m.on_date) + n(m.follower_delta));
     }
-    for (const p of wPosts) { const k = day(p); if (viewsDay.has(k)) viewsDay.set(k, viewsDay.get(k) + pN(p, 'video_views')); }
+    for (const p of wPosts) { const k = day(p); if (viewsDay.has(k)) viewsDay.set(k, viewsDay.get(k) + viewsT(p)); }
     // One follower total per synced day, and a gain for every day: walk back
     // from the latest total so the line is the real curve.
     let folHas = false;
@@ -1069,7 +1210,7 @@ class Component extends DCLogic {
     const col = mp => dates.map(x => mp.get(x));
 
     // ---- cover numbers -----------------------------------------------------
-    const erSeq = feed.filter(p => base(p) > 0).sort(byDate).map(p => inter(p) * 100 / base(p));
+    const erSeq = feed.filter(p => erBase(p) > 0).sort(byDate).map(p => inter(p) * 100 / erBase(p));
     const kFol = { label: 'followers', raw: fNow || null, fmt: 'compact', dir: 0, sub: fNow ? 'across ' + plural(socAccs.length, 'profile', 'profiles') : report ? 'no count recorded in ' + periodWord : 'first reading after the next sync', ...spark(folHas ? col(folDay) : [], 40) };
     const kGain = { label: 'new followers', raw: gain, fmt: 'signed', dir: gain > 0 ? 1 : gain < 0 ? -1 : 0, sub: growth != null ? pct(growth) + ' growth in ' + periodWord : 'in ' + periodWord, ...spark(col(gainDay), 40) };
     const kReach = { label: 'reach', raw: reach, fmt: 'compact', dir: rv.dir, sub: rv.sub, ...spark(col(reachDay), 40) };
@@ -1110,7 +1251,7 @@ class Component extends DCLogic {
     };
     const socRows = socAccs.map(a => {
       const ar = cur.filter(m => m.account_id === a.id), ap = wPosts.filter(p => p.account_id === a.id);
-      return { a, f: followersAt(a), g: sum(ar, 'follower_delta'), r: sum(ar, 'reach'), v: ap.reduce((t, p) => t + pN(p, 'video_views'), 0) || sum(ar, 'video_views'), k: ap.length };
+      return { a, f: followersAt(a), g: sum(ar, 'follower_delta'), r: sum(ar, 'reach'), v: ap.reduce((t, p) => t + viewsT(p), 0) || sum(ar, 'video_views'), k: ap.length };
     });
     const shareKey = fNow ? 'f' : 'r';
     const shareTot = socRows.reduce((t, x) => t + n(x[shareKey]), 0);
@@ -1138,34 +1279,112 @@ class Component extends DCLogic {
     // ---- content -----------------------------------------------------------
     // Thumbs sit in an unquoted CSS url(); escape the few characters that end one.
     const cssUrl = u => String(u || '').replace(/[()\s'"\\]/g, c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'));
+    // ---- one post, every number --------------------------------------------
+    // Facebook Pages report no saves or reposts, X counts reposts as shares and
+    // YouTube gives views, likes and comments only: those read “—”, never 0.
+    // A post synced before reposts were read has none on record either.
+    const NO_COUNT = { facebook: ['saves', 'reposts'], youtube: ['reach', 'shares', 'saves', 'reposts'], x: ['reach', 'reposts'] };
+    const COUNTS = [['likes', 'likes'], ['comments', 'comments'], ['shares', 'shares'], ['saves', 'saves'], ['reposts', 'reposts']];
+    const ALL = [['video_views', 'views'], ['reach', 'reach']].concat(COUNTS);
+    const counted = (q, k) => (NO_COUNT[plat(q.account_id)] || []).indexOf(k) === -1 && (k === 'video_views' || k === 'reach' || q[k] != null);
+    const valOf = tv;
+    const rawOf = (copies, k) => { const r = copies.filter(q => counted(q, k)); return r.length ? r.reduce((t, q) => t + valOf(q, k), 0) : null; };
+    const countOf = (copies, k) => { const v = rawOf(copies, k); return v == null ? '—' : compact(v); };
+    // "1 share", not "1 shares".
+    const said = (v, l) => (Math.round(v) === 1 ? l.replace(/s$/, '') : l);
+    // What the promotion added. Facebook splits out only views, reach and
+    // shares; nobody splits reposts. An unpromoted post is all organic.
+    const AD_KNOWN = { facebook: { video_views: 1, reach: 1, shares: 1 } };
+    const boosted = q => Object.values(AD).some(a => pN(q, a) > 0);
+    const adOf = (q, k) => (!counted(q, k) ? null : !boosted(q) ? 0
+      : AD[k] && (withAd(q) || (AD_KNOWN[plat(q.account_id)] || {})[k]) ? Math.min(pN(q, AD[k]), tv(q, k)) : null);
+    const splitRow = (copies, k) => {
+      const r = copies.filter(q => counted(q, k));
+      if (!r.length) return null;
+      const total = r.reduce((t, q) => t + tv(q, k), 0), parts = r.map(q => adOf(q, k));
+      const ad = parts.some(x => x == null) ? null : parts.reduce((t, x) => t + x, 0);
+      return { total, ad, organic: ad == null ? null : Math.max(0, total - ad) };
+    };
+    const copiesOf = p => p.copies || [p];
+    const linksOf = p => copiesOf(p).filter(q => safe(q.permalink)).map(q => ({ href: safe(q.permalink), label: 'on ' + (PLATFORM[plat(q.account_id)] || 'the platform') + ' ↗' }));
+    const splitOf = p => (copiesOf(p).length > 1 ? copiesOf(p).map(q => ({
+      platform: PLATFORM[plat(q.account_id)] || '',
+      line: ALL.filter(([k]) => counted(q, k)).map(([k, l]) => compact(valOf(q, k)) + ' ' + said(valOf(q, k), l)).join(' · '),
+    })) : []);
+    const whenFull = v => {
+      const t = new Date(v);
+      return isNaN(t) ? '' : t.getDate() + ' ' + MON[t.getMonth()] + ' ' + t.getFullYear() + ', ' + t.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+    };
+    const sheets = new Map();
+    const sheetOf = p => {
+      const copies = copiesOf(p), many = copies.length > 1;
+      const e = erBase(p) ? inter(p) * 100 / erBase(p) : null;
+      const cap = String(p.caption || '').replace(/\s+/g, ' ').trim();
+      const t = cssUrl(safe(p.thumb_url));
+      const isBoosted = copies.some(boosted);
+      const paidVM = isBoosted ? ALL.map(([k, l]) => {
+        const r = splitRow(copies, k);
+        return r && { label: l, organic: r.organic == null ? '—' : compact(r.organic), paid: r.ad == null ? '—' : compact(r.ad), total: compact(r.total) };
+      }).filter(Boolean) : [];
+      const hasFb = copies.some(q => plat(q.account_id) === 'facebook');
+      return {
+        kind: KIND[p.kind] || p.kind, kicker: (KIND[p.kind] || p.kind) + ' · ' + whenFull(p.published_at),
+        platform: platOf(p), thumb: t, hasThumb: !!t,
+        caption: cap ? cap.slice(0, 600).toLowerCase() + (cap.length > 600 ? '…' : '') : 'no caption', captionColor: cap ? '#1B1D1E' : '#8A9390',
+        totalsLabel: many ? 'both platforms, added together' : 'on ' + platOf(p),
+        bigVM: [{ label: 'views', value: countOf(copies, 'video_views') }, { label: 'reach', value: countOf(copies, 'reach') }, { label: 'engagement', value: pct(e) }],
+        countsVM: COUNTS.map(([k, l]) => { const v = countOf(copies, k); return { label: l, value: v, color: v === '—' ? '#8A9390' : '#1B1D1E' }; }),
+        paidVM, hasPaid: isBoosted,
+        paidNote: paidVM.some(r => r.paid === '—') ? 'paid is what the promotion added. where a platform does not split a number, it reads —.' : 'paid is what the promotion added; organic is everything else.',
+        organicLine: 'not promoted — every number here is organic.', hasOrganicLine: !isBoosted,
+        hasSplit: many,
+        splitVM: many ? copies.map(q => {
+          const l = safe(q.permalink), pl = PLATFORM[plat(q.account_id)] || '';
+          const paidBits = boosted(q) ? ALL.map(([k, lb]) => [adOf(q, k), lb]).filter(x => x[0]).map(([v, lb]) => compact(v) + ' ' + said(v, lb)) : [];
+          return {
+            platform: pl, name: nameOf(accById.get(q.account_id) || {}), href: l, hasLink: !!l, linkLabel: 'view on ' + pl + ' ↗',
+            cellsVM: ALL.map(([k, lb]) => ({ label: lb, value: counted(q, k) ? compact(valOf(q, k)) : '—', color: counted(q, k) ? '#1B1D1E' : '#8A9390' })),
+            paidLine: paidBits.length ? 'paid: ' + paidBits.join(' · ') : boosted(q) ? '' : 'organic only on ' + pl + '.', hasPaidLine: paidBits.length > 0 || !boosted(q),
+          };
+        }) : [],
+        linksVM: linksOf(p),
+        note: [hasFb ? 'facebook does not report saves or reposts on page posts, so those read —.' : '',
+          copies.some(odd) ? 'meta reports fewer people reached than interactions on this post, so its engagement is worked out over views.' : ''].filter(Boolean).join(' '),
+        hasNote: hasFb || copies.some(odd),
+      };
+    };
+    const keyOf = p => [p.account_id, p.published_at, p.kind].join('|');
+    const openFor = p => { const k = keyOf(p); if (!sheets.has(k)) sheets.set(k, sheetOf(p)); return () => this.setState({ sheet: k }); };
+
     const newest = onePer(report ? feed : posts.filter(p => p.kind !== 'story')).sort(byDate).reverse().slice(0, 12);
     const latestVM = newest.map(p => {
-      const t = cssUrl(safe(p.thumb_url)), l = safe(p.permalink);
+      const t = cssUrl(safe(p.thumb_url)), vw = viewsT(p);
       return {
-        thumb: t, hasThumb: !!t, href: l, hasLink: !!l, kind: KIND[p.kind] || p.kind,
+        thumb: t, hasThumb: !!t, kind: KIND[p.kind] || p.kind,
         when: fmtDay(p.published_at), platform: platOf(p),
-        views: compact(pN(p, 'video_views') || base(p)), viewsLabel: pN(p, 'video_views') ? 'views' : 'reach',
-        likes: compact(pN(p, 'likes')),
+        views: compact(vw || base(p)), viewsLabel: vw ? 'views' : 'reach',
+        likes: compact(pN(p, 'likes')), open: openFor(p),
       };
     });
-    const ranked = pieces.slice().sort((x, y) => (pN(y, 'video_views') - pN(x, 'video_views')) || (base(y) - base(x)));
+    const ranked = pieces.slice().sort((x, y) => (viewsT(y) - viewsT(x)) || (base(y) - base(x)));
     const topVM = ranked.slice(0, 7).map((p, i) => {
-      const e = base(p) ? inter(p) * 100 / base(p) : null;
-      const thumb = cssUrl(safe(p.thumb_url)), link = safe(p.permalink);
+      const e = erBase(p) ? inter(p) * 100 / erBase(p) : null;
+      const thumb = cssUrl(safe(p.thumb_url)), copies = copiesOf(p);
       const cap = String(p.caption || '').replace(/\s+/g, ' ').trim();
-      const vw = pN(p, 'video_views');
+      const vw = viewsT(p), split = splitOf(p);
       return {
         rank: String(i + 1).padStart(2, '0'), kind: KIND[p.kind] || p.kind, platform: platOf(p),
         when: fmtDay(p.published_at), captionLong: cap ? cap.slice(0, 220).toLowerCase() + (cap.length > 220 ? '…' : '') : 'no caption', captionColor: cap ? '#1B1D1E' : '#8A9390',
-        thumb, hasThumb: !!thumb, link, hasLink: !!link,
+        thumb, hasThumb: !!thumb,
         headline: compact(vw || base(p)), headlineLabel: vw ? 'views' : 'reach', er: e == null ? '' : pct(e),
         statsVM: [
-          { label: vw ? 'views' : 'likes', value: compact(vw || pN(p, 'likes')) },
-          { label: pN(p, 'reach') ? 'reached' : 'impressions', value: compact(base(p)) },
+          { label: 'views', value: countOf(copies, 'video_views') },
+          { label: 'reach', value: countOf(copies, 'reach') },
           { label: 'engagement', value: pct(e) },
         ],
-        smallVM: [['likes', 'likes'], ['comments', 'comments'], ['shares', 'shares'], ['saves', 'saves']]
-          .filter(([k]) => pN(p, k) > 0).map(([k, l]) => ({ label: l, value: compact(pN(p, k)) })),
+        smallVM: COUNTS.map(([k, l]) => { const v = rawOf(copies, k); return { label: v == null ? l : said(v, l), value: v == null ? '—' : compact(v) }; }),
+        countsLine: ['shares', 'saves', 'reposts'].map(k => [rawOf(copies, k), k]).filter(x => x[0] != null).map(([v, l]) => compact(v) + ' ' + said(v, l)).join(' · '),
+        splitVM: split, hasSplit: split.length > 1, linksVM: linksOf(p), open: openFor(p),
       };
     });
 
@@ -1200,9 +1419,12 @@ class Component extends DCLogic {
     const dayLine = hasDays ? WEEK[order[bestJ]] + ' posts reached the most people — ' + compact(avgs[bestJ]) + ' on average.' : '';
 
     const counts = {}; pieces.forEach(p => { counts[p.kind] = (counts[p.kind] || 0) + 1; });
+    const adW = k => feed.reduce((t, q) => t + (adOf(q, k) || 0), 0);
+    const paidV = adW('video_views'), paidR = adW('reach');
+    const paidBit = paidV || paidR ? ' ' + [paidV ? compact(paidV) + ' of the views' : '', paidR ? compact(paidR) + ' of the reach' : ''].filter(Boolean).join(' and ') + ' came from paid promotion; the rest is organic.' : '';
     const parts = Object.keys(counts).sort((x, y) => counts[y] - counts[x]).map(k => counts[k] + ' ' + (counts[k] === 1 ? KIND[k] || k : kp(k)));
     const contentTitle = mixLeads ? kp(mixRows[0].k) + ' did the heavy lifting.' : pieces.length ? plural(pieces.length, 'piece', 'pieces') + ' went live.' : 'your latest content.';
-    const contentLine = pieces.length ? (mixLeads ? plural(pieces.length, 'piece', 'pieces') + ' went live in ' + periodWord : 'in ' + periodWord) + ': ' + parts.join(', ') + (stories.length ? ', plus ' + plural(stories.length, 'story', 'stories') : '') + '.' : '';
+    const contentLine = pieces.length ? (mixLeads ? plural(pieces.length, 'piece', 'pieces') + ' went live in ' + periodWord : 'in ' + periodWord) + ': ' + parts.join(', ') + (stories.length ? ', plus ' + plural(stories.length, 'story', 'stories') : '') + '.' + paidBit : '';
 
     // ---- stories -----------------------------------------------------------
     const sViews = stories.reduce((t, p) => t + pN(p, 'video_views'), 0);
@@ -1332,7 +1554,7 @@ class Component extends DCLogic {
       planTitle: latest && latest.month ? 'the plan for ' + nextOf(latest.month) + '.' : 'the plan.',
       planVM: planLines.map((text, i) => ({ num: String(i + 1).padStart(2, '0'), text })), hasPlan: planLines.length > 0,
       reportsVM, hasReports: reports.length > 0,
-      chs, ch,
+      chs, ch, sheets,
     };
   }
 
@@ -1369,6 +1591,7 @@ class Component extends DCLogic {
     const onInk = k => ({ ...k, value: k.raw == null ? '—' : FMT[k.fmt](k.raw * e), subColor: k.dir > 0 ? '#10AF8B' : '#C9D0CE', clip });
     const bar = x => ({ ...x, w: (x.f * e * 100).toFixed(2) + '%' });
     const hp = page && s.hover != null && vm.chartPts ? vm.chartPts[s.hover] : null;
+    const sh = page && s.sheet && vm.sheets ? vm.sheets.get(s.sheet) : null;
 
     return {
       loading: s.loading,
@@ -1396,6 +1619,7 @@ class Component extends DCLogic {
       gateStatus: s.gateStatus, hasGateStatus: !!s.gateStatus,
       showPage: !!page, notPage: !page,
       ...vm,
+      hasSheet: !!sh, sheet: sh || {}, closeSheet: () => this.setState({ sheet: null }),
       ch: vm.ch || {},
       heroKpi: page ? onInk(vm.heroKpi) : {},
       kpisVM: page ? vm.kpis.map(onInk) : [],
@@ -1458,8 +1682,11 @@ function demoData(month) {
   const kinds = ['reel', 'post', 'carousel', 'reel', 'reel', 'post'];
   for (let i = 0; i < 26; i++) {
     const at = new Date(Date.now() - (i * 2.6 + 0.5) * 86400000).toISOString();
-    const k = kinds[i % kinds.length];
-    posts.push({ account_id: i % 5 === 4 ? F : A, kind: k, caption: ['the new flagship, in hand', 'exchange day at the store — bring your old phone', 'three colours, one choice', 'unboxing, slowly', 'weekend offer ends sunday', 'behind the counter'][i % 6], published_at: at, reach: (k === 'reel' ? 6800 : 3600) + ((i * 937) % 4100), likes: 180 + ((i * 53) % 400), comments: 6 + (i % 9), shares: 4 + (i % 13), saves: 9 + (i % 17), video_views: k === 'reel' ? 9000 + ((i * 1777) % 21000) : 0 });
+    const k = kinds[i % kinds.length], ig = i % 5 !== 4;
+    const caption = ['the new flagship, in hand', 'exchange day at the store — bring your old phone', 'three colours, one choice', 'unboxing, slowly', 'weekend offer ends sunday', 'behind the counter'][i % 6];
+    posts.push({ account_id: ig ? A : F, kind: k, caption, published_at: at, reach: (k === 'reel' ? 6800 : 3600) + ((i * 937) % 4100), likes: 180 + ((i * 53) % 400), comments: 6 + (i % 9), shares: 4 + (i % 13), saves: ig ? 9 + (i % 17) : 0, reposts: ig ? 1 + (i % 6) : 0, video_views: 2400 + (k === 'reel' ? 9000 + ((i * 1777) % 21000) : (i * 613) % 3000), ad_views: i === 3 ? 2255 : 0, ad_reach: i === 3 ? 13985 : 0, ad_likes: i === 3 ? 96 : 0, ad_comments: i === 3 ? 4 : 0, ad_shares: i === 3 ? 11 : 0, ad_saves: i === 3 ? 7 : 0 });
+    // Every third Instagram piece also went to the Facebook Page.
+    if (ig && i % 3 === 0) posts.push({ account_id: F, kind: k, caption, published_at: new Date(Date.parse(at) + 90000).toISOString(), reach: 1100 + ((i * 311) % 900), likes: 40 + ((i * 7) % 60), comments: 2 + (i % 4), shares: 1 + (i % 5), saves: 0, reposts: 0, video_views: 1500 + ((i * 523) % 3000), ad_views: i === 3 ? 640 : 0, ad_reach: i === 3 ? 410 : 0, ad_shares: i === 3 ? 1 : 0 });
   }
   for (let i = 0; i < 9; i++) posts.push({ account_id: A, kind: 'story', published_at: new Date(Date.now() - (i * 3 + 0.2) * 86400000).toISOString(), reach: 760 + i * 31, video_views: 880 + i * 40, exits: 30 + i * 9, replies: i % 3 });
   const accounts = [{ id: A, platform: 'instagram', label: 'mr.fone', handle: '@mrfone' }, { id: F, platform: 'facebook', label: 'mr.fone', handle: 'mr.fone kerala' }, { id: M, platform: 'meta_ads', label: 'store campaigns' }];
