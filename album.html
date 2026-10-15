@@ -718,8 +718,9 @@ class Component extends DCLogic {
       const call = args => Promise.race([this.sb.rpc('get_album', args), new Promise(r => setTimeout(() => r(TIMEOUT), 10000))]);
       // A database without the private-album version only knows get_album(p_slug).
       const ask = async () => {
-        if (!pin) return call({ p_slug: slug });
-        const r = await call({ p_slug: slug, p_pin: pin });
+        // p_pin always goes, null or not: it picks the PIN-aware get_album even if an
+        // old one-argument version is ever recreated beside it.
+        const r = await call({ p_slug: slug, p_pin: pin || null });
         return r !== TIMEOUT && r.error && this.rpcMissing(r.error) ? call({ p_slug: slug }) : r;
       };
       let sections = [], favs = [], v2 = false;

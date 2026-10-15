@@ -5780,26 +5780,46 @@
             <sc-if value="{{ inbShowList }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex; flex-direction:column; min-height:0; min-width:0; border-right:{{ inbListBorder }}">
                 <div style="padding:12px; border-bottom:1px solid var(--line)">
-                  <input value="{{ inbQ }}" onChange="{{ onInbQ }}" placeholder="Search name, handle or message" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                  <input value="{{ inbQ }}" onChange="{{ onInbQ }}" placeholder="Search name, message or post" style="width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none">
+                  <sc-if value="{{ inbHasPostF }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex; align-items:center; gap:10px; margin-top:10px; padding:8px 10px; background:#E6F4F0">
+                      <span style="flex:1; min-width:0; font-size:12px; color:#1B1D1E; overflow-wrap:anywhere">{{ inbPostFLabel }}</span>
+                      <button onClick="{{ inbPostFClear }}" style="flex:none; padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer">Clear</button>
+                    </div>
+                  </sc-if>
                 </div>
                 <div style="flex:1; overflow-y:auto; min-height:0">
                   <sc-for list="{{ inbThreadsVM }}" as="t" hint-placeholder-count="8">
-                    <button onClick="{{ t.go }}" style="display:grid; grid-template-columns:36px minmax(0,1fr) auto; gap:12px; width:100%; padding:14px 14px 14px 16px; background:{{ t.bg }}; border:none; border-bottom:1px solid #E7ECEA; border-radius:0; text-align:left; cursor:pointer" style-hover="background:#F7F9F8">
+                    <button onClick="{{ t.go }}" style="display:grid; grid-template-columns:36px minmax(0,1fr); gap:12px; width:100%; padding:14px 16px; background:{{ t.bg }}; border:none; border-bottom:1px solid #E7ECEA; border-radius:0; text-align:left; cursor:pointer" style-hover="background:#F7F9F8">
                       <span style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:{{ t.avBg }}; color:{{ t.avColor }}; font-size:12px; letter-spacing:.06em">{{ t.ini }}</span>
-                      <div style="display:flex; flex-direction:column; gap:3px; min-width:0">
+                      <div style="display:flex; flex-direction:column; gap:6px; min-width:0">
                         <div style="display:flex; align-items:center; gap:6px; min-width:0">
                           <span style="font-size:14px; color:#1B1D1E; font-weight:{{ t.weight }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0">{{ t.name }}</span>
                           <sc-if value="{{ t.vip }}" hint-placeholder-val="{{ false }}"><span style="flex:none; padding:1px 5px; background:#1B1D1E; color:#fff; font-size:10px; letter-spacing:.14em">VIP</span></sc-if>
                           <sc-if value="{{ t.hasFlag }}" hint-placeholder-val="{{ false }}"><span style="flex:none; padding:1px 5px; background:#F7E4E1; color:#B4433A; font-size:10px; letter-spacing:.08em">{{ t.flag }}</span></sc-if>
+                          <span style="margin-left:auto; flex:none; font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums">{{ t.when }}</span>
+                          <sc-if value="{{ t.hasUnread }}" hint-placeholder-val="{{ false }}"><span style="flex:none; min-width:18px; height:18px; padding:0 5px; display:flex; align-items:center; justify-content:center; background:var(--green-deep); color:#fff; font-size:11px">{{ t.unread }}</span></sc-if>
                         </div>
-                        <span style="font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ t.where }}</span>
-                        <span style="font-size:13px; color:#4A524F; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">{{ t.snippet }}</span>
-                        <sc-if value="{{ t.hasWin }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:{{ t.winColor }}">{{ t.winLabel }}</span></sc-if>
-                      </div>
-                      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px">
-                        <span style="font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums">{{ t.when }}</span>
-                        <sc-if value="{{ t.hasUnread }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px; height:18px; padding:0 5px; display:flex; align-items:center; justify-content:center; background:var(--green-deep); color:#fff; font-size:11px">{{ t.unread }}</span></sc-if>
-                        <span style="font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:{{ t.assColor }}">{{ t.assLabel }}</span>
+                        <span style="font-size:13px; color:{{ t.snipColor }}; line-height:1.45; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">{{ t.snippet }}</span>
+                        <sc-if value="{{ t.isPost }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex; align-items:center; gap:10px; padding:6px; border:1px solid #E7ECEA; background:#fff; min-width:0">
+                            <div style="position:relative; flex:none; width:32px; height:40px; background:#E7ECEA; overflow:hidden">
+                              <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:.1em; color:#6B7572">{{ t.postCode }}</span>
+                              <sc-if value="{{ t.hasPostThumb }}" hint-placeholder-val="{{ false }}">
+                                <img src="{{ t.postThumb }}" alt="" loading="lazy" referrerpolicy="no-referrer" onError="{{ t.hideImg }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover">
+                              </sc-if>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ t.postKind }}</span>
+                              <span style="font-size:12px; color:{{ t.postCapColor }}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ t.postCap }}</span>
+                            </div>
+                          </div>
+                        </sc-if>
+                        <div style="display:flex; align-items:center; gap:4px 10px; flex-wrap:wrap; min-width:0">
+                          <span style="margin-right:auto; min-width:0; font-size:12px; color:#6B7572; overflow-wrap:anywhere">{{ t.where }}</span>
+                          <sc-if value="{{ t.hasWin }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:{{ t.winColor }}">{{ t.winLabel }}</span></sc-if>
+                          <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:{{ t.assColor }}">{{ t.assLabel }}</span>
+                        </div>
                       </div>
                     </button>
                   </sc-for>
@@ -5837,12 +5857,26 @@
                     </div>
                   </div>
                   <sc-if value="{{ inbCv.isComment }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid #E7ECEA; background:#FAFBFB">
-                      <span style="flex:none; width:40px; height:48px; display:flex; align-items:center; justify-content:center; background:#E7ECEA; font-size:10px; letter-spacing:.14em; color:#6B7572">{{ inbCv.postKind }}</span>
-                      <span style="flex:1; min-width:0; font-size:13px; color:#1B1D1E; line-height:1.5; overflow-wrap:anywhere">{{ inbCv.postTitle }}</span>
-                      <sc-if value="{{ inbCv.hasPostLink }}" hint-placeholder-val="{{ false }}">
-                        <a href="{{ inbCv.postLink }}" target="_blank" rel="noopener noreferrer" style="flex:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Post ↗</a>
-                      </sc-if>
+                    <div style="display:flex; align-items:flex-start; gap:14px; padding:14px 18px; border-bottom:1px solid #E7ECEA; background:#FAFBFB">
+                      <div style="position:relative; flex:none; width:64px; height:80px; background:#E7ECEA; overflow:hidden">
+                        <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:10px; letter-spacing:.14em; color:#6B7572">{{ inbCv.postKind }}</span>
+                        <sc-if value="{{ inbCv.hasPostThumb }}" hint-placeholder-val="{{ false }}">
+                          <img src="{{ inbCv.postThumb }}" alt="" loading="lazy" referrerpolicy="no-referrer" onError="{{ inbCv.hideImg }}" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover">
+                        </sc-if>
+                      </div>
+                      <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:6px">
+                        <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ inbCv.postLabel }}</span>
+                        <span style="font-size:13px; color:{{ inbCv.postTitleColor }}; line-height:1.5; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden">{{ inbCv.postTitle }}</span>
+                        <sc-if value="{{ inbCv.hasPostStats }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#4A524F; font-variant-numeric:tabular-nums">{{ inbCv.postStats }}</span></sc-if>
+                        <div style="display:flex; align-items:center; gap:6px 18px; flex-wrap:wrap; margin-top:2px">
+                          <sc-if value="{{ inbCv.hasPostLink }}" hint-placeholder-val="{{ false }}">
+                            <a href="{{ inbCv.postLink }}" target="_blank" rel="noopener noreferrer" style="font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep)">Open post ↗</a>
+                          </sc-if>
+                          <sc-if value="{{ inbCv.hasPostSame }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ inbCv.postSameGo }}" style="padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#4A524F; cursor:pointer" style-hover="color:#1B1D1E">{{ inbCv.postSameLabel }}</button>
+                          </sc-if>
+                        </div>
+                      </div>
                     </div>
                   </sc-if>
                   <div ref="{{ inbMsgsRef }}" style="flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:18px">
@@ -6947,6 +6981,22 @@
         <sc-if value="{{ isAlbumTab }}" hint-placeholder-val="{{ true }}">
 
         <sc-if value="{{ isProjectRecord }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px; padding:18px 20px; border:1px solid var(--line); border-radius:0; background:#fff">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+              <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:auto">Album access</span>
+              <span style="padding:3px 8px; background:{{ projPinBg }}; color:{{ projPinColor }}; font-size:10px; letter-spacing:.14em; text-transform:uppercase">{{ projPinLabel }}</span>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+              <input value="{{ projPinInput }}" onChange="{{ onProjPin }}" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" style="padding:9px 10px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit; width:130px; letter-spacing:.3em">
+              <button onClick="{{ setProjPin }}" style="padding:9px 16px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">{{ projPinBtn }}</button>
+              <sc-if value="{{ projPinPrivate }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ clearProjPin }}" style="padding:9px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#B4433A; cursor:pointer">Remove PIN</button>
+              </sc-if>
+            </div>
+            <span style="font-size:12px; color:#6B7572; line-height:1.6">Same as the insights page and wedding albums: five wrong PINs in 15 minutes locks the page, and every try is in Visitors. Staff are never asked.</span>
+            <sc-if value="{{ hasProjPinStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:{{ projPinStatusColor }}">{{ projPinStatus }}</span></sc-if>
+          </div>
+
           <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:0">
             <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">Project</span>
             <sc-if value="{{ showProjDivisions }}" hint-placeholder-val="{{ false }}">
@@ -9275,6 +9325,11 @@ class Component extends DCLogic {
 
   // ---- Events: list, create, open, save ----------------------------------------
 
+  // One click, one record. A second click (or a slow network's retry) while the
+  // first save is still on its way is dropped instead of writing the row twice.
+  _lock(key) { this._locks = this._locks || {}; if (this._locks[key]) return false; this._locks[key] = true; return true; }
+  _unlock(key) { if (this._locks) delete this._locks[key]; }
+
   randSuffix(n) { const a = 'abcdefghijkmnpqrstuvwxyz23456789', b = new Uint8Array(n); crypto.getRandomValues(b); return Array.from(b, x => a[x % a.length]).join(''); }
 
   slugify(s) { return (s || '').toLowerCase().trim().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
@@ -9288,6 +9343,8 @@ class Component extends DCLogic {
   }
 
   async doCreateEvent() {
+    if (!this._lock('doCreateEvent')) return;
+    try {
     const couple = this.state.newCouple.trim();
     if (!couple) { this.setState({ createError: 'Couple names are required.' }); return; }
     const typed = this.state.newSlug.trim();
@@ -9298,6 +9355,8 @@ class Component extends DCLogic {
       : this.slugify(couple) + '-' + this.randSuffix(8);
     this.setState({ creating: true, createError: '' });
     const seed = await this.custSeed();
+    const dupe = await this.findEventDupe(couple, this.state.newDate, seed.client_id);
+    if (dupe) { this.setState({ creating: false, createError: dupe }); return; }
     const { error } = await this.sb.from('events').insert({
       ...seed,
       couple_names: couple, event_date: this.state.newDate || null, venue: this.state.newVenue || null, slug,
@@ -9306,6 +9365,7 @@ class Component extends DCLogic {
     if (error) { this.setState({ creating: false, createError: this.schemaHint(error.message) }); return; }
     this.setState({ creating: false, newCouple: '', newDate: '', newVenue: '', newSlug: '', newCustPick: null, custRows: [] });
     this.loadEvents();
+    } finally { this._unlock('doCreateEvent'); }
   }
 
   // Deleting the parent row cascades the media rows but never touched storage,
@@ -9384,10 +9444,63 @@ class Component extends DCLogic {
     if (!wasProject) this.loadEvents();
   }
 
+  // A blank link field keeps the current link (it used to fall back to the bare
+  // name — guessable, and it broke the client's link). A changed link is
+  // confirmed, because the one the client already has stops working.
+  nextSlug(c) {
+    const slug = this.slugify(String(this.state.editSlug || '').trim()) || c.slug;
+    if (slug !== c.slug && !window.confirm('Change the client link to "' + slug + '"?\n\nThe link they already have stops working.')) return null;
+    return slug;
+  }
+
+  // No duplicate projects. A project for an existing customer is started by
+  // picking them from the customer list — that is how one customer gets work in
+  // another division. A typed name that is already a customer is refused, and a
+  // customer gets one project per division. The database enforces the same.
+  async findClientDupe(name, clientId, div) {
+    const esc = String(name).replace(/[\\%_]/g, ch => '\\' + ch);
+    const label = DIVISION_LABEL[div] || div;
+    const divsOf = p => Array.isArray(p.divisions) && p.divisions.length ? p.divisions : [p.division];
+    const listOf = p => divsOf(p).map(d => DIVISION_LABEL[d] || d).join(', ');
+    const cols = 'client_name, client_id, division, divisions, code';
+    const projs = await this.sb.from('projects').select(cols).neq('division', 'wedding')
+      [clientId ? 'eq' : 'ilike'](clientId ? 'client_id' : 'client_name', clientId || esc).limit(50);
+    const rows = !projs.error && projs.data ? projs.data : [];
+    const here = rows.find(p => divsOf(p).indexOf(div) !== -1);
+    if (here) return here.client_name + (here.code ? ' (' + here.code + ')' : '') + ' already has a project in ' + label + '. Open it instead of creating another.';
+    if (clientId) return '';
+    const c = await this.sb.from('clients').select('code, name').is('merged_into', null).ilike('name', esc).limit(1);
+    if (!c.error && c.data && c.data.length) return c.data[0].name + ' (' + c.data[0].code + ') is already a customer. Pick them from the customer list to start a project for them.';
+    if (rows.length) return rows[0].client_name + ' already exists in ' + listOf(rows[0]) + '. Pick them from the customer list to start a project for them.';
+    return '';
+  }
+
+  // No duplicate albums: one couple, one album per date. A couple who are
+  // already a customer are picked from the customer list, not typed again.
+  async findEventDupe(couple, date, clientId) {
+    const esc = String(couple).replace(/[\\%_]/g, ch => '\\' + ch);
+    if (date) {
+      const byName = await this.sb.from('events').select('couple_names, code').eq('event_date', date).ilike('couple_names', esc).limit(1);
+      let hit = !byName.error && byName.data && byName.data[0];
+      if (!hit && clientId) {
+        const byId = await this.sb.from('events').select('couple_names, code').eq('event_date', date).eq('client_id', clientId).limit(1);
+        hit = !byId.error && byId.data && byId.data[0];
+      }
+      if (hit) return hit.couple_names + (hit.code ? ' (' + hit.code + ')' : '') + ' already has an album on this date. Open it instead of creating another.';
+    }
+    if (clientId) return '';
+    const c = await this.sb.from('clients').select('code, name').is('merged_into', null).ilike('name', esc).limit(1);
+    if (!c.error && c.data && c.data.length && !window.confirm(c.data[0].name + ' (' + c.data[0].code + ') is already a customer.\n\nCancel and pick them from the customer list if this is the same couple. Press OK only if it is a different couple with the same names.')) {
+      return 'Pick ' + c.data[0].name + ' from the customer list to create their album.';
+    }
+    return '';
+  }
+
   async saveDetails() {
     if (this.albumLocked()) { this.setState({ detailsStatus: 'Album is locked — this event is delivered.' }); return; }
     const c = this.state.current;
-    const slug = this.slugify(this.state.editSlug || this.state.editCouple);
+    const slug = this.nextSlug(c);
+    if (!slug) return;
     this.setState({ detailsStatus: 'Saving…' });
     const { error } = await this.sb.from('events').update({
       couple_names: this.state.editCouple, event_date: this.state.editDate || null,
@@ -9477,6 +9590,7 @@ class Component extends DCLogic {
   // leaving a raw Postgres error on screen.
   schemaHint(raw) {
     const m = raw || '';
+    if (/slug_key|duplicate key[^\n]*slug/i.test(m)) return 'That link is already used by another album or client — pick a different one.';
     if (/album_unlocked/.test(m)) return 'Run album-system/album-lock-schema.sql in Supabase — the album_unlocked column does not exist yet.';
     if (/billing_type|contract_start|contract_months|billing_cycle|retainer_|payment_terms_days|period_start|delivery_due/.test(m)) return 'Run album-system/retainer-schema.sql in Supabase — the contract billing columns do not exist yet.';
     if (/taken_date|delivered_date/.test(m)) return 'Run album-system/project-dates-schema.sql in Supabase — the taken_date / delivered_date columns do not exist yet.';
@@ -9637,11 +9751,15 @@ class Component extends DCLogic {
   }
 
   async doCreateProject() {
+    if (!this._lock('doCreateProject')) return;
+    try {
     const name = this.state.newClientName.trim();
     if (!name) { this.setState({ createProjectError: 'Client / brand name is required.' }); return; }
     const slug = this.slugify(name) + '-' + this.randSuffix(8);
     this.setState({ creatingProject: true, createProjectError: '' });
     const seed = await this.custSeed();
+    const dupe = await this.findClientDupe(name, seed.client_id, this.state.division);
+    if (dupe) { this.setState({ creatingProject: false, createProjectError: dupe }); return; }
     const { error } = await this.sb.from('projects').insert({
       ...seed,
       client_name: name, project_title: this.state.newProjTitle || null, sector: this.state.newSector || null,
@@ -9651,6 +9769,7 @@ class Component extends DCLogic {
     if (error) { this.setState({ creatingProject: false, createProjectError: this.schemaHint(error.message) }); return; }
     this.setState({ creatingProject: false, newClientName: '', newProjTitle: '', newSector: '', newCustPick: null, custRows: [] });
     this.loadProjects(this.state.division);
+    } finally { this._unlock('doCreateProject'); }
   }
 
   async doDeleteProject(pr) {
@@ -9714,7 +9833,8 @@ class Component extends DCLogic {
   async saveProjectDetails() {
     if (this.albumLocked()) { this.setState({ detailsStatus: 'Locked — this project is delivered.' }); return; }
     const c = this.state.current;
-    const slug = this.slugify(this.state.editSlug || this.state.editProjClient);
+    const slug = this.nextSlug(c);
+    if (!slug) return;
     this.setState({ detailsStatus: 'Saving…' });
     const { error } = await this.sb.from('projects').update({
       client_name: this.state.editProjClient, project_title: this.state.editProjTitle || null,
@@ -10027,6 +10147,8 @@ class Component extends DCLogic {
   }
 
   async addAlbumSection() {
+    if (!this._lock('addAlbumSection')) return;
+    try {
     const name = String(this.state.newSectionName || '').trim().toLowerCase();
     const ev = this.state.current;
     if (!name || !ev) return;
@@ -10035,6 +10157,7 @@ class Component extends DCLogic {
     if (error) { this.setState({ uploadStatus: 'Chapter not added: ' + error.message }); return; }
     this.setState({ newSectionName: '' });
     this.loadAlbumExtras(ev.id);
+    } finally { this._unlock('addAlbumSection'); }
   }
 
   async renameAlbumSection(sec, name) {
@@ -10096,6 +10219,38 @@ class Component extends DCLogic {
     }
     const patch = { pin_hash: clear ? null : 'set', pin_set_at: clear ? null : new Date().toISOString() };
     this.setState({ current: { ...ev, ...patch }, albumPinInput: '', albumAccessStatus: clear ? 'PIN removed — anyone with the link can open the album.' : 'PIN set. Send it to the couple with the link.' });
+  }
+
+  // Projects (commercial, digital, festival, press) use the same 4-digit gate.
+  async setProjectPin(clear) {
+    const pr = this.state.current;
+    if (!pr || this.parentTable(pr) !== 'projects') return;
+    const pin = clear ? null : String(this.state.projPinInput || '').trim();
+    if (!clear && !/^\d{4}$/.test(pin)) { this.setState({ projPinStatus: 'The PIN must be 4 digits.', projPinErr: true, projPinFor: pr.id }); return; }
+    if (clear && !window.confirm('Remove the PIN?\n\nAnyone with the link will be able to open this project.')) return;
+    const { data, error } = await this.sb.rpc('project_set_pin', { p_project: pr.id, p_pin: pin });
+    if (error || !data || !data.ok) {
+      this.setState({ projPinErr: true, projPinFor: pr.id, projPinStatus: (data && data.error) || (error && /project_set_pin/.test(error.message || '') ? 'Run album-system/project-pin-2026-10.sql in Supabase first.' : (error ? error.message : 'Not saved.')) });
+      return;
+    }
+    const patch = { pin_hash: clear ? null : 'set', pin_set_at: clear ? null : new Date().toISOString() };
+    this.setState({ current: { ...pr, ...patch }, projPinInput: '', projPinErr: false, projPinFor: pr.id,
+      projPinStatus: clear ? 'PIN removed — anyone with the link can open the project.' : 'PIN set. Send it to the client with the link.' });
+  }
+
+  projPinVM() {
+    const s = this.state, c = s.current || {}, on = !!c.pin_hash;
+    return {
+      projPinPrivate: on,
+      projPinLabel: on ? 'Private — opens with a 4-digit PIN' + (c.pin_set_at ? ' · set ' + fmtDay(String(c.pin_set_at).slice(0, 10)) : '') : 'Open — anyone with the link',
+      projPinBg: on ? '#DDEFE8' : '#F1F4F3', projPinColor: on ? '#0A6E58' : '#4A524F',
+      projPinInput: s.projPinInput || '',
+      onProjPin: e => this.setState({ projPinInput: String(e.target.value || '').replace(/\D/g, '').slice(0, 4), projPinStatus: '' }),
+      setProjPin: () => this.setProjectPin(false), clearProjPin: () => this.setProjectPin(true),
+      projPinBtn: on ? 'Change PIN' : 'Set PIN',
+      projPinStatus: s.projPinFor === c.id ? s.projPinStatus || '' : '', hasProjPinStatus: s.projPinFor === c.id && !!s.projPinStatus,
+      projPinStatusColor: s.projPinErr ? '#B4433A' : 'var(--green-deep)',
+    };
   }
 
   async saveAlbumAccess() {
@@ -11178,6 +11333,8 @@ class Component extends DCLogic {
   setInv(k, v) { this.setState({ invForm: Object.assign({}, this.state.invForm || this.blankInvItem(), { [k]: v }), invStatus: '' }); }
 
   async saveInvItem() {
+    if (!this._lock('saveInvItem')) return;
+    try {
     const f = this.state.invForm || this.blankInvItem();
     if (!(f.name || '').trim()) { this.setState({ invStatus: 'Name the item — e.g. Sony FX3 body.' }); return; }
     const price = f.price === '' || f.price == null ? null : Number(f.price);
@@ -11201,6 +11358,7 @@ class Component extends DCLogic {
     }
     this.setState({ invForm: null, invOpenId: res.data.id, invStatus: f.id ? 'Saved.' : 'Added.' });
     this.loadInventory();
+    } finally { this._unlock('saveInvItem'); }
   }
 
   editInvItem(it) {
@@ -11346,6 +11504,8 @@ class Component extends DCLogic {
   }
 
   async runPayroll(people) {
+    if (!this._lock('runPayroll')) return;
+    try {
     const month = this.state.prMonth;
     const today = this.toIso(new Date());
     const rows = people.map(p => {
@@ -11361,6 +11521,7 @@ class Component extends DCLogic {
       ? (/period_uq|duplicate key/i.test(error.message || '') ? 'Someone already has a payslip for this month — reload and pay the rest.' : error.message)
       : (rows.length === 1 ? 'Payslip made — mark paid once transferred.' : rows.length + ' payslips made — mark each paid once transferred.') });
     this.loadPayroll(month);
+    } finally { this._unlock('runPayroll'); }
   }
 
   async markSlipPaid(x) {
@@ -11466,6 +11627,8 @@ class Component extends DCLogic {
   setCm(k, v) { this.setState({ cmForm: Object.assign({}, this.state.cmForm || this.blankCommitment(), { [k]: v }), cmStatus: '' }); }
 
   async saveCommitment() {
+    if (!this._lock('saveCommitment')) return;
+    try {
     const f = this.state.cmForm || this.blankCommitment();
     const amount = Number(f.amount);
     if (!(f.title || '').trim()) { this.setState({ cmStatus: 'Name it — e.g. Office rent, Canon lens EMI.' }); return; }
@@ -11484,6 +11647,7 @@ class Component extends DCLogic {
     }
     this.setState({ cmForm: null, cmShowForm: false, cmStatus: f.id ? 'Updated.' : 'Added.' });
     this.loadMaster();
+    } finally { this._unlock('saveCommitment'); }
   }
 
   editCommitment(c) {
@@ -11508,11 +11672,14 @@ class Component extends DCLogic {
   }
 
   async markDuePaid(c, due, paid) {
+    if (!this._lock('markDuePaid')) return;
+    try {
     const res = paid
       ? await this.sb.from('commitment_payments').delete().eq('id', paid.id)
       : await this.sb.from('commitment_payments').insert({ commitment_id: c.id, due_date: due, amount: Number(c.amount), paid_on: this.toIso(new Date()) });
     if (res.error) { this.setState({ cmStatus: res.error.message }); return; }
     this.loadMaster();
+    } finally { this._unlock('markDuePaid'); }
   }
 
   masterVM() {
@@ -11904,6 +12071,8 @@ class Component extends DCLogic {
   }
 
   async saveCustomer() {
+    if (!this._lock('saveCustomer')) return;
+    try {
     const s = this.state, g = this.custModel().groups[s.custOpen], f = s.custForm;
     if (!g || !f || s.custBusy) return;
     const say = (m, ok) => this.setState({ custStatus: m, custOk: !!ok, custBusy: false });
@@ -11958,10 +12127,13 @@ class Component extends DCLogic {
         : 'Saved ' + g.code + ' \u00b7 ' + jobs + ' updated' + (drafts ? ' \u00b7 ' + drafts + ' draft invoice' + (drafts > 1 ? 's' : '') : '') + '.'
           + (twin ? ' ' + twin.code + ' ' + twin.name + ' has the same ' + (clean.client_gstin && twin.gstin === clean.client_gstin ? 'GSTIN' : 'email') + ' \u2014 merge them from the list.' : ''),
     });
+    } finally { this._unlock('saveCustomer'); }
   }
 
   // The older code stays; the other one resolves to it from now on.
   async mergeCustomers(p) {
+    if (!this._lock('mergeCustomers')) return;
+    try {
     if (this.state.custBusy) return;
     if (!p.a.keyed || !p.b.keyed) { this.setState({ custStatus: 'Run album-system/clients-2026-10.sql in Supabase first.', custOk: false }); return; }
     const [keep, gone] = String(p.a.code) <= String(p.b.code) ? [p.a, p.b] : [p.b, p.a];
@@ -11971,6 +12143,7 @@ class Component extends DCLogic {
     await this.logClient(keep.rows[0].rec, 'merge', 'Merged ' + gone.code + ' ' + gone.name + ' into ' + keep.code + ' ' + keep.name + ' (' + p.why.trim() + ')');
     await this.loadCustomers();
     this.setState({ custBusy: false, custOk: true, custStatus: gone.code + ' merged into ' + keep.code + '. Open it to settle any fields the jobs disagree on.' });
+    } finally { this._unlock('mergeCustomers'); }
   }
 
   async keepCustomersApart(p) {
@@ -13181,11 +13354,14 @@ class Component extends DCLogic {
   }
 
   async pfAddWork() {
+    if (!this._lock('pfAddWork')) return;
+    try {
     const max = this.state.pfWorks.reduce((a, w) => Math.max(a, w.sort_order || 0), 0);
     const { data, error } = await this.sb.from('portfolio_works').insert({ title: 'untitled', category: PF_CATS[0], sort_order: max + 1, published: false }).select('*').single();
     if (error) return this.pfSay(error.message, false);
     this.setState(s => ({ pfWorks: s.pfWorks.concat([data]), pfOpenId: data.id }));
     this.pfSay('Work added. It stays hidden until you set it live.');
+    } finally { this._unlock('pfAddWork'); }
   }
 
   pfLocal(id, patch) { this.setState(s => ({ pfWorks: s.pfWorks.map(w => w.id === id ? { ...w, ...patch } : w) })); }
@@ -13670,6 +13846,8 @@ class Component extends DCLogic {
   }
 
   async savePriceLine() {
+    if (!this._lock('savePriceLine')) return;
+    try {
     const s = this.state, pr = s.current, f = s.plForm;
     if (!pr || !f) return;
     const qty = Number(f.qty), price = Number(f.unit_price || 0), cost = Number(f.unit_cost || 0);
@@ -13695,6 +13873,7 @@ class Component extends DCLogic {
     const undated = f.bill_at === 'start' ? !f.start_date : !f.end_date;
     this.plFlash((f.id ? 'Line updated.' : 'Line added.') + (undated ? ' Set its ' + (f.bill_at === 'start' ? 'From' : 'Till') + ' date before it can be invoiced.' : ''));
     this.loadPricing(pr.id);
+    } finally { this._unlock('savePriceLine'); }
   }
 
   editPriceLine(line) {
@@ -14633,6 +14812,8 @@ class Component extends DCLogic {
   }
 
   async upSave(andSend) {
+    if (!this._lock('upSave')) return;
+    try {
     const s = this.state, r = (s.upRecords || []).find(x => x.key === s.upKey), old = s.upEditInv;
     const say = m => this.setState({ upStatus: m });
     if (!this.upFile && !old) return say('Choose the PDF first.');
@@ -14717,6 +14898,7 @@ class Component extends DCLogic {
     } catch (e) {
       this.setState({ upBusy: false, upStatus: e.message || 'Could not save.' });
     }
+    } finally { this._unlock('upSave'); }
   }
 
   uploadVM() {
@@ -15187,6 +15369,8 @@ class Component extends DCLogic {
   }
 
   async addWorkDay() {
+    if (!this._lock('addWorkDay')) return;
+    try {
     const open = (this.state.talent || []).find(x => x.id === this.state.talentId);
     if (!open) return;
     const f = this.state.workForm || {};
@@ -15224,6 +15408,7 @@ class Component extends DCLogic {
     });
     setTimeout(() => this.setState({ workStatus: '' }), 2500);
     this.loadTalentWork();
+    } finally { this._unlock('addWorkDay'); }
   }
 
   async toggleWorkPaid(w) {
@@ -15540,6 +15725,8 @@ class Component extends DCLogic {
   }
 
   async saveEmailTemplate(asNew) {
+    if (!this._lock('saveEmailTemplate')) return;
+    try {
     const s = this.state;
     const name = asNew ? (s.templateName || '').trim() : ((s.emailTemplates || []).find(t => t.id === s.templateId) || {}).name;
     if (asNew && !name) { this.setState({ templateStatus: 'Give the new template a name.' }); return; }
@@ -15560,6 +15747,7 @@ class Component extends DCLogic {
     });
     setTimeout(() => this.setState({ templateStatus: '' }), 3000);
     this.loadEmailTemplates();
+    } finally { this._unlock('saveEmailTemplate'); }
   }
 
   async deleteEmailTemplate() {
@@ -15680,6 +15868,8 @@ class Component extends DCLogic {
   }
 
   async saveTalent() {
+    if (!this._lock('saveTalent')) return;
+    try {
     const f = this.state.talentForm || {};
     const name = (f.full_name || '').trim();
     if (!name) { this.setState({ talentStatus: 'A name is the one thing this record cannot do without.' }); return; }
@@ -15730,6 +15920,7 @@ class Component extends DCLogic {
     });
     setTimeout(() => this.setState({ talentStatus: '' }), email ? 2500 : 6000);
     this.loadTalent();
+    } finally { this._unlock('saveTalent'); }
   }
 
   async toggleTalentActive() {
@@ -15796,6 +15987,8 @@ class Component extends DCLogic {
   }
 
   async sendBookingEnquiry() {
+    if (!this._lock('sendBookingEnquiry')) return;
+    try {
     const s = this.state;
     const d = s.bookingDraft || {};
     const picked = s.talentPicked || {};
@@ -15898,6 +16091,7 @@ class Component extends DCLogic {
       bookingDraft: clean ? {} : this.state.bookingDraft,
     });
     this.loadTalentBookings();
+    } finally { this._unlock('sendBookingEnquiry'); }
   }
 
   async setBookingStatus(b, status) {
@@ -16564,7 +16758,22 @@ class Component extends DCLogic {
     if (this.can('people')) { this.loadAvail(p.id); this.loadRates(p.id); this.loadExperience(p.id); this.loadCv(p); this.loadPhoto(p); this.loadPayments(p.id); }
   }
 
+  // The same name is a question, not a block — two people can share one. A
+  // shared phone, ID, passport, PAN, email or bank account is refused by the
+  // database (people-no-duplicates-2026-10.sql), whichever path adds the record.
+  personNameTaken(name, role, say) {
+    const key = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const same = (this.state.people || []).filter(p => key(p.full_name) === key(name));
+    if (!same.length) return false;
+    const tag = p => p.full_name + ' (' + (p.crew_id || 'no ID') + ')' + (p.active === false ? ', retired,' : '');
+    const twin = role ? same.find(p => p.primary_role === role) : null;
+    if (twin) { say(tag(twin) + ' is already in crew as ' + (ROLE_LABEL[role] || role) + ' — open their record instead of adding them again.'); return true; }
+    return !window.confirm(tag(same[0]) + ' is already in crew.\n\nOpen their record instead, or press OK to add a different person with the same name.');
+  }
+
   async savePerson() {
+    if (!this._lock('savePerson')) return;
+    try {
     const f = this.state.personForm;
     if (!f.full_name.trim()) { this.setState({ personStatus: 'Name is required.' }); return; }
     if (this.state.roleCustomOn && !craftSlug(this.state.roleCustomText)) {
@@ -16583,6 +16792,7 @@ class Component extends DCLogic {
       this.setState({ personStatus: 'Say which national ID that number belongs to.' });
       return;
     }
+    if (!this.state.personId && this.personNameTaken(f.full_name, f.primary_role, m => this.setState({ personStatus: m }))) return;
     this.setState({ personStatus: 'Saving…' });
     const num = v => (v === '' || v == null ? null : Number(v));
     const row = {
@@ -16636,6 +16846,7 @@ class Component extends DCLogic {
     if (this.can('people')) { this.loadAvail(res.data.id); this.loadRates(res.data.id); }
     setTimeout(() => this.setState({ personStatus: '' }), 3000);
     this.loadPeople();
+    } finally { this._unlock('savePerson'); }
   }
 
   async deletePerson() {
@@ -16696,23 +16907,30 @@ class Component extends DCLogic {
   }
 
   async approveCrewSignup(r, personId) {
+    if (!this._lock('approveCrewSignup')) return;
+    try {
     const target = personId ? this.state.people.find(p => p.id === personId) : null;
     const who = r.full_name || r.email;
+    if (!target && this.personNameTaken(r.full_name, null, m => this.setState({ requestStatus: m }))) return;
     if (!confirm(target ? 'Approve ' + r.email + ' and link it to ' + target.full_name + '\u2019s crew record?' : 'Approve ' + r.email + ' and create a new crew record for ' + who + '?')) return;
     const { error } = await this.sb.rpc('crew_approve_signup', { p_request: r.id, p_person: personId || null });
     if (error) { this.setState({ requestStatus: error.message }); return; }
     this.setState({ requestStatus: 'Approved \u2014 ' + who + ' can open the crew page now.' });
     this.loadCrewSignups(); this.loadPeople();
     setTimeout(() => this.setState({ requestStatus: '' }), 5000);
+    } finally { this._unlock('approveCrewSignup'); }
   }
 
   async declineCrewSignup(r) {
+    if (!this._lock('declineCrewSignup')) return;
+    try {
     if (!confirm('Decline the crew page sign-up from ' + r.email + '?')) return;
     const { error } = await this.sb.rpc('crew_decline_signup', { p_request: r.id });
     if (error) { this.setState({ requestStatus: error.message }); return; }
     this.setState({ requestStatus: 'Declined.' });
     this.loadCrewSignups();
     setTimeout(() => this.setState({ requestStatus: '' }), 2500);
+    } finally { this._unlock('declineCrewSignup'); }
   }
 
   async toggleCrewAccess(a) {
@@ -16740,6 +16958,9 @@ class Component extends DCLogic {
   }
 
   async approveRequest(r) {
+    if (!this._lock('approveRequest')) return;
+    try {
+    if (r.kind === 'create' && this.personNameTaken((r.payload || {}).full_name, (r.payload || {}).primary_role, m => this.setState({ requestStatus: m }))) return;
     this.setState({ requestStatus: 'Applying…' });
     let err = null;
     if (r.kind === 'create') err = (await this.sb.from('people').insert(r.payload)).error;
@@ -16765,6 +16986,7 @@ class Component extends DCLogic {
     this.setState({ requestStatus: 'Applied.' });
     this.loadChangeRequests(); this.loadPeople();
     setTimeout(() => this.setState({ requestStatus: '' }), 2500);
+    } finally { this._unlock('approveRequest'); }
   }
 
   async rejectRequest(r) {
@@ -16791,6 +17013,8 @@ class Component extends DCLogic {
   }
 
   async addRate() {
+    if (!this._lock('addRate')) return;
+    try {
     const pid = this.state.personId;
     const label = this.state.rateLabel.trim();
     if (!pid) { this.setState({ personStatus: 'Save the person first.' }); return; }
@@ -16803,6 +17027,7 @@ class Component extends DCLogic {
     this.setState({ rateLabel: '', rateAmount: '', personStatus: 'Rate added.' });
     setTimeout(() => this.setState({ personStatus: '' }), 2500);
     this.loadRates(pid);
+    } finally { this._unlock('addRate'); }
   }
 
   async removeRate(r) {
@@ -16875,6 +17100,8 @@ class Component extends DCLogic {
   }
 
   async addExperience() {
+    if (!this._lock('addExperience')) return;
+    try {
     const s = this.state, pid = s.personId;
     if (!pid) { this.setState({ careerStatus: 'Save the person first.' }); return; }
     if (!s.expEmployer.trim()) { this.setState({ careerStatus: 'Name the employer first.' }); return; }
@@ -16886,6 +17113,7 @@ class Component extends DCLogic {
     this.setState({ expEmployer: '', expRole: '', expFrom: '', expTo: '', careerStatus: 'Added to their history.' });
     setTimeout(() => this.setState({ careerStatus: '' }), 2500);
     this.loadExperience(pid);
+    } finally { this._unlock('addExperience'); }
   }
 
   async removeExperience(x) {
@@ -17011,6 +17239,8 @@ class Component extends DCLogic {
   }
 
   async addAdvance() {
+    if (!this._lock('addAdvance')) return;
+    try {
     const pid = this.state.personId, amt = Number(this.state.advAmount || 0);
     if (!pid) { this.setState({ payStatus: 'Save the person first.' }); return; }
     if (!isFinite(amt) || amt <= 0) { this.setState({ payStatus: 'Enter the advance amount.' }); return; }
@@ -17027,6 +17257,7 @@ class Component extends DCLogic {
     this.setState({ advAmount: '', advNote: '', advOn: '', payStatus: 'Advance recorded.' });
     setTimeout(() => this.setState({ payStatus: '' }), 2500);
     this.loadAdvances(pid);
+    } finally { this._unlock('addAdvance'); }
   }
 
   async recoverAdvance(a) {
@@ -17071,6 +17302,8 @@ class Component extends DCLogic {
   }
 
   async addPayment() {
+    if (!this._lock('addPayment')) return;
+    try {
     const s = this.state, pid = s.personId;
     if (!pid) { this.setState({ payStatus: 'Save the person first.' }); return; }
     const isSalary = s.payKind === 'salary';
@@ -17119,6 +17352,7 @@ class Component extends DCLogic {
     });
     this.loadPayments(pid);
     setTimeout(() => this.setState({ payStatus: '' }), 2500);
+    } finally { this._unlock('addPayment'); }
   }
 
   // A paid payslip is a document someone may have shown a bank. It gets voided and
@@ -17291,6 +17525,8 @@ class Component extends DCLogic {
   }
 
   async addAssignment() {
+    if (!this._lock('addAssignment')) return;
+    try {
     const s = this.state, ev = s.current;
     if (!s.afPerson) { this.setState({ crewStatus: 'Pick someone first.' }); return; }
     const person = s.people.find(p => p.id === s.afPerson);
@@ -17308,6 +17544,7 @@ class Component extends DCLogic {
     this.setState({ crewStatus: basis === 'deliverable' ? 'Added — now add their deliverable lines below.' : '', afPerson: '', afRole: '', afRate: '', afFee: '', afHours: '' });
     if (basis === 'deliverable') setTimeout(() => this.setState({ crewStatus: '' }), 4000);
     this.reloadCrew(ev.id);
+    } finally { this._unlock('addAssignment'); }
   }
 
   onAgEdit(ag, field, v) { this.setState({ agEdits: { ...this.state.agEdits, [ag.id + ':' + field]: v } }); }
@@ -17417,6 +17654,8 @@ class Component extends DCLogic {
   }
 
   async addDeliverable(ag) {
+    if (!this._lock('addDeliverable')) return;
+    try {
     const s = this.state;
     const label = s.dlLabel.trim();
     if (!label) { this.setState({ dlStatus: 'Type what the deliverable is.' }); return; }
@@ -17429,6 +17668,7 @@ class Component extends DCLogic {
     this.setState({ dlLabel: '', dlQty: '1', dlRate: '', dlStatus: 'Line added.' });
     setTimeout(() => this.setState({ dlStatus: '' }), 2500);
     this.reloadCrew(this.rowParentId(ag));
+    } finally { this._unlock('addDeliverable'); }
   }
 
   async removeDeliverable(d, eventId) {
@@ -17469,6 +17709,8 @@ class Component extends DCLogic {
   onDayHours(agId, v) { this.setState({ dayHours: { ...this.state.dayHours, [agId]: v }, dayStatus: '' }); }
 
   async saveDaySheet() {
+    if (!this._lock('saveDaySheet')) return;
+    try {
     const s = this.state, ev = s.current;
     if (!s.dayDate) { this.setState({ dayStatus: 'Pick a date first.' }); return; }
     if (this.hoursLocked()) { this.setState({ dayStatus: 'Hours are locked for this event.' }); return; }
@@ -17511,6 +17753,7 @@ class Component extends DCLogic {
     this.setState({ dayHours: {}, dayStatus: 'Saved ' + fmtDay(s.dayDate) + '.' });
     setTimeout(() => this.setState({ dayStatus: '' }), 2500);
     this.reloadCrew(ev.id);
+    } finally { this._unlock('saveDaySheet'); }
   }
 
   // ---- Payouts -----------------------------------------------------------------
@@ -17597,6 +17840,8 @@ class Component extends DCLogic {
   }
 
   async saveManualPay() {
+    if (!this._lock('saveManualPay')) return;
+    try {
     const s = this.state;
     const fail = m => this.setState({ mpStatus: m, mpStatusOk: false });
     if (!s.mpPerson) return fail('Pick who was paid.');
@@ -17648,6 +17893,7 @@ class Component extends DCLogic {
     });
     setTimeout(() => this.setState({ mpStatus: '' }), 4000);
     this.loadManualPays();
+    } finally { this._unlock('saveManualPay'); }
   }
 
   async removeManualPay(x) {
@@ -18070,6 +18316,26 @@ class Component extends DCLogic {
       inbThreads: th.error ? (this.state.inbThreads || []) : (th.data || []),
       modAlerts: al.error ? (this.state.modAlerts || []) : (al.data || []),
     });
+    if (!th.error) this.loadInboxPosts(th.data || []);
+  }
+
+  // A comment thread only carries the media id; the post's picture, kind and
+  // numbers come from content_posts so each comment reads in context.
+  async loadInboxPosts(threads) {
+    const have = this.state.inbPosts || {};
+    const key = t => t.account_id + '|' + t.post_external_id;
+    const need = threads.filter(t => /_comment$/.test(t.channel) && t.post_external_id && !(key(t) in have));
+    const ids = [...new Set(need.map(t => String(t.post_external_id)))];
+    if (!ids.length) return;
+    const got = {};
+    for (let i = 0; i < ids.length; i += 80) {
+      const r = await this.sb.from('content_posts').select('id, account_id, external_id, kind, caption, permalink, thumb_url, published_at, likes, comments, video_views')
+        .in('external_id', ids.slice(i, i + 80));
+      if (r.error) return;
+      (r.data || []).forEach(p => { got[p.account_id + '|' + p.external_id] = p; });
+    }
+    need.forEach(t => { if (!(key(t) in got)) got[key(t)] = null; });
+    this.setState({ inbPosts: { ...(this.state.inbPosts || {}), ...got } });
   }
 
   // Its own channel: a binding on a table that does not exist yet must not
@@ -18251,6 +18517,8 @@ class Component extends DCLogic {
   }
 
   async savePlan() {
+    if (!this._lock('savePlan')) return;
+    try {
     const f = this.state.planForm;
     if (!f || !f.title.trim() || !f.date || !f.time || !f.accs.length) return;
     const row = {
@@ -18260,6 +18528,7 @@ class Component extends DCLogic {
     const { data, error } = await this.sb.from('content_plans').insert(row).select('*').single();
     if (error) { this.setState({ digStatus: error.message }); return; }
     this.setState({ plans: (this.state.plans || []).concat([data]), planForm: null, planSel: data.id }, () => this.matchPlans());
+    } finally { this._unlock('savePlan'); }
   }
 
   async planUpdate(p, patch) {
@@ -18385,8 +18654,20 @@ class Component extends DCLogic {
       const view = s.inbView || 'open', chSel = s.inbCh || 'all', cf = s.inbClient || 'all';
       const vf = (VIEWS.find(v => v[0] === view) || VIEWS[0])[2];
       const q = String(s.inbQ || '').trim().toLowerCase();
+      const isCm = t => t.channel === 'ig_comment' || t.channel === 'fb_comment';
+      const postKey = t => t.account_id + '|' + (t.post_external_id || '');
+      const postOf = t => (isCm(t) && t.post_external_id ? (s.inbPosts || {})[postKey(t)] || null : null);
+      const pThumb = p => (p && /^https:\/\//i.test(p.thumb_url || '') ? p.thumb_url : '');
+      const pCap = t => String((postOf(t) || {}).caption || t.post_caption || '').replace(/\s+/g, ' ').trim();
+      const pKind = t => { const p = postOf(t); return p ? (POST_KIND_LABEL[p.kind] || p.kind || 'Post') : 'Post'; };
+      const pCode = t => ((accById.get(t.account_id) || {}).platform === 'facebook' ? 'FB' : 'IG');
+      const pl = (n, w) => C(n) + ' ' + w + (n === 1 ? '' : 's');
+      const hideImg = e => { if (e && e.currentTarget) e.currentTarget.style.display = 'none'; };
+      const firstName = id => String(staffName(id) || '').split(/\s+/)[0];
+      const postF = s.inbPostF && threads.some(t => postKey(t) === s.inbPostF) ? s.inbPostF : null;
       const list = threads.filter(vf).filter(t => chSel === 'all' || t.channel === chSel).filter(t => cf === 'all' || projKey(accById.get(t.account_id)) === cf)
-        .filter(t => !q || [t.sender_name, t.sender_handle, t.last_snippet].join(' ').toLowerCase().indexOf(q) !== -1)
+        .filter(t => !postF || postKey(t) === postF)
+        .filter(t => !q || [t.sender_name, t.sender_handle, t.last_snippet, pCap(t)].join(' ').toLowerCase().indexOf(q) !== -1)
         .sort((x, y) => (['open', 'mine', 'unassigned'].indexOf(view) !== -1 ? Number(!!y.vip) - Number(!!x.vip) : 0) || y.lastAt - x.lastAt);
       const w = s.inbW || 1100, wide = w >= 1000, narrow = w < 700;
       const fItem = (label, count, on, go) => ({ label, count: count == null ? '' : String(count), go,
@@ -18415,20 +18696,25 @@ class Component extends DCLogic {
         inbShowList: !showConvoNarrow, inbShowConvo: !narrow || showConvoNarrow,
         inbListBorder: narrow ? 'none' : '1px solid var(--line)',
         inbQ: s.inbQ || '', onInbQ: e => this.setState({ inbQ: e.target.value }),
+        inbHasPostF: !!postF, inbPostFLabel: postF ? 'Only comments on “' + ((pCap(threads.find(t => postKey(t) === postF)) || 'this post').slice(0, 48)) + '”' : '',
+        inbPostFClear: () => this.setState({ inbPostF: null }),
         inbListEmpty: !list.length,
         inbEmptyText: !threads.length ? 'No conversations yet. Turn the inbox on for an Instagram or Facebook account under Accounts — new messages land here as they arrive.'
           : view === 'mine' ? 'Nothing assigned to you right now.' : q ? 'No conversation matches “' + String(s.inbQ).trim() + '”.' : 'Nothing here.',
         inbFoot: list.length + (list.length === 1 ? ' conversation' : ' conversations') + (['open', 'mine', 'unassigned'].indexOf(view) !== -1 ? ' · VIP first, then newest' : ''),
         inbThreadsVM: list.map(t => {
           const on = t.id === s.inbSel, l = isDm(t) && t.status === 'open' ? leftMin(t) : null;
+          const cm = isCm(t), p = postOf(t), th = pThumb(p), replied = t.lastIn > 0 && t.lastAt - t.lastIn > 1000;
           return {
             go: () => this.openThread(t),
             bg: on ? '#F3FAF8' : '#fff', ini: ini(sender(t)), avBg: t.vip ? '#1B1D1E' : '#E7ECEA', avColor: t.vip ? '#fff' : '#4A524F',
             name: sender(t), weight: t.unread ? '500' : '400', vip: !!t.vip,
-            where: CH[t.channel] + ' · ' + (scope === 'all' ? clientName(projKey(accById.get(t.account_id))) : accName(accById.get(t.account_id))),
-            snippet: t.last_snippet || '', when: agoS(now - t.lastAt),
+            where: (cm ? 'Comment' : CH[t.channel]) + ' · ' + (scope === 'all' ? clientName(projKey(accById.get(t.account_id))) : accName(accById.get(t.account_id))),
+            snippet: (replied ? 'Replied: ' : '') + (t.last_snippet || ''), snipColor: t.unread ? '#1B1D1E' : '#4A524F', when: agoS(now - t.lastAt),
+            isPost: cm, postThumb: th, hasPostThumb: !!th, hideImg, postCode: pCode(t), postKind: pKind(t),
+            postCap: pCap(t) || 'Caption not synced yet', postCapColor: pCap(t) ? '#4A524F' : '#8A9390',
             hasUnread: t.unread > 0, unread: String(t.unread || 0),
-            assLabel: t.assigned_to ? ini(staffName(t.assigned_to) === 'You' ? (staff.find(x => x.auth_id === me) || {}).name : staffName(t.assigned_to)) : 'Unassigned',
+            assLabel: t.assigned_to ? firstName(t.assigned_to) : 'Unassigned',
             assColor: t.assigned_to ? '#4A524F' : '#9A6A12',
             hasFlag: !!t.flag, flag: t.flag || '',
             hasWin: l != null && l < 180, winLabel: l != null && l <= 0 ? 'Window closed' : l != null ? fmtLeft(l) + ' to reply' : '',
@@ -18448,6 +18734,10 @@ class Component extends DCLogic {
         const plat = acc.platform === 'instagram' ? 'Instagram' : 'Facebook';
         const draft = (s.inbDrafts || {})[t.id] || '';
         const msgs = (s.inbMsgs || {})[t.id] || [];
+        const p = postOf(t), pth = pThumb(p), pk = postKey(t);
+        const sameN = comment && t.post_external_id ? threads.filter(x => postKey(x) === pk).length : 0;
+        const pLink = p && /^https:\/\//i.test(p.permalink || '') ? p.permalink : /^https:\/\//i.test(t.post_permalink || '') ? t.post_permalink : '';
+        const pStats = p ? [num(p.video_views) ? pl(num(p.video_views), 'view') : '', num(p.likes) ? pl(num(p.likes), 'like') : '', num(p.comments) ? pl(num(p.comments), 'comment') : ''].filter(Boolean).join(' · ') : '';
         out.inbCv = {
           ini: ini(sender(t)), avBg: t.vip ? '#1B1D1E' : '#E7ECEA', avColor: t.vip ? '#fff' : '#4A524F',
           name: sender(t), vip: !!t.vip, vipReason: t.vip_reason || 'VIP',
@@ -18462,15 +18752,20 @@ class Component extends DCLogic {
           toggleDone: () => this.inboxPatch(t, { status: t.status === 'done' ? 'open' : 'done' }, t.status === 'done' ? 'Reopened' : 'Marked done'),
           spamLabel: t.status === 'spam' ? 'Not spam' : 'Spam',
           toggleSpam: () => this.inboxPatch(t, { status: t.status === 'spam' ? 'open' : 'spam' }),
-          isComment: comment, postTitle: String(t.post_caption || '').replace(/\s+/g, ' ').trim().slice(0, 120) || 'Post', postKind: acc.platform === 'instagram' ? 'IG' : 'FB',
-          postLink: /^https:\/\//i.test(t.post_permalink || '') ? t.post_permalink : '', hasPostLink: /^https:\/\//i.test(t.post_permalink || ''),
+          isComment: comment, postTitle: pCap(t).slice(0, 280) || 'Caption not synced yet', postTitleColor: pCap(t) ? '#1B1D1E' : '#8A9390',
+          postKind: pCode(t), postThumb: pth, hasPostThumb: !!pth, hideImg,
+          postLabel: [pKind(t), p && p.published_at ? new Date(p.published_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''].filter(Boolean).join(' · '),
+          postStats: pStats, hasPostStats: !!pStats,
+          postLink: pLink, hasPostLink: !!pLink,
+          hasPostSame: sameN > 1, postSameLabel: postF === pk ? 'Show all conversations' : 'All ' + sameN + ' comments on this post',
+          postSameGo: () => this.setState({ inbPostF: postF === pk ? null : pk }),
           msgsVM: msgs.map(m => (m.direction === 'event'
             ? { isEvent: true, isMsg: false, align: 'center', text: m.body + (m.sent_by ? ' · ' + staffName(m.sent_by) : '') + ' · ' + stamp(m.at) }
             : { isEvent: false, isMsg: true, align: m.direction === 'out' ? 'flex-end' : 'flex-start',
                 text: m.body || (m.attachments ? 'Sent an attachment — open in ' + plat : ''),
                 bg: m.status === 'failed' ? '#F6E2DF' : m.direction === 'out' ? 'var(--green-deep)' : '#F2F4F3',
                 color: m.status === 'failed' ? '#B4433A' : m.direction === 'out' ? '#fff' : '#1B1D1E',
-                meta: stamp(m.at) + (m.direction === 'out' ? ' · ' + (staffName(m.sent_by) || 'From ' + plat) + (comment ? ' · public reply' : '') : '') + (m.status === 'failed' ? ' · not sent: ' + (m.error || 'error') : ''),
+                meta: (m.direction === 'out' ? '' : sender(t) + ' · ') + stamp(m.at) + (m.direction === 'out' ? ' · ' + (staffName(m.sent_by) || 'From ' + plat) + (comment ? ' · public reply' : '') : '') + (m.status === 'failed' ? ' · not sent: ' + (m.error || 'error') : ''),
                 metaColor: m.status === 'failed' ? '#B4433A' : '#8A9390' })),
           windowLine: comment ? 'Public reply — everyone can see it.'
             : l > 0 ? 'Reply window open · ' + fmtLeft(l) + ' left. Meta closes it 24 h after their last message.'
@@ -19105,6 +19400,8 @@ class Component extends DCLogic {
   }
 
   async saveReportDraft(month) {
+    if (!this._lock('saveReportDraft')) return;
+    try {
     const t = this.reportText(month);
     this.setState({ portalStatus: 'Saving…' });
     const { error } = await this.sb.from('client_reports').upsert({
@@ -19115,6 +19412,7 @@ class Component extends DCLogic {
     const d = { ...(this.state.portalDrafts || {}) }; delete d[month];
     this.setState({ portalDrafts: d, portalStatus: t.row.status === 'published' ? 'Saved — the published report shows the new text.' : 'Draft saved.' });
     this.loadPortal();
+    } finally { this._unlock('saveReportDraft'); }
   }
 
   async publishReport(month) {
@@ -19163,6 +19461,8 @@ class Component extends DCLogic {
   }
 
   async saveNumbers() {
+    if (!this._lock('saveNumbers')) return;
+    try {
     const f = this.state.numForm;
     if (!f) return;
     if (!f.on_date) { this.setState({ digStatus: 'Pick the date these numbers are for.' }); return; }
@@ -19182,6 +19482,7 @@ class Component extends DCLogic {
     this.setState({ numForm: null, digStatus: 'Numbers saved for ' + fmtDay(f.on_date) + '.' });
     setTimeout(() => this.setState({ digStatus: '' }), 3000);
     this.loadDigital();
+    } finally { this._unlock('saveNumbers'); }
   }
 
   // ---- Find accounts the tokens can already reach ------------------------
@@ -19325,6 +19626,8 @@ class Component extends DCLogic {
   }
 
   async foundNewClient(x) {
+    if (!this._lock('foundNewClient')) return;
+    try {
     const name = String(x.label || '').trim() || normHandle(x.handle);
     if (!name) { this.setState({ digStatus: 'This account has no name to make a client from.' }); return; }
     const m = this.foundMatch(x);
@@ -19336,6 +19639,7 @@ class Component extends DCLogic {
     this.setState(st => ({ digDir: [...(st.digDir || []), c] }));
     const pid = await this.newDigitalProject(c.id);
     if (pid) await this.linkFound(x, c.id, pid);
+    } finally { this._unlock('foundNewClient'); }
   }
 
   async ignoreFound(x) {
@@ -19381,6 +19685,8 @@ class Component extends DCLogic {
   }
 
   async saveAccount() {
+    if (!this._lock('saveAccount')) return;
+    try {
     const f = this.state.acctForm;
     if (!f) return;
     if (!f.project_id) {
@@ -19405,6 +19711,7 @@ class Component extends DCLogic {
     this.setState({ acctForm: data ? { ...data } : null, digStatus: 'Saved.' });
     setTimeout(() => this.setState({ digStatus: '' }), 2500);
     this.loadDigital();
+    } finally { this._unlock('saveAccount'); }
   }
 
   // Deleting takes the metrics history with it, so an account that has any
@@ -19561,6 +19868,8 @@ class Component extends DCLogic {
   onDealField(field, value) { this.setState({ dealForm: { ...this.state.dealForm, [field]: value } }); }
 
   async saveDeal() {
+    if (!this._lock('saveDeal')) return;
+    try {
     const f = this.state.dealForm;
     if (!f) return;
     if (!f.project_id) { this.setState({ digStatus: 'Pick the client this deal sits under.' }); return; }
@@ -19580,6 +19889,7 @@ class Component extends DCLogic {
     this.setState({ dealForm: null, digStatus: 'Saved.' });
     setTimeout(() => this.setState({ digStatus: '' }), 2500);
     this.loadDigitalTab();
+    } finally { this._unlock('saveDeal'); }
   }
 
   async deleteDeal(d) {
@@ -19593,6 +19903,8 @@ class Component extends DCLogic {
   // Closing a period snapshots the spend. Platforms restate history for days
   // afterwards, and an invoice you have already sent must not move when they do.
   async closeSpendPeriod(projectId, start, end, spend, fee, feeType) {
+    if (!this._lock('closeSpendPeriod')) return;
+    try {
     if (!window.confirm('Close ' + fmtDay(start) + ' – ' + fmtDay(end) + '?\n\nSpend freezes at '
       + this.inr(spend) + ' and the fee at ' + this.inr(fee) + '.')) return;
     const { data: u } = await this.sb.auth.getUser();
@@ -19605,6 +19917,7 @@ class Component extends DCLogic {
     if (error) { this.setState({ digStatus: error.message }); return; }
     this.setState({ digStatus: 'Period closed. Raise the invoice from the client’s Billing tab.' });
     this.loadDigitalTab();
+    } finally { this._unlock('closeSpendPeriod'); }
   }
 
   async reopenSpendPeriod(bill) {
@@ -19835,6 +20148,8 @@ class Component extends DCLogic {
   }
 
   async addShoot() {
+    if (!this._lock('addShoot')) return;
+    try {
     const key = this.state.spendParent;
     if (!key) { this.setState({ spendStatus: 'Pick the job this shoot belongs to first.' }); return; }
     const f = this.state.shootForm || {};
@@ -19854,6 +20169,7 @@ class Component extends DCLogic {
     this.setState({ spendStatus: 'Shoot added.', spendStatusOk: true, shootForm: { kind: row.kind } });
     setTimeout(() => this.setState({ spendStatus: '' }), 2500);
     this.loadSpendRows();
+    } finally { this._unlock('addShoot'); }
   }
 
   startEditShoot(sh) {
@@ -19917,6 +20233,8 @@ class Component extends DCLogic {
   }
 
   async addExpense() {
+    if (!this._lock('addExpense')) return;
+    try {
     const key = this.state.spendParent;
     if (!key) { this.setState({ spendStatus: 'Pick the job this spend belongs to first.' }); return; }
     const f = this.state.expenseForm || {};
@@ -19947,6 +20265,7 @@ class Component extends DCLogic {
     });
     setTimeout(() => this.setState({ spendStatus: '' }), 2000);
     this.loadSpendRows();
+    } finally { this._unlock('addExpense'); }
   }
 
   async updateExpense(e, patch) {
@@ -22157,6 +22476,8 @@ class Component extends DCLogic {
   }
 
   async saveReceipt(invoiceId) {
+    if (!this._lock('saveReceipt')) return;
+    try {
     const s = this.state;
     const amount = parseFloat(s.rcAmount);
     if (!amount || amount <= 0) { this.setState({ moneyStatus: 'Enter the amount received.', moneyStatusOk: false }); return; }
@@ -22190,6 +22511,7 @@ class Component extends DCLogic {
     this.setState({ rcEditId: null, rcAmount: '', rcRef: '', rcNote: '', moneyStatus: 'Recorded.', moneyStatusOk: true });
     setTimeout(() => this.setState({ moneyStatus: '' }), 2500);
     this.loadMoney();
+    } finally { this._unlock('saveReceipt'); }
   }
 
   async deleteReceipt(r) {
@@ -24006,6 +24328,7 @@ class Component extends DCLogic {
       isWeddingAlbumTab: s.editorTab === 'album' && this.can('media') && this.parentTable() !== 'projects',
       isProjectRecord: this.parentTable() === 'projects',
       isWeddingRecord: this.parentTable() !== 'projects',
+      ...this.projPinVM(),
 
       editProjClient: s.editProjClient, editProjTitle: s.editProjTitle, editSector: s.editSector,
       editTagline: s.editTagline, editBrief: s.editBrief,
