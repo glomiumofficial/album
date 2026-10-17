@@ -29,6 +29,8 @@
 body { margin: 0; background: #FFFFFF; color: #1B1D1E; font-family: 'Jost', Helvetica, sans-serif; overflow-x: clip; -webkit-font-smoothing: antialiased; }
 a { color: #0A6E58; text-decoration: none; }
 a:hover { color: #10AF8B; }
+[data-noscrollbar]::-webkit-scrollbar { display: none; }
+video::-webkit-media-controls-start-playback-button { display: none; }
 </style>
 </helmet>
 
@@ -310,7 +312,7 @@ a:hover { color: #10AF8B; }
 
     <div data-rise="" style="padding: 0 clamp(20px, 4vw, 56px);">
       <div ref="{{ frameRef }}" style="position: relative; width: 100%; aspect-ratio: 16 / 9; margin: 0 auto; overflow: hidden; background: #0B0C0C; box-shadow: 0 60px 140px -60px rgba(14,18,17,0.42);">
-        <sc-if value="{{ caseFilm }}" hint-placeholder-val="{{ false }}"><video ref="{{ mediaRef }}" onLoadedMetadata="{{ fitFrame }}" data-src="{{ activeWork.film }}" data-poster="{{ activeWork.poster }}" controls="{{ true }}" playsInline="{{ true }}" preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0B0C0C; display: block;"></video></sc-if>
+        <sc-if value="{{ caseFilm }}" hint-placeholder-val="{{ false }}"><video ref="{{ caseFilmRef }}" onLoadedMetadata="{{ fitFrame }}" data-src="{{ activeWork.film }}" data-poster="{{ activeWork.poster }}" controls="{{ true }}" muted="{{ true }}" playsInline="{{ true }}" preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0B0C0C; display: block;"></video></sc-if>
         <sc-if value="{{ casePoster }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" onLoad="{{ fitFrame }}" data-src="{{ activeWork.hero }}" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
         <sc-if value="{{ activeWork.filmSlot }}" hint-placeholder-val="{{ false }}"><image-slot id="case-{{ activeWork.id }}-film" shape="rect" placeholder="film — poster frame"></image-slot></sc-if>
       </div>
@@ -331,12 +333,35 @@ a:hover { color: #10AF8B; }
       </div>
     </div>
 
+    <sc-if value="{{ hasCaseVideos }}" hint-placeholder-val="{{ false }}">
+    <div style="padding: clamp(100px, 12vw, 170px) clamp(20px, 4vw, 56px) 0; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap;">
+        <h3 style="margin: 0; font-weight: 200; font-size: clamp(36px, 5vw, 80px); line-height: 1; letter-spacing: -0.03em;">watch <span style="font-style: italic; color: #10AF8B;">the</span> films</h3>
+        <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">each opens where it lives</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: clamp(12px, 1.6vw, 24px); align-items: start;">
+        <sc-for list="{{ caseVideos }}" as="v" hint-placeholder-count="0">
+          <a href="{{ v.href }}" target="_blank" rel="noopener noreferrer" style="display: flex; flex-direction: column; gap: 14px; color: #1B1D1E; text-decoration: none;" style-hover="color: #10AF8B;">
+            <div style="position: relative; aspect-ratio: 9 / 16; overflow: hidden; background: #0B0C0C;">
+              <sc-if value="{{ v.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ v.img }}" alt="{{ v.label }}" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
+              <span style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 64px; height: 64px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,0.9); background: rgba(11,12,12,0.35); color: #FFFFFF; font-size: 18px; padding-left: 4px;">&#9654;</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;">
+              <span style="font-size: 15px; font-weight: 300; line-height: 1.4;">{{ v.label }}</span>
+              <span style="flex-shrink: 0; font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">{{ v.where }} &#8599;</span>
+            </div>
+          </a>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
     <div style="padding: clamp(100px, 12vw, 170px) 0 0; display: flex; flex-direction: column; gap: 40px;">
       <div style="padding: 0 clamp(20px, 4vw, 56px); display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap;">
         <h3 style="margin: 0; font-weight: 200; font-size: clamp(36px, 5vw, 80px); line-height: 1; letter-spacing: -0.03em;">behind <span style="font-style: italic; color: #10AF8B;">the</span> scenes</h3>
         <span style="font-size: 10px; letter-spacing: 2.6px; text-transform: uppercase; color: #8A9390;">{{ swipeLabel }}</span>
       </div>
-      <div ref="{{ stripRef }}" style="display: flex; gap: clamp(12px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; user-select: none; -webkit-user-select: none; padding: 0 clamp(20px, 4vw, 56px) 8px; scroll-padding: 0 clamp(20px, 4vw, 56px);">
+      <div ref="{{ stripRef }}" data-noscrollbar="" style="display: flex; gap: clamp(12px, 1.6vw, 24px); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; user-select: none; -webkit-user-select: none; padding: 0 clamp(20px, 4vw, 56px) 8px; scroll-padding: 0 clamp(20px, 4vw, 56px);">
         <sc-for list="{{ caseBts }}" as="c" hint-placeholder-count="4">
           <div style="position: relative; flex: 0 0 auto; width: clamp(220px, 26vw, 420px); aspect-ratio: {{ c.ratio }}; overflow: hidden; background: #EEF3F1; scroll-snap-align: start;">
             <sc-if value="{{ c.hasImg }}" hint-placeholder-val="{{ false }}"><img ref="{{ mediaRef }}" data-src="{{ c.img }}" alt="" draggable="false" loading="lazy" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;"></sc-if>
@@ -437,6 +462,9 @@ class Component extends DCLogic {
     addEventListener('resize', this.onResize);
     addEventListener('wheel', this.onWheel, { passive: false });
     addEventListener('dragenter', this.onDragIn, true);
+    // A hidden tab stops the case film; coming back resumes it if it is in view.
+    this.onVis = () => this.syncCaseFilm();
+    document.addEventListener('visibilitychange', this.onVis);
     ['dragleave', 'drop', 'dragend'].forEach(ev => addEventListener(ev, this.onDragOut, true));
     if (window.ResizeObserver && this.rootRef.current) { this.ro = new ResizeObserver(() => { this.dirty = true; }); this.ro.observe(this.rootRef.current); }
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { this.dirty = true; });
@@ -458,6 +486,9 @@ class Component extends DCLogic {
     clearTimeout(this.safety);
     if (this.ro) this.ro.disconnect();
     if (this.io) this.io.disconnect();
+    if (this._filmIO) this._filmIO.disconnect();
+    clearTimeout(this._filmT);
+    if (this.onVis) document.removeEventListener('visibilitychange', this.onVis);
     if (this.sdAnims) this.sdAnims.forEach(a => a.cancel());
     removeEventListener('mousemove', this.onMove);
     removeEventListener('keydown', this.onKey);
@@ -1015,9 +1046,11 @@ class Component extends DCLogic {
     const URL = 'https://gpyyxvnymmwhpdmijyvb.supabase.co', KEY = 'sb_publishable_oesyTPK2JuS1G20t8vS0zw_Yp9bgwd1';
     const get = q => fetch(URL + '/rest/v1/' + q, { headers: { apikey: KEY } }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
     try {
+      const media$ = get('portfolio_media?select=id,work_id,section,kind,url,url_grid,poster_url,caption,link_url,width,height,sort_order&order=sort_order.asc,created_at.asc')
+        .catch(() => get('portfolio_media?select=id,work_id,section,kind,url,url_grid,poster_url,caption,width,height,sort_order&order=sort_order.asc,created_at.asc'));
       const [works, media] = await Promise.all([
         get('portfolio_works?select=id,title,category,story,cover_url,cover_grid_url,film_url,film_poster_url,sort_order&published=eq.true&order=sort_order.asc,created_at.asc'),
-        get('portfolio_media?select=id,work_id,section,kind,url,url_grid,poster_url,caption,width,height,sort_order&order=sort_order.asc,created_at.asc')]);
+        media$]);
       await new Promise(r => this.setState({ db: { works: Array.isArray(works) ? works : [], media: Array.isArray(media) ? media : [] } }, () => { this.dirty = true; this.onHash(); r(); }));
       if (this.hosted() && !this._logged) { this._logged = true; fetch(URL + '/rest/v1/rpc/log_album_visit', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_slug: 'portfolio', p_meta: (() => { const n = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {}; let s = '', tz = ''; try { s = sessionStorage.getItem('g_sid') || ''; if (!s) { s = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2); sessionStorage.setItem('g_sid', s); } } catch (e) {} try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {} return { session: s, path: location.pathname + location.search, method: 'GET', status: n.responseStatus || 200, size: Math.round(n.transferSize || n.encodedBodySize || 0) || null, referrer: document.referrer || null, auth: 'anon', screen: screen.width + 'x' + screen.height + '@' + (window.devicePixelRatio || 1), viewport: innerWidth + 'x' + innerHeight, lang: navigator.language || '', tz }; })() }), keepalive: true }).catch(() => {}); }
     } catch (e) { await new Promise(r => this.setState({ db: { works: [], media: [] }, dbFail: true }, r)); }
@@ -1031,7 +1064,8 @@ class Component extends DCLogic {
         cv: r.cover_url || '', cg: r.cover_grid_url || '', slot: false,
         film: r.film_url || '', hasFilm: !!r.film_url, poster: r.film_poster_url || r.cover_url || '',
         hero: r.cover_url || '', posterOnly: !r.film_url && !!r.cover_url, filmSlot: false,
-        story: r.story || '', stills: mine('still'), bts: mine('case_bts') };
+        story: r.story || '', stills: mine('still'), bts: mine('case_bts'),
+        videos: mine('video').filter(m => /^https?:\/\//i.test(m.link_url || '')) };
     });
     const n = Math.max(3, Math.min(12, this.props.workCount ?? 8));
     return Array.from({ length: n }, (_, i) => ({ id: this.pad(i + 1), no: this.pad(i + 1), title: 'project title', kind: this.kinds[i % 8], ...shape(i),
@@ -1054,6 +1088,13 @@ class Component extends DCLogic {
   afterActive() {
     const c = this.caseRef.current, on = this.state.active != null, was = this.wasOpen;
     this.wasOpen = on;
+    if (this._caseFilm) {
+      const f = this._caseFilm, src = f.getAttribute('data-src');
+      if (src !== f._lastSrc) { f._lastSrc = src; f._userPaused = false; }
+      this.applySrc(f);
+    }
+    clearTimeout(this._filmT);
+    if (on) this._filmT = setTimeout(() => this.syncCaseFilm(), was ? 200 : 650);
     if (on) this.unhoverAll();
     if (!this.L || this.L.finished) document.body.style.overflow = on ? 'hidden' : '';
     if (!c) return;
@@ -1062,7 +1103,7 @@ class Component extends DCLogic {
       if (on) { this.lastFocus = document.activeElement; const b = c.querySelector('button'); if (b) b.focus({ preventScroll: true }); }
       else if (this.lastFocus && this.lastFocus.focus) { this.lastFocus.focus({ preventScroll: true }); this.lastFocus = null; }
     }
-    c.querySelectorAll('video').forEach(v => { try { v.pause(); v.preload = on ? 'auto' : 'metadata'; } catch (e) {} });
+    c.querySelectorAll('video').forEach(v => { try { if (!v.paused) { v._autoPause = true; v.pause(); } v.preload = on ? 'auto' : 'metadata'; } catch (e) {} });
     c.style.clipPath = on ? 'inset(0% 0% 0% 0%)' : 'inset(100% 0% 0% 0%)';
     c.style.pointerEvents = on ? 'auto' : 'none';
     if (on) {
@@ -1072,6 +1113,46 @@ class Component extends DCLogic {
         [{ opacity: 0, transform: 'translateY(48px)' }, { opacity: 1, transform: 'none' }],
         { duration: 1100, delay: (was ? 60 : 420) + i * 90, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'both' }));
     }
+  }
+
+  // The case film plays by itself, muted, while at least half of it is on
+  // screen, and pauses when it scrolls away or the case page closes. The
+  // controls stay, so anyone can turn the sound on.
+  caseFilmRef = el => {
+    if (this._caseFilm && this._caseFilm !== el && this._filmIO) this._filmIO.unobserve(this._caseFilm);
+    this._caseFilm = el;
+    this._filmVis = null;
+    if (!el) return;
+    el.muted = true; el.defaultMuted = true; el.playsInline = true;
+    // iOS Safari reads the attributes, not just the properties, before it
+    // allows a muted video to start by itself.
+    el.setAttribute('muted', ''); el.setAttribute('playsinline', ''); el.setAttribute('webkit-playsinline', '');
+    if (!el._wired) {
+      el._wired = 1;
+      // Someone who presses pause has decided; scrolling must not restart it.
+      el.addEventListener('pause', () => { if (!el._autoPause && !el.ended) el._userPaused = true; el._autoPause = false; });
+      el.addEventListener('play', () => { el._userPaused = false; });
+    }
+    this.applySrc(el);
+    if (!window.IntersectionObserver) return;
+    if (!this._filmIO) this._filmIO = new IntersectionObserver(es => es.forEach(en => {
+      if (en.target !== this._caseFilm) return;
+      this._filmVis = en.intersectionRatio;
+      this.syncCaseFilm();
+    }), { threshold: [0, 0.25, 0.5, 0.75, 1] });
+    this._filmIO.observe(el);
+  };
+  syncCaseFilm() {
+    const v = this._caseFilm;
+    if (!v) return;
+    let vis = this._filmVis;
+    if (vis == null) {
+      const r = v.getBoundingClientRect(), h = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+      vis = r.height ? h / r.height : 0;
+    }
+    if (this.state.active != null && vis >= 0.5 && !this.reduced && !document.hidden && !v._userPaused) {
+      if (v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+    } else if (!v.paused) { v._autoPause = true; v.pause(); }
   }
 
   renderVals() {
@@ -1131,11 +1212,20 @@ class Component extends DCLogic {
       const img = m && live ? (m.kind === 'video' ? (m.poster_url || '') : (m.url_grid || m.url)) : '';
       return { n: i + 1, ratio: ['4 / 5', '3 / 4', '4 / 5', '1 / 1', '4 / 5'][i % 5], img, hasImg: !!img, slot: !m && slot }; });
     const reelRow = db ? db.media.filter(m => m.section === 'reel').slice(-1)[0] : null;
+    const caseVideos = (aw.videos || []).map((m, i) => {
+      let host = '';
+      try { host = new URL(m.link_url).hostname.replace(/^www\./, '').replace(/^m\./, ''); } catch (e) {}
+      const where = /instagram/.test(host) ? 'instagram' : /youtu/.test(host) ? 'youtube' : /facebook|fb\.watch/.test(host) ? 'facebook' : /vimeo/.test(host) ? 'vimeo' : host;
+      const img = live ? (m.url_grid || m.url || '') : '';
+      return { n: i + 1, href: m.link_url, img, hasImg: !!img, label: (m.caption || 'film ' + this.pad(i + 1)).toLowerCase(), where: where ? 'watch on ' + where : 'watch' };
+    });
     return {
       bts, steps, stills,
+      caseVideos, hasCaseVideos: caseVideos.length > 0,
       caseBts, caseStory: aw.story || '',
       caseFilm: !!aw.hasFilm && live, casePoster: !!aw.posterOnly && live,
       procPos: this.state.stack ? 'static' : 'sticky',
+      caseFilmRef: this.caseFilmRef,
       swipeLabel: this.coarse ? 'swipe' : 'drag',
       frameRef: this.frameRef, grainRef: this.grainRef,
       fitFrame: e => {
