@@ -1031,8 +1031,8 @@
           <sc-if value="{{ pageLeads }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; flex-direction:column; gap:6px">
               <span style="font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--mute)">Admin only</span>
-              <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Task leads</h1>
-              <span style="font-size:14px; line-height:1.7; color:var(--body); max-width:560px">A task lead can issue tasks, edit them, add crew and to-dos, and sees every live task. Trash, delete and sign-up approvals stay with HR and admin.</span>
+              <h1 style="margin:0; font-size:clamp(28px,4vw,38px); font-weight:300; line-height:1.2">Crew &amp; task leads</h1>
+              <span style="font-size:14px; line-height:1.7; color:var(--body); max-width:560px">A task lead can issue tasks, edit them, add crew and to-dos, and sees every live task. Trash, delete and sign-up approvals stay with HR and admin. Removing someone takes them off the crew page and every task; their crew record stays with HR.</span>
             </div>
             <sc-if value="{{ leadsNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px; line-height:1.6; color:var(--red)">{{ leadsNote }}</span></sc-if>
             <div style="display:flex; flex-direction:column; border-top:1px solid var(--line2)">
@@ -1043,7 +1043,10 @@
                     <span style="font-size:15px; color:var(--ink)">{{ ld.name }}</span>
                     <span style="font-size:12px; color:var(--mute)">{{ ld.role }}</span>
                   </div>
-                  <button data-tap="1" onClick="{{ ld.go }}" style="flex:0 0 auto; padding:9px 14px; background:{{ ld.bg }}; color:{{ ld.color }}; border:1px solid #0E8E72; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">{{ ld.label }}</button>
+                  <div style="display:flex; gap:8px; flex:0 0 auto; flex-wrap:wrap; justify-content:flex-end">
+                    <button data-tap="1" onClick="{{ ld.go }}" style="padding:9px 14px; background:{{ ld.bg }}; color:{{ ld.color }}; border:1px solid #0E8E72; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">{{ ld.label }}</button>
+                    <button data-tap="1" onClick="{{ ld.remove }}" aria-label="Remove from crew" style="padding:9px 14px; background:none; color:var(--red); border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer">Remove</button>
+                  </div>
                 </div>
               </sc-for>
             </div>
@@ -1752,6 +1755,17 @@ class Component extends DCLogic {
     this.setState(s => ({ leadIds: on ? [...new Set([...s.leadIds, pid])] : s.leadIds.filter(x => x !== pid) }));
     const r = this.state.roster.find(x => x.person_id === pid);
     this.flash((r ? r.full_name : 'Crew') + (on ? ' can now issue tasks.' : ' is no longer a task lead.'));
+  }
+  // Off the crew page: access, task lead and every task. The crew record and
+  // pay history stay with HR in the admin panel.
+  async removeMember(r) {
+    if (!confirm('Remove ' + r.full_name + ' from the crew?\n\nThey lose access straight away and come off every task. Their crew record stays with HR.')) return;
+    await this.run(async () => {
+      const { error } = await this.sb.rpc('crew_remove_member', { p_person: r.person_id });
+      if (error) throw error;
+      await this.loadAll();
+      await this.loadLeads();
+    }, r.full_name + ' removed from the crew.');
   }
 
   pushInfo() {
@@ -2933,7 +2947,7 @@ class Component extends DCLogic {
     if (me.person_id || me.request_status) navBottom.push(navBtn('profile', 'My profile'));
     navBottom.push(navBtn('alerts', 'Notifications', s.push.on ? '' : 'Off'));
     if (isManager) navBottom.push(navBtn('trash', 'Trash', s.trash.length || ''));
-    if (isAdmin) navBottom.push(navBtn('leads', 'Task leads'));
+    if (isAdmin) navBottom.push(navBtn('leads', 'Crew & leads'));
     if (isAdmin) navBottom.push({ label: 'Approve sign-ups', count: '↗', bg: 'transparent', color: 'var(--ink)', go: () => { location.href = 'admin.html'; } });
 
     const t = s.tasks.find(x => x.id === s.taskId);
@@ -3215,7 +3229,7 @@ class Component extends DCLogic {
       ? [{ label: 'Create an account', go: () => this.setState({ authMode: 'signup', authErr: '', authMsg: '' }) }, { label: 'Forgot password', go: () => this.setState({ authMode: 'reset', authErr: '', authMsg: '' }) }]
       : authMode === 'newpass' ? [] : [{ label: 'Back to sign in', go: () => this.setState({ authMode: 'signin', authErr: '', authMsg: '' }) }];
 
-    const pageTitle = s.page === 'task' && t ? t.title : s.page === 'channel' ? 'Crew channel' : s.page === 'form' ? (f && f.id ? 'Edit task' : 'Issue a task') : s.page === 'trash' ? 'Trash' : s.page === 'tasks' ? 'Tasks' : s.page === 'profile' ? 'Profile' : s.page === 'board' ? 'Crew board' : s.page === 'mentions' ? 'Inbox' : s.page === 'leads' ? 'Task leads' : s.page === 'alerts' ? 'Notifications' : 'Today';
+    const pageTitle = s.page === 'task' && t ? t.title : s.page === 'channel' ? 'Crew channel' : s.page === 'form' ? (f && f.id ? 'Edit task' : 'Issue a task') : s.page === 'trash' ? 'Trash' : s.page === 'tasks' ? 'Tasks' : s.page === 'profile' ? 'Profile' : s.page === 'board' ? 'Crew board' : s.page === 'mentions' ? 'Inbox' : s.page === 'leads' ? 'Crew & leads' : s.page === 'alerts' ? 'Notifications' : 'Today';
     const hh = React.createElement;
     const ic = (paths, sz) => hh('svg', { viewBox: '0 0 24 24', width: sz || 22, height: sz || 22, 'aria-hidden': 'true', focusable: 'false', style: { display: 'block', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'square', strokeLinejoin: 'miter' } }, paths.map((d, i) => hh('path', { key: i, d })));
     const IC = {
@@ -3306,7 +3320,7 @@ class Component extends DCLogic {
       pageLeads: s.page === 'leads' && isAdmin, leadsNote: s.leadsNote,
       leadsVM: s.roster.filter(r => r.full_name).slice().sort((a, b) => a.full_name.localeCompare(b.full_name)).map(r => {
         const on = s.leadIds.includes(r.person_id);
-        return { name: r.full_name, initials: initials(r.full_name), role: roleLabel(r.primary_role) + (on ? ' · Task lead' : ''), label: on ? 'Remove lead' : 'Make lead', bg: on ? 'var(--fill)' : 'var(--surface)', color: on ? '#FFFFFF' : '#0E8E72', go: () => this.setLead(r.person_id, !on) };
+        return { name: r.full_name, initials: initials(r.full_name), role: roleLabel(r.primary_role) + (on ? ' · Task lead' : ''), label: on ? 'Remove lead' : 'Make lead', bg: on ? 'var(--fill)' : 'var(--surface)', color: on ? '#FFFFFF' : '#0E8E72', go: () => this.setLead(r.person_id, !on), remove: () => this.removeMember(r) };
       }), newTask: () => this.go('form', { form: this.blankForm() }),
       toast: s.toast, toastBg: s.toastErr ? '#B4433A' : 'var(--fill)',
 
