@@ -213,33 +213,81 @@
             <sc-if value="{{ hasNoProjects }}" hint-placeholder-val="{{ false }}">
               <span style="font-size:14px; color:#4A524F">{{ emptyProjectsHint }}</span>
             </sc-if>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px">
-              <sc-for list="{{ projectsVM }}" as="pj" hint-placeholder-count="0">
-                <div style="border:1px solid var(--line); border-radius:0; overflow:hidden; display:flex; flex-direction:column">
-                  <div style="aspect-ratio:4/3; background:#F4F6F5; display:grid; place-items:center; overflow:hidden">
-                    <img ref="{{ pj.setCoverRef }}" alt="{{ pj.client_name }}" style="width:100%; height:100%; object-fit:cover; display:none">
-                    <sc-if value="{{ pj.noCover }}" hint-placeholder-val="{{ true }}">
-                      <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">No cover yet</span>
+            <sc-if value="{{ isDigitalList }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-direction:column; gap:18px">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line)">
+                  <sc-for list="{{ dlKpisVM }}" as="k" hint-placeholder-count="5">
+                    <div style="display:flex; flex-direction:column; gap:6px; padding:16px 18px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); min-width:0">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                      <span style="font-size:28px; font-weight:300; line-height:1.15; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+                      <span style="font-size:12px; color:{{ k.subColor }}; line-height:1.5">{{ k.sub }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex; gap:10px 16px; flex-wrap:wrap; align-items:center">
+                  <input placeholder="Search client, code or sector" value="{{ dlQuery }}" onChange="{{ onDlQuery }}" style="flex:1 1 260px; max-width:360px; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit" style-focus="border-color:var(--green)">
+                  <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+                    <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:4px">Sort</span>
+                    <sc-for list="{{ dlSortVM }}" as="so" hint-placeholder-count="4">
+                      <button onClick="{{ so.go }}" style="padding:7px 12px; background:{{ so.bg }}; color:{{ so.color }}; border:1px solid {{ so.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit">{{ so.label }}</button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ dlLoading }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px; color:#6B7572">Loading the numbers…</span></sc-if>
+                  <sc-if value="{{ dlCanSync }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ dlSync }}" disabled="{{ dlSyncing }}" title="Fetch the latest numbers for every connected account" style="margin-left:auto; padding:9px 16px; background:#0E8E72; color:#FFFFFF; border:1px solid #0E8E72; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit; opacity:{{ dlSyncOpacity }}" style-hover="background:#1B1D1E; border-color:#1B1D1E">{{ dlSyncLabel }}</button>
+                  </sc-if>
+                  <sc-if value="{{ dlCanCreate }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ toggleDlNew }}" style="padding:9px 16px; background:#1B1D1E; color:#FFFFFF; border:1px solid #1B1D1E; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit" style-hover="background:#0E8E72; border-color:#0E8E72">{{ dlNewLabel }}</button>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ dlHasStatus }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:12px; color:var(--green-deep); line-height:1.6; padding:10px 14px; background:#F3FAF8; border:1px solid var(--line)">{{ dlStatus }}</span>
+                </sc-if>
+                <div style="overflow-x:auto; border:1px solid var(--line)">
+                  <div style="min-width:760px; display:flex; flex-direction:column">
+                    <div style="display:grid; grid-template-columns:minmax(180px,2fr) minmax(120px,1.3fr) repeat(3,minmax(76px,1fr)) 116px; gap:0 16px; padding:12px 18px; background:#FAFCFB">
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Client</span>
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Accounts · latest</span>
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Followers</span>
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Reach 30d</span>
+                      <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Eng. rate</span>
+                      <span></span>
+                    </div>
+                    <sc-for list="{{ dlRowsVM }}" as="r" hint-placeholder-count="3">
+                      <div style="display:grid; grid-template-columns:minmax(180px,2fr) minmax(120px,1.3fr) repeat(3,minmax(76px,1fr)) 116px; align-items:center; gap:0 16px; padding:14px 18px; border-top:1px solid var(--line); background:#FFFFFF" style-hover="background:#FAFCFB">
+                        <button onClick="{{ r.open }}" title="Open this client's dashboard" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; padding:0; background:none; border:none; cursor:pointer; text-align:left; font-family:inherit; min-width:0">
+                          <span style="font-size:15px; color:#0E8E72; overflow-wrap:anywhere">{{ r.name }} →</span>
+                          <span style="font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums; overflow-wrap:anywhere">{{ r.meta }}</span>
+                        </button>
+                        <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                          <span style="font-size:12px; color:{{ r.platformsColor }}; line-height:1.5; overflow-wrap:anywhere">{{ r.platforms }}</span>
+                          <span style="font-size:12px; color:{{ r.lastColor }}">{{ r.last }}</span>
+                        </div>
+                        <span style="font-size:15px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ r.followers }}</span>
+                        <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                          <span style="font-size:15px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ r.reach }}</span>
+                          <span style="font-size:12px; color:{{ r.deltaColor }}; font-variant-numeric:tabular-nums">{{ r.delta }}</span>
+                        </div>
+                        <span style="font-size:15px; color:#1B1D1E; font-variant-numeric:tabular-nums">{{ r.er }}</span>
+                        <div style="display:flex; gap:6px; justify-content:flex-end">
+                          <button onClick="{{ r.details }}" style="padding:8px 12px; background:#FFFFFF; color:#0E8E72; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit" style-hover="border-color:#0E8E72">Details</button>
+                          <sc-if value="{{ canRecordsEdit }}" hint-placeholder-val="{{ false }}">
+                            <button onClick="{{ r.remove }}" aria-label="Delete client" title="Delete" style="padding:8px 10px; background:#FFFFFF; color:#B4433A; border:1px solid var(--line); border-radius:0; font-size:11px; cursor:pointer; font-family:inherit" style-hover="border-color:#B4433A">✕</button>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ dlNoMatch }}" hint-placeholder-val="{{ false }}">
+                      <span style="padding:18px; border-top:1px solid var(--line); font-size:13px; color:#6B7572">No client matches that search.</span>
                     </sc-if>
                   </div>
-                  <div style="padding:14px 16px; display:flex; flex-direction:column; gap:6px">
-                    <span style="font-size:15px; font-weight:400; color:#1B1D1E">{{ pj.client_name }}</span>
-                    <span style="font-size:12px; color:#4A524F">{{ pj.metaLabel }}</span>
-                    <span style="font-size:10px; padding:3px 9px; border-radius:0; background:{{ pj.statusBg }}; color:{{ pj.statusColor }}; letter-spacing:.18em; text-transform:uppercase; align-self:flex-start">{{ pj.statusLabel }}</span>
-                    <div style="display:flex; gap:8px; margin-top:8px">
-                      <button onClick="{{ pj.open }}" style="flex:1; padding:9px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Edit</button>
-                      <sc-if value="{{ canRecordsEdit }}" hint-placeholder-val="{{ true }}">
-                        <button onClick="{{ pj.remove }}" style="padding:9px 12px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; color:#B4433A; cursor:pointer">Delete</button>
-                      </sc-if>
-                    </div>
-                  </div>
                 </div>
-              </sc-for>
-            </div>
+              </div>
+            </sc-if>
           </div>
         </sc-if>
 
-        <sc-if value="{{ isWeddingDivision }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ isWeddingDivision }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex; flex-direction:column; gap:16px; padding:24px; border:1px solid var(--line); border-radius:0">
           <span style="font-size:13px; letter-spacing:.24em; text-transform:uppercase; color:var(--green-deep)">New event</span>
           <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px">
@@ -278,30 +326,76 @@
           <sc-if value="{{ hasNoEvents }}" hint-placeholder-val="{{ false }}">
             <span style="font-size:14px; color:#4A524F">{{ emptyEventsHint }}</span>
           </sc-if>
-          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:18px">
-            <sc-for list="{{ eventsVM }}" as="ev" hint-placeholder-count="0">
-              <div style="border:1px solid var(--line); border-radius:0; overflow:hidden; display:flex; flex-direction:column">
-                <div style="aspect-ratio:4/3; background:#F4F6F5; display:grid; place-items:center; overflow:hidden">
-                  <img ref="{{ ev.setCoverRef }}" alt="{{ ev.couple_names }}" style="width:100%; height:100%; object-fit:cover; display:none">
-                  <sc-if value="{{ ev.noCover }}" hint-placeholder-val="{{ true }}">
-                    <span style="font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#6B7572">No cover yet</span>
-                  </sc-if>
-                </div>
-                <div style="padding:14px 16px; display:flex; flex-direction:column; gap:6px">
-                  <span style="font-size:15px; font-weight:400; color:#1B1D1E">{{ ev.couple_names }}</span>
-                  <span style="font-size:12px; color:#4A524F">{{ ev.dateLabel }}</span>
-                  <span style="font-size:11px; color:var(--green-deep)">/album/{{ ev.slug }}</span>
-                  <div style="display:flex; gap:8px; margin-top:8px">
-                    <button onClick="{{ ev.open }}" style="flex:1; padding:9px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer" style-hover="background:#1B1D1E">Edit</button>
-                    <sc-if value="{{ canRecordsEdit }}" hint-placeholder-val="{{ true }}">
-                      <button onClick="{{ ev.remove }}" style="padding:9px 12px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; color:#B4433A; cursor:pointer">Delete</button>
-                    </sc-if>
-                  </div>
-                </div>
-              </div>
-            </sc-for>
-          </div>
         </div>
+        </sc-if>
+
+        <sc-if value="{{ isJobList }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:18px">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line)">
+              <sc-for list="{{ jlKpisVM }}" as="k" hint-placeholder-count="5">
+                <button onClick="{{ k.go }}" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:16px 18px; background:{{ k.bg }}; border:none; border-right:1px solid var(--line); border-bottom:1px solid var(--line); border-radius:0; min-width:0; text-align:left; cursor:pointer; font-family:inherit" style-hover="background:#FAFCFB">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ k.label }}</span>
+                  <span style="font-size:28px; font-weight:300; line-height:1.15; color:{{ k.color }}; font-variant-numeric:tabular-nums">{{ k.value }}</span>
+                  <span style="font-size:12px; color:#6B7572; line-height:1.5">{{ k.sub }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:10px 16px; flex-wrap:wrap; align-items:center">
+              <input placeholder="{{ jlSearchHint }}" value="{{ jlQuery }}" onChange="{{ onJlQuery }}" style="flex:1 1 240px; max-width:340px; padding:10px 12px; border:1px solid var(--line); border-radius:0; font-size:13px; outline:none; font-family:inherit" style-focus="border-color:var(--green)">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap">
+                <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390; margin-right:4px">Sort</span>
+                <sc-for list="{{ jlSortVM }}" as="so" hint-placeholder-count="3">
+                  <button onClick="{{ so.go }}" style="padding:7px 12px; background:{{ so.bg }}; color:{{ so.color }}; border:1px solid {{ so.border }}; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit">{{ so.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ jlCanCreate }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ toggleJlNew }}" style="margin-left:auto; padding:9px 16px; background:#1B1D1E; color:#FFFFFF; border:1px solid #1B1D1E; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit" style-hover="background:#0E8E72; border-color:#0E8E72">{{ jlNewLabel }}</button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ jlHasFilter }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                <span style="font-size:12px; color:#4A524F">Showing {{ jlFilterLabel }}</span>
+                <button onClick="{{ jlClearFilter }}" style="padding:0; background:none; border:none; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#0E8E72; cursor:pointer; font-family:inherit">Show all</button>
+              </div>
+            </sc-if>
+            <div style="overflow-x:auto; border:1px solid var(--line)">
+              <div style="min-width:760px; display:flex; flex-direction:column">
+                <div style="display:grid; grid-template-columns:minmax(200px,2.2fr) 112px minmax(130px,1.2fr) minmax(110px,1fr) 116px; gap:0 16px; padding:12px 18px; background:#FAFCFB">
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ jlNameHead }}</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Stage</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">{{ jlDateHead }}</span>
+                  <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Client link</span>
+                  <span></span>
+                </div>
+                <sc-for list="{{ jlRowsVM }}" as="r" hint-placeholder-count="3">
+                  <div style="display:grid; grid-template-columns:minmax(200px,2.2fr) 112px minmax(130px,1.2fr) minmax(110px,1fr) 116px; align-items:center; gap:0 16px; padding:14px 18px; border-top:1px solid var(--line); background:#FFFFFF" style-hover="background:#FAFCFB">
+                    <button onClick="{{ r.open }}" title="Open" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; padding:0; background:none; border:none; cursor:pointer; text-align:left; font-family:inherit; min-width:0">
+                      <span style="font-size:15px; color:#0E8E72; overflow-wrap:anywhere">{{ r.name }} →</span>
+                      <span style="font-size:12px; color:#6B7572; font-variant-numeric:tabular-nums; overflow-wrap:anywhere">{{ r.meta }}</span>
+                    </button>
+                    <span style="justify-self:start; padding:4px 9px; background:{{ r.statusBg }}; color:{{ r.statusColor }}; font-size:10px; letter-spacing:.18em; text-transform:uppercase">{{ r.statusLabel }}</span>
+                    <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                      <span style="font-size:13px; color:{{ r.dateColor }}; font-variant-numeric:tabular-nums">{{ r.dateMain }}</span>
+                      <span style="font-size:12px; color:#6B7572">{{ r.dateSub }}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:2px; min-width:0">
+                      <span style="font-size:12px; color:{{ r.linkColor }}">{{ r.linkLabel }}</span>
+                      <span style="font-size:12px; color:{{ r.pinColor }}">{{ r.pinLabel }}</span>
+                    </div>
+                    <div style="display:flex; gap:6px; justify-content:flex-end">
+                      <button onClick="{{ r.open }}" style="padding:8px 12px; background:#FFFFFF; color:#0E8E72; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; font-family:inherit" style-hover="border-color:#0E8E72">Edit</button>
+                      <sc-if value="{{ canRecordsEdit }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ r.remove }}" aria-label="Delete" title="Delete" style="padding:8px 10px; background:#FFFFFF; color:#B4433A; border:1px solid var(--line); border-radius:0; font-size:11px; cursor:pointer; font-family:inherit" style-hover="border-color:#B4433A">✕</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ jlNoMatch }}" hint-placeholder-val="{{ false }}">
+                  <span style="padding:18px; border-top:1px solid var(--line); font-size:13px; color:#6B7572">Nothing matches — clear the search or show all.</span>
+                </sc-if>
+              </div>
+            </div>
+          </div>
         </sc-if>
       </div>
       </sc-if>
@@ -4589,13 +4683,25 @@
             <span style="font-size:31px; font-weight:300; line-height:1.2; letter-spacing:-0.01em; color:#1B1D1E; overflow-wrap:anywhere">{{ digTitle }}</span>
             <span style="font-size:12px; color:#4A524F; line-height:1.6">{{ digSubLine }}</span>
           </div>
-          <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ digCanSync }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex; gap:8px; width:max-content; max-width:100%">
-              <button onClick="{{ syncBackfill }}" disabled="{{ digSyncing }}" title="Re-pull the last 30 days for the accounts in this view" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="border-color:var(--green)">Pull 30 days</button>
+              <sc-if value="{{ digCanEdit }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ syncBackfill }}" disabled="{{ digSyncing }}" title="Re-pull the last 30 days for the accounts in this view" style="padding:10px 16px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="border-color:var(--green)">Pull 30 days</button>
+              </sc-if>
               <button onClick="{{ syncAll }}" disabled="{{ digSyncing }}" title="{{ digSyncTitle }}" style="padding:10px 18px; background:var(--green-deep); color:#fff; border:none; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; cursor:pointer; opacity:{{ digSyncOpacity }}" style-hover="background:#1B1D1E">{{ digSyncLabel }}</button>
             </div>
           </sc-if>
         </div>
+
+        <sc-if value="{{ digHasJob }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; padding:12px 16px; border:1px solid var(--line); border-radius:0; background:#FAFCFB">
+            <span style="font-size:10px; letter-spacing:2.6px; text-transform:uppercase; color:#8A9390">Job</span>
+            <span style="font-size:12px; color:#4A524F; font-variant-numeric:tabular-nums; margin-right:auto">{{ digJobCodes }}</span>
+            <sc-for list="{{ digJobActionsVM }}" as="ja" hint-placeholder-count="3">
+              <button onClick="{{ ja.go }}" style="padding:8px 13px; background:#FFFFFF; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#0E8E72; cursor:pointer; font-family:inherit" style-hover="border-color:#0E8E72">{{ ja.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
 
         <div style="display:flex; align-items:flex-end; gap:12px 24px; flex-wrap:wrap; border-bottom:1px solid var(--line)">
           <div style="display:flex; gap:22px; flex-wrap:wrap; margin-right:auto">
@@ -6639,6 +6745,9 @@
           <sc-if value="{{ hasEditorCodes }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px; letter-spacing:.06em; color:#6B7572; font-variant-numeric:tabular-nums">{{ editorCodes }}</span></sc-if>
         </div>
         <button onClick="{{ refreshEditor }}" disabled="{{ refreshing }}" title="Reload this job's details, photos, crew and billing without leaving the page" style="padding:7px 12px; background:none; border:1px solid var(--line); border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--green-deep); cursor:pointer" style-hover="border-color:var(--green)">{{ refreshLabel }}</button>
+        <sc-if value="{{ isDigitalJob }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ openJobDashboard }}" title="Reach, posts, inbox and the client page for this client" style="padding:7px 12px; background:#0E8E72; border:1px solid #0E8E72; border-radius:0; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#FFFFFF; cursor:pointer" style-hover="background:#1B1D1E; border-color:#1B1D1E">Digital dashboard</button>
+        </sc-if>
         <div style="display:flex; gap:4px 26px; flex-wrap:wrap; margin-left:auto">
           <sc-for list="{{ navVM }}" as="nv" hint-placeholder-count="1">
             <button onClick="{{ nv.go }}" style="padding:12px 0 10px; background:none; border:0; border-bottom:1px solid {{ nv.border }}; border-radius:0; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:{{ nv.color }}; cursor:pointer; transition:color .3s" style-hover="color:#0A6E58">{{ nv.label }}</button>
@@ -8426,6 +8535,10 @@ const CAPS = {
   // server-side — this flag only decides whether the button is drawn.
   digital:       ['admin', 'accounts', 'hr', 'creative', 'community'],
   digitalEdit:   ['admin', 'accounts'],
+  // Fetching the latest numbers is open to everyone who works the division;
+  // long backfills and discovery stay with admin and accounts (the function
+  // enforces both).
+  digitalSync:   ['admin', 'accounts', 'hr', 'creative', 'community'],
   digitalMoney:  ['admin', 'accounts'],
   digitalSecret: ['admin'],
   // The inbox and comment moderation: admin and community managers answer
@@ -8585,7 +8698,7 @@ const META_SCOPE_COUNT = 7;
 const HOUSE = 'house';
 const HOUSE_LABEL = 'Glomium (house)';
 const DIG_TABS = [
-  ['overview', 'Home'], ['inbox', 'Inbox'], ['planner', 'Planner'], ['content', 'Content'], ['audience', 'Audience'],
+  ['overview', 'Overview'], ['inbox', 'Inbox'], ['planner', 'Planner'], ['content', 'Content'], ['audience', 'Audience'],
   ['seo', 'Web'], ['moderation', 'Moderation'], ['accounts', 'Accounts'],
   ['portal', 'Client page'], ['deals', 'Brand deals'], ['recharge', 'Recharge'],
 ];
@@ -8909,7 +9022,7 @@ class Component extends DCLogic {
     digitalTab: 'overview', digProject: 'all', digRange: '30', digMetric: 'reach', digKind: 'all', digSort: 'new',
     digAccounts: [], digTerms: [], digMetrics: [], digRuns: [], digSecrets: [],
     digPosts: [], digKeywords: [], digRanks: [], digDeals: [], digBills: [],
-    digStatus: '', digSyncing: false, digSyncingAcc: null, digMasterSort: 'reach',
+    digStatus: '', digSyncing: false, digSyncingAcc: null, digMasterSort: 'reach', digFrom: null, dlSort: 'reach', dlQuery: '',
     numForm: null, digFound: null, digFinding: false, digFoundClient: {},
     digClients: [], digHolders: [], digLoading: false,
     acctForm: null, secretValue: '', secretReason: '', secretShown: null,
@@ -9001,6 +9114,8 @@ class Component extends DCLogic {
     // per-division (portfolio, people, shoots…) gives way to the dashboard.
     // Schedule stays, it reloads for the new division.
     const leaving = this.state.view !== 'schedule' && FIN_VIEWS.indexOf(this.state.view) === -1;
+    // Digital & social lands on its client list; the list reads the live numbers.
+    const digList = leaving && key === 'digital' && this.can('digital');
     this.setState({
       division: key, pickingDivision: false,
       view: leaving ? 'dashboard' : this.state.view,
@@ -9008,6 +9123,7 @@ class Component extends DCLogic {
       current: leaving ? null : this.state.current,
     });
     this.loadForDivision(key);
+    if (digList) this.loadDigital();
     if (!leaving && this.state.view === 'schedule') this.loadSchedule();
   }
 
@@ -9070,6 +9186,7 @@ class Component extends DCLogic {
     this.setState({ workspace: ws }, () => {
       if (ws === 'finance' && this.state.view === 'dashboard') this.goWorkspace('finance');
       if (ws === 'studio' && FIN_VIEWS.indexOf(this.state.view) !== -1) this.goWorkspace('dashboard');
+      if (ws === 'studio' && this.state.view === 'dashboard' && this.state.division === 'digital' && this.can('digital')) this.loadDigital();
     });
   }
 
@@ -9281,11 +9398,11 @@ class Component extends DCLogic {
   goWorkspace(view) {
     if (view === this.state.view) return;
     this.setState({ view, current: null, media: [], assignments: [], costing: null });
-    if (view === 'dashboard') this.loadForDivision();
+    if (view === 'dashboard') { this.loadForDivision(); if (this.state.division === 'digital' && this.can('digital')) this.loadDigital(); }
     if (view === 'schedule') this.loadSchedule();
     if (view === 'people') { this.loadPeople(); this.loadWorkload(); this.loadChangeRequests(); }
     if (view === 'talent') this.loadTalent();
-    if (view === 'digital') this.loadDigital();
+    if (view === 'digital') { this.setState({ digFrom: null }); this.loadDigital(); }
     if (view === 'approvals') { this.loadChangeRequests(); if (!this.state.people.length) this.loadPeople(); }
     if (view === 'visitors') this.loadVisits();
     if (view === 'payouts') {
@@ -9461,8 +9578,10 @@ class Component extends DCLogic {
     if (to === 'finMaster') { this.loadFinance(); this.loadMaster(); return; }
     if (to === 'finCustomers') { const open = this.state.custOpen; this.loadCustomers().then(() => { if (open) this.openCustomer(open); }); return; }
     if (to === 'finInvoices' || to === 'finProforma') { this.loadFinInvoices(); return; }
+    if (to === 'digital') { this.loadDigital(); return; }
     if (to !== 'dashboard') return;
     this.loadForDivision();
+    if (this.state.division === 'digital' && this.can('digital')) this.loadDigital();
     if (!wasProject) this.loadEvents();
   }
 
@@ -9697,6 +9816,25 @@ class Component extends DCLogic {
     this.setState({ siblingJobs: error ? [] : (data || []) });
   }
 
+  // In Digital & social a client opens on its own dashboard — reach, posts,
+  // inbox, the client page. Job details stay one click away.
+  openDigitalClient(pr) {
+    if (!pr || !this.can('digital')) { if (pr) this.openProject(pr); return; }
+    // Back goes where you came from: the client list, or the job you were in.
+    const from = this.state.view === 'editor' ? 'job:' + pr.id : 'clients';
+    this.setState({
+      view: 'digital', current: null, media: [], assignments: [], costing: null, editorFrom: null, digFrom: from,
+      digProject: pr.id, digitalTab: 'overview', acctForm: null, dealForm: null, termsForm: null, numForm: null, digStatus: '',
+    }, () => { if (!(this.state.digClients || []).length) this.loadDigital(); else this.loadDigitalTab(); });
+  }
+
+  async openProjectTab(id, tab) {
+    const { data, error } = await this.sb.from('projects').select('*').eq('id', id).maybeSingle();
+    if (error || !data) { this.setState({ digStatus: error ? error.message : 'That job no longer exists.' }); return; }
+    this.openProject(data, 'digital');
+    if (tab) this.setState({ editorTab: tab });
+  }
+
   async openSiblingJob(id) {
     const { data, error } = await this.sb.from('projects').select('*').eq('id', id).maybeSingle();
     if (error || !data) { this.setState({ detailsStatus: error ? error.message : 'That job no longer exists.' }); return; }
@@ -9787,7 +9925,7 @@ class Component extends DCLogic {
   projectDivisionsVM() {
     const s = this.state;
     if (s.view !== 'editor' || !s.current || this.parentTable() !== 'projects') {
-      return { showProjDivisions: false, projDivisionsVM: [] };
+      return { showProjDivisions: false, projDivisionsVM: [], isDigitalJob: false, openJobDashboard: () => {} };
     }
     const divs = this.divisionsOf(s.current);
     const here = this.jobDivision(s.current);
@@ -9795,6 +9933,8 @@ class Component extends DCLogic {
     const sibs = s.siblingJobs || [];
     const names = divs.map(d => DIVISION_LABEL[d] || d);
     return {
+      isDigitalJob: here === 'digital' && this.can('digital'),
+      openJobDashboard: () => this.openDigitalClient(s.current),
       showProjDivisions: divs.length > 0,
       projDivisionsVM: divs.map(d => ({
         label: DIVISION_LABEL[d] || d,
@@ -9810,6 +9950,163 @@ class Component extends DCLogic {
         + (DIVISION_LABEL[here] || here) + ' side. Give each division its own job under the same customer.' : '',
       splitVM: !multi || !this.can('recordsEdit') ? [] : divs.filter(d => d !== s.current.division)
         .map(d => ({ label: 'Give ' + (DIVISION_LABEL[d] || d) + ' its own job', go: () => this.splitDivision(d) })),
+    };
+  }
+
+  // Every other division's list: one table of jobs, the same shape for albums
+  // and projects — stage, dates and whether the client can open it.
+  jobListVM() {
+    const s = this.state;
+    const wed = s.division === 'wedding' || !s.division;
+    const on = s.view === 'dashboard' && !!s.division && !(s.division === 'digital' && this.can('digital'));
+    if (!on) return { isJobList: false, jlKpisVM: [], jlRowsVM: [], jlSortVM: [], jlQuery: '', onJlQuery: () => {}, jlNoMatch: false, jlCanCreate: false, jlNewLabel: '', toggleJlNew: () => {}, jlNameHead: '', jlDateHead: '', jlSearchHint: '', jlHasFilter: false, jlFilterLabel: '', jlClearFilter: () => {} };
+    const recs = wed ? (s.events || []) : (s.projects || []);
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = recs.map(r => ({
+      r, st: this.prodStatus(r),
+      name: wed ? (r.couple_names || r.client_name || 'Untitled') : (r.client_name || r.project_title || 'Client'),
+      date: wed ? r.event_date : (r.start_date || r.taken_date),
+    }));
+    const groups = {
+      all: { label: wed ? 'All events' : 'All projects', test: () => true },
+      production: { label: 'In production', test: x => x.st === 'planning' || x.st === 'shooting' },
+      editing: { label: 'Editing', test: x => x.st === 'editing' },
+      delivered: { label: 'Delivered', test: x => x.st === 'delivered' },
+      hidden: { label: 'Hidden', test: x => x.r.published === false },
+    };
+    const f = groups[s.jlFilter] ? s.jlFilter : 'all';
+    const q = String(s.jlQuery || '').trim().toLowerCase();
+    const shown = rows.filter(x => groups[f].test(x) && (!q || [x.name, x.r.code, x.r.sector, x.r.venue, x.r.project_title, x.r.slug]
+      .some(v => String(v || '').toLowerCase().includes(q))));
+    const key = s.jlSort || 'recent';
+    shown.sort((a, b) => key === 'name' ? a.name.localeCompare(b.name)
+      : key === 'date' ? String(b.date || '').localeCompare(String(a.date || ''))
+      : String(b.r.created_at || '').localeCompare(String(a.r.created_at || '')));
+    const subs = {
+      all: wed ? 'albums in this division' : 'jobs in this division',
+      production: 'planning or shooting',
+      editing: 'being cut and graded',
+      delivered: 'handed over',
+      hidden: 'not published to the client',
+    };
+    return {
+      isJobList: true,
+      jlKpisVM: Object.keys(groups).map(k => {
+        const n = rows.filter(groups[k].test).length;
+        return {
+          label: groups[k].label, value: String(n), sub: subs[k],
+          color: k === 'hidden' && n ? '#9A6A12' : '#1B1D1E',
+          bg: f === k ? '#F3FAF8' : '#FFFFFF',
+          go: () => this.setState({ jlFilter: f === k ? 'all' : k }),
+        };
+      }),
+      jlHasFilter: f !== 'all', jlFilterLabel: groups[f].label.toLowerCase(),
+      jlClearFilter: () => this.setState({ jlFilter: 'all' }),
+      jlQuery: s.jlQuery || '', onJlQuery: e => this.setState({ jlQuery: e.target.value }),
+      jlSearchHint: wed ? 'Search couple, venue or code' : 'Search client, title, sector or code',
+      jlSortVM: [['recent', 'Newest'], ['date', wed ? 'Event date' : 'Start date'], ['name', 'Name']].map(([k, label]) => ({
+        label, go: () => this.setState({ jlSort: k }),
+        bg: key === k ? '#1B1D1E' : '#FFFFFF', color: key === k ? '#FFFFFF' : '#4A524F', border: key === k ? '#1B1D1E' : 'var(--line)',
+      })),
+      jlCanCreate: this.can('recordsEdit'),
+      jlNewLabel: s.jlNewOpen ? 'Close form' : wed ? '+ New event' : '+ New project',
+      toggleJlNew: () => this.setState({ jlNewOpen: !this.state.jlNewOpen, createProjectError: '' }),
+      jlNameHead: wed ? 'Couple' : 'Client', jlDateHead: wed ? 'Event date' : 'Dates',
+      jlNoMatch: shown.length === 0 && rows.length > 0,
+      jlRowsVM: shown.map(({ r, st, name, date }) => ({
+        name,
+        meta: [r.code, this.clientCode(r.client_id), wed ? r.venue : [r.project_title, r.sector].filter(Boolean).join(' \u00b7 ')].filter(Boolean).join(' \u00b7 ') || '/' + (r.slug || ''),
+        statusLabel: PROD_LABEL[st] || st,
+        statusBg: st === 'delivered' ? '#DDEFE8' : st === 'editing' ? '#EFE9DA' : st === 'planning' ? '#EDEAF3' : '#EAF1EE',
+        statusColor: st === 'delivered' ? '#0A6E58' : st === 'editing' ? '#7A5410' : st === 'planning' ? '#5B5379' : '#0A6E58',
+        dateMain: date ? fmtDay(date) : 'Date to be set', dateColor: date ? '#1B1D1E' : '#9A6A12',
+        dateSub: r.delivered_date ? 'delivered ' + fmtDay(r.delivered_date) : (date && date >= today ? 'upcoming' : (r.taken_date ? 'booked ' + fmtDay(r.taken_date) : '')),
+        linkLabel: r.published === false ? 'Hidden' : r.published ? 'Live' : '\u2014',
+        linkColor: r.published === false ? '#9A6A12' : '#0A6E58',
+        pinLabel: r.pin_hash ? 'PIN set' : 'No PIN',
+        pinColor: r.pin_hash ? '#6B7572' : '#9A6A12',
+        open: () => (wed ? this.openEvent(r) : this.openProject(r)),
+        remove: () => (wed ? this.doDeleteEvent(r) : this.doDeleteProject(r)),
+      })),
+    };
+  }
+
+  // The Digital & social client list: a table of live numbers, not album cards.
+  digitalListVM() {
+    const s = this.state;
+    const on = s.view === 'dashboard' && s.division === 'digital' && this.can('digital');
+    if (!on) return { isDigitalList: false, isTileList: true, dlKpisVM: [], dlRowsVM: [], dlSortVM: [], dlQuery: '', onDlQuery: () => {}, dlNoMatch: false, dlLoading: false, dlCanCreate: false, dlNewLabel: '', toggleDlNew: () => {}, dlCanSync: false, dlSyncLabel: '', dlSyncOpacity: 1, dlSyncing: false, dlSync: () => {}, dlStatus: '', dlHasStatus: false };
+    const d30 = this.daysAgo(30), d60 = this.daysAgo(60), stale = this.daysAgo(3);
+    const num = v => Number(v) || 0;
+    const cf = v => new Intl.NumberFormat('en-IN', { notation: 'compact', maximumFractionDigits: 1 }).format(v);
+    const accBy = {}, mBy = {};
+    (s.digAccounts || []).forEach(a => { if (a.project_id && a.active !== false) (accBy[a.project_id] = accBy[a.project_id] || []).push(a); });
+    (s.digMetrics || []).forEach(m => (mBy[m.account_id] = mBy[m.account_id] || []).push(m));
+    const pct = (a, b) => (b ? (a >= b ? '\u2191 ' : '\u2193 ') + Math.abs(Math.round((a - b) * 100 / b)) + '%' : '');
+    const all = (s.projects || []).map(pr => {
+      const accs = accBy[pr.id] || [];
+      let reach = 0, prev = 0, eng = 0, last = '', followers = 0;
+      accs.forEach(a => {
+        let lf = null, lfd = '';
+        (mBy[a.id] || []).forEach(m => {
+          if (m.on_date >= d30) { reach += num(m.reach); eng += num(m.engagements); }
+          else if (m.on_date >= d60) prev += num(m.reach);
+          if (m.on_date > last) last = m.on_date;
+          if (m.followers != null && m.on_date >= lfd) { lf = num(m.followers); lfd = m.on_date; }
+        });
+        if (lf != null) followers += lf;
+      });
+      const name = pr.client_name || pr.project_title || 'Client';
+      return { pr, accs, reach, prev, eng, last, followers, name };
+    });
+    const q = String(s.dlQuery || '').trim().toLowerCase();
+    const shown = all.filter(x => !q || x.name.toLowerCase().includes(q) || String(x.pr.code || '').toLowerCase().includes(q) || String(x.pr.sector || '').toLowerCase().includes(q));
+    const key = s.dlSort || 'reach';
+    shown.sort((a, b) => key === 'name' ? a.name.localeCompare(b.name)
+      : key === 'followers' ? b.followers - a.followers
+      : key === 'last' ? String(b.last).localeCompare(String(a.last))
+      : b.reach - a.reach);
+    const tot = all.reduce((t, x) => ({ reach: t.reach + x.reach, prev: t.prev + x.prev, eng: t.eng + x.eng, followers: t.followers + x.followers }), { reach: 0, prev: 0, eng: 0, followers: 0 });
+    const attention = all.filter(x => !x.accs.length || !x.last || x.last < stale).length;
+    return {
+      isDigitalList: true, isTileList: false, dlLoading: !!s.digLoading,
+      dlCanCreate: this.can('recordsEdit'), dlNewLabel: s.dlNewOpen ? 'Close form' : '+ New client',
+      dlCanSync: this.can('digitalSync'), dlSyncLabel: s.digSyncing ? 'Syncing\u2026' : 'Sync all',
+      dlSyncOpacity: s.digSyncing ? 0.45 : 1, dlSyncing: !!s.digSyncing,
+      dlSync: () => this.syncDigital({}),
+      dlStatus: s.digStatus || '', dlHasStatus: !!s.digStatus,
+      toggleDlNew: () => this.setState({ dlNewOpen: !this.state.dlNewOpen, createProjectError: '' }),
+      dlKpisVM: [
+        { label: 'Clients', value: String(all.length), sub: all.filter(x => x.accs.length).length + ' with accounts', subColor: '#6B7572' },
+        { label: 'Followers', value: tot.followers ? cf(tot.followers) : '\u2014', sub: 'latest count, all accounts', subColor: '#6B7572' },
+        { label: 'Reach \u00b7 30 days', value: tot.reach ? cf(tot.reach) : '\u2014', sub: tot.prev ? pct(tot.reach, tot.prev) + ' on the 30 before' : 'no earlier month to compare', subColor: tot.reach >= tot.prev ? '#0A6E58' : '#B4433A' },
+        { label: 'Engagement rate', value: tot.reach ? (tot.eng * 100 / tot.reach).toFixed(1) + '%' : '\u2014', sub: tot.eng ? cf(tot.eng) + ' engagements' : 'engagements \u00f7 reach', subColor: '#6B7572' },
+        { label: 'Needs attention', value: String(attention), sub: attention ? 'no accounts, or no data in 3 days' : 'every client is syncing', subColor: attention ? '#9A6A12' : '#0A6E58' },
+      ],
+      dlQuery: s.dlQuery || '', onDlQuery: e => this.setState({ dlQuery: e.target.value }),
+      dlSortVM: [['reach', 'Reach'], ['followers', 'Followers'], ['last', 'Latest data'], ['name', 'Name']].map(([k, label]) => ({
+        label, go: () => this.setState({ dlSort: k }),
+        bg: key === k ? '#1B1D1E' : '#FFFFFF', color: key === k ? '#FFFFFF' : '#4A524F', border: key === k ? '#1B1D1E' : 'var(--line)',
+      })),
+      dlNoMatch: !!q && !shown.length && all.length > 0,
+      dlRowsVM: shown.map(x => {
+        const st = this.prodStatus(x.pr);
+        return {
+          name: x.name,
+          meta: [x.pr.code, this.clientCode(x.pr.client_id), x.pr.sector].filter(Boolean).join(' \u00b7 ') || (st && st.label) || '\u2014',
+          platforms: x.accs.length ? Array.from(new Set(x.accs.map(a => DIG_PLATFORM_SHORT[a.platform] || DIG_PLATFORM_LABEL[a.platform] || a.platform))).join(' \u00b7 ') : 'No accounts',
+          platformsColor: x.accs.length ? '#4A524F' : '#9A6A12',
+          followers: x.followers ? cf(x.followers) : '\u2014',
+          reach: x.reach ? cf(x.reach) : '\u2014',
+          delta: pct(x.reach, x.prev), deltaColor: x.reach >= x.prev ? '#0A6E58' : '#B4433A',
+          er: x.reach ? (x.eng * 100 / x.reach).toFixed(1) + '%' : '\u2014',
+          last: x.last ? fmtDay(x.last) : (x.accs.length ? 'No data yet' : '\u2014'),
+          lastColor: !x.last || x.last < stale ? '#9A6A12' : '#4A524F',
+          open: () => this.openDigitalClient(x.pr),
+          details: () => this.openProject(x.pr),
+          remove: () => this.doDeleteProject(x.pr),
+        };
+      }),
     };
   }
 
@@ -19282,13 +19579,15 @@ class Component extends DCLogic {
     if (data && data.error) { this.setState({ digSyncing: false, digSyncingAcc: null, digStatus: data.error }); return; }
     const failed = (data && data.failed) || 0;
     const synced = (data && data.synced) || 0;
+    const deferred = (data && data.deferred) || 0;
     const partial = ((data && data.results) || []).filter(r => r.ok && r.warnings && r.warnings.length).length;
+    const later = deferred ? ' ' + deferred + (deferred === 1 ? ' more account is' : ' more accounts are') + ' queued and finish on the next automatic run, within five minutes.' : '';
     this.setState({
       digSyncing: false, digSyncingAcc: null,
-      digStatus: !synced ? (data && data.note) || 'Nothing connected to sync yet.'
+      digStatus: (!synced && !deferred ? (data && data.note) || 'Nothing connected to sync yet.'
         : failed ? failed + ' of ' + synced + ' accounts failed — Needs attention says why.'
         : 'Synced ' + synced + (synced === 1 ? ' account' : ' accounts')
-          + (partial ? ', ' + partial + ' with gaps — see Needs attention.' : '.'),
+          + (partial ? ', ' + partial + ' with gaps — see Needs attention.' : '.')) + later,
     });
     this.loadDigital();
   }
@@ -20945,7 +21244,7 @@ class Component extends DCLogic {
   digitalVM() {
     const s = this.state;
     const blank = {
-      isDigital: false, digTabsVM: [], digClientChipsVM: [], digKpisVM: [], digAccountRowsVM: [],
+      isDigital: false, digHasJob: false, digJobCodes: '', digJobActionsVM: [], digTabsVM: [], digClientChipsVM: [], digKpisVM: [], digAccountRowsVM: [],
       digKpiGroupsVM: [], digProfilesVM: [], digTopVM: [], digKindChipsVM: [], digSortChipsVM: [],
       digContentSummaryVM: [], digChartSummaryVM: [],
       digRunsVM: [], digPostsVM: [], digKeywordRowsVM: [], digDealsVM: [], digBillRowsVM: [],
@@ -22222,6 +22521,19 @@ class Component extends DCLogic {
     const v2 = this.digV2VM({ s, scope, isHouse, scoped: scopedOn, clientName, clients });
     const digExtraVM = {
       ...portalVM,
+      ...(() => {
+        const job = scope !== 'all' && !isHouse ? clients.find(c => c.id === scope) : null;
+        const acts = !job ? [] : [
+          this.canProfile() && { label: 'Job details', go: () => this.openProjectTab(job.id, 'profile') },
+          this.can('media') && { label: 'Content & files', go: () => this.openProjectTab(job.id, 'album') },
+          this.can('people') && { label: 'Crew & cost', go: () => this.openProjectTab(job.id, 'crew') },
+        ].filter(Boolean);
+        return {
+          digHasJob: !!job && acts.length > 0,
+          digJobCodes: job ? ([job.code, this.clientCode(job.client_id)].filter(Boolean).join(' \u00b7 ') || 'No job code yet') : '',
+          digJobActionsVM: acts,
+        };
+      })(),
       digTitle: scope === 'all' ? 'All clients' : isHouse ? 'Glomium — our own' : clientName(scope),
       digSubLine: [
         scope === 'all' ? (n => n + (n === 1 ? ' client' : ' clients'))(clients.filter(c => accCount(c.id) > 0).length) : '',
@@ -22338,12 +22650,15 @@ class Component extends DCLogic {
       digIsDeals: s.digitalTab === 'deals' && this.can('digitalMoney') && !isHouse,
       digIsRecharge: s.digitalTab === 'recharge' && this.can('digitalMoney') && !isHouse,
       digCanEdit: this.can('digitalEdit'),
+      digCanSync: this.can('digitalSync'),
       digCanMoney: this.can('digitalMoney'),
       digCanSecret: this.can('digitalSecret'),
 
       digBackLabel: (s.acctForm || s.dealForm || s.termsForm) ? '← Close form'
         : (s.digitalTab && s.digitalTab !== 'overview') ? '← Overview'
-        : (s.digProject && s.digProject !== 'all') ? '← All clients' : '← Back',
+        : (s.digProject && s.digProject !== 'all')
+          ? (s.digFrom === 'clients' ? '← Clients' : s.digFrom && s.digFrom.indexOf('job:') === 0 ? '← Job details' : '← All clients')
+          : '← Back',
       digStatus: s.digStatus, hasDigStatus: !!s.digStatus,
       digSyncLabel: s.digSyncing ? 'Syncing…' : scope === 'all' ? 'Sync all' : 'Sync now',
       digSyncTitle: scope === 'all' ? 'Sync every connected account — clients and ours' : 'Sync the connected accounts in this view',
@@ -22354,6 +22669,8 @@ class Component extends DCLogic {
           return;
         }
         if (s.digitalTab && s.digitalTab !== 'overview') { this.setDigitalTab('overview'); return; }
+        if (s.digProject && s.digProject !== 'all' && s.digFrom === 'clients') { this.goWorkspace('dashboard'); return; }
+        if (s.digProject && s.digProject !== 'all' && s.digFrom && s.digFrom.indexOf('job:') === 0) { const id = s.digFrom.slice(4); this.setState({ digFrom: null }); this.openProjectTab(id); return; }
         if (s.digProject && s.digProject !== 'all') { this.setState({ digProject: 'all', digStatus: '' }, () => this.loadDigitalTab()); return; }
         this.goWorkspace('dashboard');
       },
@@ -22748,7 +23065,9 @@ class Component extends DCLogic {
       ].map(g => ({ label: g[0], subs: g[1].filter(Boolean) })).filter(g => g.subs.length);
       finGroups.forEach(g => nav.push({ key: g.subs[0].key, label: g.label, members: g.subs.map(x => x.key) }));
     } else {
-      if (this.can('albums')) nav.push({ key: 'dashboard', label: s.division && s.division !== 'wedding' ? 'Projects' : 'Albums' });
+      const digHome = this.can('digital') && s.division === 'digital';
+      if (this.can('albums')) nav.push({ key: 'dashboard', label: digHome ? 'Clients' : s.division && s.division !== 'wedding' ? 'Projects' : 'Albums' });
+      if (digHome) nav.push({ key: 'digital', label: 'Dashboard' });
       if (this.can('albums')) nav.push({ key: 'schedule', label: 'Schedule' });
       if (this.can('people')) nav.push({ key: 'people', label: 'People' });
       // Creative holds the roster but not the staff records, so for them the
@@ -22757,8 +23076,6 @@ class Component extends DCLogic {
       // Creative books trials and recces; Finance logs what they cost.
       if (this.can('shootEdit') && !this.can('finance')) nav.push({ key: 'shoots', label: 'Shoots' });
       if (this.can('portfolio')) nav.push({ key: 'portfolio', label: 'Portfolio' });
-      // Only inside the division it belongs to.
-      if (this.can('digital') && s.division === 'digital') nav.push({ key: 'digital', label: 'Digital' });
       if (this.can('peopleApprove')) nav.push({ key: 'approvals', label: 'Approvals' + (pendingRequests ? ' (' + pendingRequests + ')' : '') });
       if (this.can('visitors')) nav.push({ key: 'visitors', label: 'Visitors' });
     }
@@ -22784,7 +23101,7 @@ class Component extends DCLogic {
     if (inFinance) {
       if (this.can('billing')) tabs.push({ key: 'billing', label: 'Pricing & invoices' });
     } else {
-      if (this.can('media')) tabs.push({ key: 'album', label: 'Album' });
+      if (this.can('media')) tabs.push({ key: 'album', label: this.parentTable() === 'projects' && this.jobDivision(s.current) === 'digital' ? 'Content & files' : 'Album' });
       if (this.can('people')) tabs.push({ key: 'crew', label: 'Crew & cost' });
     }
     if (this.canProfile()) tabs.push({ key: 'profile', label: 'Profile' });
@@ -23747,7 +24064,7 @@ class Component extends DCLogic {
       cancelPicker: () => this.setState({ pickingDivision: false }),
       openDivisionPicker: () => this.openDivisionPicker(),
       divisionLabel: DIVISION_LABEL[s.division] || 'Choose division',
-      divisionNoun: s.division === 'wedding' ? 'event' : 'project',
+      divisionNoun: s.division === 'wedding' ? 'event' : s.division === 'digital' ? 'client' : 'project',
       emptyScheduleHint: s.division && s.division !== 'wedding'
         ? 'Nothing here. Create a project under Projects, then set its dates and brief.'
         : 'Nothing here. Create an event under Albums, then set its nature of work and delivery deadline.',
@@ -23757,11 +24074,11 @@ class Component extends DCLogic {
         ? 'Nothing here. Assign crew to a project under Projects → Crew & cost, and their payouts appear in this list.'
         : 'Nothing here. Assign crew to an event under Albums → Crew & cost, and their payouts appear in this list.',
       canRecordsEdit: this.can('recordsEdit'),
-      isWeddingDivision: this.can('recordsEdit') && (s.division === 'wedding' || !s.division),
-      isProjectDivision: this.can('recordsEdit') && !!s.division && s.division !== 'wedding',
+      isWeddingDivision: this.can('recordsEdit') && (s.division === 'wedding' || !s.division) && !!s.jlNewOpen,
+      isProjectDivision: this.can('recordsEdit') && !!s.division && s.division !== 'wedding' && (s.division === 'digital' && this.can('digital') ? !!s.dlNewOpen : !!s.jlNewOpen),
       // The lists themselves stay visible to accounts — only creating and deleting go.
-      emptyProjectsHint: this.can('recordsEdit') ? 'Nothing here yet — create the first one above.' : 'Nothing here yet.',
-      emptyEventsHint: this.can('recordsEdit') ? 'No events yet — create one above.' : 'No events yet.',
+      emptyProjectsHint: this.can('recordsEdit') ? 'Nothing here yet — start one with + New.' : 'Nothing here yet.',
+      emptyEventsHint: this.can('recordsEdit') ? 'No events yet — start one with + New event.' : 'No events yet.',
       showWeddingList: s.division === 'wedding' || !s.division,
       showProjectList: !!s.division && s.division !== 'wedding',
       divisionCardsVM: DIVISIONS.map(d => ({
@@ -23791,7 +24108,10 @@ class Component extends DCLogic {
           statusColor: st === 'delivered' ? '#0A6E58' : st === 'editing' ? '#8A6D3B' : st === 'planning' ? '#5B5379' : 'var(--green-deep)',
           noCover: !pr.cover_url,
           setCoverRef: el => { if (el && pr.cover_url) { el.src = pr.cover_url; el.style.display = 'block'; } },
-          open: () => this.openProject(pr),
+          open: () => (s.division === 'digital' && this.can('digital') ? this.openDigitalClient(pr) : this.openProject(pr)),
+          openLabel: s.division === 'digital' && this.can('digital') ? 'Dashboard' : 'Edit',
+          hasDetails: s.division === 'digital' && this.can('digital'),
+          details: () => this.openProject(pr),
           remove: () => this.doDeleteProject(pr),
         };
       }),
@@ -24336,6 +24656,7 @@ class Component extends DCLogic {
         : s.editorFrom === 'spend' ? '← Expenses'
         : s.editorFrom === 'payouts' ? '← Payouts'
         : s.editorFrom === 'people' || s.editorFrom === 'talent' ? '← People'
+        : s.editorFrom === 'digital' ? '← Digital dashboard'
         : this.parentTable() === 'projects' ? '← All projects' : '← All events',
 
       setCoverInputRef: el => { this.coverInputEl = el; },
@@ -24432,6 +24753,8 @@ class Component extends DCLogic {
       ...this.composerVM(),
 
       ...this.projectDivisionsVM(),
+      ...this.digitalListVM(),
+      ...this.jobListVM(),
       ...this.accessTabVM(),
       ...this.pricingVM(),
       ...this.financeVM(),
